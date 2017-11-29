@@ -66,32 +66,32 @@ public class APICollectionApi {
      */
     public com.squareup.okhttp.Call apisGetCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (limit != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
         if (offset != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
         if (query != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "query", query));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "query", query));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -102,8 +102,8 @@ public class APICollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -111,23 +111,23 @@ public class APICollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisGetValidateBeforeCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        
+
+
         com.squareup.okhttp.Call call = apisGetCall(limit, offset, query, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
-     * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * Retrieve/Search APIs
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
@@ -141,8 +141,8 @@ public class APICollectionApi {
     }
 
     /**
-     * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * Retrieve/Search APIs
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
@@ -158,7 +158,7 @@ public class APICollectionApi {
 
     /**
      * Retrieve/Search APIs  (asynchronously)
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
@@ -204,28 +204,28 @@ public class APICollectionApi {
      */
     public com.squareup.okhttp.Call apisHeadCall(String query, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (query != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "query", query));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "query", query));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -236,8 +236,8 @@ public class APICollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -245,23 +245,23 @@ public class APICollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "HEAD", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisHeadValidateBeforeCall(String query, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        
+
+
         com.squareup.okhttp.Call call = apisHeadCall(query, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
-     * Check given API attibute name is already exist 
-     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * Check given API attibute name is already exist
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -271,8 +271,8 @@ public class APICollectionApi {
     }
 
     /**
-     * Check given API attibute name is already exist 
-     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * Check given API attibute name is already exist
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return ApiResponse&lt;Void&gt;
@@ -285,7 +285,7 @@ public class APICollectionApi {
 
     /**
      * Check given API attibute name is already exist  (asynchronously)
-     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, lifeCycleStatus, description, subcontext, doc, provider**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param callback The callback to be executed when the API call finishes
@@ -333,7 +333,7 @@ public class APICollectionApi {
      */
     public com.squareup.okhttp.Call apisImportDefinitionPostCall(String type, File file, String url, String additionalProperties, String implementationType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/import-definition";
 
@@ -341,30 +341,30 @@ public class APICollectionApi {
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (type != null)
-        localVarFormParams.put("type", type);
+            localVarFormParams.put("type", type);
         if (file != null)
-        localVarFormParams.put("file", file);
+            localVarFormParams.put("file", file);
         if (url != null)
-        localVarFormParams.put("url", url);
+            localVarFormParams.put("url", url);
         if (additionalProperties != null)
-        localVarFormParams.put("additionalProperties", additionalProperties);
+            localVarFormParams.put("additionalProperties", additionalProperties);
         if (implementationType != null)
-        localVarFormParams.put("implementationType", implementationType);
+            localVarFormParams.put("implementationType", implementationType);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -375,8 +375,8 @@ public class APICollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -384,23 +384,23 @@ public class APICollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisImportDefinitionPostValidateBeforeCall(String type, File file, String url, String additionalProperties, String implementationType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        
+
+
         com.squareup.okhttp.Call call = apisImportDefinitionPostCall(type, file, url, additionalProperties, implementationType, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Import API Definition
-     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties. 
+     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties.
      * @param type Definition type to upload (optional, default to SWAGGER)
      * @param file Definition to uploadas a file (optional)
      * @param url Definition url (optional)
@@ -418,7 +418,7 @@ public class APICollectionApi {
 
     /**
      * Import API Definition
-     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties. 
+     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties.
      * @param type Definition type to upload (optional, default to SWAGGER)
      * @param file Definition to uploadas a file (optional)
      * @param url Definition url (optional)
@@ -437,7 +437,7 @@ public class APICollectionApi {
 
     /**
      * Import API Definition (asynchronously)
-     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties. 
+     * This operation can be used to create api from api definition.  API definition can be either Swagger or a WSDL  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. When the type is WSDL, it is a **must** to specify additionalProperties with API&#39;s name, version, context and endpoints. See the example for additionalProperties.
      * @param type Definition type to upload (optional, default to SWAGGER)
      * @param file Definition to uploadas a file (optional)
      * @param url Definition url (optional)
@@ -485,7 +485,7 @@ public class APICollectionApi {
      */
     public com.squareup.okhttp.Call apisPostCall(API body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/apis";
 
@@ -496,13 +496,13 @@ public class APICollectionApi {
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -513,8 +513,8 @@ public class APICollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -522,28 +522,28 @@ public class APICollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisPostValidateBeforeCall(API body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apisPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisPostCall(body, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Create a new API
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI.
      * @param body API object that needs to be added  (required)
      * @return API
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -555,7 +555,7 @@ public class APICollectionApi {
 
     /**
      * Create a new API
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI.
      * @param body API object that needs to be added  (required)
      * @return ApiResponse&lt;API&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -568,7 +568,7 @@ public class APICollectionApi {
 
     /**
      * Create a new API (asynchronously)
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI.
      * @param body API object that needs to be added  (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
@@ -612,7 +612,7 @@ public class APICollectionApi {
      */
     public com.squareup.okhttp.Call apisValidateDefinitionPostCall(String type, File file, String url, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/validate-definition";
 
@@ -622,20 +622,20 @@ public class APICollectionApi {
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (type != null)
-        localVarFormParams.put("type", type);
+            localVarFormParams.put("type", type);
         if (file != null)
-        localVarFormParams.put("file", file);
+            localVarFormParams.put("file", file);
         if (url != null)
-        localVarFormParams.put("url", url);
+            localVarFormParams.put("url", url);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -646,8 +646,8 @@ public class APICollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -655,28 +655,28 @@ public class APICollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisValidateDefinitionPostValidateBeforeCall(String type, File file, String url, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'type' is set
         if (type == null) {
             throw new ApiException("Missing the required parameter 'type' when calling apisValidateDefinitionPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisValidateDefinitionPostCall(type, file, url, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Validate API definition and retrieve a summary
-     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary. 
+     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary.
      * @param type Definition type to upload (required)
      * @param file Definition to upload as a file (optional)
      * @param url Definition url (optional)
@@ -690,7 +690,7 @@ public class APICollectionApi {
 
     /**
      * Validate API definition and retrieve a summary
-     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary. 
+     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary.
      * @param type Definition type to upload (required)
      * @param file Definition to upload as a file (optional)
      * @param url Definition url (optional)
@@ -705,7 +705,7 @@ public class APICollectionApi {
 
     /**
      * Validate API definition and retrieve a summary (asynchronously)
-     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary. 
+     * This operation can be used to validate a swagger or WSDL definition and retrieve a summary.
      * @param type Definition type to upload (required)
      * @param file Definition to upload as a file (optional)
      * @param url Definition url (optional)

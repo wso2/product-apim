@@ -63,31 +63,31 @@ public class ThrottlingTierCollectionApi {
      */
     public com.squareup.okhttp.Call policiesTierLevelGetCall(String tierLevel, Integer limit, Integer offset, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/policies/{tierLevel}"
-            .replaceAll("\\{" + "tierLevel" + "\\}", apiClient.escapeString(tierLevel.toString()));
+                .replaceAll("\\{" + "tierLevel" + "\\}", apiClient.escapeString(tierLevel.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (limit != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
         if (offset != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -98,8 +98,8 @@ public class ThrottlingTierCollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -107,28 +107,28 @@ public class ThrottlingTierCollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call policiesTierLevelGetValidateBeforeCall(String tierLevel, Integer limit, Integer offset, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling policiesTierLevelGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = policiesTierLevelGetCall(tierLevel, limit, offset, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get all policies
-     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type policies.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -143,7 +143,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Get all policies
-     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type policies.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -159,7 +159,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Get all policies (asynchronously)
-     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type policies.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)

@@ -47,6 +47,7 @@ ballerina.config:
             # Ballerina Archive name.
             archiveName: analytics.bmz
 
+
 wso2.securevault:
   secretRepository:
     type: org.wso2.carbon.secvault.repository.DefaultSecretRepository

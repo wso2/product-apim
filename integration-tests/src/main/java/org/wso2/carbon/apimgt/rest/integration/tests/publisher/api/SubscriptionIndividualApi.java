@@ -64,32 +64,32 @@ public class SubscriptionIndividualApi {
      */
     public com.squareup.okhttp.Call subscriptionsBlockSubscriptionPostCall(String subscriptionId, String blockState, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/subscriptions/block-subscription";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (subscriptionId != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "subscriptionId", subscriptionId));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "subscriptionId", subscriptionId));
         if (blockState != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "blockState", blockState));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "blockState", blockState));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -100,8 +100,8 @@ public class SubscriptionIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -109,33 +109,33 @@ public class SubscriptionIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call subscriptionsBlockSubscriptionPostValidateBeforeCall(String subscriptionId, String blockState, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
             throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsBlockSubscriptionPost(Async)");
         }
-        
+
         // verify the required parameter 'blockState' is set
         if (blockState == null) {
             throw new ApiException("Missing the required parameter 'blockState' when calling subscriptionsBlockSubscriptionPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = subscriptionsBlockSubscriptionPostCall(subscriptionId, blockState, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Block a subscription
-     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only. 
+     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only.
      * @param subscriptionId Subscription Id  (required)
      * @param blockState Subscription block state.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -148,7 +148,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Block a subscription
-     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only. 
+     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only.
      * @param subscriptionId Subscription Id  (required)
      * @param blockState Subscription block state.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -163,7 +163,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Block a subscription (asynchronously)
-     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only. 
+     * This operation can be used to block a subscription. Along with the request, &#x60;blockState&#x60; must be specified as a query parameter.  1. &#x60;BLOCKED&#x60; : Subscription is completely blocked for both Production and Sandbox environments. 2. &#x60;PROD_ONLY_BLOCKED&#x60; : Subscription is blocked for Production environment only.
      * @param subscriptionId Subscription Id  (required)
      * @param blockState Subscription block state.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -209,29 +209,29 @@ public class SubscriptionIndividualApi {
      */
     public com.squareup.okhttp.Call subscriptionsSubscriptionIdGetCall(String subscriptionId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/subscriptions/{subscriptionId}"
-            .replaceAll("\\{" + "subscriptionId" + "\\}", apiClient.escapeString(subscriptionId.toString()));
+                .replaceAll("\\{" + "subscriptionId" + "\\}", apiClient.escapeString(subscriptionId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -242,8 +242,8 @@ public class SubscriptionIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -251,28 +251,28 @@ public class SubscriptionIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call subscriptionsSubscriptionIdGetValidateBeforeCall(String subscriptionId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
             throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsSubscriptionIdGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = subscriptionsSubscriptionIdGetCall(subscriptionId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get details of a subscription
-     * This operation can be used to get details of a single subscription. 
+     * This operation can be used to get details of a single subscription.
      * @param subscriptionId Subscription Id  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -286,7 +286,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Get details of a subscription
-     * This operation can be used to get details of a single subscription. 
+     * This operation can be used to get details of a single subscription.
      * @param subscriptionId Subscription Id  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -301,7 +301,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Get details of a subscription (asynchronously)
-     * This operation can be used to get details of a single subscription. 
+     * This operation can be used to get details of a single subscription.
      * @param subscriptionId Subscription Id  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -347,30 +347,30 @@ public class SubscriptionIndividualApi {
      */
     public com.squareup.okhttp.Call subscriptionsUnblockSubscriptionPostCall(String subscriptionId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/subscriptions/unblock-subscription";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (subscriptionId != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "subscriptionId", subscriptionId));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "subscriptionId", subscriptionId));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -381,8 +381,8 @@ public class SubscriptionIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -390,28 +390,28 @@ public class SubscriptionIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call subscriptionsUnblockSubscriptionPostValidateBeforeCall(String subscriptionId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
             throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsUnblockSubscriptionPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = subscriptionsUnblockSubscriptionPostCall(subscriptionId, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Unblock a Subscription
-     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation. 
+     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation.
      * @param subscriptionId Subscription Id  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
@@ -423,7 +423,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Unblock a Subscription
-     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation. 
+     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation.
      * @param subscriptionId Subscription Id  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
@@ -437,7 +437,7 @@ public class SubscriptionIndividualApi {
 
     /**
      * Unblock a Subscription (asynchronously)
-     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation. 
+     * This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation.
      * @param subscriptionId Subscription Id  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)

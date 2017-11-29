@@ -119,6 +119,20 @@
             <excludes><exclude>**/*</exclude></excludes>
         </fileSet>
 
+        <fileSet> <!-- microgateway with the ReadMe -->
+            <directory>microgateway</directory>
+            <includes>
+                <include>README.txt</include>
+                <!--<include>**/*.bal</include>-->
+                <include>microConf.json</include>
+            </includes>
+            <excludes>
+                <exclude>API.bal</exclude>
+                <exclude>API.json</exclude>
+                <exclude>Petstore.bal</exclude>
+                <exclude>Petstore.json</exclude>
+            </excludes>
+        </fileSet>
     </fileSets>
 
     <files>
@@ -148,6 +162,12 @@
         </file>
         <file>
             <source>bin/ciphertool.bat</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>bin/microgatewayinit.sh</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>

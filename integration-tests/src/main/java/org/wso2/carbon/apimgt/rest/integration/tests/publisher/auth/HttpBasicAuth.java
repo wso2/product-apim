@@ -13,8 +13,8 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth;
 
-import com.squareup.okhttp.Credentials;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
+import com.squareup.okhttp.Credentials;
 
 import java.util.List;
 import java.util.Map;
