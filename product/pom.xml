@@ -244,6 +244,11 @@
             <version>${carbon.analytics.common.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.uis</groupId>
+            <artifactId>org.wso2.carbon.uis.feature</artifactId>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -449,6 +454,10 @@
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uis.feature</id>
+                                    <version>${carbon.uis.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -631,6 +640,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uis.feature</id>
+                                    <version>${carbon.uis.version}</version>
                                 </feature>
                             </features>
                         </configuration>
