@@ -121,11 +121,11 @@
 
 
     <!-- This handler use to index APIs when there change in Api artifact-->
-    <handler class="org.wso2.carbon.registry.indexing.IndexingHandler">
-            <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-                 <property name="mediaType">application/vnd.wso2-api+xml</property>
-            </filter>
-        </handler>
+    <handler class="org.wso2.carbon.apimgt.impl.handlers.CustomAPIIndexHandler">
+        <filter class = "org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
+            <property name="mediaType">application/vnd.wso2-api+xml</property>
+        </filter>
+    </handler>
 
    <!--This handler delete the subscription hierarcy generated in the notifications path when a subscription is deleted directly -->
 
@@ -282,6 +282,7 @@
             <!--indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/wsdl\+xml" profiles ="default,api-store,api-publisher"/>
             <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/x-xsd\+xml " profiles ="default,api-store,api-publisher"/>
             <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/policy\+xml" profiles ="default,api-store,api-publisher"/-->
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.CustomAPIIndexer" mediaTypeRegEx="application/vnd.wso2-api\+xml" profiles ="default,api-store,api-publisher"/>
             <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/vnd.(.)+\+xml" profiles ="default,api-store,api-publisher"/>
             <!--indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/(.)+\+xml"/>
             <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/(.)+"/>
