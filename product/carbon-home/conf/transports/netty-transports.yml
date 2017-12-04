@@ -27,7 +27,7 @@ listenerConfigurations:
  host: "0.0.0.0"
  port: 9292
  scheme: "https"
- keyStoreFile: "resources/security/wso2carbon.jks"
+ keyStoreFile: "${carbon.home}/resources/security/wso2carbon.jks"
  keyStorePass: "wso2carbon"
  certPass: "wso2carbon"
  parameters:

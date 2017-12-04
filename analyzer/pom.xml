@@ -41,18 +41,18 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.launcher</artifactId>
-            <version>${carbon.kernel.version}</version>
+            <version>${carbon.kernel.das.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.kernel.feature</artifactId>
-            <version>${carbon.kernel.version}</version>
+            <version>${carbon.kernel.das.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.runtime.feature</artifactId>
-            <version>${carbon.kernel.version}</version>
+            <version>${carbon.kernel.das.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -70,13 +70,13 @@
         <dependency>
             <groupId>org.wso2.carbon.transport</groupId>
             <artifactId>org.wso2.carbon.connector.framework.feature</artifactId>
-            <version>${carbon.transport.version}</version>
+            <version>${carbon.transport.das.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.messaging</groupId>
             <artifactId>org.wso2.carbon.messaging.feature</artifactId>
-            <version>${carbon.messaging.version}</version>
+            <version>${carbon.messaging.das.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -389,11 +389,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.runtime.feature</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature</id>
@@ -401,11 +401,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.connector.framework.feature</id>
-                                    <version>${carbon.transport.version}</version>
+                                    <version>${carbon.transport.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature</id>
-                                    <version>${carbon.messaging.version}</version>
+                                    <version>${carbon.messaging.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature</id>
@@ -526,7 +526,7 @@
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </targetPath>
                             <runtime>default</runtime>
                         </configuration>
@@ -542,7 +542,7 @@
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </targetPath>
                             <runtime>worker</runtime>
                         </configuration>
@@ -558,7 +558,7 @@
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </targetPath>
                             <runtime>manager</runtime>
                         </configuration>
@@ -574,7 +574,7 @@
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </targetPath>
                             <runtime>editor</runtime>
                         </configuration>
@@ -590,7 +590,7 @@
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </targetPath>
                             <runtime>dashboard</runtime>
                         </configuration>
@@ -605,13 +605,13 @@
                             <runtime>default</runtime>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </destination>
                             <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature.group</id>
@@ -619,7 +619,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
@@ -627,7 +627,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
+                                    <version>${carbon.messaging.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jndi.feature.group</id>
@@ -718,13 +718,13 @@
                             <runtime>worker</runtime>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </destination>
                             <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature.group</id>
@@ -732,7 +732,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
@@ -740,7 +740,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
+                                    <version>${carbon.messaging.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jndi.feature.group</id>
@@ -822,13 +822,13 @@
                             <runtime>manager</runtime>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </destination>
                             <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature.group</id>
@@ -836,7 +836,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
@@ -844,7 +844,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
+                                    <version>${carbon.messaging.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jndi.feature.group</id>
@@ -907,13 +907,13 @@
                             <runtime>editor</runtime>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.version}/wso2
+                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2
                             </destination>
                             <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature.group</id>
@@ -921,7 +921,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.kernel.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
@@ -933,7 +933,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
+                                    <version>${carbon.messaging.das.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jndi.feature.group</id>
@@ -1003,7 +1003,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <replace dir="target/wso2carbon-kernel-${carbon.kernel.version}/wso2" token="false" value="true">
+                                <replace dir="target/wso2carbon-kernel-${carbon.kernel.das.version}/wso2" token="false" value="true">
                                     <include name="**/bundles.info" />
                                 </replace>
                             </tasks>
@@ -1022,7 +1022,7 @@
                                 <delete dir="target/org.eclipse.equinox.executable-3.5.0.v20110530-7P7NFUFFLWUl76mart" />
                                 <delete dir="target/p2-repo" />
                                 <delete file="target/tmp" />
-                                <delete dir="target/wso2carbon-kernel-${carbon.kernel.version}" />
+                                <delete dir="target/wso2carbon-kernel-${carbon.kernel.das.version}" />
                                 <delete dir="target/antrun" />
                                 <delete dir="target/maven-shared-archive-resources" />
                                 <delete dir="target/findbugs" />
@@ -1077,6 +1077,9 @@
     </build>
 
     <properties>
+        <carbon.transport.das.version>4.3.0-m2</carbon.transport.das.version>
+        <carbon.messaging.das.version>2.3.1</carbon.messaging.das.version>
+        <carbon.kernel.das.version>5.2.0-m3</carbon.kernel.das.version>
         <carbon.analytics.version>2.0.38</carbon.analytics.version>
         <siddhi.version>4.0.0-M9</siddhi.version>
         <siddhi.extension.version>1.0.0</siddhi.extension.version>
