@@ -52,17 +52,17 @@
 
         <fileSet>
             <directory>carbon-home/conf/transports</directory>
-            <outputDirectory>conf/transports</outputDirectory>
+            <outputDirectory>wso2/default/conf/transports</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>carbon-home/conf/engine</directory>
-            <outputDirectory>conf/engine</outputDirectory>
+            <outputDirectory>conf/default/engine</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>carbon-home/conf/osgi</directory>
-            <outputDirectory>conf/osgi</outputDirectory>
+            <outputDirectory>conf/default/osgi</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
@@ -72,13 +72,8 @@
         </fileSet>
         <fileSet>
         <directory>carbon-home/resources/lifecycles</directory>
-        <outputDirectory>resources/lifecycles</outputDirectory>
+        <outputDirectory>wso2/default/resources/lifecycles</outputDirectory>
         <fileMode>644</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>carbon-home/conf/datasources</directory>
-            <outputDirectory>conf/datasources</outputDirectory>
-            <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>carbon-home/resources/composer</directory>
@@ -86,26 +81,23 @@
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>carbon-home/samples</directory>
-            <outputDirectory>samples</outputDirectory>
-            <fileMode>644</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>carbon-home/deployment/integration-flows</directory>
-            <outputDirectory>deployment/integration-flows</outputDirectory>
-            <fileMode>644</fileMode>
-            <excludes>
-                <exclude>empty.txt</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
             <directory>carbon-home/lib</directory>
             <outputDirectory>lib</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
     </fileSets>
-
     <files>
-
+        <file>
+            <source>carbon-home/conf/deployment.yaml</source>
+            <outputDirectory>conf/default/</outputDirectory>
+            <fileMode>644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>target/WSO2Carbon/bin/kernel-version.txt</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 </assembly>
