@@ -179,7 +179,6 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         HttpEntity content = new UrlEncodedFormEntity(urlParameters);
         String contentString = EntityUtils.toString(content);
 
-        Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
         Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
                 "Public visibility tag is not available for authorised user");

@@ -231,8 +231,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         int numberOfEndpoints = 3;
         int requestCount = 10;
-        //Todo replace sleep with proper method
-        Thread.sleep(80000);
         for (int requestNumber = 1; requestNumber < requestCount; requestNumber++) {
             apiInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeader);
             assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -365,8 +363,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         int numberOfSandboxEndpoints = 3;
         int requestNumber;
 
-        //TODO replace sleep with proper method
-        Thread.sleep(80000);
         //production end point api invoke with production key
         for (requestNumber = 1; requestNumber < requestCount; requestNumber++) {
             apiProductionInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeaderProduction);

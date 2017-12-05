@@ -124,7 +124,6 @@ public class APIMANAGER4480AllSubscriptionsByApplicationTestCase extends APIMInt
                 throw new Exception("Unable to generate the tokens. Hence unable to execute the test case");
             }
         }
-        Thread.sleep(60000);
     }
 
     @Test(description = "List all Subscriptions By by calling the getAllSubscriptions")
