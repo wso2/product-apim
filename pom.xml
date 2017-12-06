@@ -178,6 +178,12 @@
                 <artifactId>org.wso2.carbon.connector.framework</artifactId>
                 <version>${carbon.transport.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.uis</groupId>
+                <artifactId>org.wso2.carbon.uis.feature</artifactId>
+                <version>${carbon.uis.version}</version>
+                <type>zip</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -229,6 +235,7 @@
         <carbon.lcm.version>1.2.0</carbon.lcm.version>
         <carbon.deployment.version>5.1.5</carbon.deployment.version>
         <carbon.analytics.common.version>6.0.16</carbon.analytics.common.version>
+        <carbon.uis.version>0.12.4</carbon.uis.version>
     </properties>
 
     <modules>
