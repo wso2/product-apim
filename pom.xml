@@ -905,7 +905,7 @@
         <carbon.analytics.common.version>5.1.7</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.2.4</carbon.apimgt.version>
+        <carbon.apimgt.version>6.2.5-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.2.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -917,7 +917,7 @@
         <carbon.governance.version>4.7.18</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.14</carbon.kernel.version>
+        <carbon.kernel.version>4.4.18</carbon.kernel.version>
         <apimserver.version>2.2.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
