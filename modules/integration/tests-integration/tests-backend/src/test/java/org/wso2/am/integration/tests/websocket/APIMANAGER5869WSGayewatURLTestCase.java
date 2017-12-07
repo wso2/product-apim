@@ -157,7 +157,8 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
                 "Published API is visible in API Publisher.");
 
         List<APIIdentifier> storeAPIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse(apiStore.getAllPublishedAPIs());
+                getAPIIdentifierListFromHttpResponse(apiStore.getAllPaginatedPublishedAPIs(storeContext
+                        .getContextTenant().getDomain(), 0, 100));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, storeAPIList),
                 "Published API is visible in API Store.");
     }

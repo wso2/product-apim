@@ -41,10 +41,12 @@ public abstract class AbstractRequest {
         bufferAppender.append(requestParams);
         for (Object o : parameterMap.keySet()) {
             String key = (String) o;
-            bufferAppender.append("&");
-            bufferAppender.append(key);
-            bufferAppender.append("=");
-            bufferAppender.append(URLEncoder.encode(parameterMap.get(key), "UTF-8"));
+            if (parameterMap.get(key) != null) {
+                bufferAppender.append("&");
+                bufferAppender.append(key);
+                bufferAppender.append("=");
+                bufferAppender.append(URLEncoder.encode(parameterMap.get(key), "UTF-8"));
+            }
         }
         return bufferAppender.toString();
     }
