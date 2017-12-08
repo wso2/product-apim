@@ -69,6 +69,8 @@
                 <exclude>**/repository/components/plugins/commons-io_2.0.0.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.1.0.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.2.4.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.gson_2.5.0.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.gson_2.3.1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.captcha.mgt_4.2.0.jar</exclude>-->
                 <exclude>**/repository/components/plugins/guava_12.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wadl-core_1.1.3.wso2v2.jar</exclude>
