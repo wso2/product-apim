@@ -29,7 +29,6 @@ import org.wso2.carbon.utils.CarbonUtils;
  */
 public class AuthenticateStub {
 
-    private static final Log log = LogFactory.getLog(AuthenticateStub.class);
 
     /**
      * Stub authentication method
@@ -47,9 +46,6 @@ public class AuthenticateStub {
         option.setTimeOutInMilliSeconds(soTimeout);
         option.setProperty(org.apache.axis2.transport.http.HTTPConstants.COOKIE_STRING, sessionCookie);
 
-        if (log.isDebugEnabled()) {
-            log.debug("AuthenticateStub : Stub created with session " + sessionCookie);
-        }
     }
 
     public static Stub authenticateStub(Stub stub, String sessionCookie, String backendURL) {
@@ -64,10 +60,6 @@ public class AuthenticateStub {
 
         option.setTo(new EndpointReference(
                 backendURL + client.getServiceContext().getAxisService().getName().replaceAll("[^a-zA-Z]", "")));
-
-        if (log.isDebugEnabled()) {
-            log.debug("AuthenticateStub : Stub created with session " + sessionCookie);
-        }
 
         return stub;
     }
