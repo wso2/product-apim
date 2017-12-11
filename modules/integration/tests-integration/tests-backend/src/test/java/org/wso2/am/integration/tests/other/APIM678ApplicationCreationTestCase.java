@@ -59,7 +59,6 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     private static final String description = "NewApplicationCreation";
     private static final String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
 
-    private final String webApp = "jaxrs_basic";
     private static final String callBackUrl = "http://myserver.com";
     private List<String> applicationsList = new ArrayList<String>();//list getting from the application creation response
     List<String> allAppsList = new ArrayList<String>(); //List getting from the getAllApplications() response
@@ -102,23 +101,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
-        String fileFormat = ".war";
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
-
-        //copy  .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
 
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -138,7 +122,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //create application with valid data
-    @Test(dataProvider = "createApplicationWithValidData", description = "Create an Application")
+    @Test(groups = "webapp", dataProvider = "createApplicationWithValidData", description = "Create an Application")
     public void testApplicationCreation(String applicationName, String tier, String callBackUrl, String description)
             throws Exception {
 
@@ -155,7 +139,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Create Application with invalid data
-    @Test(dataProvider = "createApplicationWithInValidData", description = "Create application for invalid data")
+    @Test(groups = "webapp", dataProvider = "createApplicationWithInValidData", description = "Create application for invalid data")
     public void testApplicationCreationForInvalidData(String applicationName, String tier, String callBackUrl,
                                                       String description) throws Exception {
         HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl, description);
@@ -171,7 +155,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Create already created application
-    @Test(description = "Create already created application", dependsOnMethods = "testApplicationCreation")
+    @Test(groups = "webapp", description = "Create already created application", dependsOnMethods = "testApplicationCreation")
     public void testAlreadyCreatedApplication() throws Exception {
 
         HttpResponse alreadyCreatedApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl,
@@ -185,7 +169,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 "by the name - " + applicationName), "Error in Response Message : " + applicationName);
     }
 
-    @Test(description = "Get all created applications", dependsOnMethods = "testApplicationCreation")
+    @Test(groups = "webapp", description = "Get all created applications", dependsOnMethods = "testApplicationCreation")
     public void getAllCreatedApplications() throws Exception {
 
         HttpResponse getAllApplicationsResponse = apiStore.getAllApplications();
@@ -214,7 +198,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Update application
-    @Test(description = "Update an application", dependsOnMethods = "testApplicationCreation")
+    @Test(groups = "webapp", description = "Update an application", dependsOnMethods = "testApplicationCreation")
     public void testUpdateApplication() throws Exception {
 
         //get default application and update fields
@@ -354,7 +338,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Remove a application
-    @Test(description = "Remove application")
+    @Test(groups = "webapp", description = "Remove application")
     public void testRemoveApplication() throws Exception {
 
         String applicationName = "RemoveMeApp";

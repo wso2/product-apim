@@ -141,3 +141,12 @@ print("==");
 //34
 print(publisherHostObj.searchAPIs("admin","manager:notexistkey"));
 print("==");
+
+var tierData = {};
+tierData["tierName"] = "Gold";
+tierData["permissiontype"] = "allow";
+tierData["roles"] = "admin";
+//35
+print(publisherHostObj.updateTierPermissions(tierData));
+print("==");
+

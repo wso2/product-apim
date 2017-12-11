@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-  ~  Copyright (c) 2005-2010, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+  ~  Copyright (c) 2017, WSO2 Inc. (http://wso2.com) All Rights Reserved.
   ~
   ~  WSO2 Inc. licenses this file to you under the Apache License,
   ~  Version 2.0 (the "License"); you may not use this file except
@@ -58,8 +58,8 @@
     <parameter name="ModulesDirectory">axis2modules</parameter>
 
     <!-- User agent and the server details to be used in the http communication -->
-    <parameter name="userAgent" locked="true">WSO2 AM 2.1.0</parameter>
-    <parameter name="server" locked="true">WSO2 AM 2.1.0</parameter>
+    <parameter name="userAgent" locked="true">WSO2 AM 1.10.0</parameter>
+    <parameter name="server" locked="true">WSO2 AM 1.10.0</parameter>
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
@@ -156,8 +156,6 @@
                           class="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
         <messageFormatter contentType="multipart/form-data"
                           class="org.apache.axis2.transport.http.MultipartFormDataFormatter"/>
-        <messageFormatter contentType="text/html"
-                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="application/xml"
                           class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="text/xml"
@@ -222,8 +220,6 @@
     <messageBuilders>
 	<messageBuilder contentType="application/xml"
                         class="org.apache.axis2.builder.ApplicationXMLBuilder"/>
-        <messageBuilder contentType="text/html"
-                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
         <messageBuilder contentType="application/x-www-form-urlencoded"
                         class="org.apache.synapse.commons.builders.XFormURLEncodedBuilder"/>
         <messageBuilder contentType="multipart/form-data"
@@ -232,10 +228,10 @@
                         class="org.apache.axis2.format.PlainTextBuilder"/>
 
         <!--JSON Message Builders-->
-	<messageBuilder contentType="application/json"
-                        class="org.apache.synapse.commons.json.JsonBuilder"/>
-        <!--messageBuilder contentType="application/json"
-                        class="org.apache.synapse.commons.json.JsonStreamBuilder"/-->
+	<!--messageBuilder contentType="application/json"
+                        class="org.apache.synapse.commons.json.JsonBuilder"/-->
+        <messageBuilder contentType="application/json"
+                        class="org.apache.synapse.commons.json.JsonStreamBuilder"/>
         <messageBuilder contentType="application/json/badgerfish"
                         class="org.apache.axis2.json.JSONBadgerfishOMBuilder"/>
         <messageBuilder contentType="text/javascript"
@@ -543,14 +539,6 @@
                 <Password>wso2carbon</Password>
             </TrustStore>
         </parameter>
-        <!-- ============================================== -->
-        <!-- Configuration for Dynamic SSL Profile loading. -->
-        <!-- Configured for 10 mins. -->
-        <!-- ============================================== -->
-        <parameter name="dynamicSSLProfilesConfig">
-            <filePath>repository/resources/security/sslprofiles.xml</filePath>
-            <fileReadInterval>600000</fileReadInterval>
-        </parameter>
         <!--<parameter name="HostnameVerifier">DefaultAndLocalhost</parameter>-->
             <!--supports Strict|AllowAll|DefaultAndLocalhost or the default if none specified -->
     </transportSender>
@@ -604,11 +592,6 @@
         <!-- This parameter has been added to overcome problems encounted in SOAP action parameter -->
         <!--<parameter name="OmitSOAP12Action">true</parameter>-->
     <!--</transportSender>-->
-    <transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
-        <parameter name="ws.outflow.dispatch.sequence" locked="false">outflowDispatchSeq</parameter>
-        <parameter name="ws.outflow.dispatch.fault.sequence" locked="false">outflowFaultSeq</parameter>
-    </transportSender>
-
     <!--<transportSender name="https"-->
                      <!--class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">-->
         <!--<parameter name="PROTOCOL">HTTP/1.1</parameter>-->

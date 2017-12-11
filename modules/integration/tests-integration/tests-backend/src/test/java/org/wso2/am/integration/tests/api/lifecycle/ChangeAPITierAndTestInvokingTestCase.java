@@ -76,7 +76,6 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
 
     public void initialize() throws Exception {
         if (!isInitialised) {
-            new AdvancedThrottlingConfig().disableAdvancedThrottling();
             super.init();
 
             apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
@@ -96,7 +95,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  invocation of  api under tier Gold.")
+    @Test(groups = {"wso2.am"}, description = "test  invocation of  api under tier Gold.")
     public void testInvokingWithGoldTier() throws Exception {
         initialize();
         applicationNameGold = APPLICATION_NAME + TIER_GOLD;
@@ -159,7 +158,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  invocation of APi after expire the throttling block time.",
+    @Test(groups = {"wso2.am"}, description = "test  invocation of APi after expire the throttling block time.",
           dependsOnMethods = "testInvokingWithGoldTier")
     public void testInvokingAfterExpireThrottleExpireTime() throws Exception {
         initialize();
@@ -179,7 +178,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
                    "millisecond to expire the throttling block");
     }
 
-    @Test(groups = {"throttling"}, description = "Test changing of the API Tier from Gold to Silver",
+    @Test(groups = {"wso2.am"}, description = "Test changing of the API Tier from Gold to Silver",
           dependsOnMethods = "testInvokingAfterExpireThrottleExpireTime")
     public void testEditAPITierToSilver() throws Exception {
         initialize();
@@ -203,7 +202,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  invocation of  api under tier Silver.",
+    @Test(groups = {"wso2.am"}, description = "test  invocation of  api under tier Silver.",
           dependsOnMethods = "testEditAPITierToSilver")
     public void testInvokingWithSilverTier() throws Exception {
         initialize();

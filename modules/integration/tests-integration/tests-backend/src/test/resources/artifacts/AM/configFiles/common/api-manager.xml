@@ -113,6 +113,18 @@
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
                 <GatewayEndpoint>http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}</GatewayEndpoint>
             </Environment>
+            <Environment type="hybrid" api-console="true">
+                <Name>Hybrid 2</Name>
+                <Description>This is a hybrid gateway 2 that handles both production and sandbox token traffic.</Description>
+                <!-- Server URL of the API gateway -->
+                <ServerURL>https://localhost:9445${carbon.context}services/</ServerURL>
+                <!-- Admin username for the API gateway. -->
+                <Username>${admin.username}</Username>
+                <!-- Admin password for the API gateway.-->
+                <Password>${admin.password}</Password>
+                <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
+                <GatewayEndpoint>http://localhost:8282,https://localhost:8245</GatewayEndpoint>
+            </Environment>
         </Environments>
     </APIGateway>
 
@@ -129,7 +141,7 @@
 	    <!-- JWT claims Cache expiry in seconds -->
         <!--JWTClaimCacheExpiry>900</JWTClaimCacheExpiry-->
         <!-- Expiry time for the apim key mgt validation info cache -->
-        <TokenCacheExpiry>20</TokenCacheExpiry>
+        <!--TokenCacheExpiry>900</TokenCacheExpiry-->
         <!-- This parameter specifies the expiration time of the TagCache. TagCache will
              only be created when this element is uncommented. When the specified
              time duration gets elapsed ,tag cache will get re-generated. -->
@@ -142,7 +154,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        <!--Enabled>false</Enabled-->
+        <Enabled>true</Enabled>
 
         <!-- Server URL of the remote DAS/CEP server used to collect statistics. Must
              be specified in protocol://hostname:port/ format.
@@ -154,7 +166,7 @@
              
              Ex - Multiple Receiver Groups with two receivers each
              {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} -->
-        <DASServerURL>{tcp://localhost:7612}</DASServerURL>
+        <DASServerURL>{tcp://localhost:7614}</DASServerURL>
         <!-- Administrator username to login to the remote DAS server. -->
         <DASUsername>admin</DASUsername>
         <!-- Administrator password to login to the remote DAS server. -->
@@ -168,7 +180,7 @@
         <!-- DAS REST API configuration
              Set the values if .'org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl'
              is used as Statistic Client -->
-        <DASRestApiURL>https://localhost:9444</DASRestApiURL>
+        <DASRestApiURL>https://localhost:9446</DASRestApiURL>
         <DASRestApiUsername>admin</DASRestApiUsername>
         <DASRestApiPassword>admin</DASRestApiPassword>
 
@@ -214,6 +226,10 @@
                 <Name>org.wso2.apimgt.statistics.execution.time</Name>
                 <Version>1.0.0</Version>
             </ExecutionTime>
+	    <AlertTypes>
+                <Name>org.wso2.analytics.apim.alertStakeholderInfo</Name>
+                <Version>1.0.0</Version>
+            </AlertTypes>
         </Streams>
 
     </Analytics>
@@ -420,6 +436,18 @@
         <!--Configure white-listed URIs of REST API. Accessing white-listed URIs does not require credentials (does not require Authorization header). -->
         <WhiteListedURIs>
             <WhiteListedURI>
+                <URI>/api/am/publisher/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </WhiteListedURI>
+            <WhiteListedURI>
+                <URI>/api/am/store/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </WhiteListedURI>
+            <WhiteListedURI>
+                <URI>/api/am/admin/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </WhiteListedURI>
+            <WhiteListedURI>
                 <URI>/api/am/store/{version}/apis</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
@@ -507,6 +535,14 @@
                 <JobQueueSize>10</JobQueueSize>
             </JMSTaskManager>
         </JMSConnectionDetails>
+        <JMSEventPublisherParameters>
+                <java.naming.factory.initial>org.wso2.andes.jndi.PropertiesFileInitialContextFactory</java.naming.factory.initial>
+                <java.naming.provider.url>repository/conf/jndi.properties</java.naming.provider.url>
+                <transport.jms.DestinationType>topic</transport.jms.DestinationType>
+                <transport.jms.Destination>throttleData</transport.jms.Destination>
+                <transport.jms.ConcurrentPublishers>allow</transport.jms.ConcurrentPublishers>
+                <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
+        </JMSEventPublisherParameters>
         <!--DefaultLimits>
             <SubscriptionTierLimits>
                 <Gold>5000</Gold>
@@ -530,6 +566,19 @@
         <EnableJWTClaimConditions>false</EnableJWTClaimConditions>
         <EnableQueryParamConditions>false</EnableQueryParamConditions>
     </ThrottlingConfigurations>
+    
+    <WorkflowConfigurations>
+        <Enabled>true</Enabled>
+    	<ServerUrl>http://localhost:10263/BPMNProcessServerApp-1.0.0</ServerUrl>   		
+    	<ServerUser>${admin.username}</ServerUser>
+    	<ServerPassword>${admin.password}</ServerPassword>
+    	<WorkflowCallbackAPI>https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.11/workflows/update-workflow-status</WorkflowCallbackAPI>
+        <TokenEndPoint>https://localhost:${https.nio.port}/token</TokenEndPoint>
+        <DCREndPoint>https://localhost:${mgt.transport.https.port}/client-registration/v0.11/register</DCREndPoint>
+        <DCREndPointUser>${admin.username}</DCREndPointUser>
+        <DCREndPointPassword>${admin.password}</DCREndPointPassword>
+    </WorkflowConfigurations>
+
     <SwaggerCodegen>
         <ClientGeneration>
             <GroupId>org.wso2</GroupId>

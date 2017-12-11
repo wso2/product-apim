@@ -55,7 +55,6 @@ import java.nio.file.Paths;
 public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIM4312NPEAfterRequestTimeoutTestCase.class);
 
-    private ServerConfigurationManager serverConfigurationManager;
     private String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -73,11 +72,6 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                        APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
-        serverConfigurationManager.applyConfiguration(
-                Paths.get(getAMResourceLocation(), "configFiles", "APIM4312", "passthru-http.properties").toFile());
         super.init(userMode);
         gatewaySessionCookie = createSession(gatewayContextMgt);
         String apiMngrSynapseConfigPath;
@@ -90,7 +84,7 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
         loadSynapseConfigurationFromClasspath(relativeFilePath, gatewayContextMgt, gatewaySessionCookie);
     }
 
-    @Test(groups = { "wso2.am" },
+    @Test(groups = { "noRestart" },
           description = "Test for NPE after timeout",
           expectedExceptions = NoHttpResponseException.class)
     public void nullPointerAfterTimeoutTest() throws Exception {
@@ -112,6 +106,5 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
     }
 }

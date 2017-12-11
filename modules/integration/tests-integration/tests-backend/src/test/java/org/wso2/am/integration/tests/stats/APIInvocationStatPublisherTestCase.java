@@ -87,7 +87,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
     private APIStoreRestClient apiStore;
     private String consumerKey;
     private String accessToken;
-    private ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIInvocationStatPublisherTestCase(TestUserMode userMode) {
@@ -111,10 +110,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionFault(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionThrottle(), -1234);
             thriftTestServer.start(thriftServerListenPort);
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfiguration(new File(
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "stats" + File.separator
-                            + "api-manager.xml"));
         }
         apiPublisher.login(user.getUserName(), user.getPassword());
         apiStore.login(user.getUserName(), user.getPassword());
@@ -430,9 +425,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
     public void destroy() throws Exception {
         super.cleanUp();
         thriftTestServer.stop();
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
-        }
     }
 
     @DataProvider

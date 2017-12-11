@@ -103,23 +103,10 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
         this.userMode = userMode;
     }*/
     
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass(groups = {"noRestart"}, alwaysRun = true)
     public void setEnvironment() throws AutomationUtilException, XPathExpressionException, IOException,
             APIManagerIntegrationTestException, URISyntaxException, ResourceAdminServiceExceptionException {
         super.init();
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-            String apimConfigArtifactLocation = getAMResourceLocation() + File.separator + "configFiles"
-                    + File.separator + "workflowapistatechange" + File.separator + "api-manager.xml";
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" + File.separator + "conf"
-                    + File.separator + APIM_CONFIG_XML;
-            File apimConfSourceFile = new File(apimConfigArtifactLocation);
-            File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-            // apply configuration to api-manager.xml
-            serverConfigurationManager.applyConfiguration(apimConfSourceFile, apimConfTargetFile);
-
-        }
 
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
                 + File.separator + "AM" + File.separator + "configFiles" + File.separator + "workflowapistatechange"
@@ -152,13 +139,19 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
         APIStoreRestClient apiStore;
 
-        // Just a dummy URL
-        String backendurl = "http://localhost:9443/carbon";
-        String description = "This is test API create by API manager integration test";
         // String apiVersion = "1.0.0";
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
+
+    }
+
+    @Test(groups = "noRestart", description = "Test api state change approval process")
+    public void testAPIStateChangeAndApproveWorkflow() throws Exception {
+
+        // Just a dummy URL
+        String backendurl = "http://localhost:9443/carbon";
+        String description = "This is test API create by API manager integration test";
 
         apiPublisher.login(userName, userName);
 
@@ -167,11 +160,6 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(userName);
         apiPublisher.addAPI(apiRequest);
-
-    }
-
-    @Test(groups = "wso2.am", description = "Test api state change approval process")
-    public void testAPIStateChangeAndApproveWorkflow() throws Exception {
 
         apiIdentifier = new APIIdentifier(userName, apiName, apiVersion);
 
@@ -253,7 +241,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
     }
 
-    @Test(groups = "wso2.am", dependsOnMethods = "testAPIStateChangeAndApproveWorkflow",
+    @Test(groups = "noRestart", dependsOnMethods = "testAPIStateChangeAndApproveWorkflow",
             description = "check API state change reject process")
     public void testAPIStateChangeAndRejectWorkflow() throws Exception {
 
@@ -337,7 +325,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
     }
 
-    @Test(groups = "wso2.am", dependsOnMethods = "testAPIStateChangeAndRejectWorkflow", 
+    @Test(groups = "noRestart", dependsOnMethods = "testAPIStateChangeAndRejectWorkflow",
             description = "check rest api for workflow statue change")
     public void testWorkflowCallbackRestAPI() throws Exception {
 

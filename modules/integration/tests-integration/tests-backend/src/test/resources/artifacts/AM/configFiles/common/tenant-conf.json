@@ -58,7 +58,7 @@
       }
     ]
   },
-  "NotificationsEnabled":"true",
+  "NotificationsEnabled":"false",
   "Notifications":[{
     "Type":"new_api_version",
     "Notifiers" :[{
