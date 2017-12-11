@@ -74,7 +74,36 @@
             <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
             <version>${carbon.identity.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.wso2.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.deployment</groupId>
+            <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
+            <version>${carbon.deployment.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.deployment</groupId>
+            <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
+            <version>${carbon.deployment.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
+            <version>${carbon.server.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.governance</groupId>
+            <artifactId>org.wso2.carbon.governance.custom.lifecycles.checklist.stub</artifactId>
+            <version>${carbon.governance.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.governance</groupId>
+            <artifactId>org.wso2.carbon.governance.lcm.stub</artifactId>
+            <version>${carbon.governance.version}</version>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -84,7 +113,12 @@
         <admin.client.api.version>1.0.0</admin.client.api.version>
         <carbon.logging.version>4.4.11</carbon.logging.version>
         <carbon.utils.version>4.4.11</carbon.utils.version>
+        <carbon.server.version>4.4.11</carbon.server.version>
         <carbon.identity.version>5.7.5</carbon.identity.version>
+        <httpclient.version>4.3.1.wso2v1</httpclient.version>
+        <!-- carbon deployment -->
+        <carbon.deployment.version>4.7.0</carbon.deployment.version>
+        <carbon.governance.version>4.7.0</carbon.governance.version>
     </properties>
 
 </project>

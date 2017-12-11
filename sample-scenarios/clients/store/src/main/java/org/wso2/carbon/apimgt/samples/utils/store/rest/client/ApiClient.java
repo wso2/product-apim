@@ -13,43 +13,49 @@
 
 package org.wso2.carbon.apimgt.samples.utils.store.rest.client;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.http.HttpMethod;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
+import okio.BufferedSink;
+import okio.Okio;
+import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.ApiKeyAuth;
+import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.Authentication;
+import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.HttpBasicAuth;
+import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.OAuth;
 
-import java.lang.reflect.Type;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.net.URLEncoder;
-import java.net.URLConnection;
-
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -57,32 +63,29 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
-import okio.BufferedSink;
-import okio.Okio;
-
-import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.Authentication;
-import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.HttpBasicAuth;
-import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.ApiKeyAuth;
-import org.wso2.carbon.apimgt.samples.utils.store.rest.client.auth.OAuth;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApiClient {
     public static final double JAVA_VERSION;
     public static final boolean IS_ANDROID;
     public static final int ANDROID_SDK_VERSION;
+    private static TrustManager trustAll;
+    private static String consumerKey = null;
+    private static String consumerSecret = null;
 
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
@@ -111,8 +114,9 @@ public class ApiClient {
      * The datetime format to be used when <code>lenientDatetimeFormat</code> is enabled.
      */
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final String TLS_PROTOCOL = "TLS";
 
-    private String basePath = "https://apis.wso2.com/api/am/store/v0.11";
+    private String basePath = "https://127.0.0.1:9443/api/am/store/v0.11";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -139,7 +143,8 @@ public class ApiClient {
     public ApiClient() {
         httpClient = new OkHttpClient();
 
-        verifyingSsl = true;
+        verifyingSsl = false;
+        applySslSettings();
 
         json = new JSON(this);
 
@@ -163,6 +168,46 @@ public class ApiClient {
         authentications = new HashMap<String, Authentication>();
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
+
+        addDefaultHeader("Authorization", "Bearer " + getAccessToken("apim:subscribe apim:signup " +
+                "apim:workflow_approve apim:subscription_view apim:apidef_update apim:subscription_block apim:workflow_approve"));
+    }
+
+    public ApiClient(String tenantDomain, String adminUsername, String adminPassword) {
+        httpClient = new OkHttpClient();
+
+
+        verifyingSsl = false;
+        applySslSettings();
+
+        json = new JSON(this);
+
+        /*
+         * Use RFC3339 format for date and datetime.
+         * See http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
+         */
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Always use UTC as the default time zone when dealing with date (without time).
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        initDatetimeFormat();
+
+        // Be lenient on datetime formats when parsing datetime from string.
+        // See <code>parseDatetime</code>.
+        this.lenientDatetimeFormat = true;
+
+        // Set default User-Agent.
+        setUserAgent("Swagger-Codegen/1.0.0/java");
+
+        // Setup authentications (key: authentication name, value: authentication).
+        authentications = new HashMap<String, Authentication>();
+
+        // Prevent the authentications from being modified.
+        //authentications = Collections.unmodifiableMap(authentications);
+        authentications.put("OAuth2Security", new OAuth());
+
+        addDefaultHeader("Authorization", "Bearer " + getAccessTokenForTenant("apim:subscribe apim:signup " +
+                        "apim:workflow_approve apim:subscription_view apim:apidef_update apim:subscription_block apim:workflow_approve",
+                tenantDomain,  adminUsername,  adminPassword));
     }
 
     /**
@@ -1255,7 +1300,7 @@ public class ApiClient {
             TrustManager[] trustManagers = null;
             HostnameVerifier hostnameVerifier = null;
             if (!verifyingSsl) {
-                TrustManager trustAll = new X509TrustManager() {
+                trustAll = new X509TrustManager() {
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
                     @Override
@@ -1307,6 +1352,199 @@ public class ApiClient {
             return keyStore;
         } catch (IOException e) {
             throw new AssertionError(e);
+        }
+    }
+
+    private String getAccessToken(String scopeList) {
+        if (consumerKey == null) {
+            makeDCRRequest();
+        }
+        URL url;
+        HttpsURLConnection urlConn = null;
+        //calling token endpoint
+        try {
+            url = new URL("https://127.0.0.1:9443/oauth2/token");
+            urlConn = (HttpsURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String clientEncoded = DatatypeConverter.printBase64Binary(
+                    (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
+            String postParams = "grant_type=client_credentials";
+            if (!scopeList.isEmpty()) {
+                postParams += "&scope=" + scopeList;
+            }
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
+            SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
+            sslContext.init(null, new TrustManager[]{trustAll}, new SecureRandom());
+            urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
+            urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                return obj.get("access_token").getAsString();
+            } else {
+                throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
+            }
+        } catch (Exception e) {
+            String msg = "Error while creating the new token for token regeneration.";
+            throw new RuntimeException(msg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private String getAccessTokenForTenant(String scopeList, String tenantDomain, String adminUsername,
+            String adminPassword) {
+        makeDCRRequestForTenant(tenantDomain, adminUsername, adminPassword);
+        URL url;
+        HttpsURLConnection urlConn = null;
+        //calling token endpoint
+        try {
+            url = new URL("https://127.0.0.1:9443/oauth2/token");
+            urlConn = (HttpsURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String clientEncoded = DatatypeConverter.printBase64Binary((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
+            String postParams = "grant_type=client_credentials";
+            if (!scopeList.isEmpty()) {
+                postParams += "&scope=" + scopeList;
+            }
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
+            SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
+            sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
+            urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
+            urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                return obj.get("access_token").getAsString();
+            } else {
+                throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
+            }
+        } catch (Exception e) {
+            String msg = "Error while creating the new token for token regeneration.";
+            throw new RuntimeException(msg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static void makeDCRRequest() {
+        String applicationName = "Integration_Test_App";
+        URL url;
+        HttpURLConnection urlConn = null;
+        try {
+            //Create json payload for DCR endpoint
+            JsonObject json = new JsonObject();
+            json.addProperty("callbackUrl", "http://test.callback.lk/");
+            json.addProperty("clientName", applicationName);
+            json.addProperty("tokenScope", "Production");
+            json.addProperty("owner", "admin");
+            json.addProperty("grantType", "client_credentials");
+            // Calling DCR endpoint
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.11/register";
+            url = new URL(dcrEndpoint);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            String clientEncoded = DatatypeConverter.printBase64Binary((System.getProperty("systemUsername",
+                    "admin") + ':' + System.getProperty("systemUserPwd", "admin"))
+                    .getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
+            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {  //If the DCR call is success
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
+            } else { //If DCR call fails
+                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String errorMsg = "Can not create OAuth application  : " + applicationName;
+            throw new RuntimeException(errorMsg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+
+    private static void makeDCRRequestForTenant(String tenantDomain, String adminUsername, String adminPassword) {
+        String applicationName = "Integration_Test_App";
+        URL url;
+        HttpURLConnection urlConn = null;
+        try {
+            //Create json payload for DCR endpoint
+            JsonObject json = new JsonObject();
+            json.addProperty("callbackUrl", "http://test.callback.lk/");
+            json.addProperty("clientName", applicationName);
+            json.addProperty("tokenScope", "Production");
+            json.addProperty("owner", adminUsername+ '@' + tenantDomain);
+            json.addProperty("grantType", "client_credentials");
+            // Calling DCR endpoint
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.11/register";
+            url = new URL(dcrEndpoint);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            String clientEncoded = DatatypeConverter.printBase64Binary((adminUsername+ '@' + tenantDomain + ':' + adminPassword)
+                    .getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
+            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {  //If the DCR call is success
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
+            } else { //If DCR call fails
+                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String errorMsg = "Can not create OAuth application  : " + applicationName;
+            throw new RuntimeException(errorMsg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static String getResponseString(InputStream input) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            String file = "";
+            String str;
+            while ((str = buffer.readLine()) != null) {
+                file += str;
+            }
+            return file;
         }
     }
 }

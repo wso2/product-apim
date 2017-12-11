@@ -39,9 +39,11 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +67,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -76,7 +77,6 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class ApiClient {
     public static final double JAVA_VERSION;
@@ -1338,7 +1338,11 @@ public class ApiClient {
             HostnameVerifier hostnameVerifier = null;
             if (!verifyingSsl) {
                 trustManagers = new TrustManager[]{trustAll};
-                hostnameVerifier = (hostname, session) -> true;
+                hostnameVerifier = new HostnameVerifier() {
+                    @Override public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                };
 
             } else if (sslCaCert != null) {
                 char[] password = null; // Any password will work.
@@ -1404,14 +1408,19 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            String clientEncoded = Base64.getEncoder().encodeToString(
+            String clientEncoded = DatatypeConverter.printBase64Binary(
                     (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             String postParams = "grant_type=client_credentials";
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
-            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
             SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
             sslContext.init(null, new TrustManager[]{trustAll}, new SecureRandom());
             urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -1447,14 +1456,17 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            String clientEncoded = Base64.getEncoder()
-                    .encodeToString((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            String clientEncoded = DatatypeConverter.printBase64Binary((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             String postParams = "grant_type=client_credentials";
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
-            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
             SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
             sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
             urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -1497,7 +1509,7 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/json");
-            String clientEncoded = Base64.getEncoder().encodeToString((System.getProperty("systemUsername",
+            String clientEncoded = DatatypeConverter.printBase64Binary((System.getProperty("systemUsername",
                     "admin") + ':' + System.getProperty("systemUserPwd", "admin"))
                     .getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
@@ -1542,7 +1554,7 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/json");
-            String clientEncoded = Base64.getEncoder().encodeToString((adminUsername+ '@' + tenantDomain + ':' + adminPassword)
+            String clientEncoded = DatatypeConverter.printBase64Binary((adminUsername+ '@' + tenantDomain + ':' + adminPassword)
                     .getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
             urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
@@ -1568,8 +1580,12 @@ public class ApiClient {
 
     private static String getResponseString(InputStream input) throws IOException {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            return buffer.lines().collect(Collectors.joining("\n"));
-
+            String file = "";
+            String str;
+            while ((str = buffer.readLine()) != null) {
+                file += str;
+            }
+            return file;
         }
     }
 }

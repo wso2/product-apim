@@ -31,17 +31,6 @@ public class UserManagementUtils {
     public static void addUser(String userName, String password, String backendURL, String[] roleList,
             String adminUsername, String adminPassword) throws RemoteException, UserAdminUserAdminException {
 
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE,
-                    UserManagementUtils.class.getClassLoader().getResource(Constants.CLIENT_TRUSTORE_JKS).getPath());
-        }
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, Constants.WSO2_CARBON);
-        }
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE, Constants.JKS);
-        }
-
         String endPoint = backendURL + serviceName;
         userAdminStub = new UserAdminStub(endPoint);
         AuthenticateStub.authenticateStub(adminUsername, adminPassword, userAdminStub);

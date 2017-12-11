@@ -17,47 +17,45 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.http.HttpMethod;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
+import okio.BufferedSink;
+import okio.Okio;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.ApiKeyAuth;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.Authentication;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.HttpBasicAuth;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.OAuth;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.net.URLEncoder;
 import java.net.URLConnection;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -65,29 +63,21 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import java.util.stream.Collectors;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
-import okio.BufferedSink;
-import okio.Okio;
-
-import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.Authentication;
-import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.HttpBasicAuth;
-import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.ApiKeyAuth;
-import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.OAuth;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApiClient {
     public static final double JAVA_VERSION;
@@ -1379,14 +1369,17 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            String clientEncoded = Base64.getEncoder()
-                    .encodeToString((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            String clientEncoded = DatatypeConverter.printBase64Binary((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             String postParams = "grant_type=client_credentials";
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
-            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
             SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
             sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
             urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -1422,14 +1415,17 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            String clientEncoded = Base64.getEncoder()
-                    .encodeToString((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            String clientEncoded = DatatypeConverter.printBase64Binary((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             String postParams = "grant_type=client_credentials";
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
-            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            urlConn.setHostnameVerifier(new HostnameVerifier() {
+                @Override public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
             SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
             sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
             urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -1455,8 +1451,12 @@ public class ApiClient {
 
     private static String getResponseString(InputStream input) throws IOException {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            return buffer.lines().collect(Collectors.joining("\n"));
-
+            String file = "";
+            String str;
+            while ((str = buffer.readLine()) != null) {
+                file += str;
+            }
+            return file;
         }
     }
 
@@ -1479,7 +1479,7 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/json");
-            String clientEncoded = Base64.getEncoder().encodeToString(
+            String clientEncoded = DatatypeConverter.printBase64Binary(
                     (System.getProperty("systemUsername", "admin") + ':' + System.getProperty("systemUserPwd", "admin"))
                             .getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
@@ -1523,7 +1523,7 @@ public class ApiClient {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/json");
-            String clientEncoded = Base64.getEncoder().encodeToString(
+            String clientEncoded = DatatypeConverter.printBase64Binary(
                     (adminUsername + '@' + tenantDomain + ':' + adminPassword).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
             urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));

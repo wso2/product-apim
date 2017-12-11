@@ -17,8 +17,6 @@
 package org.wso2.carbon.apimgt.samples.utils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.samples.utils.stubs.AuthenticateStub;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceStub;
@@ -34,8 +32,6 @@ import java.util.GregorianCalendar;
  */
 public class TenantUtils {
 
-    private static final Log log = LogFactory.getLog(TenantUtils.class);
-
     /**
      * This method is used to create tenants.
      *
@@ -45,21 +41,11 @@ public class TenantUtils {
      * @param firstName tenant admins first name
      * @param lastName  tenant admins last name
      * @param backendUrl    tenant creation server url.
-     * @return  whether the tenant creation is successful or not.
+     * @return whether the tenant creation is successful or not.
      */
-    public static boolean createTenant(String username, String password, String domainName,
-            String firstName, String lastName, String backendUrl) {
+    public static boolean createTenant(String username, String password, String domainName, String firstName,
+            String lastName, String backendUrl) {
 
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE,
-                    TenantUtils.class.getClassLoader().getResource(Constants.CLIENT_TRUSTORE_JKS).getPath());
-        }
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, Constants.WSO2_CARBON);
-        }
-        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE))) {
-            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE, Constants.JKS);
-        }
 
         boolean isSuccess = false;
         try {
@@ -88,21 +74,21 @@ public class TenantUtils {
 
             if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                log.info("Tenant domain " + domainName + " activated successfully");
+                System.out.println("Tenant domain " + domainName + " activated successfully");
 
             } else if (!tenantInfoBeanGet.getActive()) {
                 tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                log.info("Tenant domain " + domainName + " created and activated successfully");
+                System.out.println("Tenant domain " + domainName + " created and activated successfully");
                 isSuccess = true;
             } else {
-                log.info("Tenant domain " + domainName + " already registered");
+                System.out.println("Tenant domain " + domainName + " already registered");
             }
         } catch (RemoteException e) {
-            log.error("RemoteException thrown while adding user/tenants : ", e);
+            System.out.println("RemoteException thrown while adding user/tenants");
 
         } catch (TenantMgtAdminServiceExceptionException e) {
-            log.error("Error connecting to the TenantMgtAdminService : ", e);
+            System.out.println("Error connecting to the TenantMgtAdminService");
         }
 
         return isSuccess;
