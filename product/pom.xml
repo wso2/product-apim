@@ -113,7 +113,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.msf4j</groupId>
-	    <artifactId>org.wso2.msf4j.feature</artifactId>
+            <artifactId>org.wso2.msf4j.feature</artifactId>
             <version>${wso2.msf4j.version}</version>
             <type>zip</type>
         </dependency>
@@ -242,6 +242,19 @@
         <dependency>
             <groupId>org.wso2.carbon.uis</groupId>
             <artifactId>org.wso2.carbon.uis.feature</artifactId>
+            <type>zip</type>
+        </dependency>
+
+        <!-- APIM Auth -->
+        <dependency>
+            <groupId>org.wso2.carbon.auth</groupId>
+            <artifactId>org.wso2.carbon.auth.core.feature</artifactId>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wso2.carbon.auth</groupId>
+            <artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>
             <type>zip</type>
         </dependency>
     </dependencies>
@@ -449,6 +462,17 @@
                                     <id>org.wso2.carbon.uis.feature</id>
                                     <version>${carbon.uis.version}</version>
                                 </feature>
+
+                                <!-- APIM Auth Feature -->
+                                <feature>
+                                    <id>org.wso2.carbon.auth.core.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -477,6 +501,20 @@
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
                             <targetPath>file:${basedir}/target/WSO2Carbon/wso2</targetPath>
                             <runtime>default</runtime>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>materialize-key-manager</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-runtime</goal>
+                        </goals>
+                        <configuration>
+                            <productConfigurationFile>${basedir}/carbon.product
+                            </productConfigurationFile>
+                            <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
+                            <targetPath>file:${basedir}/target/WSO2Carbon/wso2</targetPath>
+                            <runtime>key-manager</runtime>
                         </configuration>
                     </execution>
                     <execution>
@@ -631,6 +669,96 @@
                                 <feature>
                                     <id>org.wso2.carbon.uis.feature</id>
                                     <version>${carbon.uis.version}</version>
+                                </feature>
+                            </features>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>feature-installation-for-key-manager</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>install</goal>
+                        </goals>
+                        <configuration>
+                            <runtime>key-manager</runtime>
+                            <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
+                            <destination>${basedir}/target/WSO2Carbon/wso2</destination>
+                            <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
+                            <features>
+                                <feature>
+                                    <id>org.wso2.carbon.server.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.runtime.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.osgi.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.config.feature.group</id>
+                                    <version>${carbon.config.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.utils.feature.group</id>
+                                    <version>${carbon.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.touchpoint.feature.group</id>
+                                    <version>${carbon.touchpoint.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.secvault.feature.group</id>
+                                    <version>${carbon.secvault.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.transport.http.netty.feature.group</id>
+                                    <version>${carbon.transport.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.messaging.feature.group</id>
+                                    <version>${carbon.messaging.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.jndi.feature.group</id>
+                                    <version>${carbon.jndi.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.datasource.core.feature.group</id>
+                                    <version>${carbon.datasources.version}</version>
+                                </feature>
+
+                                <!-- Metrics Features -->
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.core.feature.group</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.jdbc.core.feature.group</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.das.core.feature.group</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+
+                                <!-- MSF4J Features -->
+                                <feature>
+                                    <id>org.wso2.msf4j.feature.group</id>
+                                    <version>${wso2.msf4j.version}</version>
+                                </feature>
+
+                                <!-- APIM Auth Feature -->
+                                <feature>
+                                    <id>org.wso2.carbon.auth.core.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
