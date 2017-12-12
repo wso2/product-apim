@@ -246,17 +246,17 @@
         </dependency>
 
         <!-- APIM Auth -->
-        <dependency>
-            <groupId>org.wso2.carbon.auth</groupId>
-            <artifactId>org.wso2.carbon.auth.core.feature</artifactId>
-            <type>zip</type>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.wso2.carbon.auth</groupId>-->
+            <!--<artifactId>org.wso2.carbon.auth.core.feature</artifactId>-->
+            <!--<type>zip</type>-->
+        <!--</dependency>-->
 
-        <dependency>
-            <groupId>org.wso2.carbon.auth</groupId>
-            <artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>
-            <type>zip</type>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.wso2.carbon.auth</groupId>-->
+            <!--<artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>-->
+            <!--<type>zip</type>-->
+        <!--</dependency>-->
     </dependencies>
 
     <build>
@@ -464,15 +464,15 @@
                                 </feature>
 
                                 <!-- APIM Auth Feature -->
-                                <feature>
-                                    <id>org.wso2.carbon.auth.core.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.auth.core.feature</id>-->
+                                    <!--<version>${carbon.auth.version}</version>-->
+                                <!--</feature>-->
 
-                                <feature>
-                                    <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>-->
+                                    <!--<version>${carbon.auth.version}</version>-->
+                                <!--</feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -751,15 +751,15 @@
                                 </feature>
 
                                 <!-- APIM Auth Feature -->
-                                <feature>
-                                    <id>org.wso2.carbon.auth.core.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.auth.core.feature</id>-->
+                                    <!--<version>${carbon.auth.version}</version>-->
+                                <!--</feature>-->
 
-                                <feature>
-                                    <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>-->
+                                    <!--<version>${carbon.auth.version}</version>-->
+                                <!--</feature>-->
                             </features>
                         </configuration>
                     </execution>

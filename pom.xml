@@ -186,19 +186,19 @@
             </dependency>
 
             <!-- APIM Auth -->
-            <dependency>
-                <groupId>org.wso2.carbon.auth</groupId>
-                <artifactId>org.wso2.carbon.auth.core.feature</artifactId>
-                <version>${carbon.auth.version}</version>
-                <type>zip</type>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.wso2.carbon.auth</groupId>-->
+                <!--<artifactId>org.wso2.carbon.auth.core.feature</artifactId>-->
+                <!--<version>${carbon.auth.version}</version>-->
+                <!--<type>zip</type>-->
+            <!--</dependency>-->
 
-            <dependency>
-                <groupId>org.wso2.carbon.auth</groupId>
-                <artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>
-                <version>${carbon.auth.version}</version>
-                <type>zip</type>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.wso2.carbon.auth</groupId>-->
+                <!--<artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>-->
+                <!--<version>${carbon.auth.version}</version>-->
+                <!--<type>zip</type>-->
+            <!--</dependency>-->
         </dependencies>
     </dependencyManagement>
 
