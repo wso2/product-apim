@@ -225,6 +225,12 @@
             <artifactId>json</artifactId>
             <version>${org.json.wso2.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
+        </dependency>
     </dependencies>
 
     <build>
