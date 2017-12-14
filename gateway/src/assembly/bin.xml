@@ -258,9 +258,7 @@
                 <include>org.wso2.orbit.com.lmax:disruptor</include>
                 <include>org.json.wso2:json</include>
                 <include>com.fasterxml.woodstox:woodstox-core</include>
-                <include>org.codehaus.woodstox:woodstox-core-asl</include>
                 <include>org.codehaus.woodstox:stax2-api</include>
-                
             </includes>
         </dependencySet>
 

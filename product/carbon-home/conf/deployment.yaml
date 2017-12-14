@@ -62,7 +62,7 @@ wso2.datasources:
         idleTimeout: 60000
         connectionTestQuery: SELECT 1
         validationTimeout: 30000
-        isAutoCommit: false
+        isAutoCommit: true
 
   - name: WSO2_LIFECYCLE_DB
     description: The datasource used for Lifecycle framework
