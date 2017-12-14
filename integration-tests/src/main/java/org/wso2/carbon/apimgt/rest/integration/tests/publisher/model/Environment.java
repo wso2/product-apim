@@ -16,7 +16,9 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import com.google.gson.annotations.SerializedName;
 import io.swagger.annotations.ApiModelProperty;
 
+
 import java.util.Objects;
+
 
 /**
  * Environment

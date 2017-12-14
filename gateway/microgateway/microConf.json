@@ -1,0 +1,41 @@
+{
+	"keyManagerInfo": {
+		"dcrEndpoint": "https://localhost:9443/identity/connect/register",
+		"tokenEndpoint": "https://localhost:9443/oauth2/token",
+		"revokeEndpoint": "https://localhost:9443/oauth2/revoke",
+		"introspectEndpoint": "https://localhost:9443/oauth2/introspect",
+		"credentials": {
+			"username": "admin",
+			"password": "admin"
+		}
+	},
+	"jwTInfo": {
+		"enableJWTGeneration": false,
+		"jwtHeader": "X-JWT-Assertion"
+	},
+	"analyticsInfo": {
+		"enabled": false,
+		"type": "binary",
+		"serverURL": "http://localhost:9091",
+		"authServerURL": "ssl://localhost:9712",
+		"credentials": {
+			"username": "admin",
+			"password": "admin"
+		}
+	},
+	"throttlingInfo": {
+		"enabled": 1,
+		"type": "binary",
+		"serverURL": "tcp://localhost:9612",
+		"authServerURL": "ssl://localhost:9712",
+		"credentials": {
+			"username": "admin",
+			"password": "admin"
+		}
+	},
+   "googleAnalyticsTrackingInfo":{  
+      "enabled":false,
+      "trackingID":"UA-XXXXXXXX-X"
+   }
+}
+

@@ -8,8 +8,17 @@
             <!--commented to stop tests on build (need to uncomment later)-->
             <!--package name="org.wso2.carbon.apimgt.rest.integration.tests.*"/-->
         </packages>
+
       <!--  <classes>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.LabelCollectionApiIT"/>
         </classes> -->
+
+        <classes>
+            <!--Testing Offline Microgateway, need to start microgateway before the tests-->
+            <!--commented to stop tests during the product build, (need to uncomment later)-->
+            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.MockedApiClientTest" />-->
+            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.PetstoreApiClientTest" />-->
+        </classes>
+
     </test>
 </suite>

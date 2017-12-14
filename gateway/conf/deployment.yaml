@@ -52,6 +52,7 @@ ballerina.config:
             # Ballerina Archive name.
             archiveName: threatprotection.bmz
 
+
 wso2.securevault:
   secretRepository:
     type: org.wso2.carbon.secvault.repository.DefaultSecretRepository

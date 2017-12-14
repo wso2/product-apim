@@ -56,26 +56,26 @@ public class EnvironmentCollectionApi {
     /* Build call for environmentsGet */
     private com.squareup.okhttp.Call environmentsGetCall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/environments".replaceAll("\\{format\\}","json");
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (apiId != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -86,8 +86,8 @@ public class EnvironmentCollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -95,23 +95,23 @@ public class EnvironmentCollectionApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call environmentsGetValidateBeforeCall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        
+
+
         com.squareup.okhttp.Call call = environmentsGetCall(apiId, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get all gateway environments
-     * This operation can be used to retrieve the list of gateway environments available. 
+     * This operation can be used to retrieve the list of gateway environments available.
      * @param apiId Will return environment list for the provided API.  (optional)
      * @return EnvironmentList
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -123,7 +123,7 @@ public class EnvironmentCollectionApi {
 
     /**
      * Get all gateway environments
-     * This operation can be used to retrieve the list of gateway environments available. 
+     * This operation can be used to retrieve the list of gateway environments available.
      * @param apiId Will return environment list for the provided API.  (optional)
      * @return ApiResponse&lt;EnvironmentList&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -136,7 +136,7 @@ public class EnvironmentCollectionApi {
 
     /**
      * Get all gateway environments (asynchronously)
-     * This operation can be used to retrieve the list of gateway environments available. 
+     * This operation can be used to retrieve the list of gateway environments available.
      * @param apiId Will return environment list for the provided API.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

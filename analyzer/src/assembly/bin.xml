@@ -25,7 +25,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>target/wso2carbon-kernel-${carbon.kernel.version}</directory>
+            <directory>target/wso2carbon-kernel-${carbon.kernel.das.version}</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>README.txt</exclude>
@@ -163,7 +163,7 @@
 
     <files>
         <file>
-            <source>target/wso2carbon-kernel-${carbon.kernel.version}/bin/kernel-version.txt</source>
+            <source>target/wso2carbon-kernel-${carbon.kernel.das.version}/bin/kernel-version.txt</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>444</fileMode>
@@ -175,7 +175,7 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>target/wso2carbon-kernel-${carbon.kernel.version}/bin/README.txt</source>
+            <source>target/wso2carbon-kernel-${carbon.kernel.das.version}/bin/README.txt</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>444</fileMode>

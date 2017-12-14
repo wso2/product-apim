@@ -14,8 +14,12 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
-import java.util.List;
+
+
 import java.util.Map;
+
+import java.util.List;
+
 
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
 public class ApiKeyAuth implements Authentication {

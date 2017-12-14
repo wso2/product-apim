@@ -1,0 +1,398 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"description": "This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you can use the api key `special-key` to test the authorization filters.",
+		"version": "1.0.0",
+		"title": "Swagger Petstore",
+		"contact": {
+			"email": "apiteam@swagger.io"
+		}
+	},
+	"basePath": "/v2",
+	"security": [{
+		"api_key": [
+			"111111",
+			"113456",
+			"122456",
+			"189011"
+		]
+	}],
+	"paths": {
+		"/pet": {
+			"post": {
+				"operationId": "addPet",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"put": {
+				"operationId": "updatePet",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user/{username}": {
+			"get": {
+				"operationId": "getUserByName",
+				"parameters": [{
+					"name": "username",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"put": {
+				"operationId": "updateUser",
+				"parameters": [{
+					"name": "username",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}, {
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deleteUser",
+				"parameters": [{
+					"name": "username",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/pet/findByStatus": {
+			"get": {
+				"operationId": "findPetsByStatus",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user/createWithList": {
+			"post": {
+				"operationId": "createUsersWithListInput",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/pet/{petId}/uploadImage": {
+			"post": {
+				"operationId": "uploadFile",
+				"parameters": [{
+					"name": "petId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}, {
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user/login": {
+			"get": {
+				"operationId": "loginUser",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user": {
+			"post": {
+				"operationId": "createUser",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user/createWithArray": {
+			"post": {
+				"operationId": "createUsersWithArrayInput",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/pet/findByTags": {
+			"get": {
+				"operationId": "findPetsByTags",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/store/order": {
+			"post": {
+				"operationId": "placeOrder",
+				"parameters": [{
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/user/logout": {
+			"get": {
+				"operationId": "logoutUser",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/pet/{petId}": {
+			"get": {
+				"operationId": "getPetById",
+				"parameters": [{
+					"name": "petId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"post": {
+				"operationId": "updatePetWithForm",
+				"parameters": [{
+					"name": "petId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}, {
+					"in": "body",
+					"name": "Payload",
+					"description": "Request Body",
+					"required": false,
+					"schema": {
+						"properties": {
+							"payload": {
+								"type": "string"
+							}
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deletePet",
+				"parameters": [{
+					"name": "petId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/store/order/{orderId}": {
+			"get": {
+				"operationId": "getOrderById",
+				"parameters": [{
+					"name": "orderId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deleteOrder",
+				"parameters": [{
+					"name": "orderId",
+					"in": "path",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/store/inventory": {
+			"get": {
+				"tags": [
+					"store"
+				],
+				"operationId": "getInventory",
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"schema": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "integer",
+								"format": "int32"
+							}
+						}
+					}
+				}
+			}
+		}
+
+
+	}
+}
