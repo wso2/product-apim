@@ -16,7 +16,7 @@
 
 package org.wso2.carbon.apimgt.samples.utils;
 
-import java.util.Map;
+        import java.util.Map;
 
 public class HttpResponse {
     private String data;

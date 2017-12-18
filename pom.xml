@@ -48,6 +48,7 @@
         <module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
         <module>modules/org.wso2.stratos.apimgt.login.ui</module>
         <module>modules/features</module>
+        <module>sample-scenarios</module>
         <module>modules/p2-profile</module>
         <module>modules/distribution</module>
         <module>modules/api-import-export</module>

@@ -692,6 +692,66 @@
                 <include>**/web.xml</include>
             </includes>
         </fileSet>
+
+        <fileSet>
+            <directory>../../../sample-scenarios/sample1/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario1</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample1-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample2/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample2-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample7/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario7</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample7-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample8/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario8</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample8-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample9/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario9</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample9-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/backend/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/resources/</outputDirectory>
+            <includes>
+                <include>sample-data-backend.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/</outputDirectory>
+            <includes>
+                <include>run.sh</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+
+
     </fileSets>
 
     <dependencySets>

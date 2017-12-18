@@ -150,10 +150,8 @@ public class CreateSampleNineRawData {
         // Create grant types
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add("refresh_token");
-        grantTypes.add("urn:ietf:params:oauth:grant-type:saml2-bearer");
         grantTypes.add("password");
         grantTypes.add("client_credentials");
-        grantTypes.add("iwa:ntlm");
 
         // Create allow roles
         ArrayList<String> allowedDomain = new ArrayList<>();
