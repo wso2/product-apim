@@ -52,39 +52,39 @@ Below are the screenshots that shows the OLD and New API’s with there lifecycl
 
 Created API for super tenant
 
-![(images/image_0.png)
+![](images/image_0.png)
 
 Created API for finance department
 
-![(images/image_1.png)
+![](images/image_1.png)
 
 Engage advance throttle policy for the stock get request in super tenant
 
-![(images/image_2.png)
+![](images/image_2.png)
 
 User tom can login to store
 
-![(images/image_3.png)
+![](images/image_3.png)
 
 User tom can not login into publisher since it has been restricted
 
-![(images/image_4.png)
+![](images/image_4.png)
 
 Advance throttle policy engaged to finance department
 
-![(images/image_5.png)
+![](images/image_5.png)
 
-Added advance throttling policies in Admin app![(images/image_6.png)![(images/image_7.png)![(images/image_8.png)
+Added advance throttling policies in Admin app![](images/image_6.png)![](images/image_7.png)![](images/image_8.png)
 
  
 
 #### After users starts invoking statistics will appear as follows in publisher
 
-![(images/image_9.png)
+![](images/image_9.png)
 
-![(images/image_10.png)
+![](images/image_10.png)
 
-![(images/image_11.png)
+![](images/image_11.png)
 
 ### How to run the sample to populate the above mentioned sample data
 

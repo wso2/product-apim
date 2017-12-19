@@ -38,15 +38,15 @@ Users the Old APi should know that there is a new API version released and they 
 
 Below are the screenshots that shows the OLD and New API’s with there lifecycle states.
 
-![(images/image_0.png)
+![](images/image_0.png)
 
 Old API in DEPRECATED state
 
-![(images/image_1.png)
+![](images/image_1.png)
 
 Old API in PUBLISHED state
 
-![(images/image_2.png)
+![](images/image_2.png)
 
  
 
