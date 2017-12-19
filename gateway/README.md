@@ -16,6 +16,6 @@ If you want to build APIM Gateway from the source code:
 ## Starting the server
 
 1. Go to `product-apim/gateway/target/wso2apim-gateway-<version>-SNAPSHOT` directory
-1. Execute the below command.
+2. Execute the below command.
 ``bin/ballerina run service services.bsz``
 
