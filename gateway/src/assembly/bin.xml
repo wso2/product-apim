@@ -170,7 +170,7 @@
             <source>bin/microgatewayinit.sh</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
-            <fileMode>644</fileMode>
+            <fileMode>755</fileMode>
         </file>
         <file>
             <source>LICENSE.txt</source>
