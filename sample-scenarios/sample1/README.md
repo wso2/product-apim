@@ -84,7 +84,9 @@ In our API manager we need to create
 
 ### How to run the sample to populate the above mentioned sample data
 
-1. Execute the run.sh in [APIM_HOME]/sample-scenarios/ directory, which will guide you to selectively populate the sample scenarios data according to the sample scenario number.
+* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+
+* Run the file run.sh in sample root directory as ./run.sh
 
 #### User credentials needed for login to API Manager instance which the sample data is populated
 

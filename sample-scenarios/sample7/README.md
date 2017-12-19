@@ -84,9 +84,9 @@ Now you will be getting notification for the api that you have subscribed. These
 
 ### How to run the sample to populate the above mentioned sample data
 
-1. Execute the run.sh in [APIM_HOME]/sample-scenarios/ directory, which will guide you to selectively populate the sample scenarios data according to the sample scenario number.
+* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
-Following are the the screenshots after running the sample to create the API’S  in different states. 
+* Run the file run.sh in sample root directory as ./run.sh
 
 List of all the API’s in different statesTwo Published and Blocked API’s in same API![](images/image_4.png)
 
