@@ -34,7 +34,6 @@ More information about this product can be found [here](http://wso2.com/api-mana
 3. Go to the default runtime dir wso2apim-${project.version}/wso2/default/bin directory and execute the carbon.sh script: ``./carbon.sh``
 
 ### Running WSO2 API Manager Gateway
-1. Find the API Manager gateway distribution download or from product-apim/gateway/target if built from source
 1. Download the API Manager gateway distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/gateway/target.
 2. Extract the distribution. Ex: unzip wso2apim-gateway-${project.version}.zip
 3. Go to the wso2apim-gateway-${project.version} directory and execute ``bin/ballerina run service services.bsz``
