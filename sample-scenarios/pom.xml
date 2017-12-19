@@ -16,6 +16,12 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>am-parent</artifactId>
+        <version>2.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.apimgt</groupId>
     <artifactId>org.wso2.carbon.apimgt.samples</artifactId>
@@ -35,8 +41,9 @@
         <module>sample7</module>
         <module>sample8</module>
         <module>backend</module>
+        <module>sample9</module>
     </modules>
-    
+
     <repositories>
         <repository>
             <id>wso2-nexus</id>
@@ -98,45 +105,13 @@
                 <configuration>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <id>add_sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add_test_sources</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/test/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.7.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -198,15 +173,4 @@
             <version>${com.google.code.gson.version}</version>
         </dependency>
     </dependencies>
-    <properties>
-        <swagger-annotations-version>1.5.0</swagger-annotations-version>
-        <jersey-version>1.18</jersey-version>
-        <jackson-version>2.4.2</jackson-version>
-        <jodatime-version>2.3</jodatime-version>
-        <maven-plugin-version>1.0.0</maven-plugin-version>
-        <log4j.version>1.2.13</log4j.version>
-        <com.fasterxml.jackson.datatype.version>2.1.5</com.fasterxml.jackson.datatype.version>
-        <com.squareup.okhttp.version>2.7.5</com.squareup.okhttp.version>
-        <com.google.code.gson.version>2.7</com.google.code.gson.version>
-    </properties>
 </project>

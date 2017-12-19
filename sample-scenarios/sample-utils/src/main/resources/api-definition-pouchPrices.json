@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "paths": {
-    "/price/{id}": {
+    "/pouch/{id}": {
       "get": {
         "responses": {
           "200": {

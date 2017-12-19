@@ -15,13 +15,19 @@
  */
 
 import beans.RawDataBean;
+import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.apimgt.samples.utils.Constants;
 import org.wso2.carbon.apimgt.samples.utils.SampleUtils;
 import org.wso2.carbon.apimgt.samples.utils.TenantUtils;
+import org.wso2.carbon.apimgt.samples.utils.ThrottlingUtils;
+import org.wso2.carbon.apimgt.samples.utils.WebAppDeployUtils;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.ThrottleLimit;
 import org.wso2.carbon.apimgt.samples.utils.beans.ApiBean;
 import org.wso2.carbon.apimgt.samples.utils.beans.TenantBean;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +41,12 @@ public class CreateSampleTwoRawData {
     private static final String port = "9443";
     private static final String serviceEndpoint = "https://" + hostname + ":" + port + "/services/";
     private static List<RawDataBean> rawDataList = createRawDataList();
+    private static final String warFileName = "sample-data-backend";
+    private static final String warFileLocation =
+            System.getProperty("user.dir") + File.separator + "resources" + File.separator + "sample-data-backend.war";
+    private static String clientTrustStore =
+            System.getProperty("user.dir") + File.separator + ".." + File.separator + "repository" + File.separator
+                    + "resources" + File.separator + "security" + File.separator + "client-truststore.jks";
 
     /**
      * This main method will be called when running sample two.
@@ -42,9 +54,24 @@ public class CreateSampleTwoRawData {
      * @throws ApiException throws if an exception is thrown when API creation.
      * @throws IOException  throws when if an error occurred when reading the api definition file.
      */
-    public static void main(String[] args) throws IOException, ApiException, InterruptedException {
+    public static void main(String[] args) throws IOException, ApiException, InterruptedException,
+            org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException {
+
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE, clientTrustStore);
+        }
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, Constants.WSO2_CARBON);
+        }
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE, Constants.JKS);
+        }
+
+        System.out.println("Deploying sample back end");
+        WebAppDeployUtils.deployWebApp(serviceEndpoint, "admin", "admin", warFileLocation, warFileName);
 
         createTenants(rawDataList);
+        createThrottlePolicies();
         System.out.println("Waiting for tenant initialization...");
         createAPIsForTenants(rawDataList);
         publishAPIs(rawDataList);
@@ -55,7 +82,7 @@ public class CreateSampleTwoRawData {
         ArrayList<String> apiFourTags = new ArrayList<>();
         apiFourTags.add("employee");
         String apiId = SampleUtils
-                .createApi("Employee_info_API", "1.0.0", "/empInfo", new ArrayList<>(), apiFourVisibleTenants,
+                .createApi("Employee_info_API", "1.0.0", "/empInfo", new ArrayList<String>(), apiFourVisibleTenants,
                         API.SubscriptionAvailabilityEnum.SPECIFIC_TENANTS, hostname, port, apiFourTags);
         SampleUtils.publishAPI(apiId);
     }
@@ -87,7 +114,7 @@ public class CreateSampleTwoRawData {
             ApiBean api = rawDataBean.getApi();
             TenantBean tenant = rawDataBean.getTenant();
             String apiId = SampleUtils.createApiForTenant(api.getApiName(), api.getApiVersion(), api.getApiContext(),
-                    API.VisibilityEnum.PUBLIC, new ArrayList<>(), new ArrayList<>(),
+                    API.VisibilityEnum.PUBLIC, new ArrayList<String>(), new ArrayList<String>(),
                     API.SubscriptionAvailabilityEnum.CURRENT_TENANT, hostname, port, api.getTagList(),
                     tenant.getDomain(), tenant.getAdminUser(), tenant.getAdminPwd());
             api.setApiId(apiId);
@@ -181,5 +208,33 @@ public class CreateSampleTwoRawData {
         rawDataBeanList.add(rawDataBean2);
         rawDataBeanList.add(rawDataBean3);
         return rawDataBeanList;
+    }
+
+    /**
+     * This method is used to add custom throttle policies.
+     *
+     * @throws org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException Throws if an error occurred when
+     *                                                                             creating the custom throttle polices.
+     * @throws InterruptedException                                                Throws if an error occurs in
+     *                                                                             Thread.sleep
+     */
+    private static void createThrottlePolicies()
+            throws org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException, InterruptedException {
+        // Create advance throttle policies for super tenants.
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "finance.abc.com", "john",
+                        "123123");
+        Thread.sleep(2000);
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "core.abc.com", "tom",
+                        "123123");
+        Thread.sleep(2000);
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "operations.abc.com",
+                        "bob", "123123");
+        Thread.sleep(2000);
     }
 }
