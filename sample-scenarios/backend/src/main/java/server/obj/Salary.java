@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "Salary")
 public class Salary {
 
-    private int id;
+    private long id;
     private long fixed;
     private long allowance;
     private String empId;
@@ -30,7 +30,7 @@ public class Salary {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

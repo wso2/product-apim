@@ -20,6 +20,7 @@ echo "1 - Managing Public, Partner vs Private APIs"
 echo "2 - Ownership, permission and collaborative API development"
 echo "7 - API Lifecycle Management"
 echo "8 - API Versioning"
+echo "9 - API Governance"
 echo
 
 set -e
@@ -33,37 +34,10 @@ done
 echo "This script will deploy a sample backend run the sample"$sample_number" scenario."
 echo
 
-while [ -z $CARBON_HOME ]
-do
-  echo "Enter location for CARBON_HOME: "
-  read -r CARBON_HOME
-done
-
-ts_path=$CARBON_HOME/repository/resources/security/client-truststore.jks
-
-while [ -z $use_default ]
-do
-  echo "Use Trust Store ${ts_path} (y/n): "
-  read -r use_default
-done
-
-if [ $use_default != "y" ]; then
-  unset ts_path
-  while [ -z $ts_path ]
-  do
-    echo -n "Enter Client Trust Store Path: "
-    read -r ts_path
-  done
-fi
-
-cp $(pwd)/backend/sample-data-backend.war $CARBON_HOME/repository/deployment/server/webapps/
-
-echo "Waiting for backend services to be deployed..."
-sleep 15
 
 echo "Running Sample"$sample_number"..."
 
-jar_path="sample"$sample_number"/target/org.wso2.carbon.apimgt.samples.sample"$sample_number"-1.0.0-jar-with-dependencies.jar"
+jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-1.0.0-jar-with-dependencies.jar"
 
-java -jar -Djavax.net.ssl.trustStore=$ts_path $jar_path
+java -jar $jar_path
 echo $'\e[1;32m'"DONE!"$'\e[0m'
