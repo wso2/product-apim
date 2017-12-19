@@ -313,7 +313,7 @@ do
     -Djava.net.preferIPv4Stack=true \
     -Dcom.ibm.cacheLocalHost=true \
     -Dorg.opensaml.httpclient.https.disableHostnameVerification=true \
-    -Dorg.wso2.ignoreHostnameVerification=true \
+    -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
