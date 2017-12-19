@@ -24,17 +24,17 @@ More information about this product can be found [here](http://wso2.com/api-mana
 3. Go to the wso2is-5.4.0/bin directory and execute the wso2server.sh script using the command ``./wso2server.sh start``
 
 ### Running WSO2 API Manager Analytics
-1. Find the API Manager analytics distribution from product-apim/analyzer/target
+1. Find the API Manager analytics distribution download or from product-apim/analyzer/target if built from source
 2. Extract the distribution. Ex: unzip wso2apim-das-3.0.0.zip
 3. Go to the wso2apim-das-3.0.0/bin directory and execute the carbon.sh script: ``./worker.sh``
 
 ### Running WSO2 API Manager
-1. Find the API Manager product distribution from product-apim/product/target
+1. Find the API Manager product distribution download or from product-apim/product/target if built from source
 2. Extract the distribution. Ex: unzip wso2apim-3.0.0.zip
 3. Go to the default runtime dir wso2apim-3.0.0/wso2/default/bin directory and execute the carbon.sh script: ``./carbon.sh``
 
 ### Running WSO2 API Manager Gateway
-1. Find the API Manager gateway distribution from product-apim/gateway/target
+1. Find the API Manager gateway distribution download or from product-apim/gateway/target if built from source
 2. Extract the distribution. Ex: unzip wso2apim-gateway-3.0.0.zip
 3. Go to the wso2apim-gateway-3.0.0 directory and execute ``bin/ballerina run service services.bsz``
 
