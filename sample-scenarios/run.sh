@@ -39,7 +39,7 @@ echo
 
 echo "Running Sample"$sample_number"..."
 
-jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-1.0.0-jar-with-dependencies.jar"
+jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-2.2.0-SNAPSHOT-jar-with-dependencies.jar"
 
 java -jar $jar_path
 echo $'\e[1;32m'"DONE!"$'\e[0m'

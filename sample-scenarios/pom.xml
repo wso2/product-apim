@@ -27,7 +27,6 @@
     <artifactId>org.wso2.carbon.apimgt.samples</artifactId>
     <packaging>pom</packaging>
     <name>Samples</name>
-    <version>1.0.0</version>
     <scm>
         <connection>scm:git:git@github.com:swagger-api/swagger-mustache.git</connection>
         <developerConnection>scm:git:git@github.com:swagger-api/swagger-codegen.git</developerConnection>
