@@ -18,6 +18,8 @@ echo "API Manage sample business scenarios sample data populator."
 echo
 echo "1 - Managing Public, Partner vs Private APIs"
 echo "2 - Ownership, permission and collaborative API development"
+echo "3 - Developer Optimized APIs Development"
+echo "4 - API Security"
 echo "7 - API Lifecycle Management"
 echo "8 - API Versioning"
 echo "9 - API Governance"

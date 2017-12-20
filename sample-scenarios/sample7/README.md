@@ -86,7 +86,7 @@ Now you will be getting notification for the api that you have subscribed. These
 
 * Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
-* Run the file run.sh in sample root directory as ./run.sh
+* Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
 List of all the API’s in different statesTwo Published and Blocked API’s in same API![](images/image_4.png)
 
