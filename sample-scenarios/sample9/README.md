@@ -92,7 +92,7 @@ Added advance throttling policies in Admin app![](images/image_6.png)![](images/
 
 * Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
 
-* Run the file run.sh in sample root directory as ./run.sh
+* Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
 #### User credentials needed for login to API Manager instance.
 

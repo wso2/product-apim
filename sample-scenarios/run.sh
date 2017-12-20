@@ -18,6 +18,8 @@ echo "API Manage sample business scenarios sample data populator."
 echo
 echo "1 - Managing Public, Partner vs Private APIs"
 echo "2 - Ownership, permission and collaborative API development"
+echo "3 - Developer Optimized APIs Development"
+echo "4 - API Security"
 echo "7 - API Lifecycle Management"
 echo "8 - API Versioning"
 echo "9 - API Governance"
@@ -37,7 +39,7 @@ echo
 
 echo "Running Sample"$sample_number"..."
 
-jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-1.0.0-jar-with-dependencies.jar"
+jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-2.2.0-SNAPSHOT-jar-with-dependencies.jar"
 
 java -jar $jar_path
 echo $'\e[1;32m'"DONE!"$'\e[0m'

@@ -698,7 +698,7 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario1</outputDirectory>
             <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample1-1.0.0-jar-with-dependencies.jar</include>
+                <include>org.wso2.carbon.apimgt.samples.sample1-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -706,7 +706,15 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
             <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample2-1.0.0-jar-with-dependencies.jar</include>
+                <include>org.wso2.carbon.apimgt.samples.sample2-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample4/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample4-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -714,7 +722,7 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario7</outputDirectory>
             <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample7-1.0.0-jar-with-dependencies.jar</include>
+                <include>org.wso2.carbon.apimgt.samples.sample7-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -722,7 +730,7 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario8</outputDirectory>
             <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample8-1.0.0-jar-with-dependencies.jar</include>
+                <include>org.wso2.carbon.apimgt.samples.sample8-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -730,7 +738,7 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario9</outputDirectory>
             <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample9-1.0.0-jar-with-dependencies.jar</include>
+                <include>org.wso2.carbon.apimgt.samples.sample9-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -1199,8 +1207,13 @@
             <destName>README.md</destName>
         </file>
         <file>
-            <source>../../../sample-scenarios/sample3/README.md</source>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario3</outputDirectory>
+            <source>../../../sample-scenarios/sample2/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample4/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
             <destName>README.md</destName>
         </file>
         <file>

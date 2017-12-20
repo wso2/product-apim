@@ -20,7 +20,7 @@
     <parent>
         <artifactId>org.wso2.carbon.apimgt.samples</artifactId>
         <groupId>org.wso2.carbon.apimgt</groupId>
-        <version>1.0.0</version>
+        <version>2.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>war</packaging>
@@ -44,27 +44,27 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${springmvc}</version>
+            <version>${org.springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${springmvc}</version>
+            <version>${org.springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${springmvc}</version>
+            <version>${org.springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-            <version>${cxf.version}</version>
+            <version>${org.apache.cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <version>${cxf.version}</version>
+            <version>${org.apache.cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -74,17 +74,17 @@
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
-            <version>${jax.ws.rs}</version>
+            <version>${javax.ws.rs-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
-            <version>${jackson.version}</version>
+            <version>${org.codehaus.jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-codec</groupId>
+            <groupId>commons-codec.wso2</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>${commons.codec.version}</version>
+            <version>${commons-codec.version}</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -92,15 +92,4 @@
             <version>${com.googlecode.json.version}</version>
         </dependency>
     </dependencies>
-
-    <properties>
-        <cxf.version>3.0.3</cxf.version>
-        <httpclient.version>3.1</httpclient.version>
-        <jax.ws.rs>2.0.1</jax.ws.rs>
-        <springmvc>4.1.4.RELEASE</springmvc>
-        <jackson.version>1.1.1</jackson.version>
-        <commons.codec.version>1.5</commons.codec.version>
-        <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
-    </properties>
-
 </project>
