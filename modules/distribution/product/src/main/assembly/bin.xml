@@ -710,6 +710,14 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>../../../sample-scenarios/sample4/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample4-1.0.0-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>../../../sample-scenarios/sample7/target/
             </directory>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario7</outputDirectory>
@@ -1199,8 +1207,13 @@
             <destName>README.md</destName>
         </file>
         <file>
-            <source>../../../sample-scenarios/sample3/README.md</source>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario3</outputDirectory>
+            <source>../../../sample-scenarios/sample2/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample4/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
             <destName>README.md</destName>
         </file>
         <file>

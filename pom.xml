@@ -1056,6 +1056,10 @@
         <com.google.code.gson.version>2.7</com.google.code.gson.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!--Sample backend dependencies -->
+        <httpclient.version>3.1</httpclient.version>
+        <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
     </properties>
 
 </project>
