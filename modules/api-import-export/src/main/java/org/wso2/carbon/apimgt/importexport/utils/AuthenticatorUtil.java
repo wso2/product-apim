@@ -22,18 +22,20 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.user.api.AuthorizationManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.util.List;
+import java.util.StringTokenizer;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * This class provides authentication facility for importing and exporting APIs
@@ -47,6 +49,7 @@ public class AuthenticatorUtil {
     private static final Log log = LogFactory.getLog(AuthenticatorUtil.class);
     private static String username;
     private static String password;
+    public static final String APIM_ADMIN_PERMISSION = "/permission/admin/manage/apim_admin";
 
     private AuthenticatorUtil() {
     }
@@ -63,11 +66,9 @@ public class AuthenticatorUtil {
 
     public static Response authorizeUser(HttpHeaders headers) throws APIExportException {
         if (!isValidCredentials(headers)) {
-            log.error("No username and password is provided for authentication");
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("No username and password is provided for authentication").type(MediaType.APPLICATION_JSON).
-                            build();
-
+            String message = "Credentials are not provided for authentication";
+            log.error(message);
+            return Response.status(Response.Status.UNAUTHORIZED).entity(message).build();
         }
 
         try {
@@ -77,6 +78,9 @@ public class AuthenticatorUtil {
 
             UserStoreManager userstoremanager =
                     CarbonContext.getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
+
+            AuthorizationManager authorizationManager = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+                    .getAuthorizationManager();
 
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
@@ -100,11 +104,18 @@ public class AuthenticatorUtil {
                         return Response.ok().build();
                     }
                 }
-                return Response.status(Response.Status.FORBIDDEN).entity("User Authorization " + "Failed")
-                        .type(MediaType.APPLICATION_JSON).build();
+
+                if (authorizationManager.isUserAuthorized(tenantAwareUsername, APIM_ADMIN_PERMISSION,
+                        CarbonConstants.UI_PERMISSION_ACTION)) {
+                    log.info(username + " is authorized to import and export APIs");
+                    return Response.ok().build();
+                }
+
+                return Response.status(Response.Status.FORBIDDEN).entity("User is not authorized for the " +
+                        "performed action.").type(MediaType.APPLICATION_JSON).build();
 
             } else {
-                return Response.status(Response.Status.UNAUTHORIZED).entity("User Authentication " + "Failed")
+                return Response.status(Response.Status.UNAUTHORIZED).entity("User Authentication Failed")
                         .type(MediaType.APPLICATION_JSON).build();
             }
 

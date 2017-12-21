@@ -19,38 +19,33 @@
 package org.wso2.carbon.apimgt.importexport;
 
 
-import com.google.gson.Gson;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.POST;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
-import java.io.InputStream;
-
-import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
-import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * This class provides JAX-RS services for exporting and importing APIs.
@@ -92,7 +87,7 @@ public class APIService {
         try {
 
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
-            if (!(Response.Status.OK.getStatusCode() == authorizationResponse.getStatus())) {
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
             }
 
@@ -186,53 +181,56 @@ public class APIService {
         try {
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
 
-            //Process continues only if the user is authorized
-            if (Response.Status.OK.getStatusCode() == authorizationResponse.getStatus()) {
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
+                return authorizationResponse;
+            }
 
-                String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
-                APIImportUtil.initializeProvider(currentUser);
+            String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
+            APIImportUtil.initializeProvider(currentUser);
 
-                //Temporary directory is used to create the required folders
-                String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
-                String createdFolders = File.separator +
-                        RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
-                        File.separator;
-                File importFolder = new File(currentDirectory + createdFolders);
-                boolean folderCreateStatus = importFolder.mkdirs();
+            //Temporary directory is used to create the required folders
+            String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
+            String createdFolders = File.separator +
+                    RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
+                    File.separator;
+            File importFolder = new File(currentDirectory + createdFolders);
+            boolean folderCreateStatus = importFolder.mkdirs();
 
-                //API import process starts only if the required folder is created successfully
-                if (folderCreateStatus) {
+            //API import process starts only if the required folder is created successfully
+            if (folderCreateStatus) {
 
-                    String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
-                    String absolutePath = currentDirectory + createdFolders;
-                    APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
+                String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
+                String absolutePath = currentDirectory + createdFolders;
+                APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
 
-                    String extractedFolderName = APIImportUtil.extractArchive(
+                String extractedFolderName;
+                try {
+                    extractedFolderName = APIImportUtil.extractArchive(
                             new File(absolutePath + uploadFileName), absolutePath);
+                } catch (APIImportException e) {
+                    return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+                }
 
-                    String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
-                    if (tenantDomain != null &&
+                String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
+                if (tenantDomain != null &&
                         !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
                                 .equals(tenantDomain)) {
-                        PrivilegedCarbonContext.startTenantFlow();
-                        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
-                        isTenantFlowStarted = true;
-                    }
-
-                    APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
-
-                    importFolder.deleteOnExit();
-                    return Response.status(Status.CREATED).entity("API imported successfully.\n").build();
-                } else {
-                    return Response.status(Status.BAD_REQUEST).build();
+                    PrivilegedCarbonContext.startTenantFlow();
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+                    isTenantFlowStarted = true;
                 }
+
+                APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
+
+                importFolder.deleteOnExit();
+                return Response.status(Status.CREATED).entity("API imported successfully.\n").build();
             } else {
-                return Response.status(Status.UNAUTHORIZED).entity("Not authorized to import API.\n").build();
+                return Response.status(Status.BAD_REQUEST).build();
             }
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
-            return Response.serverError().entity(e.getErrorDescription()).build();
+            return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();

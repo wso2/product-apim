@@ -23,7 +23,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.carbon.apimgt</groupId>
     <artifactId>org.wso2.carbon.apimgt.samples</artifactId>
     <packaging>pom</packaging>
     <name>Samples</name>
