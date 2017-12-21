@@ -18,28 +18,18 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
-import org.apache.commons.lang.StringUtils;
-import org.wso2.carbon.apimgt.api.APIDefinition;
-import org.wso2.carbon.apimgt.api.model.Scope;
-import org.wso2.carbon.apimgt.api.model.URITemplate;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
-import org.wso2.carbon.apimgt.importexport.APIExportException;
-import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
-import org.wso2.carbon.apimgt.importexport.APIImportException;
-import org.wso2.carbon.apimgt.importexport.APIService;
-
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.FaultGatewaysException;
@@ -47,10 +37,16 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.ResourceFile;
+import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.api.model.Tier;
+import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
-
+import org.wso2.carbon.apimgt.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIImportException;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
+import org.wso2.carbon.apimgt.importexport.APIService;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.registry.api.Registry;
@@ -71,8 +67,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -201,6 +197,7 @@ public final class APIImportUtil {
         API importedApi = null;
         String prevProvider;
         APIDefinition definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+        List<API> allMatchedApis;
 
         String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
 
@@ -236,11 +233,17 @@ public final class APIImportUtil {
             }
 
             //Checking whether this is a duplicate API
-            if (provider.isAPIAvailable(importedApi.getId())) {
-                String errorMessage = "Error occurred while adding the API. A duplicate API already exists for " +
-                                      importedApi.getId().getApiName() + "-" + importedApi.getId().getVersion();
-                log.error(errorMessage);
-                throw new APIImportException(errorMessage);
+            allMatchedApis = provider.searchAPIs(importedApi.getId().getApiName(),"Name", null);
+            //if an API exist with the same name
+            if (!allMatchedApis.isEmpty()) {
+                for(API matchAPI:allMatchedApis) {
+                    if (matchAPI.getId().getVersion().equalsIgnoreCase(importedApi.getId().getVersion())) {
+                        String errorMessage = "Error occurred while adding the API. A duplicate API already exists " +
+                                "for " + importedApi.getId().getApiName() + '-' + importedApi.getId().getVersion();
+                        log.error(errorMessage);
+                        throw new APIImportException(errorMessage);
+                    }
+                }
             }
 
         } catch (IOException e) {
