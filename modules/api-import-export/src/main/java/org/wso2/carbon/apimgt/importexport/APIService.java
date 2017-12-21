@@ -19,38 +19,33 @@
 package org.wso2.carbon.apimgt.importexport;
 
 
-import com.google.gson.Gson;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.POST;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
-import java.io.InputStream;
-
-import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
-import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * This class provides JAX-RS services for exporting and importing APIs.
@@ -207,8 +202,13 @@ public class APIService {
                     String absolutePath = currentDirectory + createdFolders;
                     APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
 
-                    String extractedFolderName = APIImportUtil.extractArchive(
-                            new File(absolutePath + uploadFileName), absolutePath);
+                    String extractedFolderName;
+                    try {
+                        extractedFolderName = APIImportUtil.extractArchive(
+                                new File(absolutePath + uploadFileName), absolutePath);
+                    } catch (APIImportException e) {
+                        return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+                    }
 
                     String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
                     if (tenantDomain != null &&
@@ -232,7 +232,7 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
-            return Response.serverError().entity(e.getErrorDescription()).build();
+            return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();

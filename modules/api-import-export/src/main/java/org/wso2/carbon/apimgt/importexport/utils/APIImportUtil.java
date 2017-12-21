@@ -172,7 +172,7 @@ public final class APIImportUtil {
             }
             return archiveName;
         } catch (IOException e) {
-            String errorMessage = "Failed to extract archive file ";
+            String errorMessage = "Failed to extract the archive (zip) file. ";
             log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         } finally {
