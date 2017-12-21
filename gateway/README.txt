@@ -19,3 +19,65 @@ Starting the server
 2. Execute the below command.
 ``bin/ballerina run service services.bsz``
 
+WSO2 API Gateway ${project.version} distribution directory structure
+
+    GW_HOME
+    .
+    ├── bin <folder>
+    ├── bre <folder>
+    │   ├── conf <folder>
+    │   ├── lib <folder>
+    │   └── security <folder>
+    ├── handler <folder>
+    ├── LICENSE.txt <folder>
+    ├── logs <folder>
+    ├── microgateway <folder>
+    ├── microgateway.bsz <file>
+    ├── org <folder>
+    ├── README.txt <file>
+    ├── services.bsz <folder>
+    └── src <folder>
+
+
+    - bin
+      Contains various scripts .sh & .bat scripts
+
+    - bre
+      Contains Ballerina Runtime Environment related libraries, configuration and resources
+      
+       - conf
+         Contains Ballerina Runtime Environment related libraries, configuration
+        
+       - lib
+         Contains libraries required for Ballerina Runtime Environment
+       
+       - security
+         Contains trust-store and keystore files
+
+    - handler
+      Contains request interceptors used for authentication, publishing statistics and etc.
+
+    - logs
+      Server logs.
+    
+    - microgateway
+      Micro Gateway configurations.
+
+    - org
+      The package which contains published API ballerina files.
+
+    - microgateway.bsz
+      Ballerina package that contains required sources for gateway to work as a Micro Gateway.
+
+    - services.bsz
+      Ballerina package that contains required sources for gateway to work in default mode.
+
+    - src
+      Required native ballerina files
+
+    - LICENSE.txt
+      Apache License 2.0 and the relevant other licenses under which
+      WSO2 ESB is distributed.
+
+    - README.txt
+      This document.

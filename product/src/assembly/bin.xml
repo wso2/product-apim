@@ -131,5 +131,11 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+        <file>
+            <source>target/WSO2Carbon/bin/README.txt</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 </assembly>
