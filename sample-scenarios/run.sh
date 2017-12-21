@@ -19,11 +19,12 @@ echo
 echo "1 - Managing Public, Partner vs Private APIs"
 echo "2 - Ownership, permission and collaborative API development"
 echo "3 - Developer Optimized APIs Development"
-echo "4 - API Security"
+#echo "4 - API Security"
 echo "7 - API Lifecycle Management"
 echo "8 - API Versioning"
 echo "9 - API Governance"
 echo "10 - API Rate Limiting"
+echo "11 - API Monitization"
 echo
 
 set -e
@@ -34,7 +35,7 @@ do
   read -r sample_number
 done
 
-if [ $sample_number == '3' ] || [ $sample_number == 'andy' ]
+if [ $sample_number == '3' ] || [ $sample_number == '11' ]
 then
     echo "Please refer the README.md file in [APIM_HOME]/sample-scenarios/scenario"$sample_number" directory."
 else

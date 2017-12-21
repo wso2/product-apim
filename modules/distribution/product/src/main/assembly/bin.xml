@@ -1244,5 +1244,10 @@
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario10</outputDirectory>
             <destName>README.md</destName>
         </file>
+        <file>
+            <source>../../../sample-scenarios/sample11/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario11</outputDirectory>
+            <destName>README.md</destName>
+        </file>
     </files>
 </assembly>
