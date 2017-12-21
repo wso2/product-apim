@@ -76,7 +76,7 @@ public class CreateSampleSevenRawData {
 
         //Creating API in PUBLISHED state
         String apiIdOne = SampleUtils
-                .createApi("Salary_details_API", "1.0.0", "/salary", new ArrayList<String>(), new ArrayList<String>(),
+                .createApi("Salary_details_API", "1.0.0", "/salaries", new ArrayList<String>(), new ArrayList<String>(),
                         API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<String>());
         System.out.println("Publishing Salary_details_API API");
         if (StringUtils.isNotEmpty(apiIdOne))
@@ -90,7 +90,7 @@ public class CreateSampleSevenRawData {
         //Creating API in DEPRECATED state
         System.out.println("Creating Mobile_stock_API API");
         String apiIdThree = SampleUtils
-                .createApi("Mobile_stock_API", "1.0.0", "/stock", new ArrayList<String>(), new ArrayList<String>(),
+                .createApi("Mobile_stock_API", "1.0.0", "/stocks", new ArrayList<String>(), new ArrayList<String>(),
                         API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<String>());
         System.out.println("Deprecating Mobile_stock_API API");
         if (StringUtils.isNotEmpty(apiIdThree))

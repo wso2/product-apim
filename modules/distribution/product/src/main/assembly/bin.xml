@@ -709,14 +709,14 @@
                 <include>org.wso2.carbon.apimgt.samples.sample2-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample4/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample4-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
+        <!--<fileSet>-->
+            <!--<directory>../../../sample-scenarios/sample4/target/-->
+            <!--</directory>-->
+            <!--<outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>-->
+            <!--<includes>-->
+                <!--<include>org.wso2.carbon.apimgt.samples.sample4-${pom.version}-jar-with-dependencies.jar</include>-->
+            <!--</includes>-->
+        <!--</fileSet>-->
         <fileSet>
             <directory>../../../sample-scenarios/sample7/target/
             </directory>
@@ -739,6 +739,14 @@
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario9</outputDirectory>
             <includes>
                 <include>org.wso2.carbon.apimgt.samples.sample9-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample10/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario10</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample10-${pom.version}-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -1207,15 +1215,15 @@
             <destName>README.md</destName>
         </file>
         <file>
-            <source>../../../sample-scenarios/sample2/README.md</source>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
+            <source>../../../sample-scenarios/sample3/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario3</outputDirectory>
             <destName>README.md</destName>
         </file>
-        <file>
-            <source>../../../sample-scenarios/sample4/README.md</source>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
-            <destName>README.md</destName>
-        </file>
+        <!--<file>-->
+            <!--<source>../../../sample-scenarios/sample4/README.md</source>-->
+            <!--<outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>-->
+            <!--<destName>README.md</destName>-->
+        <!--</file>-->
         <file>
             <source>../../../sample-scenarios/sample7/README.md</source>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario7</outputDirectory>
@@ -1229,6 +1237,16 @@
         <file>
             <source>../../../sample-scenarios/sample9/README.md</source>
             <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario9</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample10/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario10</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample11/README.md</source>
+            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario11</outputDirectory>
             <destName>README.md</destName>
         </file>
     </files>
