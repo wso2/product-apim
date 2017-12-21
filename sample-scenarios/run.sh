@@ -23,6 +23,7 @@ echo "4 - API Security"
 echo "7 - API Lifecycle Management"
 echo "8 - API Versioning"
 echo "9 - API Governance"
+echo "10 - API Rate Limiting"
 echo
 
 set -e
@@ -33,13 +34,14 @@ do
   read -r sample_number
 done
 
-echo "This script will deploy a sample backend run the sample"$sample_number" scenario."
-echo
+if [ $sample_number == '3' ] || [ $sample_number == 'andy' ]
+then
+    echo "Please refer the README.md file in [APIM_HOME]/sample-scenarios/scenario"$sample_number" directory."
+else
+    echo "This script will deploy a sample backend run the sample"$sample_number" scenario."
 
+    echo "Running Sample"$sample_number"..."
 
-echo "Running Sample"$sample_number"..."
-
-jar_path="scenario"$sample_number"/org.wso2.carbon.apimgt.samples.sample"$sample_number"-2.2.0-SNAPSHOT-jar-with-dependencies.jar"
-
-java -jar $jar_path
-echo $'\e[1;32m'"DONE!"$'\e[0m'
+    java -jar $(ls scenario$sample_number/org.wso2.carbon.apimgt.samples.sample$sample_number-*)
+    echo $'\e[1;32m'"DONE!"$'\e[0m'
+fi
