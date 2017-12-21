@@ -26,7 +26,7 @@ More information about this product can be found [here](http://wso2.com/api-mana
 ### Running WSO2 API Manager Analytics
 1. Download the Analytics distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/analyzer/target.
 2. Extract the distribution. Ex: unzip wso2apim-das-${project.version}.zip
-3. Go to the wso2apim-das-${project.version}/bin directory and execute the carbon.sh script: ``./worker.sh``
+3. Go to the wso2apim-das-${project.version}/bin directory and execute the worker.sh script: ``./worker.sh``
 
 ### Running WSO2 API Manager
 1. Download the product distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/product/target.
