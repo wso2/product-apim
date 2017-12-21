@@ -80,7 +80,6 @@
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
-            <version>${com.googlecode.json.version}</version>
         </dependency>
     </dependencies>
 </project>
