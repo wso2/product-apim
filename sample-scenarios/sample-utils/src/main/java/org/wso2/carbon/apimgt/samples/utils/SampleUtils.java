@@ -98,7 +98,7 @@ public class SampleUtils {
         } catch (IOException e) {
             throw new ApiException("Could not read API definition file");
         }
-        List<String> tierList = new ArrayList<>();
+        List<String> tierList = new ArrayList<String>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setTiers(tierList);
         API response;
@@ -180,7 +180,7 @@ public class SampleUtils {
         } catch (IOException e) {
             throw new ApiException("Could not read API definition file");
         }
-        List<String> tierList = new ArrayList<>();
+        List<String> tierList = new ArrayList<String>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setTiers(tierList);
 

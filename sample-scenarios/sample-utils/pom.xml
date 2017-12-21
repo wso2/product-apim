@@ -19,9 +19,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>org.wso2.carbon.apimgt</groupId>
-        <artifactId>org.wso2.carbon.apimgt.samples</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>am-parent</artifactId>
         <version>2.2.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Sample Utils</name>
@@ -32,93 +33,65 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.clients.publisher.api</artifactId>
-            <version>${publisher.client.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.clients.store.api</artifactId>
-            <version>${store.client.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.clients.admin.api</artifactId>
-            <version>${admin.client.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.multitenancy</groupId>
             <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
-            <version>${carbon.multitenancy.version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging</artifactId>
-            <version>${carbon.logging.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
-            <version>1.6.1.wso2v20</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
-            <version>${carbon.utils.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
-            <version>${carbon.identity.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
-            <version>${carbon.deployment.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
-            <version>${carbon.deployment.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
-            <version>${carbon.server.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.governance</groupId>
             <artifactId>org.wso2.carbon.governance.custom.lifecycles.checklist.stub</artifactId>
-            <version>${carbon.governance.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.governance</groupId>
             <artifactId>org.wso2.carbon.governance.lcm.stub</artifactId>
-            <version>${carbon.governance.version}</version>
         </dependency>
     </dependencies>
 
-    <properties>
-        <carbon.multitenancy.version>4.6.0</carbon.multitenancy.version>
-        <publisher.client.api.version>${parent.version}</publisher.client.api.version>
-        <store.client.api.version>${parent.version}</store.client.api.version>
-        <admin.client.api.version>${parent.version}</admin.client.api.version>
-        <carbon.logging.version>4.4.11</carbon.logging.version>
-        <carbon.utils.version>4.4.11</carbon.utils.version>
-        <carbon.server.version>4.4.11</carbon.server.version>
-        <carbon.identity.version>5.7.5</carbon.identity.version>
-        <httpclient.version>4.3.1.wso2v1</httpclient.version>
-        <!-- carbon deployment -->
-        <carbon.deployment.version>4.7.0</carbon.deployment.version>
-        <carbon.governance.version>4.7.0</carbon.governance.version>
-    </properties>
+
 
 </project>
