@@ -87,7 +87,7 @@ public class APIService {
         try {
 
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
-            if (!(Response.Status.OK.getStatusCode() == authorizationResponse.getStatus())) {
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
             }
 
@@ -181,53 +181,51 @@ public class APIService {
         try {
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
 
-            //Process continues only if the user is authorized
-            if (Response.Status.OK.getStatusCode() == authorizationResponse.getStatus()) {
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
+                return authorizationResponse;
+            }
 
-                String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
-                APIImportUtil.initializeProvider(currentUser);
+            String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
+            APIImportUtil.initializeProvider(currentUser);
 
-                //Temporary directory is used to create the required folders
-                String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
-                String createdFolders = File.separator +
-                        RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
-                        File.separator;
-                File importFolder = new File(currentDirectory + createdFolders);
-                boolean folderCreateStatus = importFolder.mkdirs();
+            //Temporary directory is used to create the required folders
+            String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
+            String createdFolders = File.separator +
+                    RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
+                    File.separator;
+            File importFolder = new File(currentDirectory + createdFolders);
+            boolean folderCreateStatus = importFolder.mkdirs();
 
-                //API import process starts only if the required folder is created successfully
-                if (folderCreateStatus) {
+            //API import process starts only if the required folder is created successfully
+            if (folderCreateStatus) {
 
-                    String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
-                    String absolutePath = currentDirectory + createdFolders;
-                    APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
+                String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
+                String absolutePath = currentDirectory + createdFolders;
+                APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
 
-                    String extractedFolderName;
-                    try {
-                        extractedFolderName = APIImportUtil.extractArchive(
-                                new File(absolutePath + uploadFileName), absolutePath);
-                    } catch (APIImportException e) {
-                        return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-                    }
+                String extractedFolderName;
+                try {
+                    extractedFolderName = APIImportUtil.extractArchive(
+                            new File(absolutePath + uploadFileName), absolutePath);
+                } catch (APIImportException e) {
+                    return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+                }
 
-                    String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
-                    if (tenantDomain != null &&
+                String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
+                if (tenantDomain != null &&
                         !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
                                 .equals(tenantDomain)) {
-                        PrivilegedCarbonContext.startTenantFlow();
-                        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
-                        isTenantFlowStarted = true;
-                    }
-
-                    APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
-
-                    importFolder.deleteOnExit();
-                    return Response.status(Status.CREATED).entity("API imported successfully.\n").build();
-                } else {
-                    return Response.status(Status.BAD_REQUEST).build();
+                    PrivilegedCarbonContext.startTenantFlow();
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+                    isTenantFlowStarted = true;
                 }
+
+                APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
+
+                importFolder.deleteOnExit();
+                return Response.status(Status.CREATED).entity("API imported successfully.\n").build();
             } else {
-                return Response.status(Status.UNAUTHORIZED).entity("Not authorized to import API.\n").build();
+                return Response.status(Status.BAD_REQUEST).build();
             }
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
