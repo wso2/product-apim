@@ -160,12 +160,6 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.analytics</groupId>
-            <artifactId>org.wso2.carbon.event.simulator.core.feature</artifactId>
-            <version>${carbon.analytics.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.analytics</groupId>
             <artifactId>org.wso2.carbon.das.jobmanager.core.feature</artifactId>
             <version>${carbon.analytics.version}</version>
             <type>zip</type>
@@ -462,10 +456,6 @@
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.simulator.core.feature</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.das.jobmanager.core.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
@@ -672,10 +662,6 @@
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.simulator.core.feature</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.das.jobmanager.core.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
@@ -778,10 +764,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stream.processor.common.feature</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.simulator.core.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
                                 <feature>
@@ -978,12 +960,6 @@
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
 
-                                <!--simulator feature-->
-                                <feature>
-                                    <id>org.wso2.carbon.event.simulator.core.feature</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
-
                                 <!-- CAAS Security Feature -->
                                 <feature>
                                     <id>org.wso2.carbon.security.caas.feature</id>
@@ -1169,7 +1145,6 @@
         <apache.commons.fileupload.version>1.3.2</apache.commons.fileupload.version>
         <javafaker.version>0.12</javafaker.version>
         <fabricator.wso2v1.version>2.1.4.wso2v1</fabricator.wso2v1.version>
-        <mysql.connector.version>5.1.38</mysql.connector.version>
         <kafka.version>0.9.0.0</kafka.version>
         <google.collections.version>1.0</google.collections.version>
         <carbon.security.version>1.0.2-m1</carbon.security.version>
