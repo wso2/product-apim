@@ -23,7 +23,11 @@ import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -35,10 +39,10 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -89,6 +93,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpUriRequest option = new HttpOptions(apiInvocationUrl);
         option.addHeader("Origin", "http://localhost:9443");
+        option.addHeader("Access-Control-Request-Method", "GET");
         HttpResponse serviceResponse = httpclient.execute(option);
         String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
         String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
