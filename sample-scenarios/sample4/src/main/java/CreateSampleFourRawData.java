@@ -72,15 +72,14 @@ public class CreateSampleFourRawData {
 
         System.out.println("Deploying sample back end");
         WebAppDeployUtils.deployWebApp(serviceEndpoint, "admin", "admin", warFileLocation, warFileName);
-        createTenants();
         List<String> apiIds = createAPIs();
         publishAPIs(apiIds);
 
         String accessTokenOne = subscribeToAPI(apiIds.get(0), "Application_one");
-        invokeAPI(accessTokenOne, 20, "/salaries/1.0.0/salary/1");
+        invokeAPI(accessTokenOne, 1, "/salariesSecure/1.0.0/salary/1");
 
-        String accessTokenTwo = subscribeToAPI(apiIds.get(1), "Application_two");
-        invokeAPI(accessTokenTwo, 20, "/mobilePrices/1.0.0/mobile/1");
+        String accessTokenTwo = subscribeToAPIWithNewScope(apiIds.get(1), "Application_two");
+        invokeAPI(accessTokenTwo, 1, "/salariesSecure/1.0.0/salary/1");
 
     }
 
@@ -100,7 +99,7 @@ public class CreateSampleFourRawData {
         ArrayList<String> apiOneTags = new ArrayList<>();
         apiOneTags.add("finance");
         apiIds.add(SampleUtils
-                .createApi("Salary_details_API", "1.0.0", "/salaries", new ArrayList<String>(), apiOneVisibleTenants,
+                .createApi("Salary_details_API", "1.0.0", "/salariesSecure", new ArrayList<String>(), apiOneVisibleTenants,
                         API.SubscriptionAvailabilityEnum.SPECIFIC_TENANTS, hostname, port, apiOneTags));
 
         ArrayList<String> apiFiveTags = new ArrayList<String>();
@@ -109,13 +108,6 @@ public class CreateSampleFourRawData {
                 new ArrayList<String>(), API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, apiFiveTags));
         return apiIds;
 
-    }
-
-    /**
-     * This method is used to create tenants
-     */
-    private static void createTenants() {
-        TenantUtils.createTenant("john", "123123", "finance.abc.com", " John", "Smith", serviceEndpoint);
     }
 
     /**
@@ -157,6 +149,41 @@ public class CreateSampleFourRawData {
 
         // Create subscription for application one
         System.out.println("Creating a subscription for keys for Application One");
+        SampleUtils.createSubscription(apiIdOne, applicationIdOne, "Unlimited", Subscription.StatusEnum.UNBLOCKED);
+        return accessToken;
+    }
+
+
+    private static String subscribeToAPIWithNewScope(String apiIdOne, String applicationName)
+            throws org.wso2.carbon.apimgt.samples.utils.store.rest.client.ApiException {
+        // Create Application
+        System.out.println("Creating Application Two");
+        String applicationIdOne = SampleUtils
+                .createApplication(applicationName, "This a new application created", "Unlimited");
+
+        // Create grant types
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add("refresh_token");
+        grantTypes.add("password");
+        grantTypes.add("client_credentials");
+
+        // Create allow roles
+        ArrayList<String> allowedDomain = new ArrayList<>();
+        allowedDomain.add("ALL");
+
+        //Allowed scopes
+        ArrayList<String> allowedSopes = new ArrayList<>();
+        allowedSopes.add("new_scope");
+
+        // Generate Keys for the application one
+        System.out.println("Generating keys for Application One");
+        ApplicationKey applicationKey = SampleUtils
+                .generateKeys(applicationIdOne, "7200", null, ApplicationKeyGenerateRequest.KeyTypeEnum.PRODUCTION,
+                        allowedSopes, allowedDomain, grantTypes);
+        String accessToken = applicationKey.getToken().getAccessToken();
+
+        // Create subscription for application one
+        System.out.println("Creating a subscription for keys for Application Two");
         SampleUtils.createSubscription(apiIdOne, applicationIdOne, "Unlimited", Subscription.StatusEnum.UNBLOCKED);
         return accessToken;
     }
