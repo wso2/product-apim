@@ -198,7 +198,6 @@ public class APIService {
 
             //API import process starts only if the required folder is created successfully
             if (folderCreateStatus) {
-
                 String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
                 String absolutePath = currentDirectory + createdFolders;
                 APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
@@ -225,7 +224,7 @@ public class APIService {
                 importFolder.deleteOnExit();
                 return Response.status(Status.CREATED).entity("API imported successfully.\n").build();
             } else {
-                return Response.status(Status.BAD_REQUEST).build();
+                return Response.serverError().entity("Failed to create temporary directory.\n").build();
             }
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
