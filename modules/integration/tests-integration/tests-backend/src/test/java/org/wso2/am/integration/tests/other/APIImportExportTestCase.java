@@ -57,16 +57,12 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -75,6 +71,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 
 /**
  * This test case is used to test the API Manager Import Export tool
@@ -605,6 +604,11 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         JSONObject apiObj = responseObj.getJSONObject("api");
         String provider = apiObj.getString("provider");
         Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
+
+        //delete the existing API to import it again
+        HttpResponse serviceResponse = apiPublisher
+                .deleteAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
+        verifyResponse(serviceResponse);
 
         //import the exported zip on different publisher
         importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, publisherUser,
