@@ -133,6 +133,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpUriRequest option = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         option.addHeader("Origin", "http://localhost");
+        option.addHeader("Access-Control-Request-Method", "GET");
         HttpResponse response = httpclient.execute(option);
 
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
