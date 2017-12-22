@@ -76,8 +76,7 @@ WSO2 API Gateway ${project.version} distribution directory structure
       Required native ballerina files
 
     - LICENSE.txt
-      Apache License 2.0 and the relevant other licenses under which
-      WSO2 ESB is distributed.
+      Apache License 2.0 and the relevant other licenses under which WSO2 GW is distributed
 
     - README.txt
       This document.
