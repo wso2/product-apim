@@ -134,6 +134,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpUriRequest option = new HttpOptions(apiInvocationUrl);
         option.addHeader("Origin", "http://localhost:8080");
+        option.addHeader("Access-Control-Request-Method", "GET");
         HttpResponse serviceResponse = httpclient.execute(option);
         String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
         String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
