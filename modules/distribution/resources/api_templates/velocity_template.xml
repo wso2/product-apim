@@ -235,6 +235,7 @@
 #elseif ($endpointClass == "default")
 <endpoint name="$ep_name">
     <default>
+        #timeout( $endpoints.get('config') )
     </default>
 </endpoint>
         #end
