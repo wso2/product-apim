@@ -95,7 +95,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[] {TestUserMode.TENANT_ADMIN}
+                new Object[]{TestUserMode.TENANT_ADMIN}
         };
     }
 
@@ -151,7 +151,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         // replace port with inbound endpoint port
 
-        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode) || TestUserMode.SUPER_TENANT_USER.equals(userMode))   {
+        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode) || TestUserMode.SUPER_TENANT_USER.equals(userMode)) {
             apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion);
         } else {
             apiEndPoint = getWebSocketTenantAPIInvocationURL(apiContext, apiVersion, user.getUserDomain());
@@ -207,15 +207,16 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             invokeAPI(client, accessToken);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
-            assertTrue(false, "Client cannot connect to server");
+            Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
         }
     }
 
-    @Test(description = "Test Throttling for web socket API", dependsOnMethods = "testWebSocketAPIInvocation")
+    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
-        //Deploy Throttling policy
+        // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
+        // messages can be sent.
         AdminDashboardRestClient adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
         adminDashboardRestClient.login(user.getUserName(), user.getPassword());
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
@@ -273,7 +274,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             assertTrue(true, "Client cannot connect to server");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
-            assertTrue(false, "Client cannot connect to server");
+            Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
         }
@@ -320,7 +321,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 } catch (InterruptedException ignore) {
                 } catch (Exception e) {
                     log.error("Error while starting backend server at port: " + serverPort, e);
-                    assertTrue(false, "Cannot start WebSocket server");
+                    Assert.fail("Cannot start WebSocket server");
                 }
             }
 
@@ -328,13 +329,12 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Test throttling by invoking API
+     * Test throttling by invoking API with throttling policy
      *
      * @param accessToken API accessToken
      */
     private void testThrottling(String accessToken) throws Exception {
-        int limit = 4;
-        int numberOfIterations = 6;
+        int limit = 6;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -343,23 +343,22 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         request.setHeader("Authorization", "Bearer " + accessToken);
         client.connect(socket, echoUri, request);
         socket.getLatch().await(3, TimeUnit.SECONDS);
+        // Send 6 WebSocket messages when throttle limit is 4.
         try {
-            for (int count = 1; count <= numberOfIterations; count++) {
+            for (int count = 1; count <= limit; count++) {
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
                 log.info("Count :" + count + " Message :" + socket.getResponseMessage());
-                if (count > limit) {
+                // At the 6th message check frame is throttled out.
+                if (count >= limit) {
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
-                            "Received response is not matching");
-                } else {
-                    assertEquals(socket.getResponseMessage(), testMessage.toUpperCase(),
                             "Received response is not matching");
                 }
                 socket.setResponseMessage(null);
             }
         } catch (Exception ex) {
             log.error("Error occurred while calling API : " + ex);
-            assertTrue(false, "Client cannot connect to server");
+            Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
         }
@@ -370,7 +369,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      *
      * @param client      WebSocketClient object
      * @param accessToken API access Token
-     * @throws Exception
+     * @throws Exception If an error occurs while invoking WebSocket API
      */
     private void invokeAPI(WebSocketClient client, String accessToken) throws Exception {
 
