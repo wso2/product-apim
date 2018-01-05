@@ -199,12 +199,37 @@
                 <version>${carbon.auth.version}</version>
                 <type>zip</type>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.oauth.rest.api.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.user.mgt.rest.api.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.user.store.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.token.introspection.rest.api.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.64</carbon.apimgt.version>
-        <carbon.auth.version>1.0.0</carbon.auth.version>
+	    <carbon.apimgt.version>7.0.66</carbon.apimgt.version>
+        <carbon.auth.version>1.0.10</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
