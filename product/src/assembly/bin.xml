@@ -115,6 +115,18 @@
             <fileMode>644</fileMode>
             <filtered>true</filtered>
         </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.bat</source>
+            <outputDirectory>wso2/default/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.sh</source>
+            <outputDirectory>wso2/default/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
 
         <!-- key-manager runtime -->
         <file>
@@ -122,6 +134,18 @@
             <outputDirectory>conf/key-manager/</outputDirectory>
             <fileMode>644</fileMode>
             <filtered>true</filtered>
+        </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.bat</source>
+            <outputDirectory>wso2/key-manager/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.sh</source>
+            <outputDirectory>wso2/key-manager/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
         </file>
 
         <!-- common -->
