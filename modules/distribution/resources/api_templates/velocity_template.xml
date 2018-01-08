@@ -62,6 +62,12 @@
 #print_if_exist_only("duration" $config.get("actionDuration"))
 #print_if_exist_only("responseAction" $config.get("actionSelect"))
 </timeout>
+#else
+##add default timeout config
+<timeout>
+    <duration>30000</duration>
+    <responseAction>fault</responseAction>
+</timeout>
         #end
 <suspendOnFailure>
 #print_list( "errorCodes" $config.get("suspendErrorCode"))
