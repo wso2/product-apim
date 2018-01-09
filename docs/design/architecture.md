@@ -12,7 +12,8 @@ API Manager consists of 5 main runtimes
 
 API Core consits of several micro services.The following diagram depicts the aggregation of the sub-components of the API Manager Core.
 
-![API Core](images/API-Core.png)
+![API Core](images/API-Core.png)(images/API-Core.png?raw=true "API Core")
+*API Core diagram*
 
 ## API Geteway
 
