@@ -12,8 +12,7 @@ API Manager consists of 5 main runtimes
 
 API Core consists of several microservices. The following diagram depicts the aggregation of the subcomponents of the API Manager Core.
 
-![API Core](images/API-Core.png)
-*API Core diagram*
+<img src="https://github.com/lakwarus/product-apim/raw/master/docs/design/images/API-Core.png" width="600">
 
 * The top layer or the web interface of the component is where the users interact with the API Management solution and consume the core API Management features shifted with the product. This layer comprises of a set of single page web applications developed on top of the React UI Framework. The web interface consists of the following web applications:
 ** API Publisher - Provides an end-user, collaborative web interface for API providers to compose, publish and manage APIs and share documentation.
