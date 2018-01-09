@@ -950,6 +950,12 @@
             <destName>jndi.properties</destName>
             <filtered>true</filtered>
         </file>
+        <file>
+            <source>src/main/conf/carbon.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>carbon.properties</destName>
+            <filtered>true</filtered>
+        </file>
 
         <!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/rule-engine-config.xml</source>
