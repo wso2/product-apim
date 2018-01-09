@@ -2,13 +2,13 @@
 
 API Manager consists of 5 main runtimes
 
-1. APIM Core
+1. API Core
 1. API Gateway
 1. Key Manager
 1. Traffic Manager
 1. Analytics
 
-## APIM Core
+## API Core
 
 API Core consists of several microservices. The following diagram depicts the aggregation of the subcomponents of the API Manager Core.
 
@@ -21,6 +21,7 @@ API Core consists of several microservices. The following diagram depicts the ag
 
 - The web applications consume the RESTful API layer underneath, which is written using swagger 2.0.0. The REST API layer provides a distinct set of REST APIs for the API Publisher, API Store and Admin portal.  
 - The business logic is implemented in the API Manager implementation layer. All the API Management related backend service implementations reside in this layer and they are exposed as microservices.  
+- Inbuilt lightweight Message Broker is provided reliable messaging platform from API Core to other API Management components. It's allowed to scale individual components independently.
 - The bottom most layer is the persistence layer where the API management related data is persisted. The data layer includes the API Manager database, which is dedicated to persisting API related data, and the Stat database, which is dedicated to persisting API analytics data.
 
 
