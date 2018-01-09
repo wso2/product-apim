@@ -27,7 +27,9 @@ API Core consists of several microservices. The following diagram depicts the ag
 
 ## API Geteway
 
+APIM v3 API Gateway is written by using Ballerina. Ballerina is a general purpose, concurrent and strongly typed programming language with both textual and graphical syntaxes, optimized for integration.
 
+<img src="https://github.com/lakwarus/product-apim/raw/master/docs/design/images/API-GW.png" width="600">
 
 
  
