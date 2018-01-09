@@ -31,5 +31,15 @@ APIM v3 API Gateway is written by using Ballerina. Ballerina is a general purpos
 
 <img src="https://github.com/lakwarus/product-apim/raw/master/docs/design/images/API-GW.png" width="600">
 
+## Key Manager
 
+The Key Manager component handles security and key related operations like user authentications, API key generation and key validations. Key management operations are based on OAuth 2.0.0 protocol specifications.
+
+## Traffic Manager
+
+The Traffic Manager helps users to regulate API traffic, make APIs and applications available to consumers at different service levels, and secure APIs against security attacks. The Traffic Manager features a dynamic throttling engine to process throttling policies in real-time, including rate limiting of API requests.
+
+## Analytics
+
+Additionally, monitoring and analytics are provided by the analytics component, WSO2 API Manager Analytics. This component provides a host of statistical graphs, an alerting mechanism on pre-determined events.
  
