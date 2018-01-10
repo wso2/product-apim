@@ -1,1 +1,0 @@
-WSO2 Data Analytics Server v${project.version}
