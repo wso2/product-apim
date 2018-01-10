@@ -1019,7 +1019,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.18</carbon.kernel.version>
-        <apimserver.version>2.2.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>2.1.0-update6-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
 	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
