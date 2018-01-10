@@ -108,7 +108,7 @@
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/lib</directory>
           <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
 	    <includes>
-                <include>**/httpmime-4.5.3.jar</include>
+                <include>**/httpmime-4.2.5.jar</include>
 		<include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet>
