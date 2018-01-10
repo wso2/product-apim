@@ -232,8 +232,8 @@
     </dependencyManagement>
 
     <properties>
-	    <carbon.apimgt.version>7.0.66</carbon.apimgt.version>
-        <carbon.auth.version>1.0.10</carbon.auth.version>
+        <carbon.apimgt.version>7.0.70</carbon.apimgt.version>
+        <carbon.auth.version>1.0.12</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
