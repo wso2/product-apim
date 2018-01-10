@@ -692,63 +692,8 @@
                 <include>**/web.xml</include>
             </includes>
         </fileSet>
-        <!-- Copy Sample scenario jar files-->
-        <fileSet>
-            <directory>../../../sample-scenarios/sample1/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario1</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample1-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample2/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario2</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample2-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample4/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario4</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample4-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample7/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario7</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample7-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample8/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario8</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample8-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample9/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario9</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample9-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../../sample-scenarios/sample10/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/sample-scenarios/scenario10</outputDirectory>
-            <includes>
-                <include>org.wso2.carbon.apimgt.samples.sample10-${pom.version}-jar-with-dependencies.jar</include>
-            </includes>
-        </fileSet>
+
+        <!-- Copy Sample scenario files-->
         <fileSet>
             <directory>../../../sample-scenarios/backend/target/
             </directory>
@@ -764,7 +709,7 @@
             <includes>
                 <include>run.sh</include>
             </includes>
-            <fileMode>644</fileMode>
+            <fileMode>744</fileMode>
         </fileSet>
 
 
