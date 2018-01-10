@@ -856,7 +856,7 @@
                 <version>${andes.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.geronimo.specs.wso2</groupId>
+                <groupId>org.wso2.orbit.org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-jms_1.1_spec</artifactId>
                 <version>${orbit.version.geronimo-jms_1.1_spec}</version>
             </dependency>
@@ -1138,7 +1138,7 @@
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
         <carbon.event-processing.version>2.1.6</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
-        <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
+        <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
         <product.cep.version>4.1.0</product.cep.version>
