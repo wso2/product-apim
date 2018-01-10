@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2017, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<assembly>
+    <id>sample-scenarios</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <!-- Copy Sample scenario jar files-->
+        <fileSet>
+            <directory>../../../sample-scenarios/sample1/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario1</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample1-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample2/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario2</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample2-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample4/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario4</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample4-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample7/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario7</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample7-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample8/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario8</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample8-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample9/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario9</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample9-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/sample10/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario10</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.apimgt.samples.sample10-${pom.version}-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios/backend/target/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/resources/</outputDirectory>
+            <includes>
+                <include>sample-data-backend.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../../sample-scenarios
+            </directory>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/</outputDirectory>
+            <includes>
+                <include>run.sh</include>
+            </includes>
+            <fileMode>744</fileMode>
+        </fileSet>
+    </fileSets>
+    <files>
+        <!-- Copy Sample scenario README.md files-->
+        <file>
+            <source>../../../sample-scenarios/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample1/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario1</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample2/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario2</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample3/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario3</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample4/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario4</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample7/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario7</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample8/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario8</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample9/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario9</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample10/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario10</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+        <file>
+            <source>../../../sample-scenarios/sample11/README.md</source>
+            <outputDirectory>wso2am-${pom.version}-sample-scenarios/sample-scenarios/scenario11</outputDirectory>
+            <destName>README.md</destName>
+        </file>
+    </files>
+</assembly>
