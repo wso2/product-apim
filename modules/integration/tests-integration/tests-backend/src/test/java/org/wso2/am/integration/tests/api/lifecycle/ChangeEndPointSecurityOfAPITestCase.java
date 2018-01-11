@@ -123,7 +123,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     }
 
 
-    @Test(groups = {"wso2.am"}, dataProvider = "SymbolCharacters", description = "Test the API with endpoint security" +
+    @Test(groups = {"wso2.am"}, description = "Test the API with endpoint security" +
                                                                                  " enabled with complex password",
           dependsOnMethods = "testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters")
     public void testInvokeGETResourceWithSecuredEndPointComplexPassword()
