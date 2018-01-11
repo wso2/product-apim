@@ -31,14 +31,12 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
@@ -103,10 +101,17 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 
         String gatewayUrl = getAPIInvocationURLHttp("stockquote/test/");
 
-        HttpResponse response = HttpRequestUtil.sendGetRequest(gatewayUrl, null);
-        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
-                                                                                     "did not receive 200");
+        int responseCode = HttpRequestUtil.sendGetRequest(gatewayUrl, null).getResponseCode();
+        assertTrue(validateStatusCode(responseCode), "Response code mismatch. Received "+responseCode);
 
+    }
+
+    private boolean validateStatusCode(int responseCode) {
+        if (responseCode == Response.Status.OK.getStatusCode() || responseCode == Response.Status.ACCEPTED
+                .getStatusCode()) {
+            return true;
+        }
+        return false;
     }
 
     @AfterClass(alwaysRun = true)
