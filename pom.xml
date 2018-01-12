@@ -1041,7 +1041,7 @@
         <carbon.identity-metadata-saml2.version>1.0.1</carbon.identity-metadata-saml2.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.7.0</carbon.deployment.version>
+        <carbon.deployment.version>4.7.10</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.2.8</carbon.analytics.version>
