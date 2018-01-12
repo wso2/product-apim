@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>2.1.0-update6</version>
+        <version>2.1.0-update7-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
