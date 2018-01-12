@@ -6,7 +6,7 @@
 
 | Branch | Build Status |
 | :------------ |:-------------
-| master | [![Build Status](https://wso2.org/jenkins/job/product-apim/badge/icon)](https://wso2.org/jenkins/job/product-apim) |
+| master | [![Build Status](https://wso2.org/jenkins/job/products/job/product-apim_2.x/badge/icon)](https://wso2.org/jenkins/view/products/job/products/job/product-apim_2.x/) |
 
 [![Join the chat at https://gitter.im/wso2/product-apim](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wso2/product-apim?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ---
@@ -190,15 +190,17 @@ Known issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
 
-    https://wso2.org/jira/issues/?filter=12237
+   https://wso2.org/jira/issues/?filter=14454
+   
+   https://github.com/wso2/product-apim/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+-label%3A%223.0.0%22+ 
 
 Issue Tracker
 ==================================
 
 Help us make our software better. Please submit any bug reports or feature
-requests through the WSO2 JIRA system:
+requests through the GitHub:
 
-    https://wso2.org/jira/browse/APIMANAGER
+   https://github.com/wso2/product-apim/issues
 
 
 Crypto Notice
