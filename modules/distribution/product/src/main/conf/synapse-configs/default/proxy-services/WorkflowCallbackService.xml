@@ -19,7 +19,20 @@
          </send>
       </inSequence>
       <outSequence>
-         <property name="messageType" value="text/xml" scope="axis2" type="STRING"/>
+         <property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+         <filter xpath="//jsonObject">
+            <then>
+               <enrich>
+                  <source clone="true" xpath="//jsonObject/*"/>
+                  <target property="BPS_PAYLOAD" type="property"/>
+               </enrich>
+               <enrich>
+                  <source clone="true" property="BPS_PAYLOAD" type="property"/>
+                  <target type="body"/>
+               </enrich>
+            </then>
+            <else/>
+         </filter>
          <send/>
       </outSequence>
    </target>
