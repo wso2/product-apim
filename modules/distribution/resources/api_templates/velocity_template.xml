@@ -83,12 +83,16 @@
         #end
 
 #macro ( http_endpoint $name $ep )
-<endpoint name="$name">
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
     <http uri-template="$util.escapeXml($ep.get("url"))">
     #timeout( $ep.get('config') )
     </http>
     <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
 </endpoint>
+#end
+
+#macro ( http_endpoint_key $key $ep )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$key"/>
 #end
 
 #macro ( address_endpoint $name $ep )
@@ -113,7 +117,7 @@
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
-        #set( $ep_name = "${apiName}_API${type}Endpoint_${resourceNo}")
+        #set( $ep_key = "${endpointKey}_API${type}Endpoint")
 
         ## IF endpoint secured
         #if($isEndpointSecured)
@@ -165,9 +169,9 @@
 
 ## If endpoint is http
 #if ($endpointClass == "http")
-#http_endpoint($ep_name $endpoints)
+#http_endpoint_key($ep_key $endpoints)
 #elseif ($endpointClass == "address")
-<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key">
     #set( $advance_ep = $endpoints.get("config") )
     <address uri="$util.escapeXml($endpoints.get("url"))"
     #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
@@ -196,26 +200,26 @@
         </endpoint>
         #elseif ($endpointClass == "failover")
         #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
-<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key">
 <failover>
     #if($endpoints.get("endpoint_type") == "address")
-        #address_endpoint("${ep_name}_0" $endpoints)
+        #address_endpoint("${ep_key}_0" $endpoints)
     #else
-        #http_endpoint("${ep_name}_0" $endpoints)
+        #http_endpoint("${ep_key}_0" $endpoints)
     #end
     #set( $i = 1)
     #foreach($endpoint in $failover_endpoints)
         #if($endpoint.get("endpoint_type") == "address")
-            #address_endpoint("${ep_name}_$i" $endpoint)
+            #address_endpoint("${ep_key}_$i" $endpoint)
         #else
-            #http_endpoint("${ep_name}_$i" $endpoint)
+            #http_endpoint("${ep_key}_$i" $endpoint)
         #end
         #set( $i = $i + 1)
     #end
 </failover>
 </endpoint>
         #elseif ($endpointClass == "load_balance")
-<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key">
 #if($endpoint_config.get("sessionManagement") && $endpoint_config.get("sessionManagement") != "" && $endpoint_config.get("sessionManagement") != "none")
 <session type="$endpoint_config.get("sessionManagement")">
 #if($endpoint_config.get("sessionTimeOut") && $endpoint_config.get("sessionTimeOut") != "")
@@ -230,16 +234,16 @@
         #set( $i = 0)
         #foreach($endpoint in $endpoints)
             #if($endpoint.get("endpoint_type") == "address")
-                #address_endpoint("${ep_name}_$i" $endpoint)
+                #address_endpoint("${ep_key}_$i" $endpoint)
             #else
-                #http_endpoint("${ep_name}_$i" $endpoint)
+                #http_endpoint("${ep_key}_$i" $endpoint)
             #end            
             #set( $i = $i + 1)
         #end
         </loadbalance>
         </endpoint>
 #elseif ($endpointClass == "default")
-<endpoint name="$ep_name">
+<endpoint key="$ep_key">
     <default>
         #timeout( $endpoints.get('config') )
     </default>
