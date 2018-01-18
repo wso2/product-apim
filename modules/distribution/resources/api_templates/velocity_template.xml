@@ -141,7 +141,7 @@
 </enrich>
 
 <call>
-    <endpoint name="$ep_name">
+    <endpoint key="$ep_key">
         <http uri-template="$util.escapeXml($endpoints.get("url"))">
         </http>
     </endpoint>
