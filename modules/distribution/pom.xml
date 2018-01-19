@@ -293,16 +293,7 @@
             <artifactId>org.wso2.carbon.auth.core.feature</artifactId>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.auth</groupId>
-            <artifactId>org.wso2.carbon.auth.rest.api.commons.feature</artifactId>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.auth</groupId>
-            <artifactId>org.wso2.carbon.auth.scope.registration.rest.api.feature</artifactId>
-            <type>zip</type>
-        </dependency>
+
         <dependency>
             <groupId>org.wso2.carbon.auth</groupId>
             <artifactId>org.wso2.carbon.auth.client.registration.rest.api.feature</artifactId>
@@ -329,7 +320,16 @@
             <artifactId>org.wso2.carbon.auth.token.introspection.rest.api.feature</artifactId>
             <type>zip</type>
         </dependency>
-
+        <dependency>
+            <groupId>org.wso2.carbon.auth</groupId>
+            <artifactId>org.wso2.carbon.auth.scope.registration.rest.api.feature</artifactId>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.auth</groupId>
+            <artifactId>org.wso2.carbon.auth.rest.api.commons.feature</artifactId>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.wso2.carbon.analytics-common</groupId>
             <artifactId>org.wso2.carbon.databridge.feature</artifactId>
@@ -385,6 +385,23 @@
             <artifactId>org.wso2.carbon.caching.feature</artifactId>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>org.wso2.broker.feature</artifactId>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.apimgt.throttling.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.apimgt.analytics.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -431,6 +448,75 @@
                                     <outputDirectory>target</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <!--Execution Extensions-->
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.string</groupId>
+                                    <artifactId>siddhi-execution-string</artifactId>
+                                    <version>${siddhi.execution.string.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.time</groupId>
+                                    <artifactId>siddhi-execution-time</artifactId>
+                                    <version>${siddhi.execution.time.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.unique</groupId>
+                                    <artifactId>siddhi-execution-unique</artifactId>
+                                    <version>${siddhi.execution.unique.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.regex</groupId>
+                                    <artifactId>siddhi-execution-regex</artifactId>
+                                    <version>${siddhi.execution.regex.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.map</groupId>
+                                    <artifactId>siddhi-execution-map</artifactId>
+                                    <version>${siddhi.execution.map.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <!--IO Extensions-->
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.execution.math</groupId>
+                                    <artifactId>siddhi-execution-math</artifactId>
+                                    <version>${siddhi.execution.math.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.io.jms</groupId>
+                                    <artifactId>siddhi-io-jms</artifactId>
+                                    <version>${siddhi.io.jms.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.store.rdbms</groupId>
+                                    <artifactId>siddhi-store-rdbms</artifactId>
+                                    <version>${siddhi.store.rdbms.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.io.wso2event</groupId>
+                                    <artifactId>siddhi-io-wso2event</artifactId>
+                                    <version>${siddhi.io.wso2event.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/extensions</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
                     </execution>
                 </executions>
@@ -592,10 +678,6 @@
                                     <id>org.wso2.carbon.auth.core.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
@@ -691,6 +773,22 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.auth.token.introspection.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.broker.feature</id>
+                                    <version>${broker.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                                 <feature>
@@ -983,9 +1081,28 @@
                                     <id>org.wso2.carbon.auth.token.introspection.rest.api.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
-
                                 <feature>
                                     <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.scope.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.broker.feature</id>
+                                    <version>${broker.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                             </features>
@@ -1073,10 +1190,7 @@
                                     <id>org.wso2.carbon.auth.core.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
-                                    <version>${carbon.auth.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.auth.client.registration.rest.api.feature</id>
                                     <version>${carbon.auth.version}</version>
@@ -1100,6 +1214,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.auth.scope.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                             </features>
@@ -1145,7 +1263,6 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-
                 </executions>
             </plugin>
 
@@ -1180,4 +1297,16 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <!--Siddhi Extension Versions-->
+        <siddhi.execution.string.version>4.0.10</siddhi.execution.string.version>
+        <siddhi.execution.time.version>4.0.10</siddhi.execution.time.version>
+        <siddhi.execution.unique.version>4.0.22</siddhi.execution.unique.version>
+        <siddhi.execution.regex.version>4.0.10</siddhi.execution.regex.version>
+        <siddhi.execution.map.version>4.0.10</siddhi.execution.map.version>
+        <siddhi.execution.math.version>4.0.14</siddhi.execution.math.version>
+        <siddhi.io.jms.version>1.0.20</siddhi.io.jms.version>
+        <siddhi.store.rdbms.version>4.0.15</siddhi.store.rdbms.version>
+        <siddhi.io.wso2event.version>4.0.12</siddhi.io.wso2event.version>
+    </properties>
 </project>

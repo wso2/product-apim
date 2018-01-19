@@ -41,6 +41,7 @@
                 <!--  change this to config provider format an add it again-->
                 <exclude>**/workflow-extensions.yml</exclude>
                 <exclude>wso2/lib/features/**</exclude>
+                <exclude>deployment/siddhi-files/**</exclude>
             </excludes>
         </fileSet>
 
@@ -108,12 +109,58 @@
             <outputDirectory>lib</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
+        <!--<fileSet>
+            <directory>carbon-home/deployment/siddhi-files</directory>
+            <outputDirectory>deployment/siddhi-files</outputDirectory>
+            <fileMode>644</fileMode>
+            <excludes>
+                <exclude>empty.txt</exclude>
+            </excludes>
+        </fileSet>-->
+        <fileSet>
+            <directory>.</directory>
+            <outputDirectory>deployment/workspace</outputDirectory>
+            <excludes>
+                <exclude>*/**</exclude>
+            </excludes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>.</directory>
+            <outputDirectory>deployment/csv-files</outputDirectory>
+            <excludes>
+                <exclude>*/**</exclude>
+            </excludes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>.</directory>
+            <outputDirectory>deployment/simulation-configs</outputDirectory>
+            <excludes>
+                <exclude>*/**</exclude>
+            </excludes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>target/extensions</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+            <fileMode>664</fileMode>
+        </fileSet>
     </fileSets>
     <files>
         <!-- default runtime -->
         <file>
             <source>carbon-home/conf/deployment.yaml</source>
             <outputDirectory>conf/default/</outputDirectory>
+            <fileMode>644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>carbon-home/conf/security/users.yaml</source>
+            <outputDirectory>wso2/default/conf/security</outputDirectory>
             <fileMode>644</fileMode>
             <filtered>true</filtered>
         </file>
@@ -162,6 +209,24 @@
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.bat</source>
+            <outputDirectory>wso2/default/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>carbon-home/bin/runtime/common/carbon.sh</source>
+            <outputDirectory>wso2/default/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>carbon-home/conf/broker.yaml</source>
+            <outputDirectory>wso2/default/conf/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
         </file>
     </files>
 </assembly>
