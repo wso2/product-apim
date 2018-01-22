@@ -32,6 +32,9 @@ wso2.broker:
 
 # AMQP transport related configurations.
 wso2.broker.transport.amqp:
+ # Hostname configuration used in creating the server socket
+ hostName: localhost
+
  # Maximum number of redeliveries before publishing a message to the DLX (dead letter exchange).
  maxRedeliveryCount: 5
 
@@ -44,8 +47,6 @@ wso2.broker.transport.amqp:
 
  # Nonsecured transport configurations.
  plain:
-  # Hostname configuration used in creating the server socket
-  hostName: localhost
   # Port used for the nonsecured transport.
   port: 5672
 
@@ -53,8 +54,6 @@ wso2.broker.transport.amqp:
  ssl:
   # Indicate if secured transport is enabled. Accepted values are 'true' or 'false'.
   enabled: true
-  # Hostname configuration used in creating server socket
-  hostName: localhost
   # Port used to bind the secured transport.
   port: 8672
   # Secure protocol used to encrypt data.
@@ -82,7 +81,9 @@ wso2.broker.transport.amqp:
    # Cert type used in the truststore file
    certType: SunX509
 
-wso2.broker.haConfig:
+# Failover related configurations
+wso2.broker.failover:
+ # Whether or not failover is enabled
  enabled: false
 
 # Admin service related configurations.

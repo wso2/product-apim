@@ -310,7 +310,7 @@
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.80-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>7.0.82-SNAPSHOT</carbon.apimgt.version>
         <carbon.auth.version>1.0.21</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
@@ -363,7 +363,7 @@
         <carbon.deployment.version>5.2.0</carbon.deployment.version>
         <carbon.analytics.common.version>6.0.52</carbon.analytics.common.version>
         <carbon.uis.version>0.19.2</carbon.uis.version>
-        <broker.version>4.0.14</broker.version>
+        <broker.version>4.0.15</broker.version>
     </properties>
 
     <modules>
