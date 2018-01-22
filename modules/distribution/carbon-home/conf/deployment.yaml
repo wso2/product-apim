@@ -1,0 +1,425 @@
+#   Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved
+#
+#   Licensed under the Apache License, Version 2.0 (the \"License\");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an \"AS IS\" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+  # Carbon Configuration Parameters
+wso2.carbon:
+    # value to uniquely identify a server
+  id: carbon-kernel
+    # server name
+  name: WSO2 Carbon Kernel
+    # ports used by this server
+  ports:
+      # port offset
+    offset: 0
+
+wso2.transport.http:
+  transportProperties:
+    -
+      name: "server.bootstrap.socket.timeout"
+      value: 60
+    -
+      name: "client.bootstrap.socket.timeout"
+      value: 60
+    -
+      name: "latency.metrics.enabled"
+      value: true
+
+  listenerConfigurations:
+    -
+      id: "default"
+      host: "0.0.0.0"
+      port: 9090
+    -
+      id: "msf4j-https"
+      host: "0.0.0.0"
+      port: 9443
+      scheme: https
+      keyStoreFile: "${carbon.home}/resources/security/wso2carbon.jks"
+      keyStorePassword: wso2carbon
+      certPass: wso2carbon
+
+  senderConfigurations:
+    -
+      id: "http-sender"
+
+  # Configuration used for the databridge communication
+databridge.config:
+    # No of worker threads to consume events
+    # THIS IS A MANDATORY FIELD
+  workerThreads: 10
+    # Maximum amount of messages that can be queued internally in MB
+    # THIS IS A MANDATORY FIELD
+  maxEventBufferCapacity: 10000000
+    # Queue size; the maximum number of events that can be stored in the queue
+    # THIS IS A MANDATORY FIELD
+  eventBufferSize: 2000
+    # Keystore file path
+    # THIS IS A MANDATORY FIELD
+  keyStoreLocation : ${sys:carbon.home}/resources/security/wso2carbon.jks
+    # Keystore password
+    # THIS IS A MANDATORY FIELD
+  keyStorePassword : wso2carbon
+    # Session Timeout value in mins
+    # THIS IS A MANDATORY FIELD
+  clientTimeoutMin: 30
+    # Data receiver configurations
+    # THIS IS A MANDATORY FIELD
+  dataReceivers:
+  -
+      # Data receiver configuration
+    dataReceiver:
+        # Data receiver type
+        # THIS IS A MANDATORY FIELD
+      type: Thrift
+        # Data receiver properties
+      properties:
+        tcpPort: '7611'
+        sslPort: '7711'
+
+  -
+      # Data receiver configuration
+    dataReceiver:
+        # Data receiver type
+        # THIS IS A MANDATORY FIELD
+      type: Binary
+        # Data receiver properties
+      properties:
+        tcpPort: '9611'
+        sslPort: '9711'
+        tcpReceiverThreadPoolSize: '100'
+        sslReceiverThreadPoolSize: '100'
+        hostName: 0.0.0.0
+
+  # Configuration of the Data Agents - to publish events through databridge
+data.agent.config:
+    # Data agent configurations
+    # THIS IS A MANDATORY FIELD
+  agents:
+  -
+      # Data agent configuration
+    agentConfiguration:
+        # Data agent name
+        # THIS IS A MANDATORY FIELD
+      name: Thrift
+        # Data endpoint class
+        # THIS IS A MANDATORY FIELD
+      dataEndpointClass: org.wso2.carbon.databridge.agent.endpoint.thrift.ThriftDataEndpoint
+        # Data publisher strategy
+      publishingStrategy: async
+        # Trust store path
+      trustStorePath: '${sys:carbon.home}/resources/security/client-truststore.jks'
+        # Trust store password
+      trustStorePassword: 'wso2carbon'
+        # Queue Size
+      queueSize: 32768
+        # Batch Size
+      batchSize: 200
+        # Core pool size
+      corePoolSize: 1
+        # Socket timeout in milliseconds
+      socketTimeoutMS: 30000
+        # Maximum pool size
+      maxPoolSize: 1
+        # Keep alive time in pool
+      keepAliveTimeInPool: 20
+        # Reconnection interval
+      reconnectionInterval: 30
+        # Max transport pool size
+      maxTransportPoolSize: 250
+        # Max idle connections
+      maxIdleConnections: 250
+        # Eviction time interval
+      evictionTimePeriod: 5500
+        # Min idle time in pool
+      minIdleTimeInPool: 5000
+        # Secure max transport pool size
+      secureMaxTransportPoolSize: 250
+        # Secure max idle connections
+      secureMaxIdleConnections: 250
+        # secure eviction time period
+      secureEvictionTimePeriod: 5500
+        # Secure min idle time in pool
+      secureMinIdleTimeInPool: 5000
+        # SSL enabled protocols
+      sslEnabledProtocols: TLSv1.1,TLSv1.2
+        # Ciphers
+      ciphers: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+  -
+      # Data agent configuration
+    agentConfiguration:
+        # Data agent name
+        # THIS IS A MANDATORY FIELD
+      name: Binary
+        # Data endpoint class
+        # THIS IS A MANDATORY FIELD
+      dataEndpointClass: org.wso2.carbon.databridge.agent.endpoint.binary.BinaryDataEndpoint
+        # Data publisher strategy
+      publishingStrategy: async
+        # Trust store path
+      trustStorePath: '${sys:carbon.home}/resources/security/client-truststore.jks'
+        # Trust store password
+      trustStorePassword: 'wso2carbon'
+        # Queue Size
+      queueSize: 32768
+        # Batch Size
+      batchSize: 200
+        # Core pool size
+      corePoolSize: 1
+        # Socket timeout in milliseconds
+      socketTimeoutMS: 30000
+        # Maximum pool size
+      maxPoolSize: 1
+        # Keep alive time in pool
+      keepAliveTimeInPool: 20
+        # Reconnection interval
+      reconnectionInterval: 30
+        # Max transport pool size
+      maxTransportPoolSize: 250
+        # Max idle connections
+      maxIdleConnections: 250
+        # Eviction time interval
+      evictionTimePeriod: 5500
+        # Min idle time in pool
+      minIdleTimeInPool: 5000
+        # Secure max transport pool size
+      secureMaxTransportPoolSize: 250
+        # Secure max idle connections
+      secureMaxIdleConnections: 250
+        # secure eviction time period
+      secureEvictionTimePeriod: 5500
+        # Secure min idle time in pool
+      secureMinIdleTimeInPool: 5000
+        # SSL enabled protocols
+      sslEnabledProtocols: TLSv1.1,TLSv1.2
+        # Ciphers
+      ciphers: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+
+# This is the main configuration for metrics
+wso2.metrics:
+  # Enable Metrics
+  enabled: false
+  reporting:
+    console:
+      - # The name for the Console Reporter
+        name: Console
+
+        # Enable Console Reporter
+        enabled: false
+
+        # Polling Period in seconds.
+        # This is the period for polling metrics from the metric registry and printing in the console
+        pollingPeriod: 5
+
+wso2.metrics.jdbc:
+  # Data Source Configurations for JDBC Reporters
+  dataSource:
+    # Default Data Source Configuration
+    - &JDBC01
+      # JNDI name of the data source to be used by the JDBC Reporter.
+      # This data source should be defined in a *-datasources.xml file in conf/datasources directory.
+      dataSourceName: java:comp/env/jdbc/WSO2MetricsDB
+      # Schedule regular deletion of metrics data older than a set number of days.
+      # It is recommended that you enable this job to ensure your metrics tables do not get extremely large.
+      # Deleting data older than seven days should be sufficient.
+      scheduledCleanup:
+        # Enable scheduled cleanup to delete Metrics data in the database.
+        enabled: false
+
+        # The scheduled job will cleanup all data older than the specified days
+        daysToKeep: 7
+
+        # This is the period for each cleanup operation in seconds.
+        scheduledCleanupPeriod: 86400
+
+  # The JDBC Reporter is in the Metrics JDBC Core feature
+  reporting:
+    # The JDBC Reporter configurations will be ignored if the Metrics JDBC Core feature is not available in runtime
+    jdbc:
+      - # The name for the JDBC Reporter
+        name: JDBC
+
+        # Enable JDBC Reporter
+        enabled: false
+
+        # Source of Metrics, which will be used to identify each metric in database -->
+        # Commented to use the hostname by default
+        # source: Carbon
+
+        # Alias referring to the Data Source configuration
+        dataSource: *JDBC01
+
+        # Polling Period in seconds.
+        # This is the period for polling metrics from the metric registry and updating the database with the values
+        pollingPeriod: 60
+
+  # Deployment configuration parameters
+wso2.artifact.deployment:
+    # Scheduler update interval
+  updateInterval: 5
+
+  # Periodic Persistence Configuration
+state.persistence:
+  enabled: false
+  intervalInMin: 1
+  revisionsToKeep: 2
+  class: org.wso2.carbon.stream.processor.core.persistence.FileSystemPersistenceStore
+  config:
+    location: siddhi-app-persistence
+
+
+wso2.securevault:
+  secretRepository:
+    type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
+    parameters:
+      privateKeyAlias: wso2carbon
+      keystoreLocation: ${sys:carbon.home}/resources/security/securevault.jks
+      secretPropertiesFile: ${sys:carbon.home}/conf/${sys:wso2.runtime}/secrets.properties
+  masterKeyReader:
+    type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
+    parameters:
+      masterKeyReaderFile: ${sys:carbon.home}/conf/${sys:wso2.runtime}/master-keys.yaml
+
+wso2.datasources:
+    # datasources
+  dataSources:
+  - name: WSO2_AM_DB
+    description: The datasource used for APIM
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2AMDB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: true
+
+  - name: WSO2_LIFECYCLE_DB
+    description: The datasource used for Lifecycle framework
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2LifecycleDB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/WSO2LIFECYCLE_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=true'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: false
+
+  - name: WSO2_CARBON_DB
+    description: "The datasource used for registry and user manager"
+
+    definition:
+      configuration:
+        connectionTestQuery: "SELECT 1"
+        driverClassName: org.h2.Driver
+        idleTimeout: 60000
+        isAutoCommit: false
+        jdbcUrl: "jdbc:h2:${sys:carbon.home}/wso2/${sys:wso2.runtime}/database/WSO2_CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+        maxPoolSize: 50
+        password: wso2carbon
+        username: wso2carbon
+        validationTimeout: 30000
+      type: RDBMS
+
+  - name: WSO2_UM_DB
+    description: The datasource used for user management
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2UM_DB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/UM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: false
+
+  - name: WSO2_AUTH_DB
+    description: The datasource used for auth features
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2AUTH_DB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/AUTH_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: false
+
+# Cluster Configuration
+cluster.config:
+  enabled: false
+  groupId:  sp
+  coordinationStrategyClass: org.wso2.carbon.cluster.coordinator.rdbms.RDBMSCoordinationStrategy
+  strategyConfig:
+    datasource: WSO2_CARBON_DB
+    heartbeatInterval: 1000
+    heartbeatMaxRetry: 2
+    eventPollingInterval: 1000

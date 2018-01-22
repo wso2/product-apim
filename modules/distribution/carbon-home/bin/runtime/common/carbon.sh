@@ -291,8 +291,9 @@ do
     -Dfile.encoding=UTF8 \
     -Djavax.net.ssl.trustStore="$CARBON_HOME/resources/security/client-truststore.jks" \
     -Djavax.net.ssl.trustStorePassword="wso2carbon" \
-    -Dmessage.broker.home="$MESSAGE_BROKER_HOME" \
     -Dbroker.config="$MESSAGE_BROKER_HOME/conf/broker.yaml" \
+    -Dbroker.users.config="$MESSAGE_BROKER_HOME/conf/security/users.yaml" \
+    -Dmessage.broker.home="$CARBON_HOME" \
     org.wso2.carbon.launcher.Main $*
     status=$?
 done
