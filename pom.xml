@@ -50,6 +50,7 @@
         <module>modules/features</module>
         <module>sample-scenarios</module>
         <module>modules/p2-profile</module>
+        <module>modules/oauth2-grant-types</module>
         <module>modules/distribution</module>
         <module>modules/api-import-export</module>
         <module>modules/integration</module>
@@ -1024,11 +1025,11 @@
 
 	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
-        <carbon.commons.version>4.6.8</carbon.commons.version>
+        <carbon.commons.version>4.5.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.49</carbon.mediation.version>
+        <carbon.mediation.version>4.6.10</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.10.86</carbon.identity.version>
@@ -1039,7 +1040,7 @@
         <carbon.identity-local-auth-basicauth.version>5.3.6</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.8</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
-        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.8</carbon.extension.identity.oauth2.grantType.jwt.version>
+        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.7</carbon.extension.identity.oauth2.grantType.jwt.version>
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.8</carbon.deployment.version>
 
