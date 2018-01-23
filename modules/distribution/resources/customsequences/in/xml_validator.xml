@@ -1,0 +1,27 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="xml_validator">
+    <property name="xmlValidation" value="true"/>
+    <property name="dtdEnabled" value="false"/>
+    <property name="externalEntitiesEnabled" value="true"/>
+    <property name="maxXMLDepth" value="30"/>
+    <property name="maxElementCount" value="30"/>
+    <property name="maxAttributeCount" value="30"/>
+    <property name="maxAttributeLength" value="30"/>
+    <property name="entityExpansionLimit" value="30"/>
+    <property name="maxChildrenPerElement" value="30"/>
+    <property name="schemaValidation" value="true"/>
+    <switch source="get-property('To')">
+        <case regex=".*/addResource.*">
+            <property name="xsdFilePath"
+                      value="/Users/hasunie/Development/apim/threat_protector_test/wso2am-2.1.1-SNAPSHOT/shiporder3.xsd"/>
+        </case>
+        <case regex=".*/update.*">
+            <property name="xsdFilePath"
+                      value="/Users/hasunie/Development/apim/threat_protector_test/wso2am-2.1.1-SNAPSHOT/shiporder3.xsd"/>
+        </case>
+        <!--<case regex=".*/update.*">-->
+            <!--<property name="xsdUrl"-->
+                      <!--value="insert xsd URL"/>-->
+        <!--</case>-->
+    </switch>
+    <class name="org.wso2.carbon.apimgt.gateway.mediators.XMLSchemaValidator"/>
+</sequence>
