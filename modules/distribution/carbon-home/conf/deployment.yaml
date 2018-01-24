@@ -423,3 +423,37 @@ cluster.config:
     heartbeatInterval: 1000
     heartbeatMaxRetry: 2
     eventPollingInterval: 1000
+
+wso2.carbon.auth:
+    # User Store Configurations
+  userStoreConfiguration:
+    connectorType: JDBC
+    hashAlgo: SHA256
+    iterationCount: 4096
+    jdbcProperties:
+      dataSource: WSO2_UM_DB
+    keyLength: 256
+    ldapProperties:
+      ldap.ConnectionName: cn=admin,dc=example,dc=org
+      ldap.GroupEntryObjectClass: groupOfNames
+      ldap.UserNameSearchFilter: (&amp;(objectClass=person)(uid=?))
+      ldap.ConnectionURL: ldap://localhost:389
+      ldap.InitialContextFactory: com.sun.jndi.ldap.LdapCtxFactory
+      ldap.connectorClass: org.wso2.carbon.auth.user.store.connector.ldap.LDAPUserStoreConnector
+      ldap.GroupSearchBase: ou=Groups,dc=example,dc=org
+      ldap.ConnectionPassword: admin
+      ldap.UserNameAttribute: uid
+      ldap.GroupSearchFilter: (&amp;(objectClass=groupOfNames)(cn=?))
+      ldap.UserEntryObjectClass: identityPerson
+      ldap.GroupAttribute: cn
+      ldap.SecurityAuthentication: simple
+      ldap.UserNameListFilter: (objectClass=person)
+      ldap.GroupListFilter: (objectClass=groupOfNames)
+      ldap.UserSearchBase: ou=Users,dc=example,dc=org
+    readOnly: false
+    superUser: admin
+    superUserPass: admin
+    # Key Management Configurations
+  keyManagerConfigs:
+      # Access token default validity period
+    defaultTokenValidityPeriod: 3600
