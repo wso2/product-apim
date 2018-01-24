@@ -294,6 +294,12 @@
 </cache>
 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+#if($isSoapToRestMode)
+<property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
+#foreach($uri in $sequences.get("$resource.getUriTemplate()").keySet())
+$sequences.get("$resource.getUriTemplate()").get($uri)
+#end
+#end
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
 #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
@@ -345,6 +351,10 @@
 #end
 </inSequence>
 <outSequence>
+#if($isSoapToRestMode)
+<property description="message" name="messageType" scope="axis2"
+type="STRING" value="application/json"/>
+#end
 <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
 ## check and set response caching
 #if($responseCacheEnabled)

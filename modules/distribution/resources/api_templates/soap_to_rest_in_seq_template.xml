@@ -1,0 +1,17 @@
+<header description="SOAPAction" name="SOAPAction" scope="transport" value="${soapAction}"/>
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+$mapping.get('properties')
+<payloadFactory description="transform" media-type="xml">
+  <format>
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="${namespace}">
+  <soapenv:Header/>
+  <soapenv:Body>
+  	$mapping.get('sequence')
+  </soapenv:Body>
+  </soapenv:Envelope>
+  </format>
+  <args>
+ 	$mapping.get('args')
+  </args>
+</payloadFactory>
+<property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
