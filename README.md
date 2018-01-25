@@ -14,11 +14,6 @@ More information about this product can be found [here](http://wso2.com/api-mana
 
 ## Running the product
 
-### Running WSO2 Key Manager Profile
-1. Download the product distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/product/target.
-2. Extract the distribution. Ex: unzip wso2apim-${project.version}.zip
-3. Go to the key manager runtime dir wso2apim-${project.version}/wso2/key-manager/bin directory and execute the carbon.sh script: ``./carbon.sh``
-
 ### Running WSO2 API Manager Default Profile
 1. Go to the default runtime dir wso2apim-${project.version}/wso2/default/bin directory and execute the carbon.sh script: ``./carbon.sh``
 
@@ -35,5 +30,12 @@ More information about this product can be found [here](http://wso2.com/api-mana
 
 ### Testing
 
-* Open your web browser and type the URL https://localhost:9292/publisher to go to the API Publisher application which allows you to design and publish APIs.
-* On the web browser type the URL https://localhost:9292/store to visit the API Store to discover and consume APIs.
+* Open your web browser and type the URL https://localhost:9443/publisher to go to the API Publisher application which allows you to design and publish APIs.
+* On the web browser type the URL https://localhost:9443/store to visit the API Store to discover and consume APIs.
+
+## Product profiles
+
+### Running WSO2 Key Manager Profile
+1. Download the product distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/product/target.
+2. Extract the distribution. Ex: unzip wso2apim-${project.version}.zip
+3. Go to the key manager runtime dir wso2apim-${project.version}/wso2/key-manager/bin directory and execute the carbon.sh script: ``./carbon.sh``
