@@ -423,7 +423,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "API visibility")
     public void otherAPILifeCycleStatesTestCase() throws Exception {
         String APIName = "APILifeCycleAPI";
-        String APIContext = "test";
+        String APIContext = "testVisibility";
         String tags = "testTag1, testTag2, testTag3";
         String url = "jaxrs_basic/services/customers/customerservice/";
         String description = "This is test API created by API manager Integration tests";
@@ -765,9 +765,10 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+        //Update role permissions
+        apiPublisher.updatePermissions("Gold", "allow", "admin");
         super.cleanUp();
     }
 }
