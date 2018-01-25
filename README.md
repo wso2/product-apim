@@ -14,21 +14,12 @@ More information about this product can be found [here](http://wso2.com/api-mana
 
 ## Running the product
 
-### Running Apache ActiveMQ
-1. Download and install Apache ActiveMQ 5.14.0 from [here](http://activemq.apache.org/activemq-5140-release.html)
-2. Start ActiveMQ using `` ./bin/activemq start ``
-
-### Running WSO2 API Manager Analytics
-1. Download the Analytics distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/analyzer/target.
-2. Extract the distribution. Ex: unzip wso2apim-das-${project.version}.zip
-3. Go to the wso2apim-das-${project.version}/bin directory and execute the worker.sh script: ``./worker.sh``
-
 ### Running WSO2 Key Manager Profile
 1. Download the product distribution from [releases](https://github.com/wso2/product-apim/releases) OR if you built from source, find the binary from product-apim/product/target.
 2. Extract the distribution. Ex: unzip wso2apim-${project.version}.zip
 3. Go to the key manager runtime dir wso2apim-${project.version}/wso2/key-manager/bin directory and execute the carbon.sh script: ``./carbon.sh``
 
-### Running WSO2 API Manager Profile
+### Running WSO2 API Manager Default Profile
 1. Go to the default runtime dir wso2apim-${project.version}/wso2/default/bin directory and execute the carbon.sh script: ``./carbon.sh``
 
 ### Running WSO2 API Manager Gateway
