@@ -513,10 +513,21 @@
                                     <artifactId>siddhi-io-wso2event</artifactId>
                                     <version>${siddhi.io.wso2event.version}</version>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.map.text</groupId>
+                                    <artifactId>siddhi-map-text</artifactId>
+                                    <version>${siddhi.map.text.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
+                                    <artifactId>siddhi-map-wso2event</artifactId>
+                                    <version>${siddhi.map.wso2event.version}</version>
+                                </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}/extensions</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
+
                         </configuration>
                     </execution>
                 </executions>
@@ -1308,5 +1319,7 @@
         <siddhi.io.jms.version>1.0.20</siddhi.io.jms.version>
         <siddhi.store.rdbms.version>4.0.15</siddhi.store.rdbms.version>
         <siddhi.io.wso2event.version>4.0.12</siddhi.io.wso2event.version>
+        <siddhi.map.text.version>1.0.14</siddhi.map.text.version>
+        <siddhi.map.wso2event.version>4.0.10</siddhi.map.wso2event.version>
     </properties>
 </project>

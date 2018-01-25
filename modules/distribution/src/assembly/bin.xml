@@ -39,7 +39,7 @@
                 <exclude>**/netty-transports.yml</exclude>
                 <exclude>**/com.google.gson_2.5.0.jar</exclude>
                 <!--  change this to config provider format an add it again-->
-                <exclude>**/workflow-extensions.yml</exclude>
+                <exclude>**/worgkflow-extensions.yml</exclude>
                 <exclude>wso2/lib/features/**</exclude>
                 <exclude>deployment/siddhi-files/**</exclude>
             </excludes>
