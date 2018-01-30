@@ -5,22 +5,22 @@
     <property name="xmlValidation" value="true"/>
     <property name="dtdEnabled" value="false"/>
     <property name="externalEntitiesEnabled" value="true"/>
-    <property name="maxXMLDepth" value="30"/>
-    <property name="maxElementCount" value="30"/>
-    <property name="maxAttributeCount" value="30"/>
-    <property name="maxAttributeLength" value="30"/>
-    <property name="entityExpansionLimit" value="30"/>
-    <property name="maxChildrenPerElement" value="30"/>
+    <property name="maxXMLDepth" value="100"/>
+    <property name="maxElementCount" value="100"/>
+    <property name="maxAttributeCount" value="100"/>
+    <property name="maxAttributeLength" value="100"/>
+    <property name="entityExpansionLimit" value="100"/>
+    <property name="maxChildrenPerElement" value="100"/>
     <property name="schemaValidation" value="true"/>
     <switch source="get-property('To')">
         <case regex=".*/addResource.*">
-            <property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>
+            <property name="xsdURL" value="<insert XSD_URL>"/>
         </case>
         <!--<case regex=".*/update.*">-->
-            <!--<property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>"/>-->
         <!--</case>-->
         <!--<case regex=".*/delete.*">-->
-            <!--<property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>d"/>-->
         <!--</case>-->
     </switch>
     <property name="RequestMessageBufferSize" value="1024"/>
