@@ -28,11 +28,6 @@
     <property name="enabledCheckHeaders" expression="get-property('enabledCheckHeaders')" value="true"/>
     <property name="enabledCheckPathParams" expression="get-property('enabledCheckPathParams')" value="true"/>
     <class name="org.wso2.carbon.apimgt.gateway.mediators.RegularExpressionProtector"/>
-    <filter source="get-property('threat')" regex=".*error.*">
-        <then>
-            <sequence key="_threat_fault_"></sequence>
-        </then>
-    </filter>
 </sequence>
 
 

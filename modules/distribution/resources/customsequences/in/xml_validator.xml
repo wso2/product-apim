@@ -1,4 +1,7 @@
 <sequence xmlns="http://ws.apache.org/ns/synapse" name="xml_validator">
+    <log level="custom">
+        <property name="IN_MESSAGE" value="xml_validator"/>
+    </log>
     <property name="xmlValidation" value="true"/>
     <property name="dtdEnabled" value="false"/>
     <property name="externalEntitiesEnabled" value="true"/>
@@ -11,17 +14,15 @@
     <property name="schemaValidation" value="true"/>
     <switch source="get-property('To')">
         <case regex=".*/addResource.*">
-            <property name="xsdFilePath"
-                      value="/Users/hasunie/Development/apim/threat_protector_test/wso2am-2.1.1-SNAPSHOT/shiporder3.xsd"/>
-        </case>
-        <case regex=".*/update.*">
-            <property name="xsdFilePath"
-                      value="/Users/hasunie/Development/apim/threat_protector_test/wso2am-2.1.1-SNAPSHOT/shiporder3.xsd"/>
+            <property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>
         </case>
         <!--<case regex=".*/update.*">-->
-            <!--<property name="xsdUrl"-->
-                      <!--value="insert xsd URL"/>-->
+            <!--<property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>-->
+        <!--</case>-->
+        <!--<case regex=".*/delete.*">-->
+            <!--<property name="xsdURL" value="http://localhost:8000/shiporder.xsd"/>-->
         <!--</case>-->
     </switch>
+    <property name="RequestMessageBufferSize" value="1024"/>
     <class name="org.wso2.carbon.apimgt.gateway.mediators.XMLSchemaValidator"/>
 </sequence>

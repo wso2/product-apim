@@ -7,5 +7,6 @@
     <property name="maxArrayElementCount"  value = "5"/>
     <property name="maxKeyLength"  value = "5"/>
     <property name="maxJsonDepth"  value = "5"/>
+    <property name="RequestMessageBufferSize" value="1024"/>
     <class name="org.wso2.carbon.apimgt.gateway.mediators.JsonSchemaValidator"/>
 </sequence>
