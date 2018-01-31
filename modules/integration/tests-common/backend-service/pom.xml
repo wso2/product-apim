@@ -18,7 +18,7 @@ under the License.
     <parent>
         <artifactId>tests-common</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.1.0-update8-SNAPSHOT</version>
+        <version>2.1.0-update9-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

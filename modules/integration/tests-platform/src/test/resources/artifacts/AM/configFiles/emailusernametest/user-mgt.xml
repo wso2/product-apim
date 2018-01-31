@@ -234,7 +234,7 @@
 	     properties control the service name format and service password formats.
 	     In case if user core cache domain is needed to identify uniquely set property <Property name="UserCoreCacheIdentifier">domain</Property>
 	-->
-	<!--ISUserStoreManager class="org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager">
+	<!--UserStoreManager class="org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager">
             <Property name="TenantManager">org.wso2.carbon.user.core.tenant.CommonHybridLDAPTenantManager</Property>
             <Property name="defaultRealmName">WSO2.ORG</Property>
             <Property name="kdcEnabled">false</Property>
@@ -278,7 +278,7 @@
 	    <Property name="SCIMEnabled">true</Property>
             <Property name="MaxRoleNameListLength">100</Property>
             <Property name="MaxUserNameListLength">100</Property>
-        </ISUserStoreManager-->
+        </UserStoreManager-->
 
 	<!--	Following configuration is for the CassandraUserStoreManager. The CassandraUserStoreManager is capable of using a Cassandra
 		database as a user store. This user manager supports multiple credentials for authentication. Credential types can be defined
