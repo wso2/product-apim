@@ -1,0 +1,36 @@
+<header description="SOAPAction" name="SOAPAction" scope="transport" value="${soapAction}"/>
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+$mapping.get('properties')
+
+#if($arrayElements.size() > 0)
+<property name="JSONPayload" expression="json-eval($.)"/>
+<script language="js">
+    var payload =  mc.getProperty("JSONPayload");
+    var payloadObj = JSON.parse(payload);
+ #foreach($element in $arrayElements)
+   #set( $b = $element.propertyName.replace(".${element.paramName}", "") )
+   var results = payloadObj.${b}; 
+   var response = "";
+   for (i = 0; i &lt; results.length; i++) {
+       var elem = results[i];
+       response += "&lt;web:${element.paramName} xmlns:web='${namespace}'&gt;" + elem + "&lt;/web:string&gt;";
+   } 
+   var propertyName = "req.var.${element.propertyName}";
+   mc.setProperty(propertyName, response.toString());
+ #end
+</script>
+#end
+<payloadFactory description="transform" media-type="xml">
+  <format>
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="${namespace}">
+  <soapenv:Header/>
+  <soapenv:Body>
+  	$mapping.get('sequence')
+  </soapenv:Body>
+  </soapenv:Envelope>
+  </format>
+  <args>
+ 	$mapping.get('args')
+  </args>
+</payloadFactory>
+<property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
