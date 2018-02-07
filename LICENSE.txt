@@ -69,12 +69,12 @@ io.swagger.core_1.5.16.jar                                                      
 io.swagger.jaxrs_1.5.16.jar                                                     bundle         apache2   2521
 io.swagger.models_1.5.16.jar                                                    bundle         apache2   2520
 javassist_3.19.0.GA.jar                                                         bundle         apache2+lgpl2+mpl12178
+javax.servlet-api_3.1.0.jar									    cddl+gpl
+jaxen_1.1.6.jar											    apache2
 javax.mail_1.4.7.jar                                                            bundle         cddl+gpl  2566
 javax.validation.api_1.1.0.Final.jar                                            bundle         apache2   1840
 javax.websocket-api_1.1.0.jar                                                   bundle         cddl+gpl  2368
 javax.ws.rs-api_2.0.0.jar                                                       bundle         cddl+gpl  1538
-javax.servlet-api_3.1.0.jar									    cddl+gpl
-jaxen_1.1.6.jar											    apache2
 jaxrs-delegates_2.5.2.jar                                                       bundle         apache2   2665
 jmustache-1.13.jar                                                              jarinbundle    bsd       2551
 joda-time-2.9.9.jar                                                             jarinbundle    apache2   2550
@@ -140,28 +140,30 @@ org.ops4j.pax.logging.pax-logging-log4j2_1.10.0.jar                             
 org.osgi.core-6.0.0.jar                                                         bundle         apache2   1407
 org.wso2.carbon.analytics.idp.client_6.0.52.jar                                 bundle         apache2   15521
 org.wso2.carbon.analytics.msf4j.interceptor.common_2.0.250.jar                  bundle         apache2   15520
-org.wso2.carbon.apimgt.core_7.0.84.jar                                          bundle         apache2   15519
-org.wso2.carbon.apimgt.rest.api.admin_7.0.84.jar                                bundle         apache2   15518
-org.wso2.carbon.apimgt.rest.api.analytics_7.0.84.jar                            bundle         apache2   15517
-org.wso2.carbon.apimgt.rest.api.authenticator_7.0.84.jar                        bundle         apache2   15516
-org.wso2.carbon.apimgt.rest.api.commons_7.0.84.jar                              bundle         apache2   15515
-org.wso2.carbon.apimgt.rest.api.configurations_7.0.84.jar                       bundle         apache2   15514
-org.wso2.carbon.apimgt.rest.api.core_7.0.84.jar                                 bundle         apache2   15513
-org.wso2.carbon.apimgt.rest.api.publisher_7.0.84.jar                            bundle         apache2   15512
-org.wso2.carbon.apimgt.rest.api.store_7.0.84.jar                                bundle         apache2   15511
-org.wso2.carbon.apimgt.throttling.siddhi.extension_7.0.84.jar                   bundle         apache2   15510
-org.wso2.carbon.auth.client.registration.rest.api_1.0.26.jar                    bundle         apache2   15509
-org.wso2.carbon.auth.client.registration_1.0.26.jar                             bundle         apache2   15508
-org.wso2.carbon.auth.core_1.0.26.jar                                            bundle         apache2   15507
-org.wso2.carbon.auth.oauth.rest.api_1.0.26.jar                                  bundle         apache2   15506
-org.wso2.carbon.auth.oauth_1.0.26.jar                                           bundle         apache2   15505
-org.wso2.carbon.auth.rest.api.commons_1.0.26.jar                                bundle         apache2   15504
-org.wso2.carbon.auth.scope.registration.rest.api_1.0.26.jar                     bundle         apache2   15503
-org.wso2.carbon.auth.scope.registration_1.0.26.jar                              bundle         apache2   15502
-org.wso2.carbon.auth.token.introspection.rest.api_1.0.26.jar                    bundle         apache2   15501
-org.wso2.carbon.auth.token.introspection_1.0.26.jar                             bundle         apache2   15500
-org.wso2.carbon.auth.user.mgt_1.0.26.jar                                        bundle         apache2   15499
-org.wso2.carbon.auth.user.store_1.0.26.jar                                      bundle         apache2   15498
+org.wso2.carbon.apimgt.core_7.0.94.jar                                          bundle         apache2   16007
+org.wso2.carbon.apimgt.rest.api.admin_7.0.94.jar                                bundle         apache2   16006
+org.wso2.carbon.apimgt.rest.api.analytics_7.0.94.jar                            bundle         apache2   16005
+org.wso2.carbon.apimgt.rest.api.authenticator_7.0.94.jar                        bundle         apache2   16004
+org.wso2.carbon.apimgt.rest.api.commons_7.0.94.jar                              bundle         apache2   16003
+org.wso2.carbon.apimgt.rest.api.configurations_7.0.94.jar                       bundle         apache2   16002
+org.wso2.carbon.apimgt.rest.api.core_7.0.94.jar                                 bundle         apache2   16001
+org.wso2.carbon.apimgt.rest.api.publisher_7.0.94.jar                            bundle         apache2   16000
+org.wso2.carbon.apimgt.rest.api.store_7.0.94.jar                                bundle         apache2   15999
+org.wso2.carbon.apimgt.throttling.siddhi.extension_7.0.94.jar                   bundle         apache2   15998
+org.wso2.carbon.auth.client.registration.rest.api_1.0.31.jar                    bundle         apache2   15997
+org.wso2.carbon.auth.client.registration_1.0.31.jar                             bundle         apache2   15996
+org.wso2.carbon.auth.core_1.0.31.jar                                            bundle         apache2   15995
+org.wso2.carbon.auth.oauth.rest.api_1.0.31.jar                                  bundle         apache2   15994
+org.wso2.carbon.auth.oauth_1.0.31.jar                                           bundle         apache2   15993
+org.wso2.carbon.auth.rest.api.commons_1.0.31.jar                                bundle         apache2   15992
+org.wso2.carbon.auth.scim.rest.api_1.0.31.jar                                   bundle         apache2   15991
+org.wso2.carbon.auth.scim_1.0.31.jar                                            bundle         apache2   15990
+org.wso2.carbon.auth.scope.registration.rest.api_1.0.31.jar                     bundle         apache2   15989
+org.wso2.carbon.auth.scope.registration_1.0.31.jar                              bundle         apache2   15988
+org.wso2.carbon.auth.token.introspection.rest.api_1.0.31.jar                    bundle         apache2   15987
+org.wso2.carbon.auth.token.introspection_1.0.31.jar                             bundle         apache2   15986
+org.wso2.carbon.auth.user.mgt_1.0.31.jar                                        bundle         apache2   15985
+org.wso2.carbon.auth.user.store_1.0.31.jar                                      bundle         apache2   15984
 org.wso2.carbon.caching_1.1.3.jar                                               bundle         apache2   14020
 org.wso2.carbon.cluster.coordinator.commons_2.0.12.jar                          bundle         apache2   14636
 org.wso2.carbon.cluster.coordinator.rdbms_2.0.12.jar                            bundle         apache2   14635
@@ -200,6 +202,7 @@ org.wso2.carbon.stream.processor.statistics_2.0.250.jar                         
 org.wso2.carbon.tools.core-5.2.6.jar                                            bundle         apache2   14595
 org.wso2.carbon.uiserver_0.19.2.jar                                             bundle         apache2   14784
 org.wso2.carbon.utils_2.0.4.jar                                                 bundle         apache2   14003
+org.wso2.charon3.core_3.0.5.jar                                                 bundle         apache2   15983
 org.wso2.securevault_1.0.0.wso2v2.jar                                           bundle         apache2   768
 org.wso2.transport.http.netty_6.0.64.jar                                        bundle         apache2   14783
 org.yaml.snakeyaml_1.17.0.jar                                                   bundle         apache2   2027
@@ -219,6 +222,8 @@ siddhi-execution-time-4.0.10.jar                                                
 siddhi-execution-unique-4.0.22.jar                                              bundle         apache2   2826
 siddhi-io-jms-1.0.20.jar                                                        bundle         apache2   2630
 siddhi-io-wso2event-4.0.12.jar                                                  bundle         apache2   2825
+siddhi-map-text-1.0.14.jar                                                      bundle         apache2   2868
+siddhi-map-wso2event-4.0.10.jar                                                 bundle         apache2   2620
 siddhi-query-api_4.0.6.jar                                                      bundle         apache2   2828
 siddhi-query-compiler_4.0.6.jar                                                 bundle         apache2   2827
 siddhi-store-rdbms-4.0.15.jar                                                   bundle         apache2   2687
