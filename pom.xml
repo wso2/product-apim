@@ -235,6 +235,12 @@
                 <type>zip</type>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.scim.rest.api.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.analytics-common</groupId>
                 <artifactId>org.wso2.carbon.databridge.feature</artifactId>
                 <version>${carbon.analytics-common.version}</version>
@@ -311,7 +317,7 @@
 
     <properties>
         <carbon.apimgt.version>7.0.94</carbon.apimgt.version>
-        <carbon.auth.version>1.0.27</carbon.auth.version>
+        <carbon.auth.version>1.0.31</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>

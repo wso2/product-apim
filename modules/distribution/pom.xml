@@ -331,6 +331,11 @@
             <type>zip</type>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.auth</groupId>
+            <artifactId>org.wso2.carbon.auth.scim.rest.api.feature</artifactId>
+            <type>zip</type>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon.analytics-common</groupId>
             <artifactId>org.wso2.carbon.databridge.feature</artifactId>
             <type>zip</type>
@@ -806,6 +811,10 @@
                                     <id>org.wso2.carbon.auth.scope.registration.rest.api.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.scim.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1116,6 +1125,10 @@
                                     <id>org.wso2.carbon.auth.rest.api.commons.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.scim.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1225,6 +1238,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.auth.scope.registration.rest.api.feature</id>
+                                    <version>${carbon.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.auth.scim.rest.api.feature</id>
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                                 <feature>
