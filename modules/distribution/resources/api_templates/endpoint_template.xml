@@ -53,6 +53,12 @@
 #print_if_exist_only("duration" $config.get("actionDuration"))
 #print_if_exist_only("responseAction" $config.get("actionSelect"))
 </timeout>
+#else
+        ##add default timeout config
+<timeout>
+<duration>60000</duration>
+<responseAction>fault</responseAction>
+</timeout>
         #end
 <suspendOnFailure>
 #print_list( "errorCodes" $config.get("suspendErrorCode"))
@@ -71,7 +77,7 @@
         #macro ( http_endpoint $name $ep )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
 <http uri-template="$util.escapeXml($ep.get("url"))">
-##timeout( $ep.get('config') )
+#timeout( $ep.get('config') )
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         </endpoint>
@@ -89,7 +95,7 @@ format="$advance_ep.get("format")"
 optimize="$advance_ep.get("optimize")"
 #end
 >
-##timeout( $ep.get('config') )
+#timeout( $ep.get('config') )
 </address>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         </endpoint>
@@ -105,20 +111,7 @@ optimize="$advance_ep.get("optimize")"
         #if ( $endpointClass == "http" )
         #http_endpoint( $ep_key $endpoints )
         #elseif ( $endpointClass == "address" )
-<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
-#set( $advance_ep = $endpoints.get("config") )
-<address uri="$util.escapeXml($endpoints.get("url"))"
-#if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
-format="$advance_ep.get("format")"
-#end
-#if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
-optimize="$advance_ep.get("optimize")"
-#end
->
-#timeout( $endpoints.get('config') )
-</address>
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-        </endpoint>
+        #address_endpoint($ep_key $endpoints)
         #elseif ( $endpointClass == "failover" )
         #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
