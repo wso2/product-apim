@@ -469,7 +469,7 @@
                     </execution>
                     <!-- End disabling MQTT -->
 
-		            <!-- Replace the Datasource in the thrift-authentication.xml file -->
+                    <!-- Replace the Datasource in the thrift-authentication.xml file -->
                     <execution>
                         <id>replace-for-thrift</id>
                         <phase>prepare-package</phase>
@@ -495,8 +495,8 @@
                         <goals>
                             <goal>replace</goal>
                         </goals>
-			            <configuration>
-		 	                <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/web.xml</file>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/web.xml</file>
                             <replacements>
                                 <replacement>
                                     <xpath>/web-app/context-param/param-value</xpath>
@@ -504,7 +504,7 @@
                                     <value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</value>
                                 </replacement>
                             </replacements>
-			            </configuration>
+                        </configuration>
                     </execution>
 
                     <execution>
