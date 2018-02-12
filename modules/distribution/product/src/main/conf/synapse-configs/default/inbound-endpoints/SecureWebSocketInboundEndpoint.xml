@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inboundEndpoint xmlns="http://ws.apache.org/ns/synapse"
+                 name="SecureWebSocketEP"
+                 sequence="dispatchSeq"
+                 onError="fault"
+                 protocol="wss"
+                 suspend="false">
+    <parameters>
+        <parameter name="inbound.ws.port">8099</parameter>
+        <parameter name="ws.outflow.dispatch.sequence">outDispatchSeq</parameter>
+        <parameter name="ws.pipeline.handler.class">org.wso2.carbon.apimgt.gateway.handlers.WebsocketHandler</parameter>
+        <parameter name="ws.subprotocol.handler.class">org.wso2.carbon.inbound.endpoint.protocol.websocket.subprotocols.EchoSubprotocolHandler</parameter>
+        <parameter name="dispatch.custom.sequence">true</parameter>
+        <parameter name="ws.outflow.dispatch.fault.sequence">fault</parameter>
+        <parameter name="ws.client.side.broadcast.level">0</parameter>
+        <parameter name="ws.use.port.offset">true</parameter>
+        <parameter name="wss.ssl.key.store.file">repository/resources/security/wso2carbon.jks</parameter>
+        <parameter name="wss.ssl.key.store.pass">wso2carbon</parameter>
+        <parameter name="wss.ssl.trust.store.file">repository/resources/security/client-truststore.jks</parameter>
+        <parameter name="wss.ssl.trust.store.pass">wso2carbon</parameter>
+        <parameter name="wss.ssl.cert.pass">wso2carbon</parameter>
+    </parameters>
+</inboundEndpoint>
