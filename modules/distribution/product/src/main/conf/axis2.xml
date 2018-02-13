@@ -609,6 +609,15 @@
         <parameter name="ws.outflow.dispatch.fault.sequence" locked="false">outflowFaultSeq</parameter>
     </transportSender>
 
+    <transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
+        <parameter name="ws.outflow.dispatch.sequence" locked="false">outflowDispatchSeq</parameter>
+        <parameter name="ws.outflow.dispatch.fault.sequence" locked="false">outflowFaultSeq</parameter>
+        <parameter name="ws.trust.store" locked="false">
+            <ws.trust.store.location>repository/resources/security/client-truststore.jks</ws.trust.store.location>
+            <ws.trust.store.Password>wso2carbon</ws.trust.store.Password>
+        </parameter>
+    </transportSender>
+
     <!--<transportSender name="https"-->
                      <!--class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">-->
         <!--<parameter name="PROTOCOL">HTTP/1.1</parameter>-->

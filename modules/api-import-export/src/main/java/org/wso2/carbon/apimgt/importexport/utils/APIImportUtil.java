@@ -41,7 +41,7 @@ import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.api.model.Tier;
 import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.apimgt.importexport.APIImportException;
@@ -195,7 +195,7 @@ public final class APIImportUtil {
 
         API importedApi = null;
         String prevProvider;
-        APIDefinition definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
         List<API> allMatchedApis;
 
         String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
@@ -295,9 +295,9 @@ public final class APIImportUtil {
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
                 //Load required properties from swagger to the API
-                Set<URITemplate> uriTemplates = definitionFromSwagger20.getURITemplates(importedApi, swaggerContent);
+                Set<URITemplate> uriTemplates = definitionFromOpenAPISpec.getURITemplates(importedApi, swaggerContent);
                 importedApi.setUriTemplates(uriTemplates);
-                Set<Scope> scopes = definitionFromSwagger20.getScopes(swaggerContent);
+                Set<Scope> scopes = definitionFromOpenAPISpec.getScopes(swaggerContent);
                 importedApi.setScopes(scopes);
 
                 for (URITemplate uriTemplate : uriTemplates) {

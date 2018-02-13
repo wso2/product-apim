@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 
 import com.google.gson.Gson;
@@ -39,7 +40,7 @@ import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.context.CarbonContext;
@@ -735,7 +736,7 @@ public class APIExportUtil {
      * @throws APIExportException If an error occurs while exporting meta information
      */
     private static void exportMetaInformation(API apiToReturn, Registry registry) throws APIExportException {
-        APIDefinition definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
         String archivePath = archiveBasePath.concat(File.separator + apiToReturn.getId().getApiName() + "-" +
                 apiToReturn.getId().getVersion());
 
@@ -751,7 +752,7 @@ public class APIExportUtil {
             //If a web socket API is exported, it does not contain a swagger file.
             //Therefore swagger export is only required for REST or SOAP based APIs
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
-                String swaggerDefinition = definitionFromSwagger20.getAPIDefinition(apiToReturn.getId(), registry);
+                String swaggerDefinition = definitionFromOpenAPISpec.getAPIDefinition(apiToReturn.getId(), registry);
                 JsonParser parser = new JsonParser();
                 JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
                 String formattedSwaggerJson = gson.toJson(json);
