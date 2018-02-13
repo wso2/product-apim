@@ -24,7 +24,7 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>target/wso2carbon-core-${carbon.kernel.version}</directory>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}</outputDirectory>
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
@@ -128,13 +128,13 @@
                 <include>**/*.h2.db</include>
             </includes>
         </fileSet>
-	    <fileSet>
+	    <!--<fileSet>
             <directory>src/main/assembly</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/jaggeryapps/store/site/tenant_themes</outputDirectory>
             <excludes>
                   <exclude>*</exclude>
             </excludes>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <directory>src/main/conf/synapse-configs</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
@@ -165,7 +165,7 @@
                 <include>**/**.sql</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <directory>
                 ../resources/migration-1.0.0_to_1.2.0/
             </directory>
@@ -212,14 +212,14 @@
                 ../resources/migration-1.8.0_to_1.9.0/readme/
             </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
-        </fileSet>
-        <fileSet>
+        </fileSet>-->
+        <!--<fileSet>
             <directory>
                 ../statistics/target/
             </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/dbscripts/stat/migration-1.9.0_to_1.10.0</outputDirectory>
-        </fileSet>
-	    <fileSet>
+        </fileSet>-->
+	    <!--<fileSet>
             <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/api-publisher/</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
             <excludes>
@@ -240,8 +240,8 @@
                 <exclude>login/**</exclude>
                 <exclude>styles-layout.css</exclude>
 	        </excludes>
-        </fileSet>
-        <fileSet>
+        </fileSet>-->
+        <!--<fileSet>
             <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
         </fileSet>
@@ -251,7 +251,7 @@
             <excludes>
                 <exclude>jaggery.conf</exclude>
             </excludes>
-        </fileSet>
+        </fileSet>-->
 	    <!-- Copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/modules</directory>
@@ -260,13 +260,13 @@
                 <include>*/**</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <directory>../../jaggery</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/modules</outputDirectory>
             <includes>
                 <include>**/**</include>
             </includes>
-        </fileSet>
+        </fileSet>-->
 	    <!-- Copying styles for tenants -->
         <fileSet>
             <directory>../../../modules/styles/service/src/main/resources/web/styles/images</directory>
@@ -300,21 +300,21 @@
             </includes>
         </fileSet>
 	    <!-- API Templates -->
-	    <fileSet>
+	    <!--<fileSet>
             <directory>../resources/api_templates</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/api_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
             </includes>
         </fileSet>
-        <!-- Throttling policy related templates -->
+        &lt;!&ndash; Throttling policy related templates &ndash;&gt;
  	    <fileSet>
             <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/policy_templates</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/policy_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
             </includes>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources</outputDirectory>
@@ -341,20 +341,20 @@
 		    <exclude>**/YoutubeFeeds/**</exclude>
             </excludes>
         </fileSet>-->
-        <fileSet>
+        <!--<fileSet>
             <directory>src/main/business-processes</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/business-processes</outputDirectory>
             <includes>
                 <include>**/*.*</include>
             </includes>
-        </fileSet>
-        <fileSet>
+        </fileSet>-->
+        <!--<fileSet>
             <directory>src/main/statistics/target</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/statistics</outputDirectory>
             <includes>
                 <include>**/*.*</include>
             </includes>
-        </fileSet>
+        </fileSet>-->
         <!-- API Custom Sequences -->
 	    <fileSet>
             <directory>../resources/customsequences</directory>

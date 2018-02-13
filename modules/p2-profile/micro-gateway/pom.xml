@@ -771,7 +771,7 @@
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--<feature>
                                     <id>org.jaggeryjs.modules.uuid.feature.group</id>
                                     <version>${jaggery.modules.uuid.feature.version}</version>
                                 </feature>
@@ -794,7 +794,7 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${jaggery.modules.i18n.feature.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.identity-carbon-auth-saml2.version}</version>
