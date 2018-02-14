@@ -1297,6 +1297,10 @@
                                     <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.andes.server.feature.group</id>
+                                    <version>${carbon.messaging.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
                                 </feature>
@@ -1644,6 +1648,10 @@
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
                                     <version>${axis2-transports.wso2.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.andes.server.feature.group</id>
+                                    <version>${carbon.messaging.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
