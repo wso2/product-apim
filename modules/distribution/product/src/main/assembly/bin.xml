@@ -84,6 +84,9 @@
                 <!--<exclude>**/repository/components/plugins/compass_2.0.1.wso2v2.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
 
+                <!-- Remove hadoop client jar since it is vulnerable-->
+                <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
+
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/conf/email/email-admin-config.xml</exclude>
