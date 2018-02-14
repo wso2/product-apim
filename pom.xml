@@ -64,7 +64,7 @@
     </scm>
 
     <repositories>
-	 <repository>
+	<repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
             <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
@@ -1033,7 +1033,7 @@
 
         <!-- carbon identity -->
         <carbon.identity.version>5.10.122</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>5.5.168</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>5.5.180</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.8</carbon.identity-user-ws.version>
         <carbon.identity-carbon-auth-saml2.version>5.2.3</carbon.identity-carbon-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.2.3</carbon.identity-inbound-auth-openid.version>
