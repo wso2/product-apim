@@ -13,9 +13,9 @@
     <property name="maxChildrenPerElement" value="100"/>
     <property name="schemaValidation" value="true"/>
     <switch source="get-property('To')">
-        <case regex=".*/addResource.*">
-            <property name="xsdURL" value="<insert XSD_URL>"/>
-        </case>
+        <!--<case regex=".*/addResource.*">-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>"/>-->
+        <!--</case>-->
         <!--<case regex=".*/update.*">-->
             <!--<property name="xsdURL" value="<insert XSD_URL>"/>-->
         <!--</case>-->
