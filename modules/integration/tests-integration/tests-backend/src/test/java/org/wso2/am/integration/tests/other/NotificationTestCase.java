@@ -79,13 +79,9 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     private static final String USER_EMAIL_ADDRESS = "apim@gmail.com";
     private static final int SMTP_TEST_PORT =3025;
 
-    private static final String ADAPTER_CONFIG_XML = "output-event-adapters.xml";
-    private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
     private String gatewaySessionCookie;
     private GreenMail greenMail;
     private String storeURLHttp;
-    private ResourceAdminServiceClient resourceAdminServiceClient;
-
 
     @Factory(dataProvider = "userModeDataProvider")
     public NotificationTestCase(TestUserMode userMode) {
