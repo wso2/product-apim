@@ -211,7 +211,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         //Get a new access token using refresh token
         String getAccessTokenFromRefreshTokenRequestBody =
-                "grant_type=refresh_token&refresh_token=" + refreshToken + "&scope=PRODUCTION";
+                "grant_type=refresh_token&refresh_token=" + refreshToken;
         accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                getAccessTokenFromRefreshTokenRequestBody,

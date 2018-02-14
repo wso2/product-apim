@@ -1,0 +1,16 @@
+<config defaultPDP="pdp" defaultAttributeFactory="attr"
+        defaultCombiningAlgFactory="comb" defaultFunctionFactory="func">
+    <pdp name="pdp">
+        <attributeFinderModule class="org.wso2.balana.finder.impl.CurrentEnvModule"/>
+        <attributeFinderModule class="org.wso2.balana.finder.impl.SelectorModule"/>
+        <policyFinderModule class="org.wso2.balana.finder.impl.FileBasedPolicyFinderModule"/>
+    </pdp>
+    <attributeFactory name="attr" useStandardDatatypes="true"/>
+    <combiningAlgFactory name="comb" useStandardAlgorithms="true"/>
+
+    <functionFactory name="func" useStandardFunctions="true">
+        <condition>
+            <function class="org.wso2.carbon.identity.entitlement.extension.EvalPermissionTreeFunction"/>
+        </condition>
+    </functionFactory>
+</config>

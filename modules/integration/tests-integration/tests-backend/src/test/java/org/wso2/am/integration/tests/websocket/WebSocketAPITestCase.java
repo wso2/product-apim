@@ -253,7 +253,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         // get Access Token and Refresh Token
         String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
         String getAccessTokenFromRefreshTokenRequestBody =
-                "grant_type=refresh_token&refresh_token=" + refreshToken + "&scope=PRODUCTION";
+                "grant_type=refresh_token&refresh_token=" + refreshToken;
         accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                         getAccessTokenFromRefreshTokenRequestBody,

@@ -29,7 +29,7 @@
         <connection>scm:git:git@github.com:swagger-api/swagger-mustache.git</connection>
         <developerConnection>scm:git:git@github.com:swagger-api/swagger-codegen.git</developerConnection>
         <url>https://github.com/swagger-api/swagger-codegen</url>
-      <tag>HEAD</tag>
+        <tag>HEAD</tag>
   </scm>
     <modules>
         <module>clients</module>

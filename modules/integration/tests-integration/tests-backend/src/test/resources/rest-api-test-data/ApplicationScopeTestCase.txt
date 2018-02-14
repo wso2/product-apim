@@ -178,7 +178,7 @@
                         "status-code": "200"
                     },
                     "body-asserts": [{
-                           "jsonPath" : "$.list[0].key",
+                           "jsonPath" : "$.list[1].key",
                            "regex" : ".*admin_scope"
                        }]
                 }
