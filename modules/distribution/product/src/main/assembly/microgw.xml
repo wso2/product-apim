@@ -38,7 +38,7 @@
                 <exclude>**/conf/security/authenticators.xml</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
                 <exclude>**/conf/tomcat/web.xml</exclude>
-		        <exclude>**/log4j.properties</exclude>
+                <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -51,7 +51,7 @@
                 <exclude>**/identity.xml</exclude>
                 <exclude>**/user-mgt.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
-        	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
+                <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
@@ -72,20 +72,28 @@
                 <exclude>**/repository/components/plugins/com.google.gson_2.3.1.jar</exclude>
                 <exclude>**/repository/components/plugins/guava_12.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wadl-core_1.1.3.wso2v2.jar</exclude>
-		        <exclude>**/repository/components/plugins/org.wso2.carbon.hostobjects.sso_4.3.2.jar</exclude>
-		        <exclude>**/repository/components/plugins/com.google.guava_15.0.0.jar</exclude>
-		        <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.hostobjects.sso_4.3.2.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.guava_15.0.0.jar</exclude>
+                <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_5.0.8.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
-		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/conf/email/email-admin-config.xml</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/store/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${carbon.apimgt.version}/libs/**</exclude>
+                <exclude>
+                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/store/**
+                </exclude>
+                <exclude>
+                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**
+                </exclude>
+                <exclude>
+                    **/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**
+                </exclude>
+                <exclude>
+                    **/repository/components/features/org.wso2.carbon.apimgt.core_${carbon.apimgt.version}/libs/**
+                </exclude>
                 <!--This has excluded additional deployment directory and unwanted webapps folders-->
                 <exclude>deployment/</exclude>
                 <exclude>**/repository/deployment/server/webappss/**</exclude>
@@ -99,34 +107,40 @@
                 <include>**/*.sh</include>
             </includes>
             <excludes>
-                    <exclude>**/wso2server.sh</exclude>
+                <exclude>**/wso2server.sh</exclude>
             </excludes>
             <fileMode>755</fileMode>
         </fileSet>
-	    <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/components/lib</directory>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/components/lib
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
                 <include>**/httpmime-4.3.6.jar</include>
-		        <include>**/encoder-1.1.jar</include>
+                <include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet>
-	    <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib/endorsed</directory>
+        <fileSet>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib/endorsed
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/lib/endorsed</outputDirectory>
-	        <includes>
+            <includes>
                 <include>**/Saxon-HE-9.4.jar</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf</directory>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <includes>
                 <include>**/api-manager.xml</include>
-	        </includes>
+            </includes>
         </fileSet>
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/database</directory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/database
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/database</outputDirectory>
             <includes>
                 <include>**/*.h2.db</include>
@@ -134,24 +148,30 @@
         </fileSet>
         <fileSet>
             <directory>src/main/conf/synapse-configs</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
-        </fileSet>
-  	    <fileSet>
-            <directory>src/main/conf/synapse-configs/default/sequences</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
-        </fileSet>
-	    <fileSet>
-           <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/</directory>
-           <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/advanced</outputDirectory>
-           <includes>
-               <include>**/qpid-config.xml</include>
-               <include>**/qpid-jmxremote.access</include>
-               <include>**/qpid-virtualhosts.xml</include>
-           </includes>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/synapse-configs
+            </outputDirectory>
         </fileSet>
         <fileSet>
-           <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/</directory>
-           <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/identity</outputDirectory>
+            <directory>src/main/conf/synapse-configs/default/sequences</directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/apim-synapse-config/
+            </outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/advanced</outputDirectory>
+            <includes>
+                <include>**/qpid-config.xml</include>
+                <include>**/qpid-jmxremote.access</include>
+                <include>**/qpid-virtualhosts.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/identity</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>
@@ -162,15 +182,17 @@
                 <include>**/**.sql</include>
             </includes>
         </fileSet>
-	    <!-- Copying modules xml -->
+        <!-- Copying modules xml -->
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/modules</directory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/modules
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/modules/</outputDirectory>
-	    	<includes>
+            <includes>
                 <include>*/**</include>
             </includes>
         </fileSet>
-	    <!-- Copying styles for tenants -->
+        <!-- Copying styles for tenants -->
         <fileSet>
             <directory>../../../modules/styles/service/src/main/resources/web/styles/images</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/resources/allthemes/Default/images</outputDirectory>
@@ -179,25 +201,27 @@
             <directory>../../../modules/styles/service/src/main/resources/web/styles/css</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/resources/allthemes/Default/admin</outputDirectory>
         </fileSet>
-	    <fileSet>
-       	    <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/rxts</directory>
+        <fileSet>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/rxts
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/rxts</outputDirectory>
             <includes>
                 <include>*.rxt</include>
             </includes>
         </fileSet>
-	    <!-- Jmeter Intergration Tests -->
- 	    <fileSet>
+        <!-- Jmeter Intergration Tests -->
+        <fileSet>
             <directory>../../integration/tests/src/test/resources/artifacts/AM/scripts</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/scripts</outputDirectory>
             <includes>
                 <include>**/**.jmx</include>
             </includes>
         </fileSet>
-	    <!-- Sample Jmeter scripts for Tenant Creation -->
-	    <fileSet>
+        <!-- Sample Jmeter scripts for Tenant Creation -->
+        <fileSet>
             <directory>../resources/scripts/tenant_Creation</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/scripts/tenantCreation</outputDirectory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/scripts/tenantCreation
+            </outputDirectory>
             <includes>
                 <include>**/**.jmx</include>
             </includes>
@@ -210,7 +234,7 @@
             </includes>
         </fileSet>
         <!-- API Custom Sequences -->
-	    <fileSet>
+        <fileSet>
             <directory>../resources/customsequences</directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources/customsequences</outputDirectory>
             <includes>
@@ -219,7 +243,9 @@
         </fileSet>
         <!-- Multitenancy related file -->
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy</directory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <includes>
                 <include>**/stratos.xml</include>
@@ -228,7 +254,9 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/tenant</directory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/tenant
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/resources</outputDirectory>
             <includes>
                 <include>**/tenant-conf.json</include>
@@ -236,7 +264,8 @@
         </fileSet>
         <!-- Copying runtimes -->
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes</directory>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/lib/runtimes/</outputDirectory>
             <includes>
                 <include>*/**</include>
@@ -244,11 +273,14 @@
         </fileSet>
         <!-- Copying modules coming from jaggery feature -->
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/modules</directory>
+            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/modules
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/modules/</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/service-provider/</directory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/service-provider/
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/dbscripts/service-provider</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
@@ -263,9 +295,10 @@
             </includes>
         </fileSet>
         <!-- End of  API Manager related -->
-	    <!-- Multitenancy related file -->
+        <!-- Multitenancy related file -->
         <fileSet>
-            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/</directory>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/
+            </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <includes>
                 <include>**/stratos.xml</include>
@@ -295,7 +328,8 @@
         </fileSet>
         <!-- QPID related configurations -->
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/
             </directory>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/advanced</outputDirectory>
             <includes>
@@ -317,38 +351,53 @@
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
-	    <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventreceivers/</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventreceivers</outputDirectory>
-            <includes>
-                <include>**/*.xml</include>
-            </includes>
-        </fileSet>
-	    <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventstreams/</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventstreams</outputDirectory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-        </fileSet>
-	    <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventpublishers/</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventpublishers</outputDirectory>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventreceivers/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventreceivers
+            </outputDirectory>
             <includes>
                 <include>**/*.xml</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/executionplans/</directory>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/executionplans</outputDirectory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventstreams/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventstreams
+            </outputDirectory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/eventpublishers/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/eventpublishers
+            </outputDirectory>
+            <includes>
+                <include>**/*.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/executionplans/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/server/executionplans
+            </outputDirectory>
             <includes>
                 <include>**/*.*</include>
             </includes>
         </fileSet>
         <!-- Tomcat carbon web.xml -->
         <fileSet>
-	    <directory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/</directory>
-	    <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat/carbon/WEB-INF/</outputDirectory>
+            <directory>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/
+            </directory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat/carbon/WEB-INF/
+            </outputDirectory>
             <includes>
                 <include>**/web.xml</include>
             </includes>
@@ -374,11 +423,13 @@
 
         <dependencySet>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/lib/core/WEB-INF/lib/</outputDirectory>
-            <includes><include>org.apache.qpid.wso2:qpid-client:jar</include>
+            <includes>
+                <include>org.apache.qpid.wso2:qpid-client:jar</include>
             </includes>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/samples/axis2Client/client_repo/modules</outputDirectory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/samples/axis2Client/client_repo/modules
+            </outputDirectory>
             <includes>
                 <include>org.apache.axis2:addressing:mar</include>
                 <include>org.apache.rampart:rampart:mar</include>
@@ -387,7 +438,8 @@
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>wso2am-micro-gateway-${pom.version}/samples/axis2Server/repository/modules</outputDirectory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/samples/axis2Server/repository/modules
+            </outputDirectory>
             <includes>
                 <include>org.apache.axis2:addressing:mar</include>
                 <include>org.apache.rampart:rampart:mar</include>
@@ -403,10 +455,10 @@
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
-                <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/client/modules</outputDirectory>
-                <includes>
-                    <include>org.apache.rampart:rampart:mar</include>
-                </includes>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/deployment/client/modules</outputDirectory>
+            <includes>
+                <include>org.apache.rampart:rampart:mar</include>
+            </includes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/components/lib</outputDirectory>
@@ -420,7 +472,9 @@
     <files>
         <!-- Start of claim management feature -->
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/claim-config.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/claim-config.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
         </file>
         <!-- End of claim management feature -->
@@ -439,12 +493,12 @@
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>axis2.xml</destName>
         </file>
-	    <file>
+        <file>
             <source>src/main/conf/axis2_blocking_client.xml</source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>axis2_blocking_client.xml</destName>
         </file>
-	    <file>
+        <file>
             <source>src/main/conf/tenant-axis2.xml</source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>tenant-axis2.xml</destName>
@@ -528,7 +582,9 @@
             <filtered>true</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/logging-config.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/logging-config.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/etc</outputDirectory>
         </file>
         <file>
@@ -562,13 +618,15 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/README.txt</source>
+            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/README.txt
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/version.txt</source>
+            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/version.txt
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
@@ -595,10 +653,12 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <filtered>true</filtered>
-	    <fileMode>644</fileMode>
+            <fileMode>644</fileMode>
         </file>
         <file>
             <source>src/main/conf/cloud-services-desc.xml</source>
@@ -606,55 +666,75 @@
             <filtered>true</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading-environments.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading-environments.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/tenant-mgt.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/tenant-mgt.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-agent-config.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-agent-config.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/data-bridge/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-bridge-config.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-bridge-config.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/data-bridge/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/context.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/context.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-    	</file>	
+        </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
@@ -693,53 +773,73 @@
 
         <!-- Metrics related files -->
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <filtered>false</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.properties</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.properties
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <filtered>false</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/metrics-datasources.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/metrics-datasources.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/datasources/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.h2.db</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.h2.db
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/database/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <destName>event-broker.xml</destName>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/registry-event-broker.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/registry-event-broker.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <destName>registry-event-broker.xml</destName>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/</outputDirectory>
             <filtered>false</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/messaging-event-broker.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/messaging-event-broker.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-processor.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-processor.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/input-event-adapters.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/input-event-adapters.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
@@ -747,7 +847,9 @@
 
         <!-- Message Tracer config file -->
         <file>
-            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/message-tracer-config.xml</source>
+            <source>
+                ../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/message-tracer-config.xml
+            </source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
