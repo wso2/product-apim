@@ -1,0 +1,28 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="xml_validator">
+    <log level="custom">
+        <property name="IN_MESSAGE" value="xml_validator"/>
+    </log>
+    <property name="xmlValidation" value="true"/>
+    <property name="dtdEnabled" value="false"/>
+    <property name="externalEntitiesEnabled" value="true"/>
+    <property name="maxXMLDepth" value="100"/>
+    <property name="maxElementCount" value="100"/>
+    <property name="maxAttributeCount" value="100"/>
+    <property name="maxAttributeLength" value="100"/>
+    <property name="entityExpansionLimit" value="100"/>
+    <property name="maxChildrenPerElement" value="100"/>
+    <property name="schemaValidation" value="true"/>
+    <switch source="get-property('To')">
+        <!--<case regex=".*/addResource.*">-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>"/>-->
+        <!--</case>-->
+        <!--<case regex=".*/update.*">-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>"/>-->
+        <!--</case>-->
+        <!--<case regex=".*/delete.*">-->
+            <!--<property name="xsdURL" value="<insert XSD_URL>d"/>-->
+        <!--</case>-->
+    </switch>
+    <property name="RequestMessageBufferSize" value="1024"/>
+    <class name="org.wso2.carbon.apimgt.gateway.mediators.XMLSchemaValidator"/>
+</sequence>
