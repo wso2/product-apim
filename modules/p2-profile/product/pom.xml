@@ -569,9 +569,6 @@
 
                                 <!-- START - UES Features -->
                                 <featureArtifactDef>
-                                    org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.shindig.feature:${carbon.dashboard.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.portal.feature:${carbon.dashboard.version}
                                 </featureArtifactDef>
                                 <!-- END - UES Features -->
@@ -1247,10 +1244,6 @@
                                 </feature>
 
                                 <!-- START - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
                                     <version>${carbon.dashboard.version}</version>
@@ -2391,10 +2384,6 @@
 
                                 <!-- START - UES Features -->
                                 <feature>
-                                    <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
                                     <version>${carbon.dashboard.version}</version>
                                 </feature>
@@ -2830,10 +2819,6 @@
                                 </feature>
 
                                 <!-- START - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
                                     <version>${carbon.dashboard.version}</version>
