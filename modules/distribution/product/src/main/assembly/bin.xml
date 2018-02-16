@@ -93,7 +93,6 @@
                 <exclude>**/repository/components/plugins/siddhi-extension-event-table_3.1.2.jar</exclude>
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
-
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/conf/email/email-admin-config.xml</exclude>
@@ -318,13 +317,9 @@
                 <exclude>jaggery.conf</exclude>
             </excludes>
         </fileSet>
-        <!-- Shindig webapp. Needed for DAS feature/portal> -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
-            <includes>
-                <include>shindig.war</include>
-            </includes>
         </fileSet>
 	    <!--  copying modules xml -->
         <fileSet>
