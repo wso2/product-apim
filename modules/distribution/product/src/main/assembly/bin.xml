@@ -58,6 +58,10 @@
 
                 <!-- Remove multiple versions of same jar for 1.10.x-->
                 <exclude>**/repository/components/plugins/js_1.6.0.R7-wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-annotations_2.9.1.jar</exclude>
+                <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-databind_2.9.1.jar</exclude>
+                <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-core_2.9.1.jar</exclude>
+                <exclude>**/repository/components/plugins/httpclient_4.3.6.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v9.jar</exclude>
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
