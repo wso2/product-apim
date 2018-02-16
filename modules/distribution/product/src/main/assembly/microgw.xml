@@ -352,6 +352,14 @@
                 <include>**/web.xml</include>
             </includes>
         </fileSet>
+        <!--copy the oauth2 grant type extensions -->
+        <fileSet>
+            <directory>../../oauth2-grant-types/target/oauth2GrantCopied/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
@@ -649,6 +657,10 @@
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/security/balana-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
         </file>
 
         <!-- Cipher Tool Files -->

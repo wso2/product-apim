@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>2.1.0-update8-SNAPSHOT</version>
+        <version>2.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -952,7 +952,7 @@
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.apache.axis2.transport.jms.feature</id>
+                                    <id>org.apache.axis2.transport.jms.feature.group</id>
                                     <version>${org.apache.axis2.transport.version}</version>
                                 </feature>
                             </features>
