@@ -86,7 +86,8 @@
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${carbon.apimgt.version}/libs/**</exclude>
-                <!--<exclude>**/deployment/</exclude>-->
+                <!--This has excluded additional deployment directory and unwanted webapps folders-->
+                <exclude>deployment/</exclude>
                 <exclude>**/repository/deployment/server/webappss/**</exclude>
                 <exclude>**/repository/deployment/server/webapps/**</exclude>
             </excludes>
@@ -355,7 +356,7 @@
         <!--copy the oauth2 grant type extensions -->
         <fileSet>
             <directory>../../oauth2-grant-types/target/oauth2GrantCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/components/dropins</outputDirectory>
             <includes>
                 <include>**/*.jar</include>
             </includes>
@@ -660,7 +661,7 @@
         </file>
         <file>
             <source>src/main/conf/security/balana-config.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+            <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/security</outputDirectory>
         </file>
 
         <!-- Cipher Tool Files -->
