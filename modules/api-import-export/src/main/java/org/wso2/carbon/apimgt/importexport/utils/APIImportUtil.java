@@ -235,8 +235,9 @@ public final class APIImportUtil {
             allMatchedApis = provider.searchAPIs(importedApi.getId().getApiName(), "Name", null);
             //if an API exist with the same name
             if (!allMatchedApis.isEmpty()) {
-                for (API matchAPI : allMatchedApis) {
-                    if (matchAPI.getId().getVersion().equalsIgnoreCase(importedApi.getId().getVersion())) {
+                for(API matchAPI:allMatchedApis) {
+                    if (matchAPI.getId().getVersion().equalsIgnoreCase(importedApi.getId().getVersion()) &&
+                            matchAPI.getId().getApiName().equalsIgnoreCase(importedApi.getId().getApiName())) {
                         String errorMessage = "Error occurred while adding the API. A duplicate API already exists " +
                                 "for " + importedApi.getId().getApiName() + '-' + importedApi.getId().getVersion();
                         log.error(errorMessage);
