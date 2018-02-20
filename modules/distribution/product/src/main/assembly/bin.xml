@@ -61,7 +61,6 @@
                 <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-annotations_2.9.1.jar</exclude>
                 <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-databind_2.9.1.jar</exclude>
                 <exclude>**/repository/components/plugins/com.fasterxml.jackson.core.jackson-core_2.9.1.jar</exclude>
-                <exclude>**/repository/components/plugins/httpclient_4.3.6.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v9.jar</exclude>
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
@@ -80,7 +79,8 @@
                 <exclude>**/repository/components/plugins/wadl-core_1.1.3.wso2v2.jar</exclude>
 		        <exclude>**/repository/components/plugins/org.wso2.carbon.hostobjects.sso_4.3.2.jar</exclude>
 		        <exclude>**/repository/components/plugins/com.google.guava_15.0.0.jar</exclude>
-		        <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/httpclient_4.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_5.0.8.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
 		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
