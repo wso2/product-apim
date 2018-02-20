@@ -100,6 +100,12 @@
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${carbon.apimgt.version}/libs/**</exclude>
+
+                <exclude>**/repository/deployment/server/webapps/api#identity#entitlement.war</exclude>
+                <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#dcr#v1.0.war</exclude>
+                <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#v1.0.war</exclude>
+                <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
+                <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -316,10 +322,6 @@
             <excludes>
                 <exclude>jaggery.conf</exclude>
             </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
         </fileSet>
 	    <!--  copying modules xml -->
         <fileSet>
@@ -1153,4 +1155,5 @@
         </file>
 
     </files>
+
 </assembly>
