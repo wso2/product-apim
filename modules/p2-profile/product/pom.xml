@@ -594,6 +594,11 @@
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.publishevent.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
 
+                                <!-- On-Premise Gateway Features -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.default.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1264,6 +1269,11 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.micro.gateway.default.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2855,6 +2865,10 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.micro.gateway.default.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>

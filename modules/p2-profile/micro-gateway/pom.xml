@@ -476,6 +476,11 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.publishevent.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
+
+                                <!-- On-Premise Gateway Features -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -920,6 +925,10 @@
                                 <feature>
                                     <id>org.apache.axis2.transport.jms.feature.group</id>
                                     <version>${org.apache.axis2.transport.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.micro.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
