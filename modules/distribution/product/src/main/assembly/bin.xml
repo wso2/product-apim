@@ -746,9 +746,9 @@
         </dependencySet>
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/axis2/client/lib</outputDirectory>
-            <includes>
-                <include>bouncycastle:bcprov-jdk15:jar</include>
-            </includes>
+            <excludes>
+       		<exclude>bouncycastle:bcprov-jdk15:jar</exclude>
+            </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 	<dependencySet>
