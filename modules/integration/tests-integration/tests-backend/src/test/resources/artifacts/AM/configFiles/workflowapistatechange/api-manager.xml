@@ -559,8 +559,8 @@
             <ModelPackage>org.wso2.client.model.</ModelPackage>
             <ApiPackage>org.wso2.client.api.</ApiPackage>
             <!-- Configure supported languages/Frameworks as comma separated values,
-             Supported Languages/Frameworks : android, java, scala, csharp, cpp, dart, flash, go, groovy, javascript, jmeter,
-             nodejs, perl, php, python, ruby, swift, clojure, aspNet5, asyncScala, spring, csharpDotNet2, haskell-->
+             Supported Languages/Frameworks : android, java, scala, csharp, dart, flash, groovy, javascript, jmeter,
+             nodejs, perl, php, python, ruby, swift, clojure, asyncScala, csharpDotNet2-->
             <SupportedLanguages>java,android</SupportedLanguages>
         </ClientGeneration>
     </SwaggerCodegen>
