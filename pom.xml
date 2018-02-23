@@ -1029,6 +1029,12 @@
                 <artifactId>org.wso2.carbon.apimgt.micro.gateway.rest.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
+            <!-- Forget-me tool -->
+            <dependency>
+                <groupId>org.wso2.carbon.privacy</groupId>
+                <artifactId>org.wso2.carbon.privacy.forgetme.tool</artifactId>
+                <version>${forgetme.tool.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1193,6 +1199,9 @@
         <!--Sample backend dependencies -->
         <httpclient.version>4.3.1.wso2v1</httpclient.version>
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
+
+        <!-- Forget-me tool -->
+        <forgetme.tool.version>1.1.5</forgetme.tool.version>
     </properties>
 
 </project>
