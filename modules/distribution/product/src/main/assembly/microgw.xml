@@ -774,11 +774,12 @@
         <file>
             <source>src/main/conf/cipher-tool.properties</source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/security</outputDirectory>
-        </file>
+        </file>-->
+
         <file>
             <source>src/main/conf/security/Owasp.CsrfGuard.Carbon.properties</source>
             <outputDirectory>wso2am-micro-gateway-${pom.version}/repository/conf/security</outputDirectory>
-        </file>-->
+        </file>
 
         <!-- Metrics related files -->
         <file>
