@@ -481,6 +481,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.publisher.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -928,6 +931,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.micro.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.publisher.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>

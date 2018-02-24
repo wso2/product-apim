@@ -233,6 +233,15 @@
                 <include>**/**</include>
             </includes>
         </fileSet>
+
+        <fileSet>
+            <directory>../resources/api_templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/api_templates</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+            </includes>
+        </fileSet>
+
         <!-- API Custom Sequences -->
         <fileSet>
             <directory>../resources/customsequences</directory>
