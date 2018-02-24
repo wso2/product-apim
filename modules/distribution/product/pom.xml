@@ -509,7 +509,7 @@
 
                     <!-- Update Owasp.CsrfGuard.properties file location to fix IBM JDK issue -->
                     <execution>
-                        <id>replace-for-owasp</id>
+                        <id>replace-for-owasp-micro-gateway</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>replace</goal>
