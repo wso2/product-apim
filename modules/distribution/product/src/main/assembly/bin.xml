@@ -710,6 +710,26 @@
                 <include>**/*.jar</include>
             </includes>
         </fileSet>
+
+        <!-- On-Premise Gateway related files -->
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/stream-definitions/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/stream-definitions/</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>micro-gateway#v0.9.war</include>
+            </includes>
+        </fileSet>
+
     </fileSets>
 
     <dependencySets>
@@ -896,6 +916,14 @@
             <source>src/main/conf/carbon.properties</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>carbon.properties</destName>
+            <filtered>true</filtered>
+        </file>
+
+        <!-- On-Premise Gateway related properties -->
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/on-premise-gateway.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>on-premise-gateway.properties</destName>
             <filtered>true</filtered>
         </file>
 

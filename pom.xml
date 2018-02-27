@@ -997,6 +997,38 @@
                 <artifactId>logging-interceptor</artifactId>
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
+
+            <!-- Dependencies for On-Premise Gateway -->
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.common</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.usage.publisher</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.api.synchronizer</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.tenant.initializer</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.throttling.synchronizer</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.micro.gateway.rest.api</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1106,6 +1138,7 @@
         <carbon.automation.version>4.4.2</carbon.automation.version>
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
         <org.apache.cxf.version>3.1.7</org.apache.cxf.version>
+        <org.apache.axis2.transport.version>1.1.1-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
