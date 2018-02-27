@@ -364,6 +364,8 @@
                             <goal>attached</goal>
                         </goals>
                         <configuration>
+                            <finalName>wso2am-micro-gw-${pom.version}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
                             <filters>
                                 <filter>${basedir}/src/main/assembly/filter.properties</filter>
                             </filters>
