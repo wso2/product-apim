@@ -740,6 +740,7 @@
                 <exclude>**/conf/sql/identity/idn-oauth-consumer-apps.sql</exclude>
                 <exclude>**/conf/sql/identity/sp-app.sql</exclude>
                 <exclude>**/conf/sql/identity/cm-receipt.sql</exclude>
+                <exclude>**/conf/sql/identity/cm-receipt.sql.properties</exclude>
             </excludes>
             <includes>
                 <include>**/lib/**</include>
