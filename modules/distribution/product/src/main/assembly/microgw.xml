@@ -753,6 +753,11 @@
             <outputDirectory>wso2am-micro-gw-${pom.version}/repository/conf/security</outputDirectory>
         </file>
 
+        <file>
+            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib/org.wso2.carbon.apimgt.micro.gateway.configurator-${carbon.apimgt.version}.jar</source>
+            <outputDirectory>wso2am-micro-gw-${pom.version}/lib</outputDirectory>
+        </file>
+
         <!-- Cipher Tool Files -->
         <!--<file>
             <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.sh</source>

@@ -144,6 +144,26 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-micro-gateway-configurator</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.micro.gateway.configurator</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib</outputDirectory>
+                                    <destFileName>org.wso2.carbon.apimgt.micro.gateway.configurator-${carbon.apimgt.version}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
