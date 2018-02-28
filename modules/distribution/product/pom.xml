@@ -249,6 +249,12 @@
                                         <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
+                                <copy todir="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/"
+                                      overwrite="false">
+                                    <fileset
+                                            dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent">
+                                    </fileset>
+                                </copy>
                                 <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/" />
                                 <zip destfile="target/site/store-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/" />
                                 <zip destfile="target/site/admin-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.admin*/api-docs/" />
