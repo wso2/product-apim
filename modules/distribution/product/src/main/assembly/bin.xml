@@ -483,6 +483,27 @@
                 <include>api#am#store#v0.11.war</include>
             </includes>
         </fileSet>
+        <!--copy jaxrs web app for consent management feature-->
+        <fileSet>
+            <directory>
+                ../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>api#identity#consent-mgt#v1.0.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/consent</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
+            </includes>
+            <fileMode>644</fileMode>
+            <directoryMode>775</directoryMode>
+        </fileSet>
         <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
@@ -706,6 +727,15 @@
         <fileSet>
             <directory>../../oauth2-grant-types/target/oauth2GrantCopied/jar</directory>
             <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+        </fileSet>
+
+        <!-- copy cxf filter extensions -->
+        <fileSet>
+            <directory>../../oauth2-client-authentication-filter/target/cxfFilters/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/lib/runtimes/cxf</outputDirectory>
             <includes>
                 <include>**/*.jar</include>
             </includes>
@@ -1205,6 +1235,11 @@
             <source>../resources/authenticators/authenticators.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
             <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/consent-mgt-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <fileMode>644</fileMode>
         </file>
 
