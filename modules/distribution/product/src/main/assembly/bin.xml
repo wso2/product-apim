@@ -592,9 +592,12 @@
         <fileSet>
         <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes</directory>
         <outputDirectory>${pom.artifactId}-${pom.version}/lib/runtimes/</outputDirectory>
-        <includes>
-        <include>*/**</include>
-        </includes>
+            <includes>
+                <include>*/**</include>
+            </includes>
+	        <excludes>
+                <exclude>**/cxf/spring-asm-3.1.4.RELEASE.jar</exclude>
+	        </excludes>
         </fileSet>
 
         <!--Copying modules coming from jaggery feature-->
