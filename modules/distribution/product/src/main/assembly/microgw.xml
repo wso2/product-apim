@@ -656,6 +656,20 @@
         </file>
 
         <file>
+            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/cloud-init.sh</source>
+            <outputDirectory>wso2am-micro-gw-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/bin/cloud-init.bat</source>
+            <outputDirectory>wso2am-micro-gw-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
             <source>../../../config/bam.xml</source>
             <outputDirectory>wso2am-micro-gw-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
