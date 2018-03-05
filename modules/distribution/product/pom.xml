@@ -191,6 +191,9 @@
                         </goals>
                         <configuration>
                             <tasks>
+                                <path id="h2.classpath">
+                                    <path refid="maven.compile.classpath" />
+                                </path>
                                 <property name="tempdir" value="target/docs-temp" />
                                 <property name="hideMenu" value="&lt;/Security&gt;${line.separator} ${line.separator} &lt;!--Hide unnecessary menu Items--&gt; ${line.separator} &lt;HideMenuItemIds&gt; ${line.separator} &lt;HideMenuItemId&gt;claim_mgt_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_mgt_emailtemplate_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_security_questions_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;/HideMenuItemIds&gt;" />
 
@@ -253,6 +256,13 @@
                                     <fileset dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent">
                                     </fileset>
                                 </copy>
+                                <!--Creates Consent Management Database Tables-->
+                                <sql driver="org.h2.Driver" url="jdbc:h2:${basedir}/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2CARBON_DB" userid="wso2carbon" password="wso2carbon" autocommit="true" onerror="continue">
+                                    <classpath>
+                                        <path refid="h2.classpath"/>
+                                    </classpath>
+                                    <fileset file="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/h2.sql" />
+                                </sql>
                                 <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/" />
                                 <zip destfile="target/site/store-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/" />
                                 <zip destfile="target/site/admin-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.admin*/api-docs/" />
