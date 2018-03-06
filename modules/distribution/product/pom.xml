@@ -277,6 +277,20 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>modify-entitlement-properties-micro-gateway</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="entitlement.properties" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>modify_application_authenticaton</id>
                         <phase>prepare-package</phase>
                         <configuration>
