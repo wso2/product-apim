@@ -1064,10 +1064,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.7</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.31</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.2.119</carbon.apimgt.version>
+        <carbon.apimgt.version>6.2.128</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.2.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1117,7 +1117,7 @@
 
         <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
         <analytics.shared.version>1.0.1</analytics.shared.version>
-
+	<siddhi.version>3.2.0</siddhi.version>
 
         <axis2-transports.wso2.version>2.0.0-wso2v1</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
@@ -1201,7 +1201,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.6</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.19</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>

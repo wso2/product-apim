@@ -90,10 +90,13 @@
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
-                <exclude>**/repository/components/plugins/siddhi-extension-event-table_3.1.2.jar</exclude>
+                
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
                 <exclude>**/repository/components/plugins/netty-all_4.0.23.wso2v1.jar</exclude>
+
+                <exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_${carbon.analytics.common.version}.jar</exclude>
+                <exclude>**/repository/components/plugins/siddhi-extension-event-table_${siddhi.version}.jar</exclude>
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
