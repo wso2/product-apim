@@ -50,11 +50,13 @@
 			                <responseAction>fault</responseAction>
 			            </timeout>
 			            <suspendOnFailure>
+			                 <errorCodes>-1</errorCodes>
+			                 <initialDuration>0</initialDuration>
 			                 <progressionFactor>1.0</progressionFactor>
+			                 <maximumDuration>0</maximumDuration>
 			            </suspendOnFailure>
 			            <markForSuspension>
-			                <retriesBeforeSuspension>0</retriesBeforeSuspension>
-                            <retryDelay>0</retryDelay>
+			                <errorCodes>-1</errorCodes>
 			            </markForSuspension>
 			        </http>
 			    </endpoint>
