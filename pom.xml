@@ -1226,7 +1226,7 @@
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
-        <forgetme.tool.version>1.1.5</forgetme.tool.version>
+        <forgetme.tool.version>1.1.6</forgetme.tool.version>
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>1.0.33</carbon.consent.mgt.version>
     </properties>
