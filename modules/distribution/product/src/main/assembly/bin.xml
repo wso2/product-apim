@@ -483,7 +483,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.11.war</include>
+                <include>api#am#store#v0.12.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -514,7 +514,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.11.war</include>
+                <include>api#am#publisher#v0.12.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -524,7 +524,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.11.war</include>
+                <include>api#am#admin#v0.12.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -544,7 +544,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.11.war</include>
+                <include>client-registration#v0.12.war</include>
             </includes>
         </fileSet>
 
