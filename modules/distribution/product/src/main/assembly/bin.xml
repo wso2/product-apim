@@ -489,7 +489,7 @@
         <!--copy jaxrs web app for consent management feature-->
         <fileSet>
             <directory>
-                ../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <includes>
@@ -498,7 +498,7 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/consent</outputDirectory>
             <includes>
