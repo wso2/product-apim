@@ -322,6 +322,18 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>modify-scope-validators-micro-gw</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;ScopeValidator class=&quot;org.wso2.carbon.identity.oauth2.validators.XACMLScopeValidator&quot;/&gt;" value="" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
 
