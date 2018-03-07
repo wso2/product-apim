@@ -86,7 +86,8 @@ public class APIService {
 
         try {
 
-            Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
+            Response authorizationResponse = AuthenticatorUtil
+                    .authorizeUser(httpHeaders, APIImportExportConstants.EXPORT_ACTION);
             if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
             }
@@ -179,7 +180,8 @@ public class APIService {
         }
 
         try {
-            Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
+            Response authorizationResponse = AuthenticatorUtil
+                    .authorizeUser(httpHeaders, APIImportExportConstants.IMPORT_ACTION);
 
             if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;

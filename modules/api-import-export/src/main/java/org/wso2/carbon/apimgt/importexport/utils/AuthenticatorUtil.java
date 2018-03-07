@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.user.api.AuthorizationManager;
@@ -49,7 +50,8 @@ public class AuthenticatorUtil {
     private static final Log log = LogFactory.getLog(AuthenticatorUtil.class);
     private static String username;
     private static String password;
-    public static final String APIM_ADMIN_PERMISSION = "/permission/admin/manage/apim_admin";
+    public static final String APIM_API_IMPORT_PERMISSION = "/permission/admin/manage/api/import";
+    public static final String APIM_API_EXPORT_PERMISSION = "/permission/admin/manage/api/export";
 
     private AuthenticatorUtil() {
     }
@@ -64,7 +66,7 @@ public class AuthenticatorUtil {
      * @throws APIExportException If an error occurs while authorizing current user
      */
 
-    public static Response authorizeUser(HttpHeaders headers) throws APIExportException {
+    public static Response authorizeUser(HttpHeaders headers, String action) throws APIExportException {
         if (!isValidCredentials(headers)) {
             String message = "Credentials are not provided for authentication";
             log.error(message);
@@ -104,13 +106,17 @@ public class AuthenticatorUtil {
                         return Response.ok().build();
                     }
                 }
-
-                if (authorizationManager.isUserAuthorized(tenantAwareUsername, APIM_ADMIN_PERMISSION,
-                        CarbonConstants.UI_PERMISSION_ACTION)) {
-                    log.info(username + " is authorized to import and export APIs");
+                if (APIImportExportConstants.IMPORT_ACTION.equals(action) && authorizationManager
+                        .isUserAuthorized(tenantAwareUsername, APIM_API_IMPORT_PERMISSION,
+                                CarbonConstants.UI_PERMISSION_ACTION)) {
+                    log.info(username + " is authorized to import APIs");
+                    return Response.ok().build();
+                } else if (APIImportExportConstants.EXPORT_ACTION.equals(action) && authorizationManager
+                        .isUserAuthorized(tenantAwareUsername, APIM_API_EXPORT_PERMISSION,
+                                CarbonConstants.UI_PERMISSION_ACTION)) {
+                    log.info(username + " is authorized to export APIs");
                     return Response.ok().build();
                 }
-
                 return Response.status(Response.Status.FORBIDDEN).entity("User is not authorized for the " +
                         "performed action.").type(MediaType.APPLICATION_JSON).build();
 

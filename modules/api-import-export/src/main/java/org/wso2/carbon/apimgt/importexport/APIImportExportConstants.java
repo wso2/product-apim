@@ -89,4 +89,8 @@ public final class APIImportExportConstants {
 
     public static final String CHARSET = "UTF-8";
 
+    public static final String IMPORT_ACTION = "import";
+
+    public static final String EXPORT_ACTION = "export";
+
 }
