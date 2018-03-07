@@ -771,8 +771,8 @@
             <directory>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}</directory>
             <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool</outputDirectory>
             <excludes>
-               <exclude>**/forget-me</exclude>
-                <exclude>**/forget-me.bat</exclude>
+               <exclude>**/forgetme.sh</exclude>
+                <exclude>**/forgetme.bat</exclude>
                 <exclude>**/conf/sql/identity/idn-oauth-consumer-apps.sql</exclude>
                 <exclude>**/conf/sql/identity/sp-app.sql</exclude>
                 <exclude>**/conf/sql/identity/cm-receipt.sql</exclude>
@@ -785,8 +785,8 @@
                 <include>**/conf/log-config/apim-patterns.xml</include>
                 <include>**/conf/sql/apim/**</include>
                 <include>**/conf/sql/identity/**</include>
-                <include>**/conf/datasources/apim-datasources.xml</include>
-                <include>**/conf/datasources/um-datasources.xml</include>
+                <include>**/conf/datasources/sample-apim-datasources.xml</include>
+                <include>**/conf/datasources/sample-um-datasources.xml</include>
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
@@ -1264,13 +1264,13 @@
             <fileMode>744</fileMode>
         </file>
         <file>
-            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forget-me</source>
+            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.sh</source>
             <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/bin/</outputDirectory>
             <fileMode>744</fileMode>
         </file>
 
         <file>
-            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forget-me.bat</source>
+            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.bat</source>
             <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/bin/</outputDirectory>
             <fileMode>744</fileMode>
         </file>
