@@ -112,6 +112,7 @@
                 <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#v1.0.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
+                <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -388,13 +389,6 @@
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
-            <includes>
-                <include>**/**</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/portal_conf</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
             <includes>
                 <include>**/**</include>
             </includes>
