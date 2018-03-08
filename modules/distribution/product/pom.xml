@@ -690,6 +690,24 @@
                             </replacements>
                         </configuration>
                     </execution>
+                    <!-- Replace the Datasource in the consent-mgt-config.xml file -->
+                    <execution>
+                        <id>replace-for-consent-mgt</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/consent-mgt-config.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/ConsentManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
