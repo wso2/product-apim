@@ -60,8 +60,6 @@ print(publisherHostObj.getInlineContent("admin","HostObjectTestAPI","1.0.0","hel
 print("==");
 print(publisherHostObj.getAllDocumentation("admin@carbon.super","HostObjectTestAPI","1.0.0"));
 print("==");
-print(publisherHostObj.searchAccessTokens("*:*"));
-print("==");
 print(publisherHostObj.getSubscriberCountByAPIs("admin@carbon.super"));
 print("==");
 print(publisherHostObj.getSubscriberCountByAPIVersions("admin@carbon.super"));

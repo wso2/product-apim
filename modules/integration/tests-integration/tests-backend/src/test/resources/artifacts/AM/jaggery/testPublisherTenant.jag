@@ -93,8 +93,6 @@ print("==");
 print(publisherHostObj.loadRegistryOfTenant("wso2.com"));
 print("==");
 //23
-print(publisherHostObj.searchAccessTokens("*:*"));
-print("==");
 
 var apiData = {};
 apiData["provider"] = "admin@wso2.com";

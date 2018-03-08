@@ -344,32 +344,30 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while checking gateway type from API store host object (isSynapseGateway)");
         assertTrue(array[22].contains("null"),
                    "Error while load Registry Of Tenant API store host object (loadRegistryOfTenant)");
-        assertTrue(array[23].contains("token"),
-                   "Error while search Access Tokens from API store host object (searchAccessTokens)");
-        assertTrue(array[24].contains("false"),
+        assertTrue(array[23].contains("false"),
                    "Error while checking API Older Versions from API store host object (isAPIOlderVersionExist)");
-        assertTrue(array[25].contains("true"),
+        assertTrue(array[24].contains("true"),
                    "Error while update Subscription Status from API store host object (updateSubscriptionStatus)");
-        assertTrue(array[26].contains("true"),
+        assertTrue(array[25].contains("true"),
                    "Error while update Tier Permissions from API store host object (updateTierPermissions)");
         // API visibility test cases
-        assertTrue(array[27].contains("HostObjectTestAPI"),
+        assertTrue(array[26].contains("HostObjectTestAPI"),
                    "Error while searching APIs by Version from API store host object (searchAPIs)");
-        assertTrue(array[28].contains("HostObjectTestAPI"),
+        assertTrue(array[27].contains("HostObjectTestAPI"),
                    "Error while searching APIs by Status from API store host object (searchAPIs)");
-        assertTrue(array[29].contains("HostObjectTestAPI"),
+        assertTrue(array[28].contains("HostObjectTestAPI"),
                    "Error while search API by part of the API name (searchAPIs)");
-        assertTrue(array[30].contains("HostObjectTestAPI"),
+        assertTrue(array[29].contains("HostObjectTestAPI"),
                    "Error while search API by uppercase API name (searchAPIs)");
-        assertTrue(array[31].contains("HostObjectTestAPI"),
+        assertTrue(array[30].contains("HostObjectTestAPI"),
                    "Error while search API by lowercase API name (searchAPIs)");
-        assertTrue(array[32].contains("HostObjectTestAPI"),
+        assertTrue(array[31].contains("HostObjectTestAPI"),
                    "Error while search API by provider (searchAPIs)");
-        assertTrue(array[33].contains("HostObjectTestAPI"),
+        assertTrue(array[32].contains("HostObjectTestAPI"),
                    "Error while search API by part of the provider (searchAPIs)");
-        assertTrue(!array[34].contains("HostObjectTestAPI"),
+        assertTrue(!array[33].contains("HostObjectTestAPI"),
                    "Error while search API by invalid search key (searchAPIs)");
-        assertTrue(array[35].contains("true"),
+        assertTrue(array[34].contains("true"),
                 "Error while update Tier Permissions from API store host object (updateTierPermissions)");
 
         return true;

@@ -93,8 +93,6 @@ print("==");
 print(publisherHostObj.loadRegistryOfTenant("carbon.super"));
 print("==");
 //23
-print(publisherHostObj.searchAccessTokens("*:*"));
-print("==");
 
 var apiData = {};
 apiData["provider"] = "admin";
