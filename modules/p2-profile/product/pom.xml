@@ -1648,6 +1648,18 @@
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.statistics.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
+                                    <version>${carbon.commons.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
+                                    <version>${carbon.commons.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
