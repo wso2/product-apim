@@ -488,6 +488,12 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.publisher.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.consent.mgt:org.wso2.carbon.consent.mgt.server.feature:${carbon.consent.mgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.utils:org.wso2.carbon.database.utils.feature:${carbon.database.utils.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -944,6 +950,15 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.publisher.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <!-- Consent Management dependency -->
+                                <feature>
+                                    <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
+                                    <version>${carbon.consent.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
                                 </feature>
                             </features>
                         </configuration>

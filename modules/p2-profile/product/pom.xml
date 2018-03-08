@@ -603,6 +603,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.default.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.utils:org.wso2.carbon.database.utils.feature:${carbon.database.utils.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1289,6 +1292,10 @@
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1636,6 +1643,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1992,6 +2003,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2448,6 +2463,10 @@
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2899,6 +2918,10 @@
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3310,6 +3333,10 @@
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3635,6 +3662,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
                                 </feature>
                                 <!-- START - UES Features -->
                                 <!--<feature>
