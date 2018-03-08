@@ -82,6 +82,7 @@
                 <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/httpclient_4.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_5.0.8.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.ui.menu.stratos_2.2.0.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
 		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
@@ -111,6 +112,7 @@
                 <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#v1.0.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
+                <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -321,13 +323,6 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/portal/</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
-            <excludes>
-                <exclude>jaggery.conf</exclude>
-            </excludes>
-        </fileSet>
 	    <!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/modules</directory>
@@ -394,13 +389,6 @@
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
-            <includes>
-                <include>**/**</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/portal_conf</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
             <includes>
                 <include>**/**</include>
             </includes>
