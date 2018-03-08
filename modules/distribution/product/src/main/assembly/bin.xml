@@ -322,13 +322,6 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/portal/</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
-            <excludes>
-                <exclude>jaggery.conf</exclude>
-            </excludes>
-        </fileSet>
 	    <!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/modules</directory>
