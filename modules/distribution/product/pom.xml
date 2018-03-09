@@ -273,6 +273,20 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>modify_identity_properties</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="Captcha.Verification.Internally.Managed=true" value="Captcha.Verification.Internally.Managed=false" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="identity-mgt.properties" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>modify_application_authenticaton</id>
                         <phase>prepare-package</phase>
                         <configuration>
