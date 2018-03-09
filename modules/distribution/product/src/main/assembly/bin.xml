@@ -752,8 +752,6 @@
                 <exclude>**/forgetme.bat</exclude>
                 <exclude>**/conf/sql/identity/idn-oauth-consumer-apps.sql</exclude>
                 <exclude>**/conf/sql/identity/sp-app.sql</exclude>
-                <exclude>**/conf/sql/identity/cm-receipt.sql</exclude>
-                <exclude>**/conf/sql/identity/cm-receipt.sql.properties</exclude>
                 <exclude>**/conf/sql/identity/um-system-user.sql</exclude>
                 <exclude>**/conf/sql/identity/um-system-user.sql.properties</exclude>
             </excludes>
