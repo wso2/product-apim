@@ -486,17 +486,6 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/consent/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/consent</outputDirectory>
-            <includes>
-                <include>**/*.sql</include>
-            </includes>
-            <fileMode>644</fileMode>
-            <directoryMode>775</directoryMode>
-        </fileSet>
-        <fileSet>
-            <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
