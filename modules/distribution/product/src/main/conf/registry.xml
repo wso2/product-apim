@@ -264,6 +264,7 @@
     <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
         <startIndexing>true</startIndexing>
+        <!--skipCache>true</skipCache-->
         <startingDelayInSeconds>35</startingDelayInSeconds>
         <indexingFrequencyInSeconds>3</indexingFrequencyInSeconds>
         <!--number of resources submit for given indexing thread -->
