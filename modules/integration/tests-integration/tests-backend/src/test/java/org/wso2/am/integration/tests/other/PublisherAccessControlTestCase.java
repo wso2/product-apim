@@ -242,6 +242,8 @@ public class PublisherAccessControlTestCase extends APIMIntegrationBaseTest {
         createAPIRequest.setVisibility(RESTRICTED_ACCESS_CONTROL);
         createAPIRequest.setRoles(SUBSCRIBER_ROLE);
         apiPublisher.updateAPI(createAPIRequest);
+        // Waiting to index after api update operation
+        Thread.sleep(10000);
 
         apiStoreRestClient.login(SUBSCRIBER_USER, USER_PASSWORD);
         HttpResponse storeAllAPIs = apiStoreRestClient
