@@ -799,7 +799,7 @@
             </includes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
-        <dependencySet>
+        <!--dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/axis2/client/lib</outputDirectory>
             <excludes>
  		<exclude>bouncycastle:bcprov-jdk15:jar</exclude>
@@ -811,7 +811,7 @@
                 <exclude>org.apache.tomcat:jdbc-pool:jar</exclude>
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
+        </dependencySet-->
 	<dependencySet>
 			<outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>
 			<includes>
