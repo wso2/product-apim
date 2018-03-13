@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="Carbon Product" uid="carbon.product.id" id="carbon.product" application="carbon.application"
-version="4.4.25" useFeatures="true" includeLaunchers="true">
+version="4.4.26" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -14,7 +14,7 @@ version="4.4.25" useFeatures="true" includeLaunchers="true">
    </plugins>
 
    <features>
-      <feature id="org.wso2.carbon.core.runtime" version="4.4.25"/>
+      <feature id="org.wso2.carbon.core.runtime" version="4.4.26"/>
    </features>
 
   <configurations>
