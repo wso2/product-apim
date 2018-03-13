@@ -1122,7 +1122,7 @@
 
         <carbon.dashboard.version>2.0.16</carbon.dashboard.version>
         <analytics.shared.version>1.0.1</analytics.shared.version>
-	    <siddhi.version>3.2.0</siddhi.version>
+	    <siddhi.version>3.2.2</siddhi.version>
 
         <axis2-transports.wso2.version>2.0.0-wso2v1</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
@@ -1206,7 +1206,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.19</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.21</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
