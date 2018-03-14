@@ -22,4 +22,4 @@ SET curDrive=%cd:~0,1%
 SET wsasDrive=%CARBON_HOME:~0,1%
 if not "%curDrive%" == "%wsasDrive%" %wsasDrive%:
 cd %CARBON_HOME%
-call %CARBON_HOME%\repository\components\tools\identity-anonymization-tool\bin\forgetme.bat
+call %CARBON_HOME%\repository\components\tools\forget-me\bin\forgetme.bat
