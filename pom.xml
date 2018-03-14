@@ -1096,7 +1096,7 @@
         <carbon.mediation.version>4.6.61</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.11.143</carbon.identity.version>
+        <carbon.identity.version>5.11.144</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>5.6.58</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.8</carbon.identity-user-ws.version>
         <carbon.identity-carbon-auth-saml2.version>5.4.6</carbon.identity-carbon-auth-saml2.version>
@@ -1111,13 +1111,13 @@
         <carbon.deployment.version>4.7.15</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.3.20</carbon.analytics.version>
+        <carbon.analytics.version>1.3.22</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.6.6</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.6.11</carbon.multitenancy.version>
 
         <carbon.dashboard.version>2.0.16</carbon.dashboard.version>
         <analytics.shared.version>1.0.1</analytics.shared.version>
