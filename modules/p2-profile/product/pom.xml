@@ -599,6 +599,20 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.consent.mgt:org.wso2.carbon.consent.mgt.server.feature:${carbon.consent.mgt.version}
                                 </featureArtifactDef>
+                                <!-- Consent management features -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.framework:org.wso2.carbon.identity.consent.mgt.server.feature:${carbon.identity.version}
+                                </featureArtifactDef>                                
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.auth.server.feature:${carbon.identity.auth.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.authz.server.feature:${carbon.identity.auth.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.context.rewrite.server.feature:${carbon.identity.auth.version}
+                                </featureArtifactDef>
+
                                 <!-- On-Premise Gateway Features -->
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.default.feature:${carbon.apimgt.version}
@@ -1295,6 +1309,22 @@
                                 <feature>
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.consent.mgt.server.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2471,6 +2501,7 @@
                                     <id>org.wso2.carbon.identity.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
+                                <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
@@ -2478,6 +2509,22 @@
                                 <feature>
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.consent.mgt.server.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -3341,6 +3388,7 @@
                                     <id>org.wso2.carbon.claim.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
+                                <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
@@ -3348,6 +3396,22 @@
                                 <feature>
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.consent.mgt.server.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>

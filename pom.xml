@@ -1107,6 +1107,7 @@
         <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.9</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.2.5</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.auth.version>1.1.16</carbon.identity.auth.version> 
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.15</carbon.deployment.version>
