@@ -747,7 +747,7 @@
         <!-- Copying forget me tool -->
         <fileSet>
             <directory>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me</outputDirectory>
             <excludes>
                <exclude>**/forgetme.sh</exclude>
                 <exclude>**/forgetme.bat</exclude>
@@ -1251,28 +1251,28 @@
         </file>
         <file>
             <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.sh</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/bin/</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/bin/</outputDirectory>
             <fileMode>744</fileMode>
         </file>
 
         <file>
             <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.bat</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/bin/</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/bin/</outputDirectory>
             <fileMode>744</fileMode>
         </file>
         <file>
             <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/sql/identity/um-system-user.sql</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/conf/sql/um/</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/sql/um/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
             <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/sql/identity/um-system-user.sql.properties</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/conf/sql/um/</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/sql/um/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>
             <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/product-config/config-apim.json</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/identity-anonymization-tool/conf/</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/</outputDirectory>
             <destName>config.json</destName>
             <fileMode>744</fileMode>
         </file>
