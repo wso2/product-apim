@@ -1068,7 +1068,7 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.35</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.36</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.2.184</carbon.apimgt.version>
@@ -1093,7 +1093,7 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.63</carbon.mediation.version>
+        <carbon.mediation.version>4.6.62</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.11.148</carbon.identity.version>
