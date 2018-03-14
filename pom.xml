@@ -1104,7 +1104,7 @@
         <carbon.identity-local-auth-basicauth.version>5.3.7</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.12</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
-        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.9</carbon.extension.identity.oauth2.grantType.jwt.version>
+        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.10</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.2.5</carbon.identity.carbon.auth.saml2.version>
 
         <!-- carbon deployment -->
