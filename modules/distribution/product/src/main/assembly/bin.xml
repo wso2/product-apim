@@ -38,6 +38,7 @@
                 <exclude>**/conf/security/authenticators.xml</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
                 <exclude>**/conf/tomcat/web.xml</exclude>
+                <exclude>**/conf/tomcat/catalina-server.xml</exclude>
 		        <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
