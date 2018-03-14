@@ -220,7 +220,6 @@
     </test>
     <test name="apim-websocket-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
     </test>
@@ -250,6 +249,11 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-websocket-tests-2" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
         </classes>
     </test>
 </suite>
