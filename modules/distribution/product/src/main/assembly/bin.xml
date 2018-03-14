@@ -901,6 +901,13 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>src/main/conf/catalina-server.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
+            <destName>catalina-server.xml</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>src/main/conf/thrift-authentication.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>thrift-authentication.xml</destName>
