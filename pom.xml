@@ -1122,7 +1122,7 @@
 
         <carbon.dashboard.version>2.0.16</carbon.dashboard.version>
         <analytics.shared.version>1.0.1</analytics.shared.version>
-	    <siddhi.version>3.2.0</siddhi.version>
+	    <siddhi.version>3.2.2</siddhi.version>
 
         <axis2-transports.wso2.version>2.0.0-wso2v15</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
