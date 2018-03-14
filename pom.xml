@@ -1096,7 +1096,7 @@
         <carbon.mediation.version>4.6.63</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.11.145</carbon.identity.version>
+        <carbon.identity.version>5.11.148</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>5.6.60</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.8</carbon.identity-user-ws.version>
         <carbon.identity-carbon-auth-saml2.version>5.4.6</carbon.identity-carbon-auth-saml2.version>
