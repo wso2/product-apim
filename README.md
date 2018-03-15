@@ -74,7 +74,7 @@ Key Features
 * Control Access and Enforce Security:  
     - Apply Security policies to APIs (authentication and authorization).
     - Rely on OAuth2 standard for API access (implicit, authorization code, client, SAML, IWA Grant type).
-    - Restrict API access tokens to domains/IPs
+    - Restrict API access tokens to domains/IPs.
     - Block a subscription and restrict a complete application.
     - Associate API available to system defined service tiers.
     - Leverage XACML for entitlements management and fine grained authorization.
@@ -117,7 +117,7 @@ Key Features
     - Storefront implemented with Jaggery (jaggeryjs.org) for easy of customization.
     - Pluggable to third-party analytics systems and billing systems (Available soon in a future version).
     - Pluggable to existing user stores including JDBC and LDAP.
-    - Components usable separately 
+    - Components usable separately. 
     - Store front can be used to front APIs that are routed through third-party gateways such as, Intel Expressway Service Gateway.
     - Support for Single Sign On (SSO) using SAML 2.0 for easy integration with existing web apps.
         
@@ -128,21 +128,21 @@ Key Features
     - Integrates with enterprise identity systems including LDAP and Microsoft Active Directory.
     - Gateway can be deployed in DMZ with controlled access to WSO2 Identity Server (for authentication/authorization) and governance database behind a firewall.
 
-* Support for Creating Multi-tenanted APIs        
+* Support for Creating Multi-tenanted APIs:       
     - Run a single instance and provide API Management to multiple customers.
     - Share APIs between different departments in a large enterprise.
         
-* Publishing and Governing API Use        
-    - Document an API using Swagger
-    - Restrict API access tokens to domains/IPs
-    - Ability to block a subscription and restricting a complete application
-    - Ability to revoke access tokens
-    - Separate validity period configuration for application access token
-    - OAuth2 authorization code grant type support
-    - Configuring execution point of mediation extensions
+* Publishing and Governing API Use:        
+    - Document an API using Swagger.
+    - Restrict API access tokens to domains/IPs.
+    - Ability to block a subscription and restricting a complete application.
+    - Ability to revoke access tokens.
+    - Separate validity period configuration for application access token.
+    - OAuth2 authorization code grant type support.
+    - Configuring execution point of mediation extensions.
         
-* Monitor API Usage and Performance        
-    - Improved dashboard for monitoring usage statistics (Filtering data for a date range, More visually appealing widgets)       
+* Monitor API Usage and Performance:        
+    - Improved dashboard for monitoring usage statistics (Filtering data for a date range, More visually appealing widgets).       
     
 
 System Requirements
