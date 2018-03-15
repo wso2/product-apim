@@ -21,7 +21,8 @@ WSO2 API Manager consists of several loosely coupled modules.
         * API Publisher
         * API Store
         * API Gateway
-	* API Key Manager
+        * API Key Manager
+
 
 The API publisher module allows API publishers to easily define APIs and manage them
 using a strong governance model that consists of well-established concepts such as,
