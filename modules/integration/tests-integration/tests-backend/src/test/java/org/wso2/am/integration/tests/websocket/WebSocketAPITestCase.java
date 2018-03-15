@@ -117,10 +117,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart
                 (new File(wsEventPublisherSource + wsRequestEventPublisherSource),
-                        new File(wsEventPublisherTarget + wsRequestEventPublisherSource), true);
+                        new File(wsEventPublisherTarget + wsRequestEventPublisherSource), false);
         serverConfigurationManager.applyConfigurationWithoutRestart
                 (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
-                        new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), true);
+                        new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
         int lowerPortLimit = 9950;
         int upperPortLimit = 9999;
