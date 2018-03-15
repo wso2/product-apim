@@ -40,14 +40,14 @@ To learn more about WSO2 API Manager please visit http://wso2.com/products/api-m
 Key Features
 =============
 
-* Design and prototype APIs:        
+* Design and Prototype APIs:        
     - Design APIs, gather developer's feedback before implementing (API First Design).
     - Design can be done from the publishing interface or by importing an existing Swagger definition.
     - Deploy a prototyped API, provide early access to APIs, and get early feedback.
     - Mock API implementation using Javascript.
     - Support publishing SOAP, REST, JSON, and XML style services as XML.     
     
-* Create a Store of all the available APIs:        
+* Create a Store of All the Available APIs:        
     - Graphical experience similar to Android Marketplace or Apple App Store.
     - Browse APIs by provider, tags, or name.
     - Self-registration to developer community to subscribe to APIs.
@@ -61,7 +61,7 @@ Key Features
     - Try APIs directly on the Store front.
     - Internationalization (i18n) support.    
     
-* Publishing and governing API use:     
+* Publishing and Governing API use:     
     - Publish APIs to external consumers and partners, as well as internal users.
     - Supports publishing multiple protocols including SOAP, REST, JSON, and XML style services as APIs.
     - Manage API versions and deployment status by version.
@@ -71,7 +71,7 @@ Key Features
     - Track consumers per API.
     - One-click deployment to API Gateway for immediate publishing.
         
-* Control access and enforce security:  
+* Control Access and Enforce Security:  
     - Apply Security policies to APIs (authentication and authorization).
     - Rely on OAuth2 standard for API access (implicit, authorization code, client, SAML, IWA Grant type).
     - Restrict API access tokens to domains/IPs
@@ -81,7 +81,7 @@ Key Features
     - Configure Single Sign-On (SSO) using SAML 2.0 for easy integration with existing web apps.
     - Powered by WSO2 Enterprise Service Bus.
         
-* Route API traffic:
+* Route API Traffic:
     - Supports API authentication with OAuth2.
     - Extremely high performance pass-through message routing with sub-millisecond latency.
     - Enforce rate limiting and throttling policies for APIs by consumer.
@@ -91,20 +91,20 @@ Key Features
     - Configure API routing policies with capabilities of WSO2 Enterprise Service Bus.
     - Powered by WSO2 Enterprise Service Bus.            
 
-* Manage developer community:        
+* Manage Developer Community:        
     - Self-sign up for API consumption.
     - Manage user account including resetting password.
     - Developer interaction with APIs via comments and ratings.
     - Support for developer communication via forums (Available soon in a future version).
     - Powered by WSO2 Identity Server.
         
-* Govern complete API lifecycle:        
+* Govern Complete API Lifecycle:        
     - Manage API lifecycle from cradle to grave: create, publish, block, deprecate, and retire.
     - Publish both production and sandbox keys for APIs to enable easy developer testing.
     - Publish APIs to partner networks such as ProgrammableWeb (Available soon in a future version).
     - Powered by WSO2 Governance Registry.
         
-* Monitor API usage and performance:        
+* Monitor API Usage and Performance:        
     - All API usage published to pluggable analytics framework.
     - Out-of-the-box support for WSO2 Business Activity Monitor and Google Analytics.
     - View metrics by user, API, and more.
@@ -112,7 +112,7 @@ Key Features
     - Monitor SLA compliance.
     - Powered by WSO2 Business Activity Monitor.      
     
-* Pluggable, extensible, and themeable:        
+* Pluggable, Extensible, and Themeable:        
     - All components are highly customizable through styling, theming, and open source code.
     - Storefront implemented with Jaggery (jaggeryjs.org) for easy of customization.
     - Pluggable to third-party analytics systems and billing systems (Available soon in a future version).
@@ -121,18 +121,18 @@ Key Features
     - Store front can be used to front APIs that are routed through third-party gateways such as, Intel Expressway Service Gateway.
     - Support for Single Sign On (SSO) using SAML 2.0 for easy integration with existing web apps.
         
-* Easily deployable in enterprise setting:        
+* Easily Deployable in Enterprise Settings:        
     - Role based access control (RBAC) for managing users and their authorization levels.
     - Store-front can be deployed in DMZ for external access with the Publisher inside the firewall for private control.
     - Different user stores for developer focused store-front and internal operations in the publisher.
     - Integrates with enterprise identity systems including LDAP and Microsoft Active Directory.
     - Gateway can be deployed in DMZ with controlled access to WSO2 Identity Server (for authentication/authorization) and governance database behind a firewall.
 
-* Support for creating multi-tenanted APIs        
+* Support for Creating Multi-tenanted APIs        
     - Run a single instance and provide API Management to multiple customers.
     - Share APIs between different departments in a large enterprise.
         
-* Publishing and governing API use        
+* Publishing and Governing API Use        
     - Document an API using Swagger
     - Restrict API access tokens to domains/IPs
     - Ability to block a subscription and restricting a complete application
@@ -141,7 +141,7 @@ Key Features
     - OAuth2 authorization code grant type support
     - Configuring execution point of mediation extensions
         
-* Monitor API usage and performance        
+* Monitor API Usage and Performance        
     - Improved dashboard for monitoring usage statistics (Filtering data for a date range, More visually appealing widgets)       
     
 
