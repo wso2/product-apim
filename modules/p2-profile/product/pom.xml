@@ -1671,14 +1671,6 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
-                                    <version>${carbon.consent.mgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.database.utils.feature.group</id>
-                                    <version>${carbon.database.utils.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.event.statistics.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
@@ -1689,6 +1681,27 @@
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
+                                </feature>
+                                <!-- Consent Management dependency -->
+                                <feature>
+                                    <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
+                                    <version>${carbon.consent.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.database.utils.feature.group</id>
+                                    <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2042,6 +2055,7 @@
                                     <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
+                                <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
@@ -2049,6 +2063,18 @@
                                 <feature>
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2973,6 +2999,7 @@
                                     <id>org.wso2.carbon.apimgt.micro.gateway.default.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
                                     <version>${carbon.consent.mgt.version}</version>
@@ -2980,6 +3007,18 @@
                                 <feature>
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                             </features>
                         </configuration>
