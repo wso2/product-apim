@@ -439,5 +439,97 @@
             </WhiteListedURI>
         </WhiteListedURIs>
     </RESTAPI>
+    <ThrottlingConfigurations>
+        <EnableAdvanceThrottling>true</EnableAdvanceThrottling>
+        <TrafficManager>
+            <Type>Binary</Type>
+            <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
+            <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
+            <Username>${admin.username}</Username>
+            <Password>${admin.password}</Password>
+        </TrafficManager>
+        <DataPublisher>
+            <Enabled>true</Enabled>
+            <DataPublisherPool>
+                <MaxIdle>1000</MaxIdle>
+                <InitIdleCapacity>200</InitIdleCapacity>
+            </DataPublisherPool>
+            <DataPublisherThreadPool>
+                <CorePoolSize>200</CorePoolSize>
+                <MaxmimumPoolSize>1000</MaxmimumPoolSize>
+                <KeepAliveTime>200</KeepAliveTime>
+            </DataPublisherThreadPool>
+        </DataPublisher>
+        <PolicyDeployer>
+            <Enabled>true</Enabled>
+            <ServiceURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServiceURL>
+            <Username>${admin.username}</Username>
+            <Password>${admin.password}</Password>
+        </PolicyDeployer>
+        <BlockCondition>
+            <Enabled>true</Enabled>
+            <!--InitDelay>300000</InitDelay>
+            <Period>3600000</Period-->
+        </BlockCondition>
+        <JMSConnectionDetails>
+            <Enabled>true</Enabled>
+            <Destination>throttleData</Destination>
+            <!--InitDelay>300000</InitDelay-->
+            <JMSConnectionParameters>
+                <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
+                <transport.jms.DestinationType>topic</transport.jms.DestinationType>
+                <java.naming.factory.initial>org.wso2.andes.jndi.PropertiesFileInitialContextFactory</java.naming.factory.initial>
+                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+            </JMSConnectionParameters>
+        </JMSConnectionDetails>
+
+        <!--DefaultLimits>
+            <SubscriptionTierLimits>
+                <Gold>5000</Gold>
+                <Silver>2000</Silver>
+                <Bronze>1000</Bronze>
+                <Unauthenticated>60</Unauthenticated>
+            </SubscriptionTierLimits>
+            <ApplicationTierLimits>
+                <50PerMin>50</50PerMin>
+                <20PerMin>20</20PerMin>
+                <10PerMin>10</10PerMin>
+            </ApplicationTierLimits>
+            <ResourceLevelTierLimits>
+                <50KPerMin>50000</50KPerMin>
+                <20KPerMin>20000</20KPerMin>
+                <10KPerMin>10000</10KPerMin>
+            </ResourceLevelTierLimits>
+        </DefaultLimits-->
+        <EnableUnlimitedTier>true</EnableUnlimitedTier>
+        <EnableHeaderConditions>false</EnableHeaderConditions>
+        <EnableJWTClaimConditions>false</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>false</EnableQueryParamConditions>
+    </ThrottlingConfigurations>
+    
+    <WorkflowConfigurations>
+        <Enabled>false</Enabled>
+    	<ServerUrl>https://localhost:9445/bpmn</ServerUrl>   		
+    	<ServerUser>${admin.username}</ServerUser>
+    	<ServerPassword>${admin.password}</ServerPassword>
+    	<WorkflowCallbackAPI>https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.12/workflows/update-workflow-status</WorkflowCallbackAPI>
+        <TokenEndPoint>https://localhost:${https.nio.port}/token</TokenEndPoint>
+        <DCREndPoint>https://localhost:${mgt.transport.https.port}/client-registration/v0.12/register</DCREndPoint>
+        <DCREndPointUser>${admin.username}</DCREndPointUser>
+        <DCREndPointPassword>${admin.password}</DCREndPointPassword>
+    </WorkflowConfigurations>
+
+    <SwaggerCodegen>
+        <ClientGeneration>
+            <GroupId>org.wso2</GroupId>
+            <ArtifactId>org.wso2.client.</ArtifactId>
+            <ModelPackage>org.wso2.client.model.</ModelPackage>
+            <ApiPackage>org.wso2.client.api.</ApiPackage>
+            <!-- Configure supported languages/Frameworks as comma separated values,
+             Supported Languages/Frameworks : android, java, scala, csharp, dart, flash, groovy, javascript, jmeter,
+             nodejs, perl, php, python, ruby, swift, clojure, asyncScala, csharpDotNet2-->
+            <SupportedLanguages>java,android</SupportedLanguages>
+        </ClientGeneration>
+    </SwaggerCodegen>
 
 </APIManager>

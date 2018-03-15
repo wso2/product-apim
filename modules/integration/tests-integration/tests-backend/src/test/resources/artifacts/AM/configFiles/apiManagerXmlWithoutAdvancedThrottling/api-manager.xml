@@ -442,12 +442,15 @@
 
     <ThrottlingConfigurations>
         <EnableAdvanceThrottling>false</EnableAdvanceThrottling>
-        <DataPublisher>
+        <TrafficManager>
             <Type>Binary</Type>
             <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
             <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
             <Username>${admin.username}</Username>
             <Password>${admin.password}</Password>
+        </TrafficManager>
+        <DataPublisher>
+            <Enabled>true</Enabled>
             <DataPublisherPool>
                 <MaxIdle>1000</MaxIdle>
                 <InitIdleCapacity>200</InitIdleCapacity>
@@ -459,45 +462,44 @@
             </DataPublisherThreadPool>
         </DataPublisher>
         <PolicyDeployer>
+            <Enabled>true</Enabled>
             <ServiceURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServiceURL>
             <Username>${admin.username}</Username>
             <Password>${admin.password}</Password>
         </PolicyDeployer>
+        <BlockCondition>
+            <Enabled>true</Enabled>
+            <!--InitDelay>300000</InitDelay>
+            <Period>3600000</Period-->
+        </BlockCondition>
         <JMSConnectionDetails>
-            <ServiceURL>tcp://${carbon.local.ip}:${jms.port}</ServiceURL>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
+            <Enabled>true</Enabled>
             <Destination>throttleData</Destination>
             <!--InitDelay>300000</InitDelay-->
             <JMSConnectionParameters>
                 <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
                 <transport.jms.DestinationType>topic</transport.jms.DestinationType>
                 <java.naming.factory.initial>org.wso2.andes.jndi.PropertiesFileInitialContextFactory</java.naming.factory.initial>
-                <connectionfactory.TopicConnectionFactory>amqp://${jms.username}:${jms.password}@clientid/carbon?brokerlist='${jms.url}'</connectionfactory.TopicConnectionFactory>
+                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
             </JMSConnectionParameters>
-            <JMSTaskManager>
-                <MinThreadPoolSize>20</MinThreadPoolSize>
-                <MaxThreadPoolSize>100</MaxThreadPoolSize>
-                <KeepAliveTimeInMillis>1000</KeepAliveTimeInMillis>
-                <JobQueueSize>10</JobQueueSize>
-            </JMSTaskManager>
         </JMSConnectionDetails>
+
         <!--DefaultLimits>
             <SubscriptionTierLimits>
-                <Gold>20</Gold>
-                <Silver>5</Silver>
-                <Bronze>1</Bronze>
+                <Gold>5000</Gold>
+                <Silver>2000</Silver>
+                <Bronze>1000</Bronze>
                 <Unauthenticated>60</Unauthenticated>
             </SubscriptionTierLimits>
             <ApplicationTierLimits>
-                <Large>20</Large>
-                <Medium>5</Medium>
-                <Small>1</Small>
+                <50PerMin>50</50PerMin>
+                <20PerMin>20</20PerMin>
+                <10PerMin>10</10PerMin>
             </ApplicationTierLimits>
             <ResourceLevelTierLimits>
-                <Ultimate>20</Ultimate>
-                <Plus>5</Plus>
-                <Basic>1</Basic>
+                <50KPerMin>50000</50KPerMin>
+                <20KPerMin>20000</20KPerMin>
+                <10KPerMin>10000</10KPerMin>
             </ResourceLevelTierLimits>
         </DefaultLimits-->
         <EnableUnlimitedTier>true</EnableUnlimitedTier>
