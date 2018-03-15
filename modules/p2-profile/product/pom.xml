@@ -3712,10 +3712,9 @@
                                     <version>${carbon.messaging.version}</version>
                                 </feature>
 
-                                <!-- CEP features -->
                                 <feature>
-                                    <id>org.wso2.cep.styles.feature.group</id>
-                                    <version>${product.cep.version}</version>
+                                    <id>org.wso2.am.styles.feature.group</id>
+                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.receiver.feature.group</id>
