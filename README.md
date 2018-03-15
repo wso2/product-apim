@@ -106,11 +106,11 @@ Key Features
         
 * Monitor API Usage and Performance:        
     - All API usage published to pluggable analytics framework.
-    - Out-of-the-box support for WSO2 Business Activity Monitor and Google Analytics.
+    - Out-of-the-box support for the WSO2 Analytics Platform and Google Analytics.
     - View metrics by user, API, and more.
     - Customized reporting via plugging reporting engines.
     - Monitor SLA compliance.
-    - Powered by WSO2 Business Activity Monitor.      
+    - Powered by WSO2 Data Analytics Server (WSO2 DAS).      
     
 * Pluggable, Extensible, and Themeable:        
     - All components are highly customizable through styling, theming, and open source code.
