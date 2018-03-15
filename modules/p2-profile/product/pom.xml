@@ -2981,6 +2981,18 @@
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.authz.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
