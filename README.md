@@ -152,7 +152,7 @@ System Requirements
 2. Processor      - Pentium 800MHz or equivalent at minimum
 3. Java 1.7 or higher
 4. The Management Console requires you to enable Javascript of the Web browser,
-   with MS IE 6 and 7. In addition to JavaScript, ActiveX should also be enabled
+   with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
 5. Apache Ant is required to compile and run the sample clients. Apache Ant 1.7.0
