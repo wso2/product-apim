@@ -79,7 +79,7 @@ Key Features
     - Associate API available to system defined service tiers.
     - Leverage XACML for entitlements management and fine grained authorization.
     - Configure Single Sign-On (SSO) using SAML 2.0 for easy integration with existing web apps.
-    - Powered by WSO2 Enterprise Service Bus.
+    - Powered by WSO2 Enterprise Service Bus (WSO2 ESB).
         
 * Route API Traffic:
     - Supports API authentication with OAuth2.
@@ -96,13 +96,13 @@ Key Features
     - Manage user account including resetting password.
     - Developer interaction with APIs via comments and ratings.
     - Support for developer communication via forums (Available soon in a future version).
-    - Powered by WSO2 Identity Server.
+    - Powered by WSO2 Identity Server (WSO2 IS).
         
 * Govern Complete API Lifecycle:        
     - Manage API lifecycle from cradle to grave: create, publish, block, deprecate, and retire.
     - Publish both production and sandbox keys for APIs to enable easy developer testing.
     - Publish APIs to partner networks such as ProgrammableWeb (Available soon in a future version).
-    - Powered by WSO2 Governance Registry.
+    - Powered by WSO2 Governance Registry (WSO2 G-Reg).
         
 * Monitor API Usage and Performance:        
     - All API usage published to pluggable analytics framework.
