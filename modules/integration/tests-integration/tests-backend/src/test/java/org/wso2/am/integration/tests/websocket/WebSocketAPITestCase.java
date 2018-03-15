@@ -50,10 +50,12 @@ import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -66,6 +68,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -85,6 +88,15 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private APIRequest apiRequest;
     private int webSocketServerPort;
     private String webSocketServerHost;
+    private ServerConfigurationManager serverConfigurationManager;
+    private String wsEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "webSocketTest"
+            + File.separator;
+    private String wsEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
+            + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
+            + File.separator;
+    private String wsRequestEventPublisherSource = "WS_Req_Logger.xml";
+    private String wsThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml";
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -102,6 +114,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverConfigurationManager.applyConfigurationWithoutRestart
+                (new File(wsEventPublisherSource + wsRequestEventPublisherSource),
+                        new File(wsEventPublisherTarget + wsRequestEventPublisherSource), false);
+        serverConfigurationManager.applyConfigurationWithoutRestart
+                (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
+                        new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
         int lowerPortLimit = 9950;
         int upperPortLimit = 9999;
@@ -334,7 +353,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param accessToken API accessToken
      */
     private void testThrottling(String accessToken) throws Exception {
-        int limit = 6;
+        int limit = 10;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -438,6 +457,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
     }
