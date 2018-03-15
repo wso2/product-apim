@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~  Copyright (c), WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~  WSO2 Inc. licenses this file to you under the Apache License,
   ~  Version 2.0 (the "License"); you may not use this file except
@@ -23,25 +23,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v2.1.0 - 2nd February 2017</title>
+    <title>WSO2 API Manager v2.2.0 - 15th March 2018</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 2.1.0 Released!</h1>
+<h1>WSO2 API Manager 2.2.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 2.1.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 2.2.0 of
     the Open Source API Manager.
 </p>
 
 <p>
-    WSO2 API Manager is a platform for creating, managing, consuming and monitoring
-    APIs. It employs proven SOA best practices to solve a wide range of API
-    management challenges such as API provisioning, API governance, API security
-    and API monitoring. It combines some of the most powerful and mature components
-    of the WSO2's state-of-the-art Carbon platform to deliver a smooth and end-to-end
-    API management experience while catering to both API publisher and API consumer
-    requirements.
+    WSO2 API Manager is a platform for creating, managing, consuming and monitoring APIs. It employs proven SOA best practices to solve a wide range of API management challenges such as API provisioning, API governance, API security and API monitoring. It combines some of the most powerful and mature components of the WSO2's state-of-the-art Carbon platform to deliver a smooth and end-to-end API management experience while catering to both API publisher and API consumer requirements.
 </p>
 
 <p>
@@ -56,22 +50,9 @@
 </ul>
 
 <p>
-    WSO2 API Manager is developed on top of the revolutionary
-    <a href="http://wso2.org/projects/carbon">WSO2 Carbon platform</a>
-    (Middleware a' la carte),
-    an OSGi based framework that provides seamless modularity to your SOA via
-    componentization. This release also contains many new features and a range of
-    optional components (add-ons) that can be installed to customize the behavior
-    of the API Manager. Further, any existing features of the product which are not
-    required in your environment can be easily removed using the underlying
-    provisioning framework of Carbon. In brief, WSO2 API Manager can be fully
-    customized and tailored to meet your exact API management needs.
-</p>
-
-<p>
     For more information on WSO2 API Manager please visit <a href="http://wso2.com/products/api-manager">
     http://wso2.com/products/api-manager</a>. Also take a look at the online product
-    <a href="https://docs.wso2.com/display/AM210/WSO2+API+Manager+Documentation">documentation</a>.
+    <a href="https://docs.wso2.com/display/AM220/WSO2+API+Manager+Documentation">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
@@ -87,221 +68,21 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>New Features in 2.1.0</h2>
+    <h2>Bug Fixes And Improvements in 2.2.0</h2>
     <ul>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1339'>APIMANAGER-1339</a>] -         Add websocket support to API Manager
+        <li><a href='https://wso2.org/jira/issues/?filter=14532'>JIRA</a>
         </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4598'>APIMANAGER-4598</a>] -         Client side SDK generation feature
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5114'>APIMANAGER-5114</a>] -         New operation for sequence upload/download in Publisher CXF REST API
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5438'>APIMANAGER-5438</a>] -         Enjoyhint Feature
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5457'>APIMANAGER-5457</a>] -         Workflow for API lifecycle state change
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">product-apim</a>), (<a href="https://github.com/wso2/carbon-apimgt/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">carbon-apimgt</a>), (<a href="https://github.com/wso2/analytics-apim/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">analytics-apim</a>)
         </li>
     </ul>
 
-    <h2>Improvements in 2.1.0</h2>
+    <h2>Known Issues</h2>
     <ul>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4527'>APIMANAGER-4527</a>] -         Upgrade Swagger Editor and UI
+        <li><a href="https://wso2.org/jira/issues/?filter=14533">JIRA</a>
         </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4569'>APIMANAGER-4569</a>] -         Support updating an API with API import tool
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4610'>APIMANAGER-4610</a>] -         Support SSO without enabling single logout
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4863'>APIMANAGER-4863</a>] -         No message on workflow enabled App creation.
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4985'>APIMANAGER-4985</a>] -         No option to select scope for the first time token generation in api store
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5100'>APIMANAGER-5100</a>] -         Display Error message in UI when backend fails due to errors in the inline script in prototyped APIs
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5324'>APIMANAGER-5324</a>] -         Make the description field support rich text
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5336'>APIMANAGER-5336</a>] -         Change severity level from Error to Warn when logging access token related user errors
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5339'>APIMANAGER-5339</a>] -         Support SSO SAML Request Signing and Sending ACS in Publisher
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5351'>APIMANAGER-5351</a>] -         Update Swagger SDK Generation library
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5401'>APIMANAGER-5401</a>] -         Allow to define conditional groups with query parameter values as null
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5406'>APIMANAGER-5406</a>] -         Use different keystore for Data Bridge Configuration
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5443'>APIMANAGER-5443</a>] -         Provide &quot;Get API&quot; in store RESTapi&#39;s
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5446'>APIMANAGER-5446</a>] -         Need to add a method to check user existance within roles.
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5454'>APIMANAGER-5454</a>] -         Manage Alert Types UI is not intuitive to the user on entering email addresses.
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5455'>APIMANAGER-5455</a>] -         Improve &quot;View In Store&quot; link to open in a new tab
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5459'>APIMANAGER-5459</a>] -         Allowing a comma separated email list for subscribing to Alert Types.
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5496'>APIMANAGER-5496</a>] -         Advance throttling issue with adding query parameters
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5505'>APIMANAGER-5505</a>] -         Unlimited subscription tier returned from APIUtil.getTierFromCache() method doesn?t have a tier plan
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5517'>APIMANAGER-5517</a>] -         Provide an option to set JWT exp time when Token cache is enabled.
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5523'>APIMANAGER-5523</a>] -         Increasing size of VALUE column of AM_BLOCK_CONDITIONS table
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5524'>APIMANAGER-5524</a>] -         Remove ERROR stack trace for API authentication failures
-        </li>
-        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5537'>APIMANAGER-5537</a>] -         Save document contents in the local storage
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aopen+is%3Aissue+label%3A2.2.0">product-apim</a>), (<a href="https://github.com/wso2/carbon-apimgt/issues?q=is%3Aopen+is%3Aissue+label%3A%22APIM+2.2.0%22">carbon-apimgt</a>), (<a href="https://github.com/wso2/analytics-apim/issues?q=is%3Aopen+is%3Aissue">analytics-apim</a>)
         </li>
     </ul>
-
-
-    <h2>Resolved Issues</h2>
-    <ul>
-        <li>
-            <a href="https://wso2.org/jira/issues/?filter=13623">WSO2 API Manager 2.1.0 resolved issues</a>
-        </li>
-    </ul>
-
-<h2>Key Features of WSO2 API Manager</h2>
-<p>
-    Following is a categorization of the core features supported by WSO2 API Manager
-    based on the target user group.
-</p>
-<ul>
-    <li>Create a Store of all Available APIs:
-        <ul>
-            <li>Graphical experience similar to Android Marketplace or Apple App Store.</li>
-            <li>Browse APIs by provider, tags or name.</li>
-            <li>Self-registration to developer community to subscribe to APIs.</li>
-            <li>Subscribe to APIs and manage subscriptions on per-application basis.</li>
-            <li>Subscriptions can be at different service tiers based on expected usage levels.</li>
-            <li>Role based access to API Store; manage public and private APIs.</li>
-            <li>Manage subscriptions at a per-developer level.</li>
-            <li>Browse API documentation, download helpers for easy consumption.</li>
-            <li>Comment on and rate APIs.</li>
-            <li>Forum for discussing API usage issues (Available soon in future version).</li>
-            <li>Try APIs directly on the store front.</li>
-            <li>Internationalization (i18n) support.</li>
-        </ul>
-
-    </li>
-    <li>Publishing and Governing API Use:
-        <ul>
-
-            <li>Publish APIs to external consumers and partners, as well as internal users.</li>
-            <li>Supports publishing multiple protocols including SOAP, REST, JSON and XML style services as APIs.</li>
-            <li>Manage API versions and deployment status by version.</li>
-            <li>Govern the API lifecycle (publish, deprecate, retire).</li>
-            <li>Attach documentation (files, external URLs) to APIs.</li>
-            <li>Apply Security policies to APIs (authentication, authorization).</li>
-            <li>Associate API available to system defined service tiers.</li>
-            <li>Provision and Manage API keys.</li>
-            <li>Track consumers per API.</li>
-            <li>One-click deployment to API Gateway for immediate publishing.</li>
-        </ul>
-
-    </li>
-    <li>Route API Traffic:
-        <ul>
-
-            <li>Supports API authentication with OAuth2.</li>
-            <li>Extremely high performance pass-through message routing with sub-millisecond latency.</li>
-            <li>Enforce rate limiting and throttling policies for APIs by consumer.</li>
-            <li>Horizontally scalable with easy deployment into cluster using proven routing infrastructure.</li>
-            <li>Scales to millions of developers/users.</li>
-            <li>Capture all statistics and push to pluggable analytics system.</li>
-            <li>Configure API routing policies with capabilities of WSO2 Enterprise Service Bus.</li>
-            <li>Powered by WSO2 Enterprise Service Bus.</li>
-        </ul>
-    </li>
-
-    <li>Manage Developer Community:
-        <ul>
-            <li>Self-sign up for API consumption.</li>
-            <li>Manage user account including password reset.</li>
-            <li>Developer interaction with APIs via comments and ratings.</li>
-            <li>Support for developer communication via forums (Available soon in future version).</li>
-            <li>Powered by WSO2 Identity Server.</li>
-        </ul>
-    </li>
-
-    <li>Govern Complete API Lifecycle:
-        <ul>
-            <li>Manage API lifecycle from cradle to grave: create, publish, block, deprecate and retire.</li>
-            <li>Publish both production and sandbox keys for APIs to enable easy developer testing.</li>
-            <li>Publish APIs to partner networks such as ProgrammableWeb (Available soon in future version).</li>
-            <li>Powered by WSO2 Governance Registry.</li>
-        </ul>
-    </li>
-
-    <li>Monitor API Usage and Performance:
-        <ul>
-            <li>All API usage published to pluggable analytics framework.</li>
-            <li>Out of the box support for WSO2 Business Activity Monitor and Google Analytics.</li>
-            <li>View metrics by user, API and more.</li>
-            <li>Customized reporting via plugging reporting engines.</li>
-            <li>Monitor SLA compliance.</li>
-            <li>Powered by WSO2 Business Activity Monitor.</li>
-        </ul>
-    </li>
-
-    <li>Pluggable, Extensible and Themeable:
-        <ul>
-            <li>All components are highly customizable thru styling, theming and open source code.</li>
-            <li>Storefront implemented with Jaggery (jaggeryjs.org) for easy customization.</li>
-            <li>Pluggable to third party analytics systems and billing systems (Available soon in future version).</li>
-            <li>Pluggable to existing user stores including via JDBC and LDAP.</li>
-            <li>Components usable separately - storefront can be used to front APIs gatewayed via third party gateways such as Intel Expressway Service Gateway.</li>
-            <li>Support for Single Sign On (SSO) using SAML 2.0 for easy integration with existing web apps</li>
-        </ul>
-    </li>
-
-    <li>Easily Deployable in Enterprise Setting:
-        <ul>
-            <li>Role based access control for managing users and their authorization levels.</li>
-            <li>Store front can be deployed in DMZ for external access with Publisher inside the firewall for private control.</li>
-            <li>Different user stores for developer focused store-front and internal operations in publisher.</li>
-            <li>Integrates with enterprise identity systems including LDAP and Microsoft Active Directory.</li>
-            <li>Gateway can be deployed in DMZ with controlled access to WSO2 Identity Server (for authentication/authorization) and governance database behind firewall.</li>
-
-        </ul>
-    </li>
-
-    <li>Support for creating multi-tenanted APIs
-        <ul>
-            <li>Run a single instance and provide API Management to multiple customers</li>
-            <li>Share APIs between different departments in a large enterprise</li>
-        </ul>
-    </li>
-
-    <li>Publishing and Governing API Use
-        <ul>
-            <li>Document an API using Swagger</li>
-            <li>Restrict API Access tokens to domains/IPs</li>
-            <li>Ability to block a subscription and restricting a complete application</li>
-            <li>Ability to revoke access tokens</li>
-            <li>Separate validity period configuration for Application Access Token</li>
-            <li>OAuth2 Authorization Code Grant Type Support</li>
-            <li>Configuring execution point of mediation extensions</li>
-        </ul>
-    </li>
-
-    <li>Monitor API Usage and Performance
-        <ul>
-            <li>Improved dashboard for monitoring usage statistics (Filtering data for a date range, More visually appealing widgets)</li>
-        </ul>
-    </li>
-</ul>
-
-<h2>Known Issues</h2>
-<p>
-    All the open issues pertaining to WSO2 API Manager are reported at the following
-    location:
-</p>
-<ul>
-    <li>
-        <a href="https://wso2.org/jira/issues/?filter=13621">
-            Known Issues
-        </a>
-    </li>
-</ul>
 
 <h2>How You Can Contribute</h2>
 <h3>
@@ -332,30 +113,7 @@
     Reporting Issues
 </h3>
 <p>
-    We encourage you to report issues, documentation faults and feature requests
-    regarding
-    WSO2 API Manager through the public <a href="https://wso2.org/jira/browse/APIMANAGER">API Manager
-    JIRA</a>. You
-    can use the
-    <a href="http://www.wso2.org/jira/browse/CARBON">Carbon JIRA</a>
-    to report any
-    issues related to the Carbon base framework or associated Carbon components.
-</p>
-
-<h2>Support</h2>
-<p>
-    We are committed to ensuring that your enterprise middleware deployment is
-    completely supported from evaluation to production. Our unique approach
-    ensures that all support leverages our open development methodology and is
-    provided by the very same engineers who build the technology.
-</p>
-<p>
-    For more details and to take advantage of this unique opportunity please
-    visit <a href="http://wso2.com/support">http://wso2.com/support</a>.
-</p>
-<p>
-    To learn more about WSO2 API Manager and WSO2 support offerings please visit
-    <a href="http://wso2.com/products/api-manager/">http://wso2.com/products/api-manager</a>.
+    We encourage you to report issues, documentation faults, and feature requests regarding WSO2 API Manager through the public <a href="https://github.com/wso2/product-apim/issues">API Manager Git Repo</a>.
 </p>
 
 <p>
