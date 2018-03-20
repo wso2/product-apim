@@ -157,7 +157,7 @@ optimize="$advance_ep.get("optimize")"
         </loadbalance>
         </endpoint>
         #elseif ($endpointClass == "default")
-<endpoint name="$ep_key">
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
 <default>
     #timeout( $endpoints.get('config') )
 </default>
