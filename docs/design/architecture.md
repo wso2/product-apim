@@ -25,7 +25,7 @@ API Core consists of several microservices. The following diagram depicts the ag
 - The bottom most layer is the persistence layer where the API management related data is persisted. The data layer includes the API Manager database, which is dedicated to persisting API related data, and the Stat database, which is dedicated to persisting API analytics data.
 
 
-## API Geteway
+## API Gateway
 
 APIM v3 API Gateway is written by using Ballerina. Ballerina is a general purpose, concurrent and strongly typed programming language with both textual and graphical syntaxes, optimized for integration.
 
