@@ -193,7 +193,7 @@ public class APICreationRequestBean extends AbstractRequest {
             try {
                 this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
                         + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                        + endpointUrl.getProtocol() + "\"}");
+                        + "http" + "\"}");
                 this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                                                         "\"accessControlAllowOrigins\" : [\"*\"], " +
                                                         "\"accessControlAllowCredentials\" : true, " +
@@ -308,12 +308,12 @@ public class APICreationRequestBean extends AbstractRequest {
             if(endpointUrl != null) {
                 this.endpoint.put("production_endpoints", new JSONObject("{\"url\":" + "\""
                         + endpointUrl + "\",\"config\":null}"));
-                this.endpoint.put("endpoint_type", endpointUrl.getProtocol());
+                this.endpoint.put("endpoint_type", "http");
             }
             if(sandboxUrl != null) {
                 this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
                         + sandboxUrl + "\",\"config\":null}"));
-                this.endpoint.put("endpoint_type", sandboxUrl.getProtocol());
+                this.endpoint.put("endpoint_type", "http");
             }
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                                                     "\"accessControlAllowOrigins\" : [\"*\"], " +
