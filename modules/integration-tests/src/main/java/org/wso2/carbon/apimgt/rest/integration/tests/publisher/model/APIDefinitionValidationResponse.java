@@ -13,28 +13,25 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefinitionValidationResponseWsdlInfo;
 
 /**
  * APIDefinitionValidationResponse
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIDefinitionValidationResponse {
-  @SerializedName("isValid")
+  @JsonProperty("isValid")
   private Boolean isValid = null;
 
   /**
    * This attribute declares whether this definition is a swagger or WSDL 
    */
-  @JsonAdapter(DefinitionTypeEnum.Adapter.class)
   public enum DefinitionTypeEnum {
     SWAGGER("SWAGGER"),
     
@@ -46,6 +43,7 @@ public class APIDefinitionValidationResponse {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -55,6 +53,7 @@ public class APIDefinitionValidationResponse {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static DefinitionTypeEnum fromValue(String text) {
       for (DefinitionTypeEnum b : DefinitionTypeEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -63,25 +62,12 @@ public class APIDefinitionValidationResponse {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<DefinitionTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final DefinitionTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public DefinitionTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return DefinitionTypeEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("definitionType")
+  @JsonProperty("definitionType")
   private DefinitionTypeEnum definitionType = null;
 
-  @SerializedName("wsdlInfo")
+  @JsonProperty("wsdlInfo")
   private APIDefinitionValidationResponseWsdlInfo wsdlInfo = null;
 
   public APIDefinitionValidationResponse isValid(Boolean isValid) {
@@ -94,7 +80,7 @@ public class APIDefinitionValidationResponse {
    * @return isValid
   **/
   @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether this definition is valid or not. ")
-  public Boolean getIsValid() {
+  public Boolean isIsValid() {
     return isValid;
   }
 
@@ -181,6 +167,6 @@ public class APIDefinitionValidationResponse {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

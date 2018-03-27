@@ -13,31 +13,34 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.ErrorListItem;
 
 /**
  * Error
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class Error {
-  @SerializedName("code")
+  @JsonProperty("code")
   private Long code = null;
 
-  @SerializedName("message")
+  @JsonProperty("message")
   private String message = null;
 
-  @SerializedName("description")
+  @JsonProperty("description")
   private String description = null;
 
-  @SerializedName("moreInfo")
+  @JsonProperty("moreInfo")
   private String moreInfo = null;
 
-  @SerializedName("error")
+  @JsonProperty("error")
   private List<ErrorListItem> error = null;
 
   public Error code(Long code) {
@@ -82,7 +85,7 @@ public class Error {
   }
 
    /**
-   * A detail description about the error message.
+   * A detail description about the error message. 
    * @return description
   **/
   @ApiModelProperty(value = "A detail description about the error message. ")
@@ -100,7 +103,7 @@ public class Error {
   }
 
    /**
-   * Preferably an url with more details about the error.
+   * Preferably an url with more details about the error. 
    * @return moreInfo
   **/
   @ApiModelProperty(value = "Preferably an url with more details about the error. ")
@@ -126,7 +129,7 @@ public class Error {
   }
 
    /**
-   * If there are more than one error list them out. For example, list out validation errors by each field.
+   * If there are more than one error list them out. For example, list out validation errors by each field. 
    * @return error
   **/
   @ApiModelProperty(value = "If there are more than one error list them out. For example, list out validation errors by each field. ")
@@ -185,6 +188,6 @@ public class Error {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

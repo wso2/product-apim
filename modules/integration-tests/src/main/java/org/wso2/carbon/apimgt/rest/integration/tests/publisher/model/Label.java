@@ -13,25 +13,30 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Label
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class Label {
-  @SerializedName("labelId")
+  @JsonProperty("labelId")
   private String labelId = null;
 
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("access_urls")
+  @JsonProperty("type")
+  private String type = null;
+
+  @JsonProperty("access_urls")
   private List<String> accessUrls = new ArrayList<String>();
 
   public Label labelId(String labelId) {
@@ -70,6 +75,24 @@ public class Label {
     this.name = name;
   }
 
+  public Label type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @ApiModelProperty(required = true, value = "")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
   public Label accessUrls(List<String> accessUrls) {
     this.accessUrls = accessUrls;
     return this;
@@ -105,12 +128,13 @@ public class Label {
     Label label = (Label) o;
     return Objects.equals(this.labelId, label.labelId) &&
         Objects.equals(this.name, label.name) &&
+        Objects.equals(this.type, label.type) &&
         Objects.equals(this.accessUrls, label.accessUrls);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(labelId, name, accessUrls);
+    return Objects.hash(labelId, name, type, accessUrls);
   }
 
 
@@ -121,6 +145,7 @@ public class Label {
     
     sb.append("    labelId: ").append(toIndentedString(labelId)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    accessUrls: ").append(toIndentedString(accessUrls)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -136,6 +161,6 @@ public class Label {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

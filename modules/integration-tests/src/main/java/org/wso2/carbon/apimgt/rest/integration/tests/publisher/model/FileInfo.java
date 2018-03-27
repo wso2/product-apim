@@ -13,20 +13,22 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * FileInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class FileInfo {
-  @SerializedName("relativePath")
+  @JsonProperty("relativePath")
   private String relativePath = null;
 
-  @SerializedName("mediaType")
+  @JsonProperty("mediaType")
   private String mediaType = null;
 
   public FileInfo relativePath(String relativePath) {
@@ -35,10 +37,10 @@ public class FileInfo {
   }
 
    /**
-   * relative location of the file (excluding the base context and host of the publisher API)
+   * relative location of the file (excluding the base context and host of the Publisher API)
    * @return relativePath
   **/
-  @ApiModelProperty(example = "apis/01234567-0123-0123-0123-012345678901/thumbnail", value = "relative location of the file (excluding the base context and host of the publisher API)")
+  @ApiModelProperty(example = "apis/01234567-0123-0123-0123-012345678901/thumbnail", value = "relative location of the file (excluding the base context and host of the Publisher API)")
   public String getRelativePath() {
     return relativePath;
   }
@@ -106,6 +108,6 @@ public class FileInfo {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

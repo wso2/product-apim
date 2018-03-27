@@ -13,32 +13,35 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointSecurity;
 
 /**
  * EndPoint
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class EndPoint {
-  @SerializedName("id")
+  @JsonProperty("id")
   private String id = null;
 
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("endpointConfig")
+  @JsonProperty("endpointConfig")
   private String endpointConfig = null;
 
-  @SerializedName("endpointSecurity")
+  @JsonProperty("endpointSecurity")
   private EndPointEndpointSecurity endpointSecurity = null;
 
-  @SerializedName("maxTps")
+  @JsonProperty("maxTps")
   private Long maxTps = null;
 
-  @SerializedName("type")
+  @JsonProperty("type")
   private String type = null;
 
   public EndPoint id(String id) {
@@ -47,7 +50,7 @@ public class EndPoint {
   }
 
    /**
-   * UUID of the Endpoint entry
+   * UUID of the Endpoint entry 
    * @return id
   **/
   @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the Endpoint entry ")
@@ -65,7 +68,7 @@ public class EndPoint {
   }
 
    /**
-   * name of the Endpoint entry
+   * name of the Endpoint entry 
    * @return name
   **/
   @ApiModelProperty(example = "Endpoint 1", value = "name of the Endpoint entry ")
@@ -198,6 +201,6 @@ public class EndPoint {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

@@ -13,47 +13,42 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Application;
 
 /**
  * Subscription
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class Subscription {
-  @SerializedName("subscriptionId")
+  @JsonProperty("subscriptionId")
   private String subscriptionId = null;
 
-  @SerializedName("applicationInfo")
+  @JsonProperty("applicationInfo")
   private Application applicationInfo = null;
 
-  @SerializedName("policy")
+  @JsonProperty("policy")
   private String policy = null;
 
   /**
    * Gets or Sets subscriptionStatus
    */
-  @JsonAdapter(SubscriptionStatusEnum.Adapter.class)
   public enum SubscriptionStatusEnum {
     BLOCKED("BLOCKED"),
-
+    
     PROD_ONLY_BLOCKED("PROD_ONLY_BLOCKED"),
-
+    
     SANDBOX_ONLY_BLOCKED("SANDBOX_ONLY_BLOCKED"),
-
+    
     ACTIVE("ACTIVE"),
-
+    
     ON_HOLD("ON_HOLD"),
-
+    
     REJECTED("REJECTED");
 
     private String value;
@@ -62,6 +57,7 @@ public class Subscription {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -71,6 +67,7 @@ public class Subscription {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static SubscriptionStatusEnum fromValue(String text) {
       for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -79,22 +76,9 @@ public class Subscription {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<SubscriptionStatusEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final SubscriptionStatusEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public SubscriptionStatusEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return SubscriptionStatusEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("subscriptionStatus")
+  @JsonProperty("subscriptionStatus")
   private SubscriptionStatusEnum subscriptionStatus = null;
 
   public Subscription subscriptionId(String subscriptionId) {
@@ -214,6 +198,6 @@ public class Subscription {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

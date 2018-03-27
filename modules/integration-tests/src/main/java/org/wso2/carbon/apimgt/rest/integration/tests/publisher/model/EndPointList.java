@@ -13,22 +13,25 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
 
 /**
  * EndPointList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class EndPointList {
-  @SerializedName("count")
+  @JsonProperty("count")
   private Integer count = null;
 
-  @SerializedName("list")
+  @JsonProperty("list")
   private List<EndPoint> list = null;
 
   public EndPointList count(Integer count) {
@@ -116,6 +119,6 @@ public class EndPointList {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

@@ -13,22 +13,23 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.Objects;
 
 /**
  * WSDL binding related information 
  */
 @ApiModel(description = "WSDL binding related information ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
-  @SerializedName("hasHttpBinding")
+  @JsonProperty("hasHttpBinding")
   private Boolean hasHttpBinding = null;
 
-  @SerializedName("hasSoapBinding")
+  @JsonProperty("hasSoapBinding")
   private Boolean hasSoapBinding = null;
 
   public APIDefinitionValidationResponseWsdlInfoBindingInfo hasHttpBinding(Boolean hasHttpBinding) {
@@ -41,7 +42,7 @@ public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
    * @return hasHttpBinding
   **/
   @ApiModelProperty(value = "Indicates whether the WSDL contains HTTP Bindings")
-  public Boolean getHasHttpBinding() {
+  public Boolean isHasHttpBinding() {
     return hasHttpBinding;
   }
 
@@ -59,7 +60,7 @@ public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
    * @return hasSoapBinding
   **/
   @ApiModelProperty(value = "Indicates whether the WSDL contains SOAP Bindings")
-  public Boolean getHasSoapBinding() {
+  public Boolean isHasSoapBinding() {
     return hasSoapBinding;
   }
 
@@ -108,6 +109,6 @@ public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

@@ -13,26 +13,28 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * EndPointEndpointSecurity
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class EndPointEndpointSecurity {
-  @SerializedName("enabled")
+  @JsonProperty("enabled")
   private Boolean enabled = null;
 
-  @SerializedName("type")
+  @JsonProperty("type")
   private String type = null;
 
-  @SerializedName("username")
+  @JsonProperty("username")
   private String username = null;
 
-  @SerializedName("password")
+  @JsonProperty("password")
   private String password = null;
 
   public EndPointEndpointSecurity enabled(Boolean enabled) {
@@ -45,7 +47,7 @@ public class EndPointEndpointSecurity {
    * @return enabled
   **/
   @ApiModelProperty(example = "false", value = "")
-  public Boolean getEnabled() {
+  public Boolean isEnabled() {
     return enabled;
   }
 
@@ -152,6 +154,6 @@ public class EndPointEndpointSecurity {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

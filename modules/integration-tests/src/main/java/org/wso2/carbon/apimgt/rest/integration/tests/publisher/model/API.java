@@ -13,97 +13,98 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIBusinessInformation;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APICorsConfiguration;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIOperations;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIThreatProtectionPolicies;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
 
 /**
  * API
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class API {
-  @SerializedName("id")
+  @JsonProperty("id")
   private String id = null;
 
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("description")
+  @JsonProperty("description")
   private String description = null;
 
-  @SerializedName("context")
+  @JsonProperty("context")
   private String context = null;
 
-  @SerializedName("version")
+  @JsonProperty("version")
   private String version = null;
 
-  @SerializedName("provider")
+  @JsonProperty("provider")
   private String provider = null;
 
-  @SerializedName("wsdlUri")
+  @JsonProperty("wsdlUri")
   private String wsdlUri = null;
 
-  @SerializedName("lifeCycleStatus")
+  @JsonProperty("lifeCycleStatus")
   private String lifeCycleStatus = null;
 
-  @SerializedName("workflowStatus")
+  @JsonProperty("workflowStatus")
   private String workflowStatus = null;
 
-  @SerializedName("createdTime")
+  @JsonProperty("createdTime")
   private String createdTime = null;
 
-  @SerializedName("apiPolicy")
+  @JsonProperty("apiPolicy")
   private String apiPolicy = null;
 
-  @SerializedName("lastUpdatedTime")
+  @JsonProperty("lastUpdatedTime")
   private String lastUpdatedTime = null;
 
-  @SerializedName("responseCaching")
+  @JsonProperty("responseCaching")
   private String responseCaching = null;
 
-  @SerializedName("cacheTimeout")
+  @JsonProperty("cacheTimeout")
   private Integer cacheTimeout = null;
 
-  @SerializedName("destinationStatsEnabled")
+  @JsonProperty("destinationStatsEnabled")
   private String destinationStatsEnabled = null;
 
-  @SerializedName("isDefaultVersion")
+  @JsonProperty("isDefaultVersion")
   private Boolean isDefaultVersion = null;
 
-  @SerializedName("transport")
+  @JsonProperty("transport")
   private List<String> transport = new ArrayList<String>();
 
-  @SerializedName("tags")
+  @JsonProperty("tags")
   private List<String> tags = null;
 
-  @SerializedName("labels")
+  @JsonProperty("hasOwnGateway")
+  private Boolean hasOwnGateway = null;
+
+  @JsonProperty("labels")
   private List<String> labels = null;
 
-  @SerializedName("policies")
+  @JsonProperty("policies")
   private List<String> policies = new ArrayList<String>();
 
   /**
    * Gets or Sets visibility
    */
-  @JsonAdapter(VisibilityEnum.Adapter.class)
   public enum VisibilityEnum {
     PUBLIC("PUBLIC"),
     
     PRIVATE("PRIVATE"),
     
-    RESTRICTED("RESTRICTED"),
-    
-    CONTROLLED("CONTROLLED");
+    RESTRICTED("RESTRICTED");
 
     private String value;
 
@@ -111,6 +112,7 @@ public class API {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -120,6 +122,7 @@ public class API {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static VisibilityEnum fromValue(String text) {
       for (VisibilityEnum b : VisibilityEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -128,56 +131,49 @@ public class API {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<VisibilityEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final VisibilityEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public VisibilityEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return VisibilityEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("visibility")
+  @JsonProperty("visibility")
   private VisibilityEnum visibility = null;
 
-  @SerializedName("visibleRoles")
+  @JsonProperty("visibleRoles")
   private List<String> visibleRoles = null;
 
-  @SerializedName("permission")
+  @JsonProperty("permission")
   private String permission = null;
 
-  @SerializedName("userPermissionsForApi")
+  @JsonProperty("userPermissionsForApi")
   private List<String> userPermissionsForApi = null;
 
-  @SerializedName("visibleTenants")
+  @JsonProperty("visibleTenants")
   private List<String> visibleTenants = null;
 
-  @SerializedName("gatewayEnvironments")
+  @JsonProperty("gatewayEnvironments")
   private String gatewayEnvironments = null;
 
-  @SerializedName("sequences")
+  @JsonProperty("sequences")
   private List<Sequence> sequences = null;
 
-  @SerializedName("businessInformation")
+  @JsonProperty("businessInformation")
   private APIBusinessInformation businessInformation = null;
 
-  @SerializedName("corsConfiguration")
+  @JsonProperty("corsConfiguration")
   private APICorsConfiguration corsConfiguration = null;
 
-  @SerializedName("endpoint")
+  @JsonProperty("endpoint")
   private List<APIEndpoint> endpoint = null;
 
-  @SerializedName("securityScheme")
+  @JsonProperty("securityScheme")
   private List<String> securityScheme = null;
 
-  @SerializedName("operations")
+  @JsonProperty("scopes")
+  private List<String> scopes = null;
+
+  @JsonProperty("operations")
   private List<APIOperations> operations = null;
+
+  @JsonProperty("threatProtectionPolicies")
+  private APIThreatProtectionPolicies threatProtectionPolicies = null;
 
   public API id(String id) {
     this.id = id;
@@ -185,7 +181,7 @@ public class API {
   }
 
    /**
-   * UUID of the api registry artifact
+   * UUID of the api registry artifact 
    * @return id
   **/
   @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api registry artifact ")
@@ -275,7 +271,7 @@ public class API {
   }
 
    /**
-   * If the provider value is not given user invoking the api will be used as the provider.
+   * If the provider value is not given user invoking the api will be used as the provider. 
    * @return provider
   **/
   @ApiModelProperty(example = "admin", value = "If the provider value is not given user invoking the api will be used as the provider. ")
@@ -293,7 +289,7 @@ public class API {
   }
 
    /**
-   * WSDL URL if the API is based on a WSDL endpoint
+   * WSDL URL if the API is based on a WSDL endpoint 
    * @return wsdlUri
   **/
   @ApiModelProperty(example = "http://www.webservicex.com/globalweather.asmx?wsdl", value = "WSDL URL if the API is based on a WSDL endpoint ")
@@ -350,7 +346,7 @@ public class API {
    * Get createdTime
    * @return createdTime
   **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229Z", value = "")
+  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
   public String getCreatedTime() {
     return createdTime;
   }
@@ -386,7 +382,7 @@ public class API {
    * Get lastUpdatedTime
    * @return lastUpdatedTime
   **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229Z", value = "")
+  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
   public String getLastUpdatedTime() {
     return lastUpdatedTime;
   }
@@ -459,7 +455,7 @@ public class API {
    * @return isDefaultVersion
   **/
   @ApiModelProperty(example = "false", required = true, value = "")
-  public Boolean getIsDefaultVersion() {
+  public Boolean isIsDefaultVersion() {
     return isDefaultVersion;
   }
 
@@ -478,7 +474,7 @@ public class API {
   }
 
    /**
-   * Supported transports for the API (http and/or https).
+   * Supported transports for the API (http and/or https). 
    * @return transport
   **/
   @ApiModelProperty(example = "[\"http\",\"https\"]", required = true, value = "Supported transports for the API (http and/or https). ")
@@ -514,6 +510,24 @@ public class API {
 
   public void setTags(List<String> tags) {
     this.tags = tags;
+  }
+
+  public API hasOwnGateway(Boolean hasOwnGateway) {
+    this.hasOwnGateway = hasOwnGateway;
+    return this;
+  }
+
+   /**
+   * Get hasOwnGateway
+   * @return hasOwnGateway
+  **/
+  @ApiModelProperty(example = "false", value = "")
+  public Boolean isHasOwnGateway() {
+    return hasOwnGateway;
+  }
+
+  public void setHasOwnGateway(Boolean hasOwnGateway) {
+    this.hasOwnGateway = hasOwnGateway;
   }
 
   public API labels(List<String> labels) {
@@ -641,7 +655,7 @@ public class API {
   }
 
    /**
-   * LoggedIn user permissions for the API
+   * LoggedIn user permissions for the API 
    * @return userPermissionsForApi
   **/
   @ApiModelProperty(example = "[\"READ\",\"UPDATE\"]", value = "LoggedIn user permissions for the API ")
@@ -685,7 +699,7 @@ public class API {
   }
 
    /**
-   * Comma separated list of gateway environments.
+   * Comma separated list of gateway environments. 
    * @return gatewayEnvironments
   **/
   @ApiModelProperty(example = "Production and Sandbox", value = "Comma separated list of gateway environments. ")
@@ -811,6 +825,32 @@ public class API {
     this.securityScheme = securityScheme;
   }
 
+  public API scopes(List<String> scopes) {
+    this.scopes = scopes;
+    return this;
+  }
+
+  public API addScopesItem(String scopesItem) {
+    if (this.scopes == null) {
+      this.scopes = new ArrayList<String>();
+    }
+    this.scopes.add(scopesItem);
+    return this;
+  }
+
+   /**
+   * Get scopes
+   * @return scopes
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getScopes() {
+    return scopes;
+  }
+
+  public void setScopes(List<String> scopes) {
+    this.scopes = scopes;
+  }
+
   public API operations(List<APIOperations> operations) {
     this.operations = operations;
     return this;
@@ -837,6 +877,24 @@ public class API {
     this.operations = operations;
   }
 
+  public API threatProtectionPolicies(APIThreatProtectionPolicies threatProtectionPolicies) {
+    this.threatProtectionPolicies = threatProtectionPolicies;
+    return this;
+  }
+
+   /**
+   * Get threatProtectionPolicies
+   * @return threatProtectionPolicies
+  **/
+  @ApiModelProperty(value = "")
+  public APIThreatProtectionPolicies getThreatProtectionPolicies() {
+    return threatProtectionPolicies;
+  }
+
+  public void setThreatProtectionPolicies(APIThreatProtectionPolicies threatProtectionPolicies) {
+    this.threatProtectionPolicies = threatProtectionPolicies;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -846,7 +904,7 @@ public class API {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    API API = (org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API) o;
+    API API = (API) o;
     return Objects.equals(this.id, API.id) &&
         Objects.equals(this.name, API.name) &&
         Objects.equals(this.description, API.description) &&
@@ -865,6 +923,7 @@ public class API {
         Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
         Objects.equals(this.transport, API.transport) &&
         Objects.equals(this.tags, API.tags) &&
+        Objects.equals(this.hasOwnGateway, API.hasOwnGateway) &&
         Objects.equals(this.labels, API.labels) &&
         Objects.equals(this.policies, API.policies) &&
         Objects.equals(this.visibility, API.visibility) &&
@@ -878,12 +937,14 @@ public class API {
         Objects.equals(this.corsConfiguration, API.corsConfiguration) &&
         Objects.equals(this.endpoint, API.endpoint) &&
         Objects.equals(this.securityScheme, API.securityScheme) &&
-        Objects.equals(this.operations, API.operations);
+        Objects.equals(this.scopes, API.scopes) &&
+        Objects.equals(this.operations, API.operations) &&
+        Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, wsdlUri, lifeCycleStatus, workflowStatus, createdTime, apiPolicy, lastUpdatedTime, responseCaching, cacheTimeout, destinationStatsEnabled, isDefaultVersion, transport, tags, labels, policies, visibility, visibleRoles, permission, userPermissionsForApi, visibleTenants, gatewayEnvironments, sequences, businessInformation, corsConfiguration, endpoint, securityScheme, operations);
+    return Objects.hash(id, name, description, context, version, provider, wsdlUri, lifeCycleStatus, workflowStatus, createdTime, apiPolicy, lastUpdatedTime, responseCaching, cacheTimeout, destinationStatsEnabled, isDefaultVersion, transport, tags, hasOwnGateway, labels, policies, visibility, visibleRoles, permission, userPermissionsForApi, visibleTenants, gatewayEnvironments, sequences, businessInformation, corsConfiguration, endpoint, securityScheme, scopes, operations, threatProtectionPolicies);
   }
 
 
@@ -910,6 +971,7 @@ public class API {
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
+    sb.append("    hasOwnGateway: ").append(toIndentedString(hasOwnGateway)).append("\n");
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
@@ -923,7 +985,9 @@ public class API {
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    endpoint: ").append(toIndentedString(endpoint)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
+    sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
+    sb.append("    threatProtectionPolicies: ").append(toIndentedString(threatProtectionPolicies)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -938,6 +1002,6 @@ public class API {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

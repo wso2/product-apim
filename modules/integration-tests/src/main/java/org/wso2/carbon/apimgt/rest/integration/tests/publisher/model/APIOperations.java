@@ -13,35 +13,41 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint;
 
 /**
  * APIOperations
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIOperations {
-  @SerializedName("id")
+  @JsonProperty("id")
   private String id = null;
 
-  @SerializedName("uritemplate")
+  @JsonProperty("uritemplate")
   private String uritemplate = "/_*";
 
-  @SerializedName("httpVerb")
+  @JsonProperty("httpVerb")
   private String httpVerb = "GET";
 
-  @SerializedName("authType")
+  @JsonProperty("authType")
   private String authType = "Any";
 
-  @SerializedName("policy")
+  @JsonProperty("policy")
   private String policy = null;
 
-  @SerializedName("endpoint")
+  @JsonProperty("endpoint")
   private List<APIEndpoint> endpoint = null;
+
+  @JsonProperty("scopes")
+  private List<String> scopes = null;
 
   public APIOperations id(String id) {
     this.id = id;
@@ -159,6 +165,32 @@ public class APIOperations {
     this.endpoint = endpoint;
   }
 
+  public APIOperations scopes(List<String> scopes) {
+    this.scopes = scopes;
+    return this;
+  }
+
+  public APIOperations addScopesItem(String scopesItem) {
+    if (this.scopes == null) {
+      this.scopes = new ArrayList<String>();
+    }
+    this.scopes.add(scopesItem);
+    return this;
+  }
+
+   /**
+   * Get scopes
+   * @return scopes
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getScopes() {
+    return scopes;
+  }
+
+  public void setScopes(List<String> scopes) {
+    this.scopes = scopes;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -174,12 +206,13 @@ public class APIOperations {
         Objects.equals(this.httpVerb, apIOperations.httpVerb) &&
         Objects.equals(this.authType, apIOperations.authType) &&
         Objects.equals(this.policy, apIOperations.policy) &&
-        Objects.equals(this.endpoint, apIOperations.endpoint);
+        Objects.equals(this.endpoint, apIOperations.endpoint) &&
+        Objects.equals(this.scopes, apIOperations.scopes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, uritemplate, httpVerb, authType, policy, endpoint);
+    return Objects.hash(id, uritemplate, httpVerb, authType, policy, endpoint, scopes);
   }
 
 
@@ -194,6 +227,7 @@ public class APIOperations {
     sb.append("    authType: ").append(toIndentedString(authType)).append("\n");
     sb.append("    policy: ").append(toIndentedString(policy)).append("\n");
     sb.append("    endpoint: ").append(toIndentedString(endpoint)).append("\n");
+    sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -208,6 +242,6 @@ public class APIOperations {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

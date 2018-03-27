@@ -13,23 +13,26 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
 
 /**
  * APIEndpoint
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIEndpoint {
-  @SerializedName("key")
+  @JsonProperty("key")
   private String key = null;
 
-  @SerializedName("inline")
+  @JsonProperty("inline")
   private EndPoint inline = null;
 
-  @SerializedName("type")
+  @JsonProperty("type")
   private String type = null;
 
   public APIEndpoint key(String key) {
@@ -129,6 +132,6 @@ public class APIEndpoint {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

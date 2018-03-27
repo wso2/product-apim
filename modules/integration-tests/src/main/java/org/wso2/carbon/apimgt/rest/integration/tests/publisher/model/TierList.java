@@ -13,28 +13,31 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Tier;
 
 /**
  * TierList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class TierList {
-  @SerializedName("count")
+  @JsonProperty("count")
   private Integer count = null;
 
-  @SerializedName("next")
+  @JsonProperty("next")
   private String next = null;
 
-  @SerializedName("previous")
+  @JsonProperty("previous")
   private String previous = null;
 
-  @SerializedName("list")
+  @JsonProperty("list")
   private List<Tier> list = null;
 
   public TierList count(Integer count) {
@@ -43,7 +46,7 @@ public class TierList {
   }
 
    /**
-   * Number of Tiers returned.
+   * Number of Tiers returned. 
    * @return count
   **/
   @ApiModelProperty(example = "1", value = "Number of Tiers returned. ")
@@ -61,7 +64,7 @@ public class TierList {
   }
 
    /**
-   * Link to the next subset of resources qualified. Empty if no more resources are to be returned.
+   * Link to the next subset of resources qualified. Empty if no more resources are to be returned. 
    * @return next
   **/
   @ApiModelProperty(example = "/policies/api?limit=1&offset=2", value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
@@ -79,7 +82,7 @@ public class TierList {
   }
 
    /**
-   * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned.
+   * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. 
    * @return previous
   **/
   @ApiModelProperty(example = "/policies/api?limit=1&offset=0", value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
@@ -162,6 +165,6 @@ public class TierList {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

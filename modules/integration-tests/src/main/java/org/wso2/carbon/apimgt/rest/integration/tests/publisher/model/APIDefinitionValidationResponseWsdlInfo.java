@@ -13,27 +13,30 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefinitionValidationResponseWsdlInfoBindingInfo;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefinitionValidationResponseWsdlInfoEndpoints;
 
 /**
  * Summary of the WSDL including the basic information
  */
 @ApiModel(description = "Summary of the WSDL including the basic information")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIDefinitionValidationResponseWsdlInfo {
-  @SerializedName("version")
+  @JsonProperty("version")
   private String version = null;
 
-  @SerializedName("endpoints")
+  @JsonProperty("endpoints")
   private List<APIDefinitionValidationResponseWsdlInfoEndpoints> endpoints = null;
 
-  @SerializedName("bindingInfo")
+  @JsonProperty("bindingInfo")
   private APIDefinitionValidationResponseWsdlInfoBindingInfo bindingInfo = null;
 
   public APIDefinitionValidationResponseWsdlInfo version(String version) {
@@ -141,6 +144,6 @@ public class APIDefinitionValidationResponseWsdlInfo {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 
