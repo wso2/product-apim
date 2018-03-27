@@ -118,7 +118,7 @@ public class APIRequest extends AbstractRequest {
             this.endpoint =
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
                             + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                            + endpointUrl.getProtocol() + "\"}");
+                            + "http" + "\"}");
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +
