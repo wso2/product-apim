@@ -7,9 +7,9 @@ import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PetstoreApiClientTest {
+public class PetstoreApiClientIT {
     private final PetstoreApiClient petstoreApiClient = new PetstoreApiClient();
-    Logger logger = LoggerFactory.getLogger(PetstoreApiClientTest.class);
+    Logger logger = LoggerFactory.getLogger(PetstoreApiClientIT.class);
 
     @Test
     public void getPetbyIdTest() {

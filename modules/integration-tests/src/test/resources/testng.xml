@@ -1,4 +1,3 @@
-
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="ApiManager_IntegrationTest_Suite" verbose="1">
@@ -9,15 +8,16 @@
             <!--package name="org.wso2.carbon.apimgt.rest.integration.tests.*"/-->
         </packages>
 
-      <!--  <classes>
-            <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.LabelCollectionApiIT"/>
-        </classes> -->
+        <!--  <classes>
+              <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.LabelCollectionApiIT"/>
+          </classes> -->
 
         <classes>
             <!--Testing Offline Microgateway, need to start microgateway before the tests-->
             <!--commented to stop tests during the product build, (need to uncomment later)-->
-            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.MockedApiClientTest" />-->
-            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.PetstoreApiClientTest" />-->
+            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.MockedApiClientIT/>-->
+            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.PetstoreApiClientIT/>-->
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.publisher.APIMgtBaseIntegrationIT"/>
         </classes>
 
     </test>

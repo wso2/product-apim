@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class MockedApiClientTest {
+public class MockedApiClientIT {
     private final MockedApiClient mockedApiClient = new MockedApiClient();
-    Logger logger = LoggerFactory.getLogger(MockedApiClientTest.class);
+    Logger logger = LoggerFactory.getLogger(MockedApiClientIT.class);
     String validContext = "api";
     String invalidContext = "mockyApi";
     String validApiKey = "122456";
