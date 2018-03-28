@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>api-manager-test</artifactId>
     <packaging>jar</packaging>
@@ -13,25 +14,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12</version>
-                <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>loggerPath</name>
-                            <value>conf/log4j.properties</value>
-                        </property>
-                    </systemProperties>
-                    <argLine>-Xms512m -Xmx1500m</argLine>
-                    <parallel>methods</parallel>
-                    <forkMode>pertest</forkMode>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
-                    </suiteXmlFiles>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -114,28 +96,37 @@
                         <executions>
                             <execution>
                                 <id>integration-test</id>
+                                <phase>integration-test</phase>
                                 <goals>
                                     <goal>integration-test</goal>
                                 </goals>
                             </execution>
                             <execution>
                                 <id>verify</id>
+                                <phase>verify</phase>
                                 <goals>
                                     <goal>verify</goal>
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <environmentVariables>
+                                <SERVER_HOST>${docker.container.product-apim.ip}</SERVER_HOST>
+                            </environmentVariables>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.18.1</version>
+                        <version>0.20.0</version>
                         <executions>
                             <execution>
                                 <id>start-docker</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>build</goal>
                                     <goal>start</goal>
                                 </goals>
                             </execution>
@@ -151,38 +142,14 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>wso2am</name>
-                                    <build>
-                                        <dockerFileDir>${project.parent.basedir}/product/docker</dockerFileDir>
-                                        <cleanup>true</cleanup>
-                                        <tags>
-                                            <tag>latest</tag>
-                                        </tags>
-                                        <assembly>
-                                            <mode>dir</mode>
-                                            <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-                                                <id>wso2am-c5</id>
-                                                <files>
-                                                    <file>
-                                                        <source>
-                                                            ${project.basedir}/../product/target/wso2apim-${project.version}.zip
-                                                        </source>
-                                                        <outputDirectory>./</outputDirectory>
-                                                        <destName>wso2am.zip</destName>
-                                                    </file>
-                                                </files>
-                                            </inline>
-                                        </assembly>
-                                    </build>
+                                    <name>wso2am:${product.apim.version}</name>
+                                    <alias>product-apim</alias>
                                     <run>
-                                        <namingStrategy>none</namingStrategy>
-                                        <ports>
-                                            <port>9090:9090</port>
-                                        </ports>
+                                        <namingStrategy>alias</namingStrategy>
                                         <wait>
                                             <tcp>
                                                 <ports>
-                                                    <port>9090</port>
+                                                    <port>9443</port>
                                                 </ports>
                                             </tcp>
                                             <time>60000</time>
@@ -192,7 +159,6 @@
                             </images>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
@@ -247,6 +213,61 @@
             <version>${junit-version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>${feign.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-gson</artifactId>
+            <version>${feign.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.joschi.jackson</groupId>
+            <artifactId>jackson-datatype-threetenbp</artifactId>
+            <version>${jackson-threetenbp-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.oltu.oauth2</groupId>
+            <artifactId>org.apache.oltu.oauth2.client</artifactId>
+            <version>${oltu-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form</artifactId>
+            <version>${feign-form-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-jackson</artifactId>
+            <version>${feign.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-slf4j</artifactId>
+            <version>${feign.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.core</artifactId>
+            <version>${carbon.apimgt.version}</version>
+        </dependency>
     </dependencies>
     <properties>
         <java.version>1.7</java.version>
@@ -260,5 +281,10 @@
         <junit-version>4.12</junit-version>
         <testng.version>6.9.10</testng.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <feign.version>9.5.0</feign.version>
+        <feign-form-version>2.1.0</feign-form-version>
+        <jackson-version>2.8.9</jackson-version>
+        <jackson-threetenbp-version>2.6.4</jackson-threetenbp-version>
+        <oltu-version>1.0.1</oltu-version>
     </properties>
 </project>

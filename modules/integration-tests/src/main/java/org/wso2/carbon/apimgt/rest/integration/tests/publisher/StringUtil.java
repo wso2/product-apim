@@ -13,7 +13,7 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class StringUtil {
   /**
    * Check if the given array contains the given value (with case-insensitive comparison).

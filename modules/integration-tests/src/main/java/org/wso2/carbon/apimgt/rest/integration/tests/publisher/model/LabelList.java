@@ -13,28 +13,31 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Label;
 
 /**
  * LabelList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class LabelList {
-  @SerializedName("count")
+  @JsonProperty("count")
   private Integer count = null;
 
-  @SerializedName("next")
+  @JsonProperty("next")
   private String next = null;
 
-  @SerializedName("previous")
+  @JsonProperty("previous")
   private String previous = null;
 
-  @SerializedName("list")
+  @JsonProperty("list")
   private List<Label> list = null;
 
   public LabelList count(Integer count) {
@@ -43,7 +46,7 @@ public class LabelList {
   }
 
    /**
-   * Number of Labels returned.
+   * Number of Labels returned. 
    * @return count
   **/
   @ApiModelProperty(value = "Number of Labels returned. ")
@@ -61,7 +64,7 @@ public class LabelList {
   }
 
    /**
-   * Link to the next subset of resources qualified. Empty if no more resources are to be returned.
+   * Link to the next subset of resources qualified. Empty if no more resources are to be returned. 
    * @return next
   **/
   @ApiModelProperty(value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
@@ -79,7 +82,7 @@ public class LabelList {
   }
 
    /**
-   * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned.
+   * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. 
    * @return previous
   **/
   @ApiModelProperty(value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
@@ -162,6 +165,6 @@ public class LabelList {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

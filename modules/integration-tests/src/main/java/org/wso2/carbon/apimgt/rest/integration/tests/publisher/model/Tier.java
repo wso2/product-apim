@@ -13,35 +13,30 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Tier
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class Tier {
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("description")
+  @JsonProperty("description")
   private String description = null;
 
   /**
    * Gets or Sets tierLevel
    */
-  @JsonAdapter(TierLevelEnum.Adapter.class)
   public enum TierLevelEnum {
     API("api"),
     
@@ -55,6 +50,7 @@ public class Tier {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -64,6 +60,7 @@ public class Tier {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static TierLevelEnum fromValue(String text) {
       for (TierLevelEnum b : TierLevelEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -72,40 +69,26 @@ public class Tier {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<TierLevelEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TierLevelEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TierLevelEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return TierLevelEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("tierLevel")
+  @JsonProperty("tierLevel")
   private TierLevelEnum tierLevel = null;
 
-  @SerializedName("attributes")
+  @JsonProperty("attributes")
   private Map<String, String> attributes = null;
 
-  @SerializedName("requestCount")
+  @JsonProperty("requestCount")
   private Long requestCount = null;
 
-  @SerializedName("unitTime")
+  @JsonProperty("unitTime")
   private Long unitTime = null;
 
-  @SerializedName("timeUnit")
+  @JsonProperty("timeUnit")
   private String timeUnit = null;
 
   /**
    * This attribute declares whether this policy is available under commercial or free 
    */
-  @JsonAdapter(TierPlanEnum.Adapter.class)
   public enum TierPlanEnum {
     FREE("FREE"),
     
@@ -117,6 +100,7 @@ public class Tier {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -126,6 +110,7 @@ public class Tier {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static TierPlanEnum fromValue(String text) {
       for (TierPlanEnum b : TierPlanEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -134,25 +119,12 @@ public class Tier {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<TierPlanEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TierPlanEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TierPlanEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return TierPlanEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("tierPlan")
+  @JsonProperty("tierPlan")
   private TierPlanEnum tierPlan = null;
 
-  @SerializedName("stopOnQuotaReach")
+  @JsonProperty("stopOnQuotaReach")
   private Boolean stopOnQuotaReach = null;
 
   public Tier name(String name) {
@@ -317,7 +289,7 @@ public class Tier {
    * @return stopOnQuotaReach
   **/
   @ApiModelProperty(example = "true", required = true, value = "By making this attribute to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
-  public Boolean getStopOnQuotaReach() {
+  public Boolean isStopOnQuotaReach() {
     return stopOnQuotaReach;
   }
 
@@ -380,6 +352,6 @@ public class Tier {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

@@ -13,32 +13,27 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Document
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class Document {
-  @SerializedName("documentId")
+  @JsonProperty("documentId")
   private String documentId = null;
 
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
   /**
    * Gets or Sets type
    */
-  @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
     HOWTO("HOWTO"),
     
@@ -60,6 +55,7 @@ public class Document {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -69,6 +65,7 @@ public class Document {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static TypeEnum fromValue(String text) {
       for (TypeEnum b : TypeEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -77,31 +74,17 @@ public class Document {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return TypeEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("type")
+  @JsonProperty("type")
   private TypeEnum type = null;
 
-  @SerializedName("summary")
+  @JsonProperty("summary")
   private String summary = null;
 
   /**
    * Gets or Sets sourceType
    */
-  @JsonAdapter(SourceTypeEnum.Adapter.class)
   public enum SourceTypeEnum {
     INLINE("INLINE"),
     
@@ -115,6 +98,7 @@ public class Document {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -124,6 +108,7 @@ public class Document {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static SourceTypeEnum fromValue(String text) {
       for (SourceTypeEnum b : SourceTypeEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -132,43 +117,29 @@ public class Document {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<SourceTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final SourceTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public SourceTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return SourceTypeEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("sourceType")
+  @JsonProperty("sourceType")
   private SourceTypeEnum sourceType = null;
 
-  @SerializedName("sourceUrl")
+  @JsonProperty("sourceUrl")
   private String sourceUrl = null;
 
-  @SerializedName("fileName")
+  @JsonProperty("fileName")
   private String fileName = null;
 
-  @SerializedName("inlineContent")
+  @JsonProperty("inlineContent")
   private String inlineContent = null;
 
-  @SerializedName("otherTypeName")
+  @JsonProperty("otherTypeName")
   private String otherTypeName = null;
 
-  @SerializedName("permission")
+  @JsonProperty("permission")
   private String permission = null;
 
   /**
    * Gets or Sets visibility
    */
-  @JsonAdapter(VisibilityEnum.Adapter.class)
   public enum VisibilityEnum {
     OWNER_ONLY("OWNER_ONLY"),
     
@@ -182,6 +153,7 @@ public class Document {
       this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
       return value;
     }
@@ -191,6 +163,7 @@ public class Document {
       return String.valueOf(value);
     }
 
+    @JsonCreator
     public static VisibilityEnum fromValue(String text) {
       for (VisibilityEnum b : VisibilityEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
@@ -199,34 +172,21 @@ public class Document {
       }
       return null;
     }
-
-    public static class Adapter extends TypeAdapter<VisibilityEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final VisibilityEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public VisibilityEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return VisibilityEnum.fromValue(String.valueOf(value));
-      }
-    }
   }
 
-  @SerializedName("visibility")
+  @JsonProperty("visibility")
   private VisibilityEnum visibility = null;
 
-  @SerializedName("createdTime")
+  @JsonProperty("createdTime")
   private String createdTime = null;
 
-  @SerializedName("createdBy")
+  @JsonProperty("createdBy")
   private String createdBy = null;
 
-  @SerializedName("lastUpdatedTime")
+  @JsonProperty("lastUpdatedTime")
   private String lastUpdatedTime = null;
 
-  @SerializedName("lastUpdatedBy")
+  @JsonProperty("lastUpdatedBy")
   private String lastUpdatedBy = null;
 
   public Document documentId(String documentId) {
@@ -436,7 +396,7 @@ public class Document {
    * Get createdTime
    * @return createdTime
   **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229Z", value = "")
+  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
   public String getCreatedTime() {
     return createdTime;
   }
@@ -472,7 +432,7 @@ public class Document {
    * Get lastUpdatedTime
    * @return lastUpdatedTime
   **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229Z", value = "")
+  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
   public String getLastUpdatedTime() {
     return lastUpdatedTime;
   }
@@ -566,6 +526,6 @@ public class Document {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

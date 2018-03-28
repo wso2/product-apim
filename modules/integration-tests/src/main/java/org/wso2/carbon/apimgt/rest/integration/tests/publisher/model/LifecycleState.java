@@ -13,40 +13,47 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleStateAvailableTransitionBeanList;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleStateCheckItemBeanList;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleStateInputBeanList;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleStatePermissionBeans;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleStateValidationBeans;
 
 /**
  * LifecycleState
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class LifecycleState {
-  @SerializedName("lcName")
+  @JsonProperty("lcName")
   private String lcName = null;
 
-  @SerializedName("state")
+  @JsonProperty("state")
   private String state = null;
 
-  @SerializedName("lifecyelId")
+  @JsonProperty("lifecyelId")
   private String lifecyelId = null;
 
-  @SerializedName("checkItemBeanList")
+  @JsonProperty("checkItemBeanList")
   private List<LifecycleStateCheckItemBeanList> checkItemBeanList = null;
 
-  @SerializedName("inputBeanList")
+  @JsonProperty("inputBeanList")
   private List<LifecycleStateInputBeanList> inputBeanList = null;
 
-  @SerializedName("customCodeBeanList")
+  @JsonProperty("customCodeBeanList")
   private List<LifecycleStateValidationBeans> customCodeBeanList = null;
 
-  @SerializedName("availableTransitionBeanList")
+  @JsonProperty("availableTransitionBeanList")
   private List<LifecycleStateAvailableTransitionBeanList> availableTransitionBeanList = null;
 
-  @SerializedName("permissionBeanList")
+  @JsonProperty("permissionBeanList")
   private List<LifecycleStatePermissionBeans> permissionBeanList = null;
 
   public LifecycleState lcName(String lcName) {
@@ -286,6 +293,6 @@ public class LifecycleState {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

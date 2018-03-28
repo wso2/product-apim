@@ -13,43 +13,45 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * APIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APIInfo {
-  @SerializedName("id")
+  @JsonProperty("id")
   private String id = null;
 
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("description")
+  @JsonProperty("description")
   private String description = null;
 
-  @SerializedName("context")
+  @JsonProperty("context")
   private String context = null;
 
-  @SerializedName("version")
+  @JsonProperty("version")
   private String version = null;
 
-  @SerializedName("provider")
+  @JsonProperty("provider")
   private String provider = null;
 
-  @SerializedName("lifeCycleStatus")
+  @JsonProperty("lifeCycleStatus")
   private String lifeCycleStatus = null;
 
-  @SerializedName("workflowStatus")
+  @JsonProperty("workflowStatus")
   private String workflowStatus = null;
 
-  @SerializedName("securityScheme")
+  @JsonProperty("securityScheme")
   private List<String> securityScheme = null;
 
   public APIInfo id(String id) {
@@ -277,6 +279,6 @@ public class APIInfo {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

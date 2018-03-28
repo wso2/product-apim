@@ -13,38 +13,40 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * LifecycleStateInputBeanList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class LifecycleStateInputBeanList {
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name = null;
 
-  @SerializedName("isRequired")
+  @JsonProperty("isRequired")
   private Boolean isRequired = null;
 
-  @SerializedName("label")
+  @JsonProperty("label")
   private String label = null;
 
-  @SerializedName("placeHolder")
+  @JsonProperty("placeHolder")
   private String placeHolder = null;
 
-  @SerializedName("tooltip")
+  @JsonProperty("tooltip")
   private String tooltip = null;
 
-  @SerializedName("regex")
+  @JsonProperty("regex")
   private String regex = null;
 
-  @SerializedName("values")
+  @JsonProperty("values")
   private String values = null;
 
-  @SerializedName("forTarget")
+  @JsonProperty("forTarget")
   private String forTarget = null;
 
   public LifecycleStateInputBeanList name(String name) {
@@ -75,7 +77,7 @@ public class LifecycleStateInputBeanList {
    * @return isRequired
   **/
   @ApiModelProperty(example = "true", value = "")
-  public Boolean getIsRequired() {
+  public Boolean isIsRequired() {
     return isRequired;
   }
 
@@ -244,6 +246,6 @@ public class LifecycleStateInputBeanList {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 

@@ -13,33 +13,34 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * CORS configuration for the API 
  */
 @ApiModel(description = "CORS configuration for the API ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2017-09-07T02:17:03.896Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
 public class APICorsConfiguration {
-  @SerializedName("corsConfigurationEnabled")
+  @JsonProperty("corsConfigurationEnabled")
   private Boolean corsConfigurationEnabled = false;
 
-  @SerializedName("accessControlAllowOrigins")
+  @JsonProperty("accessControlAllowOrigins")
   private List<String> accessControlAllowOrigins = null;
 
-  @SerializedName("accessControlAllowCredentials")
+  @JsonProperty("accessControlAllowCredentials")
   private Boolean accessControlAllowCredentials = false;
 
-  @SerializedName("accessControlAllowHeaders")
+  @JsonProperty("accessControlAllowHeaders")
   private List<String> accessControlAllowHeaders = null;
 
-  @SerializedName("accessControlAllowMethods")
+  @JsonProperty("accessControlAllowMethods")
   private List<String> accessControlAllowMethods = null;
 
   public APICorsConfiguration corsConfigurationEnabled(Boolean corsConfigurationEnabled) {
@@ -52,7 +53,7 @@ public class APICorsConfiguration {
    * @return corsConfigurationEnabled
   **/
   @ApiModelProperty(value = "")
-  public Boolean getCorsConfigurationEnabled() {
+  public Boolean isCorsConfigurationEnabled() {
     return corsConfigurationEnabled;
   }
 
@@ -96,7 +97,7 @@ public class APICorsConfiguration {
    * @return accessControlAllowCredentials
   **/
   @ApiModelProperty(value = "")
-  public Boolean getAccessControlAllowCredentials() {
+  public Boolean isAccessControlAllowCredentials() {
     return accessControlAllowCredentials;
   }
 
@@ -203,6 +204,6 @@ public class APICorsConfiguration {
     }
     return o.toString().replace("\n", "\n    ");
   }
-  
+
 }
 
