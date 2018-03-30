@@ -14,8 +14,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-broker.users:
+wso2.broker.users:
  users:
  -
    username: admin
    password: admin
+   roles:
+   - admin
