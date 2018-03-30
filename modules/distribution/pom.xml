@@ -391,8 +391,8 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
-            <artifactId>org.wso2.broker.feature</artifactId>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>io.ballerina.messaging.broker.feature</artifactId>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -792,7 +792,7 @@
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.broker.feature</id>
+                                    <id>io.ballerina.messaging.broker.feature</id>
                                     <version>${broker.version}</version>
                                 </feature>
                                 <feature>
@@ -1110,7 +1110,7 @@
                                     <version>${carbon.auth.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.broker.feature</id>
+                                    <id>io.ballerina.messaging.broker.feature</id>
                                     <version>${broker.version}</version>
                                 </feature>
                                 <feature>
