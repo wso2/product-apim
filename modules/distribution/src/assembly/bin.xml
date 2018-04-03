@@ -38,6 +38,13 @@
                 <exclude>**/*.eclipse</exclude>
                 <exclude>**/netty-transports.yml</exclude>
                 <exclude>**/com.google.gson_2.5.0.jar</exclude>
+                <exclude>**/com.google.gson_2.7.0.jar</exclude>
+                <exclude>**/org.apache.commons.lang3_3.1.0.jar</exclude>
+                <exclude>**/org.apache.commons.lang3_3.3.2.jar</exclude>
+                <exclude>**/org.apache.commons.lang3_3.4.0.jar</exclude>
+                <exclude>**/snakeyaml_1.16.0.wso2v1.jar</exclude>
+                <exclude>**/org.yaml.snakeyaml_1.17.0.jar</exclude>
+                <exclude>**/disruptor_3.3.2.wso2v2.jar</exclude>
                 <!--  change this to config provider format an add it again-->
                 <exclude>**/workflow-extensions.yml</exclude>
                 <exclude>wso2/lib/features/**</exclude>
