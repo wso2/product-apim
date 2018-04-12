@@ -28,7 +28,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>NaN-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
 
     <scm>
@@ -316,8 +316,8 @@
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.141</carbon.apimgt.version>
-        <carbon.auth.version>1.0.37</carbon.auth.version>
+        <carbon.apimgt.version>7.0.148</carbon.apimgt.version>
+        <carbon.auth.version>1.0.41</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
