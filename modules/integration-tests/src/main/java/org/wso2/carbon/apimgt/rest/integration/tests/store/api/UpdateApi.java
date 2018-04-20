@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Comment;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface UpdateApi extends ApiClient.Api {
 
 
@@ -35,8 +34,7 @@ public interface UpdateApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  Comment apisApiIdCommentsCommentIdPut(@Param("commentId") String commentId, @Param("apiId") String apiId, Comment
-          body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  Comment apisApiIdCommentsCommentIdPut(@Param("commentId") String commentId, @Param("apiId") String apiId, Comment body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Update an application
@@ -55,6 +53,5 @@ public interface UpdateApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  Application applicationsApplicationIdPut(@Param("applicationId") String applicationId, Application body, @Param
-          ("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  Application applicationsApplicationIdPut(@Param("applicationId") String applicationId, Application body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 }

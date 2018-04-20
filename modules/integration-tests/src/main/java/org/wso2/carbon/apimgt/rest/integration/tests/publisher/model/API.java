@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
 /**
  * API
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class API {
   @JsonProperty("id")
   private String id = null;
@@ -85,13 +84,13 @@ public class API {
   private List<String> transport = new ArrayList<String>();
 
   @JsonProperty("tags")
-  private List<String> tags = null;
+  private List<String> tags = new ArrayList<String>();
 
   @JsonProperty("hasOwnGateway")
   private Boolean hasOwnGateway = null;
 
   @JsonProperty("labels")
-  private List<String> labels = null;
+  private List<String> labels = new ArrayList<String>();
 
   @JsonProperty("policies")
   private List<String> policies = new ArrayList<String>();
@@ -110,11 +109,6 @@ public class API {
 
     VisibilityEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -137,22 +131,22 @@ public class API {
   private VisibilityEnum visibility = null;
 
   @JsonProperty("visibleRoles")
-  private List<String> visibleRoles = null;
+  private List<String> visibleRoles = new ArrayList<String>();
 
   @JsonProperty("permission")
   private String permission = null;
 
   @JsonProperty("userPermissionsForApi")
-  private List<String> userPermissionsForApi = null;
+  private List<String> userPermissionsForApi = new ArrayList<String>();
 
   @JsonProperty("visibleTenants")
-  private List<String> visibleTenants = null;
+  private List<String> visibleTenants = new ArrayList<String>();
 
   @JsonProperty("gatewayEnvironments")
   private String gatewayEnvironments = null;
 
   @JsonProperty("sequences")
-  private List<Sequence> sequences = null;
+  private List<Sequence> sequences = new ArrayList<Sequence>();
 
   @JsonProperty("businessInformation")
   private APIBusinessInformation businessInformation = null;
@@ -161,16 +155,16 @@ public class API {
   private APICorsConfiguration corsConfiguration = null;
 
   @JsonProperty("endpoint")
-  private List<APIEndpoint> endpoint = null;
+  private List<APIEndpoint> endpoint = new ArrayList<APIEndpoint>();
 
   @JsonProperty("securityScheme")
-  private List<String> securityScheme = null;
+  private List<String> securityScheme = new ArrayList<String>();
 
   @JsonProperty("scopes")
-  private List<String> scopes = null;
+  private List<String> scopes = new ArrayList<String>();
 
   @JsonProperty("operations")
-  private List<APIOperations> operations = null;
+  private List<APIOperations> operations = new ArrayList<APIOperations>();
 
   @JsonProperty("threatProtectionPolicies")
   private APIThreatProtectionPolicies threatProtectionPolicies = null;
@@ -455,7 +449,7 @@ public class API {
    * @return isDefaultVersion
   **/
   @ApiModelProperty(example = "false", required = true, value = "")
-  public Boolean isIsDefaultVersion() {
+  public Boolean getIsDefaultVersion() {
     return isDefaultVersion;
   }
 
@@ -477,7 +471,7 @@ public class API {
    * Supported transports for the API (http and/or https). 
    * @return transport
   **/
-  @ApiModelProperty(example = "[\"http\",\"https\"]", required = true, value = "Supported transports for the API (http and/or https). ")
+  @ApiModelProperty(example = "[&quot;http&quot;,&quot;https&quot;]", required = true, value = "Supported transports for the API (http and/or https). ")
   public List<String> getTransport() {
     return transport;
   }
@@ -492,9 +486,6 @@ public class API {
   }
 
   public API addTagsItem(String tagsItem) {
-    if (this.tags == null) {
-      this.tags = new ArrayList<String>();
-    }
     this.tags.add(tagsItem);
     return this;
   }
@@ -503,7 +494,7 @@ public class API {
    * Get tags
    * @return tags
   **/
-  @ApiModelProperty(example = "[\"substract\",\"add\"]", value = "")
+  @ApiModelProperty(example = "[&quot;substract&quot;,&quot;add&quot;]", value = "")
   public List<String> getTags() {
     return tags;
   }
@@ -522,7 +513,7 @@ public class API {
    * @return hasOwnGateway
   **/
   @ApiModelProperty(example = "false", value = "")
-  public Boolean isHasOwnGateway() {
+  public Boolean getHasOwnGateway() {
     return hasOwnGateway;
   }
 
@@ -536,9 +527,6 @@ public class API {
   }
 
   public API addLabelsItem(String labelsItem) {
-    if (this.labels == null) {
-      this.labels = new ArrayList<String>();
-    }
     this.labels.add(labelsItem);
     return this;
   }
@@ -547,7 +535,7 @@ public class API {
    * Get labels
    * @return labels
   **/
-  @ApiModelProperty(example = "[\"public\",\"private\"]", value = "")
+  @ApiModelProperty(example = "[&quot;public&quot;,&quot;private&quot;]", value = "")
   public List<String> getLabels() {
     return labels;
   }
@@ -570,7 +558,7 @@ public class API {
    * Get policies
    * @return policies
   **/
-  @ApiModelProperty(example = "[\"Unlimited\"]", required = true, value = "")
+  @ApiModelProperty(example = "[&quot;Unlimited&quot;]", required = true, value = "")
   public List<String> getPolicies() {
     return policies;
   }
@@ -603,9 +591,6 @@ public class API {
   }
 
   public API addVisibleRolesItem(String visibleRolesItem) {
-    if (this.visibleRoles == null) {
-      this.visibleRoles = new ArrayList<String>();
-    }
     this.visibleRoles.add(visibleRolesItem);
     return this;
   }
@@ -632,7 +617,7 @@ public class API {
    * Get permission
    * @return permission
   **/
-  @ApiModelProperty(example = "[{\"groupId\" : 1000, \"permission\" : [\"READ\",\"UPDATE\"]},{\"groupId\" : 1001, \"permission\" : [\"READ\",\"UPDATE\"]}]", value = "")
+  @ApiModelProperty(example = "[{&quot;groupId&quot; : 1000, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]},{&quot;groupId&quot; : 1001, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]}]", value = "")
   public String getPermission() {
     return permission;
   }
@@ -647,9 +632,6 @@ public class API {
   }
 
   public API addUserPermissionsForApiItem(String userPermissionsForApiItem) {
-    if (this.userPermissionsForApi == null) {
-      this.userPermissionsForApi = new ArrayList<String>();
-    }
     this.userPermissionsForApi.add(userPermissionsForApiItem);
     return this;
   }
@@ -658,7 +640,7 @@ public class API {
    * LoggedIn user permissions for the API 
    * @return userPermissionsForApi
   **/
-  @ApiModelProperty(example = "[\"READ\",\"UPDATE\"]", value = "LoggedIn user permissions for the API ")
+  @ApiModelProperty(example = "[&quot;READ&quot;,&quot;UPDATE&quot;]", value = "LoggedIn user permissions for the API ")
   public List<String> getUserPermissionsForApi() {
     return userPermissionsForApi;
   }
@@ -673,9 +655,6 @@ public class API {
   }
 
   public API addVisibleTenantsItem(String visibleTenantsItem) {
-    if (this.visibleTenants == null) {
-      this.visibleTenants = new ArrayList<String>();
-    }
     this.visibleTenants.add(visibleTenantsItem);
     return this;
   }
@@ -717,9 +696,6 @@ public class API {
   }
 
   public API addSequencesItem(Sequence sequencesItem) {
-    if (this.sequences == null) {
-      this.sequences = new ArrayList<Sequence>();
-    }
     this.sequences.add(sequencesItem);
     return this;
   }
@@ -746,7 +722,7 @@ public class API {
    * Get businessInformation
    * @return businessInformation
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public APIBusinessInformation getBusinessInformation() {
     return businessInformation;
   }
@@ -764,7 +740,7 @@ public class API {
    * Get corsConfiguration
    * @return corsConfiguration
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public APICorsConfiguration getCorsConfiguration() {
     return corsConfiguration;
   }
@@ -779,9 +755,6 @@ public class API {
   }
 
   public API addEndpointItem(APIEndpoint endpointItem) {
-    if (this.endpoint == null) {
-      this.endpoint = new ArrayList<APIEndpoint>();
-    }
     this.endpoint.add(endpointItem);
     return this;
   }
@@ -790,7 +763,7 @@ public class API {
    * Get endpoint
    * @return endpoint
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<APIEndpoint> getEndpoint() {
     return endpoint;
   }
@@ -805,9 +778,6 @@ public class API {
   }
 
   public API addSecuritySchemeItem(String securitySchemeItem) {
-    if (this.securityScheme == null) {
-      this.securityScheme = new ArrayList<String>();
-    }
     this.securityScheme.add(securitySchemeItem);
     return this;
   }
@@ -816,7 +786,7 @@ public class API {
    * Get securityScheme
    * @return securityScheme
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getSecurityScheme() {
     return securityScheme;
   }
@@ -831,9 +801,6 @@ public class API {
   }
 
   public API addScopesItem(String scopesItem) {
-    if (this.scopes == null) {
-      this.scopes = new ArrayList<String>();
-    }
     this.scopes.add(scopesItem);
     return this;
   }
@@ -842,7 +809,7 @@ public class API {
    * Get scopes
    * @return scopes
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getScopes() {
     return scopes;
   }
@@ -857,9 +824,6 @@ public class API {
   }
 
   public API addOperationsItem(APIOperations operationsItem) {
-    if (this.operations == null) {
-      this.operations = new ArrayList<APIOperations>();
-    }
     this.operations.add(operationsItem);
     return this;
   }
@@ -868,7 +832,7 @@ public class API {
    * Get operations
    * @return operations
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<APIOperations> getOperations() {
     return operations;
   }
@@ -886,7 +850,7 @@ public class API {
    * Get threatProtectionPolicies
    * @return threatProtectionPolicies
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public APIThreatProtectionPolicies getThreatProtectionPolicies() {
     return threatProtectionPolicies;
   }
@@ -897,7 +861,7 @@ public class API {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -996,12 +960,12 @@ public class API {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

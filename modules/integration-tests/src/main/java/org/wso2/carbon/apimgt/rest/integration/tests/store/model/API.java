@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.BaseAPI;
 /**
  * API
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class API extends BaseAPI {
   @JsonProperty("lifeCycleStatus")
   private String lifeCycleStatus = null;
@@ -36,10 +35,10 @@ public class API extends BaseAPI {
   private Boolean isDefaultVersion = null;
 
   @JsonProperty("tags")
-  private List<String> tags = null;
+  private List<String> tags = new ArrayList<String>();
 
   @JsonProperty("policies")
-  private List<String> policies = null;
+  private List<String> policies = new ArrayList<String>();
 
   @JsonProperty("wsdlUri")
   private String wsdlUri = null;
@@ -56,7 +55,7 @@ public class API extends BaseAPI {
    * Get lifeCycleStatus
    * @return lifeCycleStatus
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getLifeCycleStatus() {
     return lifeCycleStatus;
   }
@@ -74,8 +73,8 @@ public class API extends BaseAPI {
    * Get isDefaultVersion
    * @return isDefaultVersion
   **/
-  @ApiModelProperty(value = "")
-  public Boolean isIsDefaultVersion() {
+  @ApiModelProperty(example = "null", value = "")
+  public Boolean getIsDefaultVersion() {
     return isDefaultVersion;
   }
 
@@ -89,9 +88,6 @@ public class API extends BaseAPI {
   }
 
   public API addTagsItem(String tagsItem) {
-    if (this.tags == null) {
-      this.tags = new ArrayList<String>();
-    }
     this.tags.add(tagsItem);
     return this;
   }
@@ -100,7 +96,7 @@ public class API extends BaseAPI {
    * Get tags
    * @return tags
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getTags() {
     return tags;
   }
@@ -115,9 +111,6 @@ public class API extends BaseAPI {
   }
 
   public API addPoliciesItem(String policiesItem) {
-    if (this.policies == null) {
-      this.policies = new ArrayList<String>();
-    }
     this.policies.add(policiesItem);
     return this;
   }
@@ -126,7 +119,7 @@ public class API extends BaseAPI {
    * Get policies
    * @return policies
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getPolicies() {
     return policies;
   }
@@ -144,7 +137,7 @@ public class API extends BaseAPI {
    * Get wsdlUri
    * @return wsdlUri
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getWsdlUri() {
     return wsdlUri;
   }
@@ -162,7 +155,7 @@ public class API extends BaseAPI {
    * Get businessInformation
    * @return businessInformation
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public APIBusinessInformation getBusinessInformation() {
     return businessInformation;
   }
@@ -173,7 +166,7 @@ public class API extends BaseAPI {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -215,12 +208,12 @@ public class API extends BaseAPI {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

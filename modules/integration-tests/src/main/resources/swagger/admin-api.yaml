@@ -1,0 +1,2660 @@
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "v1.0"
+  title: "WSO2 API Manager - Admin Portal API"
+  description: |
+    This specifies a **RESTful API** for WSO2 **API Manager** - Admin Portal.
+
+    Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.0.4/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/api-manager/"
+    email: "architecture@wso2.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes:
+  - https
+  - http
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+host: apis.wso2.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+basePath: /api/am/admin/v1.0
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes:
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requestor is specified in the Accept header field
+# of the corresponding request.
+# The actual media type returned will be specfied in the Content-Type header field
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces:
+  - application/json
+
+securityDefinitions:
+  OAuth2Security:
+    type: oauth2
+    flow: password
+    tokenUrl: https://localhost:9443/token
+    scopes:
+      apim:tier_view: View Tier
+      apim:tier_manage: Manage Tier
+      apim:bl_view:  Blocking condition view
+      apim:bl_manage: Blocking condition Manage
+      apim:label_view: Label view
+      apim:label_manage: Label manage
+      apim:workflow_view: Workflow view
+      apim:workflow_approve: Workflow approve
+
+security:
+  - OAuth2Security:
+    - apim:tier_view
+
+######################################################
+# The "API Collection" resource APIs
+######################################################
+paths:
+  '/policies/throttling/application':
+
+#-----------------------------------------------------
+# Retrieve all Application level throttle policies
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Get all Application level throttle policies
+      description: |
+        Get all Application level throttle policies
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Application Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Application level throttle policy
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Add an Application level throttle policy
+      description: |
+        Add an Application level throttle policy
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Application level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+      tags:
+        - Application Policies
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Policy object.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Application Throttle Policy" resource API
+######################################################
+  '/policies/throttling/application/{id}':
+
+#-----------------------------------------------------
+# Retrieve a certain Application level Policy
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Retrieve an Application Policy
+      description: |
+        Retrieve an Application Policy providing the policy name.
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Application Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Tier does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete an Application level throttle policy
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Delete an Application level throttle policy
+      description: |
+        Delete an Application level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Application Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update an Application level throttle policy
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Update an Application level throttle policy
+      description: |
+        Update an Application level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Application Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Subscription Throttle Policy Collection" resource API
+######################################################
+  '/policies/throttling/subscription':
+
+#-----------------------------------------------------
+# Retrieve all Subscription level policies
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Get all Subscription level throttle policies
+      description: |
+        Get all Subscription level throttle policies
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Subscription Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Subscription level throttle policy
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Add a Subscription level throttle policy
+      description: |
+        Add a Subscription level throttle policy
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Subscripion level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+      tags:
+        - Subscription Policies
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Policy object.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Subscription Throttle Policy" resource API
+######################################################
+  '/policies/throttling/subscription/{id}':
+
+#-----------------------------------------------------
+# Retrieve a certain Subscription Policy
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Retrieve a Subscription Policy
+      description: |
+        Retrieve a Subscription Policy providing the policy name.
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Subscription Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Subscription level throttle policy
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Delete a Subscription level throttle policy
+      description: |
+        Delete a Subscription level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Subscription Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update a Subscription throttle policy
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Update a Subscription level throttle policy
+      description: |
+        Update a Subscription level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Subscription Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#################################
+# The "Advanced Throttle Policy Collection" resource API
+######################################################
+  '/policies/throttling/advanced':
+
+#-----------------------------------------------------
+# Retrieve all Advanced level policies
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Get all Advanced level throttle policies
+      description: |
+        Get all Advanced level throttle policies
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Advanced Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add an Advanced level throttle policy
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Add an Advanced level throttle policy
+      description: |
+        Add an Advanced level throttle policy
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Advanced level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+      tags:
+        - Advanced Policies
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Advanced Throttle policy.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Advanced Throttle Policy" resource API
+######################################################
+  '/policies/throttling/advanced/{id}':
+
+#-----------------------------------------------------
+# Retrieve a certain Advanced Throttling Policy
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Retrieve an Advanced Policy
+      description: |
+        Retrieve a Advanced Policy providing the policy name.
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Advanced Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete an Advanced level throttle policy
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Delete an Advanced level throttle policy
+      description: |
+        Delete an Advanced level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Advanced Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update an Advanced throttle policy
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Update an Advanced level throttle policy
+      description: |
+        Update an Advanced level throttle policy
+      parameters:
+        - $ref: '#/parameters/id'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Advanced Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Blocking Condition Collection" resource API
+######################################################
+  '/blacklist':
+
+#-----------------------------------------------------
+# Retrieve all Blocking conditions
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:bl_view
+      summary: Get all blocking condtions
+      description: |
+        Get all blocking condtions
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Blacklist
+      responses:
+        200:
+          description: |
+            OK.
+            Blocking conditions returned
+          schema:
+            $ref: '#/definitions/BlockingConditionList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Blocking Condition
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:bl_manage
+      summary: Add a Blocking condition
+      description: |
+        Add a Blocking condition
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Blocking condition object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+      tags:
+        - Blacklist
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Blocking Condition" resource API
+######################################################
+  '/blacklist/{conditionId}':
+
+#-----------------------------------------------------
+# Retrieve a Blocking condition
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:bl_view
+      summary: Retrieve a Blocking Condition
+      description: |
+        Retrieve a Blocking Condition providing the condition Id
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Blacklist
+      responses:
+        200:
+          description: |
+            OK.
+            Condition returned
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Condition does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Blocking condition
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:bl_manage
+      summary: Delete a Blocking condition
+      description: |
+        Delete a Blocking condition
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Blacklist
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update an Blacklist condition
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:bl_manage
+      summary: Update a blacklist condition
+      description: |
+        Update a blacklist condition
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - in: body
+          name: body
+          description: |
+            Blacklist condition object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Blacklist condition
+      responses:
+        200:
+          description: |
+            OK.
+            Blacklist updated.
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Custom Rule Collection" resource API
+######################################################
+  '/policies/throttling/custom':
+
+#-----------------------------------------------------
+# Retrieve all Custom Rules
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Get all Custom Rules
+      description: |
+        Get all Custom Rules
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Custom Rules
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/CustomRuleList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Custom Rule
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Add a Custom Rule
+      description: |
+        Add a Custom Rule
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Custom Rule object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/CustomRule'
+      tags:
+        - Custom Rules
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Custom Rule" resource API
+######################################################
+  '/policies/throttling/custom/{ruleId}':
+
+#-----------------------------------------------------
+# Retrieve a certain Custom Rule
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:tier_view
+      summary: Retrieve a Custom Rule
+      description: |
+        Retrieve a Custom Rule providing the policy name.
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Custom Rules
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Custom Rule
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Delete a Custom Rule
+      description: |
+        Delete a Custom Rule
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Custom Rules
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update a Custom Rule
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:tier_manage
+      summary: Update a Custom Rule
+      description: |
+        Update a Custom Rule
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/CustomRule'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Custom Rules
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Label collection" resource API
+######################################################
+  '/labels':
+
+#-----------------------------------------------------
+# Retrieve all labels
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:label_manage
+      summary: Get all registered Labels
+      description: |
+        Get all registered Labels
+      tags:
+        - Label Collection
+      responses:
+        200:
+          description: |
+            OK.
+            Labels returned
+          schema:
+            $ref: '#/definitions/LabelList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Label
+#-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+          - apim:label_manage
+      summary: Add a Label
+      description: |
+        Add a new gateway/store Label
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Label object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+
+      tags:
+        - Label Collection
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/Label'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request'
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Label" resource API
+######################################################
+  '/labels/{labelId}':
+
+#-----------------------------------------------------
+# Retrieve a Label
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:label_view
+      summary: Retrieve a Label
+      description: |
+        Retrieve a Label for labelId
+      parameters:
+        - $ref: '#/parameters/labelId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Label
+      responses:
+        200:
+          description: |
+            OK.
+            Label returned
+          schema:
+            $ref: '#/definitions/Label'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        404:
+          description: |
+            Not Found.
+            Requested Label does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Label
+#-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+          - apim:label_manage
+      summary: Delete a Label
+      description: |
+        Delete a Label by label Id
+      parameters:
+        - $ref: '#/parameters/labelId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Label
+      responses:
+        200:
+          description: |
+            OK.
+            Label successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Label to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update a Label
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:label_manage
+      summary: Update a Label
+      description: |
+        Update a Label by label Id
+      parameters:
+        - $ref: '#/parameters/labelId'
+        - in: body
+          name: body
+          description: |
+            Label object with updated information
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+
+      tags:
+        - Label
+      responses:
+        200:
+          description: |
+            OK.
+            Label updated.
+          schema:
+            $ref: '#/definitions/Label'
+          headers:
+            Location:
+              description: |
+                The URL of the updated resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "workflows collection" resource API
+######################################################
+  '/workflows':
+
+#-----------------------------------------------------
+# Retrieve all workflows entries
+#-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:workflow_view
+      summary: Get all the uncompleted Workflows
+      description: |
+        Get all uncompleted workflows entries
+      parameters:
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+        - $ref: '#/parameters/workflowType-Q'        
+      tags:
+        - Workflows (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Workflows returned
+          schema:
+            $ref: '#/definitions/WorkflowList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Workflow approval" resource API
+######################################################
+  /workflows/{workflowReferenceId}:
+
+#-------------------------------------------------------------------
+# Resume the workflow by approving or rejecting the workflow request
+#-------------------------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+          - apim:workflow_approve
+      summary: Update workflow status
+      description: |
+        This operation can be used to approve or reject a workflow task. .
+      parameters:
+       - $ref: '#/parameters/workflowReferenceId'
+       - in: body
+         name: body
+         description: |
+            Workflow event that need to be updated
+         required: true
+         schema:
+           $ref: '#/definitions/WorkflowRequest'
+      tags:
+        - Workflows (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Workflow request information is returned.
+          schema:
+            $ref: '#/definitions/WorkflowResponse'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Workflow for the given reference in not found.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-------------------------------------------------------------------
+# Retrieve workflow information for the given reference id
+#-------------------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+          - apim:workflow_view
+      summary: Retrieve workflow information
+      description: |
+        This operation can be used to retrieve a workflow task. 
+      parameters:
+       - $ref: '#/parameters/workflowReferenceId'
+
+      tags:
+        - Workflows (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Workflow request information is returned.
+          schema:
+            $ref: '#/definitions/Workflow'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Workflow for the given reference in not found.
+          schema:
+            $ref: '#/definitions/Error'
+
+
+######################################################
+# The "Threat Protection" resource API
+######################################################
+  /threat-protection-policies:
+    post:
+      summary: "add a threat protection policy"
+      description: "add a threat protection policy"
+      parameters:
+        - $ref: '#/parameters/threatProtectionPolicy'
+      tags:
+        - Add Threat Protection Policy
+      responses:
+        200:
+          description: OK
+
+    get:
+      summary: "Get all threat protection policies"
+      description: "all"
+      tags:
+        - All Threat Protection Policies
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/ThreatProtectionPolicyList'
+          description: OK
+
+  /threat-protection-policies/{threatProtectionPolicyId}:
+    get:
+      summary: "Get one threat protection policy"
+      description: "Get one threat protection policy"
+      parameters:
+        - $ref: '#/parameters/threatProtectionPolicyId'
+      tags:
+        - Threat Protection Policy
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/ThreatProtectionPolicy'
+          description: OK
+
+    post:
+      summary: "post"
+      description: "desc"
+      parameters:
+        - $ref: '#/parameters/threatProtectionPolicyId'
+        - $ref: '#/parameters/threatProtectionPolicy'
+      tags:
+        - Update Threat Protection Policy
+      responses:
+        200:
+          description: Ok
+
+    delete:
+      summary: "Delete a threat protection policy"
+      description: "Delete a threat protection policy"
+      parameters:
+        - $ref: '#/parameters/threatProtectionPolicyId'
+      tags:
+        - Delete Threat Protection Policy
+      responses:
+        200:
+          description: "Ok. Policy is deleted"
+        500:
+          description: "Internal server error occurred during the operation"
+
+
+######################################################
+# Parameters - required by some of the APIs above
+######################################################
+parameters:
+
+# Throttle Policy Id
+# Specified as part of the path expression
+  id:
+    name: id
+    in: path
+    description: |
+      Thorttle policy UUID
+    type: string
+    required: true
+
+# Custom rule Id
+# Specified as part of the path expression
+  ruleId:
+    name: ruleId
+    in: path
+    description: |
+      Custom rule UUID
+    type: string
+    required: true
+
+# Blocking Condition Id
+# Specified as part of the path expression
+  conditionId:
+    name: conditionId
+    in: path
+    description: |
+      Blocking condition identifier
+    type: string
+    required: true
+
+# Label Id
+# Specified as part of the path expression
+  labelId:
+    name: labelId
+    in: path
+    description: |
+      Label identifier
+    type: string
+    required: true
+
+# The HTTP If-None-Match header
+# Used to avoid retrieving data that are already cached
+  If-None-Match:
+    name: If-None-Match
+    in: header
+    description: |
+      Validator for conditional requests; based on the ETag of the formerly retrieved
+      variant of the resourec.
+    type : string
+
+# The HTTP If-Modified-Since header
+# Used to avoid retrieving data that are already cached
+  If-Modified-Since:
+    name: If-Modified-Since
+    in: header
+    description: |
+      Validator for conditional requests; based on Last Modified header of the
+      formerly retrieved variant of the resource.
+    type: string
+
+# The HTTP If-Match header
+# Used to avoid concurrent updates
+  If-Match:
+    name: If-Match
+    in: header
+    description: |
+      Validator for conditional requests; based on ETag.
+    type: string
+
+# The HTTP If-Unmodified-Since header
+# Used to avoid concurrent updates
+  If-Unmodified-Since:
+    name: If-Unmodified-Since
+    in: header
+    description: |
+      Validator for conditional requests; based on Last Modified header.
+    type: string
+
+# Used for pagination:
+# The maximum number of resoures to be returned by a GET
+  limit:
+    name: limit
+    in: query
+    description: |
+      Maximum size of resource array to return.
+    default: 25
+    type: integer
+
+# Used for pagination:
+# The order number of an instance in a qualified set of resoures
+# at which to start to return the next batch of qualified resources
+  offset:
+    name: offset
+    in: query
+    description: |
+      Starting point within the complete list of items qualified.
+    default: 0
+    type: integer
+
+# Workflow reference ID
+# Specified as part of the path expression
+  workflowReferenceId:
+    name: workflowReferenceId
+    in: path
+    description: |
+      Workflow reference id
+    required: true
+    type: string
+
+# Workflow type
+# Specified as part of the query string
+  workflowType-Q:
+    name: workflowType
+    in: query
+    description: |
+      Type of the worklfow
+    required: false
+    type: string
+
+#Threat Protection policy parameter
+  threatProtectionPolicy:
+    name: threatProtectionPolicy
+    in: body
+    description: |
+      Threat protection json policy request parameter
+    required: true
+    schema: {
+      $ref: '#/definitions/ThreatProtectionPolicy'
+    }
+
+#Threat protection policy ID parameter
+  threatProtectionPolicyId:
+    name: threatProtectionPolicyId
+    in: path
+    description: |
+      The UUID of a Policy
+    required: true
+    type: string
+
+######################################################
+# The resources used by some of the APIs above within the message body
+######################################################
+definitions:
+
+#-----------------------------------------------------
+# The Error resource
+#-----------------------------------------------------
+  Error:
+    title: Error object returned with 4XX HTTP status
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+        description: Error message.
+      description:
+        type: string
+        description: |
+          A detail description about the error message.
+      moreInfo:
+        type: string
+        description: |
+          Preferably an url with more details about the error.
+      error:
+        type: array
+        description: |
+          If there are more than one error list them out.
+          For example, list out validation errors by each field.
+        items:
+          $ref: '#/definitions/ErrorListItem'
+
+#-----------------------------------------------------
+# The Error List Item resource
+#-----------------------------------------------------
+  ErrorListItem:
+    title: Description of individual errors that may have occurred during a request.
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+        description: |
+          Description about individual errors occurred
+
+#-----------------------------------------------------
+# The Throttle Policy resource
+#-----------------------------------------------------
+  ThrottlePolicy :
+    discriminator: id
+    title: Generic Throttle Policy
+    required:
+      - policyName
+      - type
+    properties:
+      id:
+        type: string
+      policyName:
+        type: string
+      displayName:
+        type: string
+      description:
+        type: string
+      isDeployed:
+        type: boolean
+        default: false
+      type:
+        type: string
+        description: |
+          ApplicationThrottlePolicy, SubscriptionThrottlePolicy and AdvancedThrottlePolicy are the supported values.
+
+#-----------------------------------------------------
+# The Advanced Throttle Policy Info resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicyInfo :
+    title: Advanced Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Advanced Throttle Policy resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicy :
+    title: Advanced Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+          conditionalGroups:
+            type: array
+            items:
+              $ref: '#/definitions/ConditionalGroup'
+
+#-----------------------------------------------------
+# The Advanced Throttle Policy List resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicyList:
+    title: Advanced Throttle Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Advanced throttle policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/AdvancedThrottlePolicy'
+
+#-----------------------------------------------------
+# The Application Throttle Policy resource
+#-----------------------------------------------------
+  ApplicationThrottlePolicy:
+    title: Application Level Throttle Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Application Throttle Policy List resource
+#-----------------------------------------------------
+  ApplicationThrottlePolicyList:
+    title: Application Level Throttle Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Application throttle policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/ApplicationThrottlePolicy'
+
+#-----------------------------------------------------
+# The Subscription Throttle Policy resource
+#-----------------------------------------------------
+  SubscriptionThrottlePolicy:
+    title: Subscription Throttle Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+          rateLimitCount:
+            type: integer
+            default: 0
+          rateLimitTimeUnit:
+            type: string
+          customAttributes:
+            description: |
+              Custom attributes added to the Subscription Throttle policy
+            type: array
+            items:
+              $ref: '#/definitions/CustomAttribute'
+            additionalProperties:
+              type: string
+            example: {}
+          stopOnQuotaReach:
+            type: boolean
+            default: false
+          billingPlan:
+            type: string
+
+#-----------------------------------------------------
+# The Subscription Throttle Policy List resource
+#-----------------------------------------------------
+  SubscriptionThrottlePolicyList:
+    title: Subscription Level Throttle Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Subscription throttle policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/SubscriptionThrottlePolicy'
+
+#-----------------------------------------------------
+# The Custom Rule resource
+#-----------------------------------------------------
+  CustomRule:
+    title: Custom Rule
+    required:
+      - siddhiQuery
+      - keyTemplate
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          siddhiQuery:
+            type: string
+          keyTemplate:
+            type: string
+
+#-----------------------------------------------------
+# The Custom Rule List resource
+#-----------------------------------------------------
+  CustomRuleList:
+    title: Custom Rule List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Custom Rules returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/CustomRule'
+
+#-----------------------------------------------------
+# The Conditional Group resource
+#-----------------------------------------------------
+  ConditionalGroup :
+    title: Conditional Groups for Throttling
+    required:
+      - limit
+      - conditions
+    properties:
+      description:
+        type: string
+      conditions:
+        type: array
+        items:
+          $ref: '#/definitions/ThrottleCondition'
+      limit:
+        $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Throttle Condition resource
+#-----------------------------------------------------
+  ThrottleCondition:
+    x-wso2-subtypes:
+      - HeaderCondition
+      - IPCondition
+      - JWTClaimsCondition
+      - QueryParameterCondition
+    title: Conditions used for Throttling
+    description: Throttling Conditions
+    required:
+      - type
+    properties:
+      headerCondition:
+        type: object
+        $ref: '#/definitions/HeaderCondition'
+      ipCondition:
+        type: object
+        $ref: '#/definitions/IPCondition'
+      jwtClaimsCondition:
+        type: object
+        $ref: '#/definitions/JWTClaimsCondition'
+      queryParameterCondition:
+        type: object
+        $ref: '#/definitions/QueryParameterCondition'
+      type:
+        type: string
+        desciption: |
+          HeaderCondition, IPCondition, JWTClaimsCondition and QueryParameterCondition are the supported values
+      invertCondition:
+        type: boolean
+        default: false
+
+#-----------------------------------------------------
+# The Throttle HTTP Header Condition resource
+#-----------------------------------------------------
+  HeaderCondition:
+    title: HTTP Header based throttle condition
+    required:
+      - headerName
+      - headerValue
+    properties:
+     headerName:
+       type: string
+     headerValue:
+       type: string
+
+#-----------------------------------------------------
+# The Throttle IP Condition resource
+#-----------------------------------------------------
+  IPCondition:
+    title: IP based throttle condition
+    properties:
+      ipConditionType:
+        type: string
+        description: |
+          IPRange and IPSpecific are the supported values
+      specificIP:
+        type: string
+      startingIP:
+        type: string
+      endingIP:
+        type: string
+
+#-----------------------------------------------------
+# The Throttle JWT Claims Condition resource
+#-----------------------------------------------------
+  JWTClaimsCondition:
+    title:  JWT claim attibute based throttle condition
+    required:
+      - claimUrl
+      - attribute
+    properties:
+      claimUrl:
+        type: string
+      attribute:
+        type: string
+
+#-----------------------------------------------------
+# The Throttle Query Parameter Condition resource
+#-----------------------------------------------------
+  QueryParameterCondition:
+    title: Query parameter based throttle condition
+    required:
+      - parameterName
+      - parameterValue
+    properties:
+      parameterName:
+        type: string
+      parameterValue:
+        type: string
+
+#-----------------------------------------------------
+# The Throttle Limit resource
+#-----------------------------------------------------
+  ThrottleLimit :
+    x-wso2-subtypes:
+      - RequestCountLimit
+      - BandwidthLimit
+    required:
+      - type
+      - timeUnit
+      - unitTime
+    properties:
+      bandwidthLimit:
+        type: object
+        $ref: '#/definitions/BandwidthLimit'
+      requestCountLimit:
+        type: object
+        $ref: '#/definitions/RequestCountLimit'
+      type:
+        type: string
+        description: |
+          BandwidthLimit and RequestCountLimit are the supported values.
+      timeUnit:
+        type: string
+      unitTime:
+        type: integer
+        default: 0
+
+#-----------------------------------------------------
+# The Throttle Bandwidth Limit resource
+#-----------------------------------------------------
+  BandwidthLimit :
+    required:
+      - dataAmount
+      - dataUnit
+    properties:
+      dataAmount:
+        type: integer
+        format: int32
+        default: 0
+      dataUnit:
+        type: string
+
+#-----------------------------------------------------
+# The Throttle Request Count Limit resource
+#-----------------------------------------------------
+  RequestCountLimit :
+    required:
+      - requestCount
+    properties:
+      requestCount:
+        type: integer
+        format: int32
+        default: 0
+
+#-----------------------------------------------------
+# The Throttle Blocking Condition resource
+#-----------------------------------------------------
+  BlockingCondition:
+    title: Blocking Conditions
+    description: Blocking Conditions
+    required:
+      - conditionType
+      - conditionValue
+    properties:
+      conditionId:
+        type: string
+      conditionType:
+        type: string
+      conditionValue:
+        type: string
+      status:
+        type: boolean
+        deafult: true
+      ipCondition:
+        type: object
+        $ref: '#/definitions/IPCondition'
+
+#-----------------------------------------------------
+# The Throttle Blocking Condition List resource
+#-----------------------------------------------------
+  BlockingConditionList:
+    title: Blocking Conditions List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Blocking Conditions returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/BlockingCondition'
+
+#-----------------------------------------------------
+# Custom Attribute object
+#-----------------------------------------------------
+  CustomAttribute:
+    title: Name-Value pair
+    required:
+      - name
+      - value
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+
+#-----------------------------------------------------
+# The Label resource
+#-----------------------------------------------------
+  Label:
+    title: Label
+    required:
+      - name
+      - type
+    properties:
+      labelUUID:
+        type: string
+      name:
+        type: string
+        example: "Public"
+      description:
+        type: string
+        example: "Label to use for public APIs"
+      type:
+        type: string
+        description: |
+          the  type of the label
+          example: "Gateway"
+      accessUrls:
+        type: array
+        items:
+          type: string
+
+#-----------------------------------------------------
+# The Label List resource
+#-----------------------------------------------------
+  LabelList:
+    title: Label List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Labels returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Label'
+
+#-----------------------------------------------------
+# The workflow request resource
+#-----------------------------------------------------
+  WorkflowRequest:
+    title: Workflow Complete Request
+    required:
+      - status
+    properties:
+      status:
+        description: |
+          This attribute declares whether this workflow task is approved or rejected.
+        type: string
+        enum:
+          - APPROVED
+          - REJECTED
+        example: APPROVED
+      attributes:
+        description: |
+          Custom attributes to complete the workflow task
+        type: object
+        additionalProperties:
+          type: string
+        example: {}
+      description:
+        type: string
+        example: "Approve workflow request."
+
+#-----------------------------------------------------
+# The workflow executor's response resource
+#-----------------------------------------------------
+  WorkflowResponse:
+    title: Workflow Response
+    required:
+      - workflowStatus
+    properties:
+      workflowStatus:
+        description: |
+          This attribute declares whether this workflow task is approved or rejected.
+        type: string
+        enum:
+          - CREATED
+          - APPROVED
+          - REJECTED
+          - REGISTERED
+        example: APPROVED
+      jsonPayload:
+        description: |
+          Attributes that returned after the workflow execution
+        type: string
+#-----------------------------------------------------
+# The Workflow List resource
+#-----------------------------------------------------
+  WorkflowList:
+    title: Workflow List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of workflow entries returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Workflow'
+
+#-----------------------------------------------------
+# The Workflow Info resource
+#-----------------------------------------------------
+  Workflow:
+    title: Workflow object details.
+    properties:
+      referenceId:
+        type: string
+        example: 12225615-0c99-43db-b691-c7e1bc23e149
+      type:
+        type: string
+        example: AM_APPLICATION_CREATION
+      description:
+        type: string
+        example: Application created by foo 
+      createdTime:
+        type: string
+        example: CREATED
+      workflowStatus:
+        type: string
+        example: APPROVED
+
+#-----------------------------------------------------
+# The Threat Protection Policy resource
+#-----------------------------------------------------
+  ThreatProtectionPolicy:
+    title: "Threat Protection Policy Schema"
+    required:
+      - name
+      - type
+      - policy
+    properties:
+      uuid:
+        type: string
+        description: Policy ID
+      name:
+        type: string
+        description: Name of the policy
+      type:
+        type: string
+        description: Type of the policy
+      policy:
+        type: string
+        description: policy as a json string
+
+#-----------------------------------------------------
+# The Threat Protection JSON Policy List resource
+#-----------------------------------------------------
+  ThreatProtectionPolicyList:
+    title: "Threat Protection Policy List"
+    properties:
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/ThreatProtectionPolicy'
+#-----------------------------------------------------
+# END-OF-FILE
+#-----------------------------------------------------

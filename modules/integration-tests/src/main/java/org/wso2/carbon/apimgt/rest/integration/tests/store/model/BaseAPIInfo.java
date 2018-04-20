@@ -18,14 +18,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * BaseAPIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = APIInfo.class, name = "APIInfo"),
   @JsonSubTypes.Type(value = CompositeAPIInfo.class, name = "CompositeAPIInfo"),
@@ -67,11 +66,6 @@ public class BaseAPIInfo {
       this.value = value;
     }
 
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -100,7 +94,7 @@ public class BaseAPIInfo {
    * Get id
    * @return id
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getId() {
     return id;
   }
@@ -118,7 +112,7 @@ public class BaseAPIInfo {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getName() {
     return name;
   }
@@ -136,7 +130,7 @@ public class BaseAPIInfo {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getDescription() {
     return description;
   }
@@ -154,7 +148,7 @@ public class BaseAPIInfo {
    * Get context
    * @return context
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getContext() {
     return context;
   }
@@ -172,7 +166,7 @@ public class BaseAPIInfo {
    * Get version
    * @return version
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getVersion() {
     return version;
   }
@@ -190,8 +184,8 @@ public class BaseAPIInfo {
    * Get hasOwnGateway
    * @return hasOwnGateway
   **/
-  @ApiModelProperty(value = "")
-  public Boolean isHasOwnGateway() {
+  @ApiModelProperty(example = "null", value = "")
+  public Boolean getHasOwnGateway() {
     return hasOwnGateway;
   }
 
@@ -208,7 +202,7 @@ public class BaseAPIInfo {
    * If the provider value is not given, the user invoking the API will be used as the provider. 
    * @return provider
   **/
-  @ApiModelProperty(required = true, value = "If the provider value is not given, the user invoking the API will be used as the provider. ")
+  @ApiModelProperty(example = "null", required = true, value = "If the provider value is not given, the user invoking the API will be used as the provider. ")
   public String getProvider() {
     return provider;
   }
@@ -226,7 +220,7 @@ public class BaseAPIInfo {
    * Get type
    * @return type
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public TypeEnum getType() {
     return type;
   }
@@ -237,7 +231,7 @@ public class BaseAPIInfo {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -282,12 +276,12 @@ public class BaseAPIInfo {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Subscription;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface SubscriptionIndividualApi extends ApiClient.Api {
 
 
@@ -39,13 +38,13 @@ public interface SubscriptionIndividualApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /subscriptions/{subscriptionId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void subscriptionsSubscriptionIdDelete(@Param("subscriptionId") String subscriptionId, @Param("ifMatch") String
-          ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void subscriptionsSubscriptionIdDelete(@Param("subscriptionId") String subscriptionId, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Get details of a subscription
@@ -57,11 +56,11 @@ public interface SubscriptionIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /subscriptions/{subscriptionId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  Subscription subscriptionsSubscriptionIdGet(@Param("subscriptionId") String subscriptionId, @Param("ifNoneMatch")
-          String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  Subscription subscriptionsSubscriptionIdGet(@Param("subscriptionId") String subscriptionId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 }

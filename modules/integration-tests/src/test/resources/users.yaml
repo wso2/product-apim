@@ -1,0 +1,42 @@
+#users with groups to create
+users:
+  user1: pass1
+  user2: pass2
+  user3: pass3
+  user4: pass4
+  user5: pass5
+  user6: pass6
+  user7: pass7
+groups:
+  group1: ["user1","user2"]
+  group2: ["user2","user3"]
+  group3: ["user4","user5"]
+  group4: ["user6","user7"]
+
+creator: ["group1","group2"]
+publisher: ["group2"]
+subscriber: ["group3"]
+admin: ["group4"]
+
+# List Applications to Create
+
+applications:
+  -
+    user: user4
+    name: application1
+    description: this is application1
+    throttlingTier: Unlimited
+
+# List Apis To create
+apis:
+  -
+    user: user1
+    name: baseapi1
+    context:  /baseapi1/1.0.0
+    version:  1.0.0
+    description: this is base api1
+    subscriptionPolicies: ["Unlimited","Gold","Bronze"]
+    endpoint: http://localhost
+    lifecycleStatusChain:  ["Published"]
+    visibility: PUBLIC
+    visibleRoles: []

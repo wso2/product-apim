@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ import java.util.List;
 /**
  * ApplicationKeyGenerateRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class ApplicationKeyGenerateRequest {
   /**
    * Gets or Sets keyType
@@ -39,11 +38,6 @@ public class ApplicationKeyGenerateRequest {
 
     KeyTypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -80,7 +74,7 @@ public class ApplicationKeyGenerateRequest {
    * Get keyType
    * @return keyType
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public KeyTypeEnum getKeyType() {
     return keyType;
   }
@@ -103,7 +97,7 @@ public class ApplicationKeyGenerateRequest {
    * Grant types that should be supported by the application
    * @return grantTypesToBeSupported
   **/
-  @ApiModelProperty(required = true, value = "Grant types that should be supported by the application")
+  @ApiModelProperty(example = "null", required = true, value = "Grant types that should be supported by the application")
   public List<String> getGrantTypesToBeSupported() {
     return grantTypesToBeSupported;
   }
@@ -121,7 +115,7 @@ public class ApplicationKeyGenerateRequest {
    * Callback URL
    * @return callbackUrl
   **/
-  @ApiModelProperty(value = "Callback URL")
+  @ApiModelProperty(example = "null", value = "Callback URL")
   public String getCallbackUrl() {
     return callbackUrl;
   }
@@ -132,7 +126,7 @@ public class ApplicationKeyGenerateRequest {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -167,12 +161,12 @@ public class ApplicationKeyGenerateRequest {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

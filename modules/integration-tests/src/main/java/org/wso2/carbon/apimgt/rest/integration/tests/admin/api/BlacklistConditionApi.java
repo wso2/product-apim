@@ -1,7 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.admin.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.BlockingCondition;
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.Error;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:24:45.778+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:59:16.844+05:30")
 public interface BlacklistConditionApi extends ApiClient.Api {
 
 
@@ -33,6 +33,5 @@ public interface BlacklistConditionApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  BlockingCondition blacklistConditionIdPut(@Param("conditionId") String conditionId, BlockingCondition body, @Param
-          ("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  BlockingCondition blacklistConditionIdPut(@Param("conditionId") String conditionId, BlockingCondition body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 }

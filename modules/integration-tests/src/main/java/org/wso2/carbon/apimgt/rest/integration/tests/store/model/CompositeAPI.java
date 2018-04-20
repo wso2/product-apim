@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -25,7 +24,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.BaseAPI;
 /**
  * CompositeAPI
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class CompositeAPI extends BaseAPI {
   @JsonProperty("applicationId")
   private String applicationId = null;
@@ -39,7 +38,7 @@ public class CompositeAPI extends BaseAPI {
    * Get applicationId
    * @return applicationId
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getApplicationId() {
     return applicationId;
   }
@@ -50,7 +49,7 @@ public class CompositeAPI extends BaseAPI {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -82,12 +81,12 @@ public class CompositeAPI extends BaseAPI {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Scope;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public interface ScopeCollectionApi extends ApiClient.Api {
 
 
@@ -26,6 +25,7 @@ public interface ScopeCollectionApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/scopes")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}"
   })
@@ -48,6 +48,5 @@ public interface ScopeCollectionApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  Scope apisApiIdScopesPost(@Param("apiId") String apiId, Scope body, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  Scope apisApiIdScopesPost(@Param("apiId") String apiId, Scope body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 }

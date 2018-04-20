@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ import java.util.List;
 /**
  * ApplicationKeys
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class ApplicationKeys {
   @JsonProperty("consumerKey")
   private String consumerKey = null;
@@ -34,7 +33,7 @@ public class ApplicationKeys {
   private String consumerSecret = null;
 
   @JsonProperty("supportedGrantTypes")
-  private List<String> supportedGrantTypes = null;
+  private List<String> supportedGrantTypes = new ArrayList<String>();
 
   @JsonProperty("callbackUrl")
   private String callbackUrl = null;
@@ -51,11 +50,6 @@ public class ApplicationKeys {
 
     KeyTypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -86,7 +80,7 @@ public class ApplicationKeys {
    * Consumer key of the application
    * @return consumerKey
   **/
-  @ApiModelProperty(value = "Consumer key of the application")
+  @ApiModelProperty(example = "null", value = "Consumer key of the application")
   public String getConsumerKey() {
     return consumerKey;
   }
@@ -104,7 +98,7 @@ public class ApplicationKeys {
    * Consumer secret of the application
    * @return consumerSecret
   **/
-  @ApiModelProperty(value = "Consumer secret of the application")
+  @ApiModelProperty(example = "null", value = "Consumer secret of the application")
   public String getConsumerSecret() {
     return consumerSecret;
   }
@@ -119,9 +113,6 @@ public class ApplicationKeys {
   }
 
   public ApplicationKeys addSupportedGrantTypesItem(String supportedGrantTypesItem) {
-    if (this.supportedGrantTypes == null) {
-      this.supportedGrantTypes = new ArrayList<String>();
-    }
     this.supportedGrantTypes.add(supportedGrantTypesItem);
     return this;
   }
@@ -130,7 +121,7 @@ public class ApplicationKeys {
    * Supported grant types for the application
    * @return supportedGrantTypes
   **/
-  @ApiModelProperty(value = "Supported grant types for the application")
+  @ApiModelProperty(example = "null", value = "Supported grant types for the application")
   public List<String> getSupportedGrantTypes() {
     return supportedGrantTypes;
   }
@@ -148,7 +139,7 @@ public class ApplicationKeys {
    * Callback URL
    * @return callbackUrl
   **/
-  @ApiModelProperty(value = "Callback URL")
+  @ApiModelProperty(example = "null", value = "Callback URL")
   public String getCallbackUrl() {
     return callbackUrl;
   }
@@ -166,7 +157,7 @@ public class ApplicationKeys {
    * Key type
    * @return keyType
   **/
-  @ApiModelProperty(value = "Key type")
+  @ApiModelProperty(example = "null", value = "Key type")
   public KeyTypeEnum getKeyType() {
     return keyType;
   }
@@ -177,7 +168,7 @@ public class ApplicationKeys {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -216,12 +207,12 @@ public class ApplicationKeys {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Document;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Error;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface DocumentIndividualApi extends ApiClient.Api {
 
 
@@ -26,14 +25,13 @@ public interface DocumentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/documents/{documentId}/content")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  void apisApiIdDocumentsDocumentIdContentGet(@Param("apiId") String apiId, @Param("documentId") String documentId,
-                                              @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince")
-                                                      String ifModifiedSince);
+  void apisApiIdDocumentsDocumentIdContentGet(@Param("apiId") String apiId, @Param("documentId") String documentId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Get a document of an API
@@ -46,6 +44,7 @@ public interface DocumentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/documents/{documentId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     

@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationToke
 /**
  * Application
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class Application {
   @JsonProperty("applicationId")
   private String applicationId = null;
@@ -54,7 +53,7 @@ public class Application {
   private ApplicationToken token = null;
 
   @JsonProperty("keys")
-  private List<ApplicationKeys> keys = null;
+  private List<ApplicationKeys> keys = new ArrayList<ApplicationKeys>();
 
   public Application applicationId(String applicationId) {
     this.applicationId = applicationId;
@@ -65,7 +64,7 @@ public class Application {
    * Get applicationId
    * @return applicationId
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getApplicationId() {
     return applicationId;
   }
@@ -83,7 +82,7 @@ public class Application {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getName() {
     return name;
   }
@@ -101,7 +100,7 @@ public class Application {
    * If subscriber is not given user invoking the API will be taken as the subscriber. 
    * @return subscriber
   **/
-  @ApiModelProperty(value = "If subscriber is not given user invoking the API will be taken as the subscriber. ")
+  @ApiModelProperty(example = "null", value = "If subscriber is not given user invoking the API will be taken as the subscriber. ")
   public String getSubscriber() {
     return subscriber;
   }
@@ -119,7 +118,7 @@ public class Application {
    * Get throttlingTier
    * @return throttlingTier
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getThrottlingTier() {
     return throttlingTier;
   }
@@ -137,7 +136,7 @@ public class Application {
    * Get permission
    * @return permission
   **/
-  @ApiModelProperty(example = "[{\"groupId\" : 1000, \"permission\" : [\"READ\",\"UPDATE\"]},{\"groupId\" : 1001, \"permission\" : [\"READ\",\"UPDATE\"]}]", value = "")
+  @ApiModelProperty(example = "[{&quot;groupId&quot; : 1000, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]},{&quot;groupId&quot; : 1001, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]}]", value = "")
   public String getPermission() {
     return permission;
   }
@@ -155,7 +154,7 @@ public class Application {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getDescription() {
     return description;
   }
@@ -173,7 +172,7 @@ public class Application {
    * Get lifeCycleStatus
    * @return lifeCycleStatus
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getLifeCycleStatus() {
     return lifeCycleStatus;
   }
@@ -191,7 +190,7 @@ public class Application {
    * Get token
    * @return token
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public ApplicationToken getToken() {
     return token;
   }
@@ -206,9 +205,6 @@ public class Application {
   }
 
   public Application addKeysItem(ApplicationKeys keysItem) {
-    if (this.keys == null) {
-      this.keys = new ArrayList<ApplicationKeys>();
-    }
     this.keys.add(keysItem);
     return this;
   }
@@ -217,7 +213,7 @@ public class Application {
    * Get keys
    * @return keys
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<ApplicationKeys> getKeys() {
     return keys;
   }
@@ -228,7 +224,7 @@ public class Application {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -275,12 +271,12 @@ public class Application {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

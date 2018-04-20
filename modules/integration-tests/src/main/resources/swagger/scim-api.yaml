@@ -1,0 +1,818 @@
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "v1.0"
+  title: "WSO2 User Management Remote API"
+  description: |
+    This document specifies a **RESTful API** for WSO2 **User Management**.
+
+    It is written with [swagger 2](http://swagger.io/).
+
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/api-manager/"
+    email: "architecture@wso2.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes:
+  - https
+  - http
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+host: apis.wso2.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+basePath: /api/identity/scim2/v1.0
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes:
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requestor is specified in the Accept header field
+# of the corresponding request.
+# The actual media type returned will be specfied in the Content-Type header field
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces:
+  - application/json
+paths:
+######################################################
+# The "Users" resource APIs
+######################################################
+ '/Users':
+#-----------------------------------------------------
+# Retrieve Users
+#-----------------------------------------------------
+    get:
+      summary: Retrieve users
+      description: |
+        Retrieve list of available users qualifying under a given filter condition
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/parameters/startIndex'
+        - $ref: '#/parameters/count'
+        - $ref: '#/parameters/filter'
+      responses:
+        200:
+          description: |
+            OK.
+            Users returned.
+          schema:
+            $ref: '#/definitions/UserList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Create a User
+#-----------------------------------------------------
+    post:
+      summary: Create a new user
+      description: |
+        Create a new user
+      tags:
+        - Users
+      parameters:
+        - in: body
+          name: body
+          description: |
+            User object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/User'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+#-----------------------------------------------------
+# Search Users
+#-----------------------------------------------------
+ '/Users/.search':
+    post:
+      summary: Search users
+      description: |
+        Create a new user
+      tags:
+        - Users
+        - Search Users
+      parameters:
+        - in: body
+          name: body
+          description: |
+            User Search object
+          required: true
+          schema:
+            $ref: '#/definitions/UserSearch'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/UserList'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual User" resource APIs
+######################################################
+ '/Users/{id}':
+#-----------------------------------------------------
+# Retrieve the details of a user
+#-----------------------------------------------------
+    get:
+      summary: Get user
+      description: |
+        Get details of a users
+      tags:
+        - User (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: |
+            OK.
+            Users returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+#-----------------------------------------------------
+# Update User
+#-----------------------------------------------------
+    put:
+      summary: update user
+      description: |
+        Update details of a users
+      tags:
+        - User (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+        - in: body
+          name: body
+          description: |
+            User object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/User'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+#-----------------------------------------------------
+# Delete User
+#-----------------------------------------------------
+    delete:
+      summary: delete user
+      description: |
+        Delete a user
+      tags:
+        - User (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: |
+            OK.
+            User successfully deleted.
+        404:
+          description: |
+            Not Found.
+            User to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+######################################################
+# The "Groups" resource APIs
+######################################################
+ '/Groups':
+#-----------------------------------------------------
+# Retrieve Groups
+#-----------------------------------------------------
+    get:
+      summary: Retrieve groups
+      description: |
+        Retrieve list of available groups qualifying under a given filter condition
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/parameters/startIndex'
+        - $ref: '#/parameters/count'
+        - $ref: '#/parameters/filter'
+      responses:
+        200:
+          description: |
+            OK.
+            Groups returned.
+          schema:
+            $ref: '#/definitions/GroupList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+#-----------------------------------------------------
+# Create a new Group
+#-----------------------------------------------------
+    post:
+      summary: Create a group
+      description: |
+        Create a new group
+      tags:
+        - Groups
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Group object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Group'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/Group'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Group" resource APIs
+######################################################
+ '/Groups/{id}':
+#-----------------------------------------------------
+# Retrieve the details of a user
+#-----------------------------------------------------
+    get:
+      summary: Get group
+      description: |
+        Get details of a group
+      tags:
+        - Group (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: |
+            OK.
+            Group details returned.
+          schema:
+            $ref: '#/definitions/Group'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+#-----------------------------------------------------
+# Update Group
+#-----------------------------------------------------
+    put:
+      summary: update group
+      description: |
+        Update details of a group
+      tags:
+        - Group (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+        - in: body
+          name: body
+          description: |
+            Group object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Group'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/Group'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+#-----------------------------------------------------
+# Delete Group
+#-----------------------------------------------------
+    delete:
+      summary: delete group
+      description: |
+        Delete a group
+      tags:
+        - Group (Individual)
+      parameters:
+        - $ref: '#/parameters/id'
+      responses:
+        200:
+          description: |
+            OK.
+            Group successfully deleted.
+        404:
+          description: |
+            Not Found.
+            User to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+######################################################
+# The "Me" resource APIs
+######################################################
+ '/Me':
+#-----------------------------------------------------
+# Retrieve Me
+#-----------------------------------------------------
+    get:
+      summary: Retrieve my user details.
+      description: |
+        Retrieve details of the currently authenticated user.
+      tags:
+        - Me
+      responses:
+        200:
+          description: |
+            OK.
+            User details returned.
+          schema:
+            $ref: '#/definitions/User'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# Parameters - required by some of the APIs above
+######################################################
+parameters:
+
+# Used for pagination:
+# The index of the first element of the paginated result.
+  startIndex:
+    name: startIndex
+    in: query
+    description: |
+      The index of the first element in the result.
+    default: 0
+    type: integer
+    required: false
+
+# Used for pagination:
+# Number of elements returned in the paginated result.
+  count:
+    name: count
+    in: query
+    description: |
+      Number of elements returned in the paginated result.
+    default: 25
+    type: integer
+    required: false
+
+# Resource Id
+# Specified as part of the path expression
+  id:
+    name: id
+    in: path
+    description: |
+      Resource Id of User or Group
+    default: 0
+    type: string
+    required: true
+
+# Used for filtering the result:
+# A filter expression to request a subset of the result.
+  filter:
+    name: filter
+    in: query
+    description: |
+      A filter expression to request a subset of the result.
+    type: string
+    required: false
+
+######################################################
+# The resources used by some of the APIs above within the message body
+######################################################
+definitions:
+#-----------------------------------------------------
+# The User List resource
+#-----------------------------------------------------
+  UserList:
+    title: User List
+    properties:
+      startIndex:
+        type: integer
+        description: |
+          Number of Users returned.
+        example: 1
+      itemsPerPage:
+        type: integer
+        description: |
+          Items for page
+      schemas:
+        type: array
+        items:
+          type: string
+      Resources:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+#-----------------------------------------------------
+# The User Search resource
+#-----------------------------------------------------
+  UserSearch:
+    title: User Search
+    properties:
+      startIndex:
+        type: integer
+        description: |
+          The index of the first element in the result.
+        example: 1
+      count:
+        type: integer
+        description: |
+          Number of elements returned in the paginated result.
+      filter:
+        type: string
+        description: A filter expression to request a subset of the result.
+      schemas:
+        type: array
+        items:
+          type: string
+      attributes:
+        type: array
+        items:
+          type: string
+#-----------------------------------------------------
+# The User resource
+#-----------------------------------------------------
+  User:
+    title: User
+    properties:
+      id:
+        type: string
+      externalId:
+        type: string
+      meta:
+        $ref: '#/definitions/Meta'
+      userName:
+        type: string
+      password:
+        type: string
+      schemas:
+        type: array
+        items:
+          type: string
+      name:
+        description: name related attributes
+        properties:
+          formatted:
+            description: |
+              The full name, including all middle names, titles, and
+              suffixes as appropriate, formatted for display
+            type: string
+            example: Ms. Barbara Jane Jensen, III
+          familyName:
+            type: string
+            description: |
+              The family name of the User, or last name in most Western languages
+            example: Jensen
+          givenName:
+            description: |
+              The given name of the User, or first name in most Western languages
+            type: string
+            example: Barbara
+          middleName:
+            description: |
+              The middle name(s) of the User
+            type: string
+            example: Jane
+          honorificPrefix:
+            description: |
+              The honorific prefix(es) of the User, or title in most Western languages
+            type: string
+            example: Ms.
+          honorificSuffix:
+            description: |
+              The honorific suffix(es) of the User, or suffix in most Western languages
+            type: string
+            example: III
+      emails:
+        title: emails of the user
+        type: array
+        items:
+          type: object
+
+#-----------------------------------------------------
+# The Attributes resource
+#-----------------------------------------------------
+  Attribute:
+    title: attribute
+    type: string
+#-----------------------------------------------------
+# The Group List resource
+#-----------------------------------------------------
+  GroupList:
+    title: Group List
+    properties:
+      startIndex:
+        type: integer
+        description: |
+          Number of Groups returned.
+        example: 1
+      itemsPerPage:
+        type: integer
+        description: |
+          Items for page
+      totalResults:
+        type: integer
+        description: |
+          Total result count
+      schemas:
+        type: array
+        items:
+          type: string
+      Resources:
+        type: array
+        items:
+          $ref: '#/definitions/Group'
+#-----------------------------------------------------
+# The Group resource
+#-----------------------------------------------------
+  Group:
+    title: Group
+    properties:
+      meta:
+        $ref: '#/definitions/Meta'
+      displayName:
+        type: string
+        description: Display name of the group
+      schemas:
+        type: array
+        items:
+          type: string
+      members:
+        type: array
+        items:
+          $ref: '#/definitions/Member'
+      id:
+        type: string
+        description: Group Id
+#-----------------------------------------------------
+# The Member resource
+#-----------------------------------------------------
+  Member:
+    title: Member
+    properties:
+      display:
+        type: string
+        description: Display name of the member
+      value:
+        type: string
+        description: User Id
+
+#-----------------------------------------------------
+# The Metadata resource
+#-----------------------------------------------------
+  Meta:
+    title: Meta
+    properties:
+      created:
+        type: string
+        description: Date and time the resource has been created.
+      lastModified:
+        type: string
+        description: Date and time the resource has been last modified.
+      location:
+        type: string
+        description: Location URL to the resource.
+      resourceType:
+        type: string
+        description: Resource type (Group or User)
+
+#-----------------------------------------------------
+# The Error resource
+#-----------------------------------------------------
+  Error:
+    title: Error object returned with 4XX HTTP status
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+        description: Error message.
+      description:
+        type: string
+        description: |
+          A detail description about the error message.
+      moreInfo:
+        type: string
+        description: |
+          Preferably an url with more details about the error.
+      error:
+        type: array
+        description: |
+          If there are more than one error list them out.
+          For example, list out validation errors by each field.
+        items:
+          $ref: '#/definitions/ErrorListItem'
+
+#-----------------------------------------------------
+# The Error List Item resource
+#-----------------------------------------------------
+  ErrorListItem:
+    title: Description of individual errors that may have occurred during a request.
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+        description: |
+          Description about individual errors occurred

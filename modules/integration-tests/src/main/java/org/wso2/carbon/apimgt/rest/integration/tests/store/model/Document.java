@@ -16,14 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Document
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class Document {
   @JsonProperty("documentId")
   private String documentId = null;
@@ -53,11 +52,6 @@ public class Document {
 
     TypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -98,11 +92,6 @@ public class Document {
       this.value = value;
     }
 
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -140,7 +129,7 @@ public class Document {
    * Get documentId
    * @return documentId
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getDocumentId() {
     return documentId;
   }
@@ -158,7 +147,7 @@ public class Document {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getName() {
     return name;
   }
@@ -176,7 +165,7 @@ public class Document {
    * Get type
    * @return type
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public TypeEnum getType() {
     return type;
   }
@@ -194,7 +183,7 @@ public class Document {
    * Get summary
    * @return summary
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getSummary() {
     return summary;
   }
@@ -212,7 +201,7 @@ public class Document {
    * Get sourceType
    * @return sourceType
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public SourceTypeEnum getSourceType() {
     return sourceType;
   }
@@ -230,7 +219,7 @@ public class Document {
    * Get sourceUrl
    * @return sourceUrl
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getSourceUrl() {
     return sourceUrl;
   }
@@ -248,7 +237,7 @@ public class Document {
    * Get inlineContent
    * @return inlineContent
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getInlineContent() {
     return inlineContent;
   }
@@ -266,7 +255,7 @@ public class Document {
    * Get otherTypeName
    * @return otherTypeName
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getOtherTypeName() {
     return otherTypeName;
   }
@@ -277,7 +266,7 @@ public class Document {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -322,12 +311,12 @@ public class Document {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

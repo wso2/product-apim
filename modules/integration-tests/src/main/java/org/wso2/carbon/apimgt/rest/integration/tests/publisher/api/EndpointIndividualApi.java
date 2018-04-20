@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public interface EndpointIndividualApi extends ApiClient.Api {
 
 
@@ -25,13 +24,13 @@ public interface EndpointIndividualApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /endpoints/{endpointId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void endpointsEndpointIdDelete(@Param("endpointId") String endpointId, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void endpointsEndpointIdDelete(@Param("endpointId") String endpointId, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Get specific endpoints
@@ -43,13 +42,13 @@ public interface EndpointIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /endpoints/{endpointId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  EndPoint endpointsEndpointIdGet(@Param("endpointId") String endpointId, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  EndPoint endpointsEndpointIdGet(@Param("endpointId") String endpointId, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Update a Tier
@@ -68,6 +67,5 @@ public interface EndpointIndividualApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  EndPoint endpointsEndpointIdPut(@Param("endpointId") String endpointId, EndPoint body, @Param("ifMatch") String
-          ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  EndPoint endpointsEndpointIdPut(@Param("endpointId") String endpointId, EndPoint body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 }

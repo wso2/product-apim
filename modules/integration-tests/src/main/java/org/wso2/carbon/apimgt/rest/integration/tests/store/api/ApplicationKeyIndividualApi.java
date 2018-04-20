@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyGenerateRequest;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyMappingRequest;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface ApplicationKeyIndividualApi extends ApiClient.Api {
 
 
@@ -30,8 +29,7 @@ public interface ApplicationKeyIndividualApi extends ApiClient.Api {
     "Content-Type: application/json",
     "Accept: application/json",
   })
-  ApplicationKeys applicationsApplicationIdGenerateKeysPost(@Param("applicationId") String applicationId,
-                                                            ApplicationKeyGenerateRequest body);
+  ApplicationKeys applicationsApplicationIdGenerateKeysPost(@Param("applicationId") String applicationId, ApplicationKeyGenerateRequest body);
 
   /**
    * Update an application key

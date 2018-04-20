@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Label;
 /**
  * LabelList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class LabelList {
   @JsonProperty("count")
   private Integer count = null;
@@ -38,7 +37,7 @@ public class LabelList {
   private String previous = null;
 
   @JsonProperty("list")
-  private List<Label> list = null;
+  private List<Label> list = new ArrayList<Label>();
 
   public LabelList count(Integer count) {
     this.count = count;
@@ -49,7 +48,7 @@ public class LabelList {
    * Number of Labels returned. 
    * @return count
   **/
-  @ApiModelProperty(value = "Number of Labels returned. ")
+  @ApiModelProperty(example = "null", value = "Number of Labels returned. ")
   public Integer getCount() {
     return count;
   }
@@ -67,7 +66,7 @@ public class LabelList {
    * Link to the next subset of resources qualified. Empty if no more resources are to be returned. 
    * @return next
   **/
-  @ApiModelProperty(value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
+  @ApiModelProperty(example = "null", value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
   public String getNext() {
     return next;
   }
@@ -85,7 +84,7 @@ public class LabelList {
    * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. 
    * @return previous
   **/
-  @ApiModelProperty(value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
+  @ApiModelProperty(example = "null", value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
   public String getPrevious() {
     return previous;
   }
@@ -100,9 +99,6 @@ public class LabelList {
   }
 
   public LabelList addListItem(Label listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<Label>();
-    }
     this.list.add(listItem);
     return this;
   }
@@ -111,7 +107,7 @@ public class LabelList {
    * Get list
    * @return list
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<Label> getList() {
     return list;
   }
@@ -122,7 +118,7 @@ public class LabelList {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -159,12 +155,12 @@ public class LabelList {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

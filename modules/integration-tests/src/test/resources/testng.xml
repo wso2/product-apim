@@ -3,21 +3,10 @@
 <suite name="ApiManager_IntegrationTest_Suite" verbose="1">
 
     <test name="REST_API_IntegrationTest" preserve-order="true" parallel="false">
-        <packages>
-            <!--commented to stop tests on build (need to uncomment later)-->
-            <!--package name="org.wso2.carbon.apimgt.rest.integration.tests.*"/-->
-        </packages>
-
-        <!--  <classes>
-              <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.LabelCollectionApiIT"/>
-          </classes> -->
-
         <classes>
-            <!--Testing Offline Microgateway, need to start microgateway before the tests-->
-            <!--commented to stop tests during the product build, (need to uncomment later)-->
-            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.MockedApiClientIT/>-->
-            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.PetstoreApiClientIT/>-->
-            <class name="org.wso2.carbon.apimgt.rest.integration.tests.publisher.APIMgtBaseIntegrationIT"/>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.APIMgtBaseIntegrationIT"/>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.publisher.APILifeCycleTestCaseIT"/>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.store.APISubscriptionTestCaseIT"/>
         </classes>
 
     </test>

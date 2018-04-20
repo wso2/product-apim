@@ -16,14 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * LifecycleStateInputBeanList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class LifecycleStateInputBeanList {
   @JsonProperty("name")
   private String name = null;
@@ -77,7 +76,7 @@ public class LifecycleStateInputBeanList {
    * @return isRequired
   **/
   @ApiModelProperty(example = "true", value = "")
-  public Boolean isIsRequired() {
+  public Boolean getIsRequired() {
     return isRequired;
   }
 
@@ -94,7 +93,7 @@ public class LifecycleStateInputBeanList {
    * Get label
    * @return label
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getLabel() {
     return label;
   }
@@ -112,7 +111,7 @@ public class LifecycleStateInputBeanList {
    * Get placeHolder
    * @return placeHolder
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getPlaceHolder() {
     return placeHolder;
   }
@@ -130,7 +129,7 @@ public class LifecycleStateInputBeanList {
    * Get tooltip
    * @return tooltip
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getTooltip() {
     return tooltip;
   }
@@ -148,7 +147,7 @@ public class LifecycleStateInputBeanList {
    * Get regex
    * @return regex
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getRegex() {
     return regex;
   }
@@ -166,7 +165,7 @@ public class LifecycleStateInputBeanList {
    * Get values
    * @return values
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getValues() {
     return values;
   }
@@ -195,7 +194,7 @@ public class LifecycleStateInputBeanList {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -240,12 +239,12 @@ public class LifecycleStateInputBeanList {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 
