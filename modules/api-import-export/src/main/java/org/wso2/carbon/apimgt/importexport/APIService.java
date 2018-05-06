@@ -28,6 +28,7 @@ import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
 import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
 import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.AuthenticationContext;
 import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
@@ -73,7 +74,6 @@ public class APIService {
     public Response exportAPI(@QueryParam("name") String name, @QueryParam("version") String version,
             @QueryParam("provider") String providerName, @Context HttpHeaders httpHeaders) {
 
-        String userName;
         if (name == null || version == null || providerName == null) {
             log.error("Invalid API Information ");
 
@@ -91,7 +91,8 @@ public class APIService {
                 return authorizationResponse;
             }
 
-            userName = AuthenticatorUtil.getAuthenticatedUserName();
+            AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
+            String userName = authenticationContext.getUsername();
             //provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
             String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
@@ -185,7 +186,13 @@ public class APIService {
                 return authorizationResponse;
             }
 
-            String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
+            AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
+            String tenantDomain = MultitenantUtils.getTenantDomain(authenticationContext.getUsername());
+            String currentUser = authenticationContext.getDomainAwareUsername();
+
+            if (!tenantDomain.equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+                currentUser = currentUser + "@" + tenantDomain;
+            }
             APIImportUtil.initializeProvider(currentUser);
 
             //Temporary directory is used to create the required folders
@@ -210,7 +217,6 @@ public class APIService {
                     return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
                 }
 
-                String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
                 if (tenantDomain != null &&
                         !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
                                 .equals(tenantDomain)) {
