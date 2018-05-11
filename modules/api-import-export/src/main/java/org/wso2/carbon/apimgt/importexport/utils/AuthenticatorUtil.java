@@ -18,24 +18,34 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
+import org.apache.axis2.client.Options;
+import org.apache.axis2.client.ServiceClient;
+import org.apache.axis2.context.ServiceContext;
+import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonConstants;
+import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.APIManagerConfiguration;
+import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
+import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
+import org.wso2.carbon.authenticator.stub.AuthenticationAdminStub;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.user.api.AuthorizationManager;
-import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import java.util.List;
-import java.util.StringTokenizer;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URL;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * This class provides authentication facility for importing and exporting APIs
@@ -47,9 +57,9 @@ public class AuthenticatorUtil {
     private static final String AUTHORIZATION_PROPERTY = "Authorization";
     private static final String AUTHENTICATION_SCHEME = "Basic";
     private static final Log log = LogFactory.getLog(AuthenticatorUtil.class);
-    private static String username;
-    private static String password;
-    public static final String APIM_ADMIN_PERMISSION = "/permission/admin/manage/apim_admin";
+    private static final String APIM_ADMIN_PERMISSION = "/permission/admin/manage/apim_admin";
+    private static final String APIM_LOGIN_PERMISSION = "/permission/admin/login";
+    private static final String APIM_API_CREATE_PERMISSION = "/permission/admin/manage/api/create";
 
     private AuthenticatorUtil() {
     }
@@ -65,10 +75,16 @@ public class AuthenticatorUtil {
      */
 
     public static Response authorizeUser(HttpHeaders headers) throws APIExportException {
-        if (!isValidCredentials(headers)) {
-            String message = "Credentials are not provided for authentication";
-            log.error(message);
-            return Response.status(Response.Status.UNAUTHORIZED).entity(message).build();
+
+        AuthenticationContext authenticationContext = getAuthenticationContext(headers);
+        String username = authenticationContext.getUsername();
+        String password = authenticationContext.getPassword();
+
+        if (username == null || password == null) {
+            log.error("No username and password is provided for authentication");
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("No username and password is provided for authentication").type(MediaType.APPLICATION_JSON).
+                            build();
         }
 
         try {
@@ -76,75 +92,84 @@ public class AuthenticatorUtil {
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
 
-            UserStoreManager userstoremanager =
-                    CarbonContext.getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
+            APIManagerConfiguration config = ServiceReferenceHolder.getInstance().
+                    getAPIManagerConfigurationService().getAPIManagerConfiguration();
+            String url = config.getFirstProperty(APIConstants.AUTH_MANAGER_URL);
 
-            AuthorizationManager authorizationManager = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
-                    .getAuthorizationManager();
-
-            String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+            AuthenticationAdminStub authAdminStub = new AuthenticationAdminStub(null, url +
+                    APIImportExportConstants.AUTHENTICATION_ADMIN_SERVICE_ENDPOINT);
+            ServiceClient client = authAdminStub._getServiceClient();
+            Options options = client.getOptions();
+            options.setManageSession(true);
 
             //authenticate user provided credentials
-            if (userstoremanager.authenticate(tenantAwareUsername, password)) {
+            String host = new URL(url).getHost();
+            if (authAdminStub.login(username, password, host)) {
                 log.info(username + " user authenticated successfully");
-                //Get admin role name of the current domain
-                String adminRoleName = CarbonContext
-                                       .getThreadLocalCarbonContext()
-                                       .getUserRealm()
-                                       .getRealmConfiguration()
-                                       .getAdminRoleName();
 
-                String[] userRoles = userstoremanager.getRoleListOfUser(tenantAwareUsername);
+                ServiceContext serviceContext = authAdminStub.
+                        _getServiceClient().getLastOperationContext().getServiceContext();
+                String sessionCookie = (String) serviceContext.getProperty(HTTPConstants.COOKIE_STRING);
+                String domainAwareUserName = APIUtil.getLoggedInUserInfo(sessionCookie, url).getUserName();
+                authenticationContext.setDomainAwareUsername(domainAwareUserName);
 
-                //user is only authorized for exporting and importing if he is an admin of his
-                // domain
+                // Validation for the admin user of the domain.
+                UserStoreManager userstoremanager =
+                        CarbonContext.getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
+                String[] userRoles = userstoremanager.getRoleListOfUser(domainAwareUserName);
+                String adminRoleName = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+                        .getRealmConfiguration().getAdminRoleName();
                 for (String userRole : userRoles) {
                     if (adminRoleName.equalsIgnoreCase(userRole)) {
                         log.info(username + " is authorized to import and export APIs");
-                        return Response.ok().build();
+                        return Response.ok().entity(authenticationContext).build();
                     }
                 }
 
-                if (authorizationManager.isUserAuthorized(tenantAwareUsername, APIM_ADMIN_PERMISSION,
-                        CarbonConstants.UI_PERMISSION_ACTION)) {
+                // Validation for a user having API-M Admin, API Create and Login permissions.
+                AuthorizationManager authorizationManager = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+                        .getAuthorizationManager();
+                if ((authorizationManager.isUserAuthorized(domainAwareUserName, APIM_ADMIN_PERMISSION,
+                        CarbonConstants.UI_PERMISSION_ACTION)) && (authorizationManager.isUserAuthorized
+                        (domainAwareUserName, APIM_LOGIN_PERMISSION, CarbonConstants.UI_PERMISSION_ACTION)) &&
+                        (authorizationManager.isUserAuthorized(domainAwareUserName, APIM_API_CREATE_PERMISSION,
+                                CarbonConstants.UI_PERMISSION_ACTION))) {
                     log.info(username + " is authorized to import and export APIs");
-                    return Response.ok().build();
+                    return Response.ok().entity(authenticationContext).build();
                 }
 
-                return Response.status(Response.Status.FORBIDDEN).entity("User is not authorized for the " +
-                        "performed action.").type(MediaType.APPLICATION_JSON).build();
+                return Response.status(Response.Status.FORBIDDEN).entity("User Authorization Failed")
+                        .type(MediaType.APPLICATION_JSON).build();
 
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("User Authentication Failed")
                         .type(MediaType.APPLICATION_JSON).build();
             }
-
-        } catch (UserStoreException e) {
-            String errorMessage = "Error while accessing user configuration";
+        } catch (Exception e) {
+            String errorMessage = "Error while authenticating the user";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
-
     }
 
     /**
-     * Checks whether user has provided non blank username and password for authentication
+     * Extracts the user provided username and password for authentication.
      *
      * @param headers Http Headers of the request
-     * @return boolean Whether a user name and password has been provided for authentication
-     * @throws APIExportException If an error occurs while extracting username and password from
-     *                            the header
+     * @return AuthenticationContext including the username and password
+     * @throws APIExportException If an error occurs while extracting username and password from the header
      */
-    private static boolean isValidCredentials(HttpHeaders headers) throws APIExportException {
+    private static AuthenticationContext getAuthenticationContext(HttpHeaders headers) throws APIExportException {
 
+        AuthenticationContext authenticationContext = new AuthenticationContext();
         //Fetch authorization header
         final List<String> authorization = headers.getRequestHeader(AUTHORIZATION_PROPERTY);
 
-        //If no authorization information present; block access
+        //If no authorization information present, return an empty authentication context
         if (authorization == null || authorization.isEmpty()) {
-            return false;
+            return authenticationContext;
         }
 
         //Get encoded username and password
@@ -157,23 +182,9 @@ public class AuthenticatorUtil {
         if (usernameAndPassword != null) {
             //Split username and password tokens
             final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
-            username = tokenizer.nextToken();
-            password = tokenizer.nextToken();
-
-            if (username != null && password != null) {
-                return true;
-            }
+            authenticationContext.setUsername(tokenizer.nextToken());
+            authenticationContext.setPassword(tokenizer.nextToken());
         }
-
-        return false;
-    }
-
-    /**
-     * Retrieve authenticated user name for the current session
-     *
-     * @return User name
-     */
-    public static String getAuthenticatedUserName() {
-        return username;
+        return authenticationContext;
     }
 }
