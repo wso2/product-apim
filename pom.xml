@@ -1039,6 +1039,12 @@
                 <artifactId>org.wso2.carbon.apimgt.micro.gateway.rest.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
+            <!-- Dependencies for Ballerina Gateway -->
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.ballerina.gateway</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
             <!-- Forget-me tool -->
             <dependency>
                 <groupId>org.wso2.carbon.privacy</groupId>
@@ -1235,6 +1241,8 @@
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>1.0.50</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
+
+        <ballerina.platform.version>0.970.1</ballerina.platform.version>
     </properties>
 
 </project>

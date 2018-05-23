@@ -60,6 +60,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.ballerina.gateway</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -170,6 +174,26 @@
                                     <destFileName>org.wso2.carbon.apimgt.micro.gateway.configurator-${carbon.apimgt.version}.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <id>download-ballerina</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://product-dist.ballerina.io/downloads/${ballerina.platform.version}/ballerina-platform-${ballerina.platform.version}.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.build.directory}/ballerina</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -453,6 +477,23 @@
                             <descriptors>
                                 <descriptor>src/main/assembly/microgw.xml</descriptor>
                             </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>ballerina-gateway</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
+                                <descriptor>src/main/assembly/ballerinaGW.xml</descriptor>
+                            </descriptors>
+                            <finalName>wso2am-ballerina-gw-${pom.version}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
                 </executions>
