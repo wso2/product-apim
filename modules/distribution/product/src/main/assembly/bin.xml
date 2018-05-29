@@ -770,6 +770,7 @@
             <fileMode>644</fileMode>
         </fileSet>
 
+        <!--Copying the relevant XSD for API RXT with micro-gateway labels-->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/</outputDirectory>
