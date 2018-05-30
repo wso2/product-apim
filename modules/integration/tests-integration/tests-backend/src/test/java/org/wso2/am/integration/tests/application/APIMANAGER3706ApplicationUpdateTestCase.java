@@ -73,7 +73,7 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
     private APIStoreRestClient apiStore;
     private String consumerKey;
     private String consumerSecret;
-    private String regenerateConsumerSecret;
+    private String regeneratedConsumerSecret;
     private String publisherURLHttps;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -150,9 +150,9 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
         HttpResponse response = apiStore.regenerateConsumerSecret(consumerKey);
         verifyResponse(response);
         String responseString = response.getData();
-        regenerateConsumerSecret = getRegeneratedConsumerSecret(responseString);
-        Assert.assertNotNull(regenerateConsumerSecret);
-        Assert.assertNotEquals(consumerSecret, regenerateConsumerSecret);
+        regeneratedConsumerSecret = getRegeneratedConsumerSecret(responseString);
+        Assert.assertNotNull(regeneratedConsumerSecret);
+        Assert.assertNotEquals(consumerSecret, regeneratedConsumerSecret);
     }
 
     @AfterClass(alwaysRun = true)
