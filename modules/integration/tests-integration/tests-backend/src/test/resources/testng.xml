@@ -206,6 +206,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationRegenerateConsumerSecretTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1628_OAuthAppUpdateViaRestApiTestCase"/>
