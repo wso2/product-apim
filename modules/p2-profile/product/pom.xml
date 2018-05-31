@@ -214,8 +214,6 @@
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediators.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
                    
-                                <featureArtifactDef>org.wso2.am:org.wso2.am.styles.feature:${apimserver.version}
-                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.relay.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
@@ -269,9 +267,6 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
                                 </featureArtifactDef>
 
                                 <!-- Registry Features -->
@@ -948,15 +943,7 @@
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
                                 
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1486,14 +1473,6 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -1877,14 +1856,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2289,14 +2260,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2767,14 +2730,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -3258,16 +3213,8 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -3713,11 +3660,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.andes.server.feature.group</id>
                                     <version>${carbon.messaging.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.receiver.feature.group</id>
