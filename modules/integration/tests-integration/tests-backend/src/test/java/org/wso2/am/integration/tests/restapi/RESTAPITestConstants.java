@@ -152,4 +152,7 @@ public final class RESTAPITestConstants {
 
     //text to represent index of particular object, in case of a response consisting of an array of objects
     public static final String RESPONSE_OBJECT_INDEX = "object-index";
+
+    //text to represent the user directory
+    public static final String USER_DIR = "user.dir";
 }

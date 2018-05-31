@@ -70,8 +70,7 @@ public class ApplicationRegenerateConsumerSecretTestCase extends APIMIntegration
 
         // File name of the JSON data file related to : Regenerating consumer secret test case
         String dataFileName = "ApplicationRegenerateConsumerSecretTestCase.txt";
-        String USER_DIR = "user.dir";
-        String dataFilePath = (new File(System.getProperty(USER_DIR))).getParent() +
+        String dataFilePath = (new File(System.getProperty(RESTAPITestConstants.USER_DIR))).getParent() +
                 RESTAPITestConstants.PATH_SUBSTRING + dataFileName;
         boolean testSuccessStatus = new RESTAPITestUtil().testRestAPI(dataFilePath, gatewayURL, keyManagerURL);
         assertTrue(testSuccessStatus);
