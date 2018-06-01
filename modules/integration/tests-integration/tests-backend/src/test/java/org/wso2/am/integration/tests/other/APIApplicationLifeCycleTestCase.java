@@ -26,7 +26,12 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APIBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -35,14 +40,14 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.xml.sax.SAXException;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -382,10 +387,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
-        Assert.assertTrue(!apiData.contains(APIVersionOld),
+        Assert.assertTrue(!apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionOld + '"'),
                 "Old version available in the store");
 
-        Assert.assertTrue(apiData.contains(APIVersionNew),
+        Assert.assertTrue(apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionNew + '"'),
                 "New version not available in the store");
 
         //subscribe to the old API version
@@ -533,10 +540,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
-        Assert.assertTrue(!apiData.contains(APIVersionOld),
+        Assert.assertTrue(!apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionOld + '"'),
                 "Old version available in the store");
 
-        Assert.assertTrue(apiData.contains(APIVersionNew),
+        Assert.assertTrue(apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionNew + '"'),
                 "New version not available in the store");
 
         //subscribe to the old API version
