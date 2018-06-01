@@ -393,6 +393,9 @@
             <includes>
                 <include>**/**</include>
             </includes>
+            <excludes>
+                <exclude>**/rxt.xsd</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
              <directory>../../samples</directory>
@@ -765,6 +768,15 @@
                 <include>**/conf/datasources/sample-um-datasources.xml</include>
             </includes>
             <fileMode>644</fileMode>
+        </fileSet>
+
+        <!--Copying the relevant XSD for API RXT with micro-gateway labels-->
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/</outputDirectory>
+            <includes>
+                <include>**/rxt.xsd</include>
+            </includes>
         </fileSet>
     </fileSets>
 

@@ -35,7 +35,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.extensions.servers.httpserver.SimpleHttpClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 /**
  * Provides set of method to invoke publisher API
@@ -592,6 +592,25 @@ public class APIStoreRestClient {
         }
     }
 
+    /**
+     * Regenerate consumer secret.
+     *
+     * @param clientId Consumer Key of an application for which consumer secret need to be regenerate.
+     * @return Regenerated consumer secret.
+     * @throws APIManagerIntegrationTestException Throws if regeneration of consumer secret fail.
+     */
+    public HttpResponse regenerateConsumerSecret(String clientId) throws APIManagerIntegrationTestException {
+
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(new URL(backendURL
+                    + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+                    "action=regenerateConsumerSecret&clientId=" + clientId), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to regenerate consumer secrete. "
+                    + " Error: " + e.getMessage(), e);
+        }
+    }
     /**
      * Get all subscriptions
      *
