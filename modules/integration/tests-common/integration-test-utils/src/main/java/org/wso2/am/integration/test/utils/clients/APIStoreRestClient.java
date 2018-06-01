@@ -1242,4 +1242,35 @@ public class APIStoreRestClient {
             throw new APIManagerIntegrationTestException("Unable to change password. Error: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Add application with custom attributes
+     *
+     * @param application - application  name
+     * @param tier        - throttling tier
+     * @param callbackUrl - callback url
+     * @param description - description of app
+     * @param applicationAttributes - Json string of custom attributes defined by user
+     * @return - http response of add application
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     */
+    public HttpResponse addApplicationWithCustomAttributes (String application, String tier, String callbackUrl,
+                                       String description, String applicationAttributes)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL +
+                            "store/site/blocks/application/application-add" +
+                            "/ajax/application-add.jag?action=addApplication&tier=" +
+                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
+                            "&application=" + application + "&applicationAttributes=" +
+                            applicationAttributes), "", requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to add application - " + application
+                    + " with custom attributes. Error: " + e.getMessage(), e);
+
+        }
+    }
 }
