@@ -77,7 +77,7 @@ print(storeHostObj.isEnableEmailUsername());
 print("==");
 print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin"));
 print("==");
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application"));
+print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application", "", "", "DEFAULT"));
 print("==");
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
 print("==");
