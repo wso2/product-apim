@@ -266,6 +266,8 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "API visibility")
     public void testAPIVisibilityTestCase()
             throws Exception {
+
+        init(TestUserMode.SUPER_TENANT_ADMIN);
         userManagementClient.addUser("subscriberUser1", "password@123",
                 new String[]{"Internal/everyone"}, null);
 
@@ -772,7 +774,6 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(loginFailed && loginResponseString.contains("Login failed. Insufficient privileges."),
                 "Invalid tenant subscriber can login to the API publisher");
     }
-
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
