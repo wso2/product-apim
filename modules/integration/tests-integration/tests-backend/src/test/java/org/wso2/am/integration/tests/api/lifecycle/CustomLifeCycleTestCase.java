@@ -92,6 +92,6 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
         deleteAPI(apiIdentifier, apiPublisherClient);
         lifeCycleAdminClient.editLifeCycle(apiLifeCycleName, originalLifeCycleContent);
         loginClient.logOut();
-        apiPublisher.logout();
+        apiPublisherClient.logout();
     }
 }
