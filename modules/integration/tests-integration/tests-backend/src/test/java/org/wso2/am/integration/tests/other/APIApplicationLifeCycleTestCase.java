@@ -36,6 +36,7 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.xml.sax.SAXException;
@@ -262,40 +263,11 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                 "Invalid subscriber can login to the API publisher");
     }
 
-    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
-    public void testInvalidLoginAsTenantSubscriberTestCase()
-            throws Exception {
-        //Try login to publisher with tenant subscriber user
-        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        boolean loginFailed = false;
-        String loginResponseString = "";
-
-        tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "wso2", "demo");
-        if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
-            userManagementClient.addUser("subscriberUser@wso2.com", "password@123",
-                    new String[]{"Internal/subscriber"}, null);
-        }
-
-        try {
-            HttpResponse loginResponse = apiPublisherRestClient.login("subscriberUser@wso2.com",
-                    "password@123");
-            loginResponseString = loginResponse.getData();
-            JSONObject response = new JSONObject(loginResponseString);
-            String isLoginError = response.get("error").toString();
-            if (isLoginError.equals("true")) {
-                loginFailed = true;
-            }
-        } catch (Exception e) {
-            loginFailed = true;
-        }
-        Assert.assertTrue(loginFailed && loginResponseString.contains("Login failed. Insufficient privileges."),
-                "Invalid tenant subscriber can login to the API publisher");
-    }
-
     @Test(groups = {"wso2.am"}, description = "API visibility")
     public void testAPIVisibilityTestCase()
             throws Exception {
+
+        init(TestUserMode.SUPER_TENANT_ADMIN);
         userManagementClient.addUser("subscriberUser1", "password@123",
                 new String[]{"Internal/everyone"}, null);
 
@@ -770,6 +742,37 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         }
         Assert.assertTrue(loginFailed && errorString.contains("No session cookie found with response"),
                 "API publisher can login to the API store");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
+    public void testInvalidLoginAsTenantSubscriberTestCase()
+            throws Exception {
+        init(TestUserMode.TENANT_ADMIN);
+        //Try login to publisher with tenant subscriber user
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        boolean loginFailed = false;
+        String loginResponseString = "";
+
+        if ((userManagementClient != null) &&
+                !userManagementClient.userNameExists("Internal/subscriber", "storeUser@wso2.com")) {
+            userManagementClient.addUser("storeUser", "password@123",
+                    new String[]{"Internal/subscriber"}, null);
+        }
+
+        try {
+            HttpResponse loginResponse = apiPublisherRestClient.login("storeUser@wso2.com",
+                    "password@123");
+            loginResponseString = loginResponse.getData();
+            JSONObject response = new JSONObject(loginResponseString);
+            String isLoginError = response.get("error").toString();
+            if (isLoginError.equals("true")) {
+                loginFailed = true;
+            }
+        } catch (Exception e) {
+            loginFailed = true;
+        }
+        Assert.assertTrue(loginFailed && loginResponseString.contains("Login failed. Insufficient privileges."),
+                "Invalid tenant subscriber can login to the API publisher");
     }
 
     @AfterClass(alwaysRun = true)
