@@ -1020,6 +1020,11 @@
                 <version>${carbon.identity.version}</version>
                 <type>zip</type>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.governance</groupId>
+                <artifactId>org.wso2.carbon.governance.lcm.stub</artifactId>
+                <version>${carbon.governance.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

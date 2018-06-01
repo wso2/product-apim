@@ -199,5 +199,9 @@ under the License.
             <groupId>org.apache.synapse</groupId>
             <artifactId>synapse-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.governance</groupId>
+            <artifactId>org.wso2.carbon.governance.lcm.stub</artifactId>
+        </dependency>
     </dependencies>
 </project>
