@@ -1278,14 +1278,14 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
+            String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
             return HTTPSClientUtils.doPost(
                     new URL(backendURL +
                             "store/site/blocks/application/application-add" +
                             "/ajax/application-add.jag?action=addApplication&tier=" +
                             tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
                             "&application=" + application + "&applicationAttributes=" +
-                            applicationAttributes), "", requestHeaders);
-
+                            urlAppAttributes), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to add application - " + application
                     + " with custom attributes. Error: " + e.getMessage(), e);

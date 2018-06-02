@@ -98,9 +98,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @DataProvider(name = "createApplicationWithCustomAttributes")
     public static Object[][] createApplicationWithCustomAttributes() throws Exception{
         return new Object[][]{
-                {"NewApplication6",appTier,"",""},
-                {"NewApplication7",appTier, description, "Ext_ref_id:sample_ext_ref_id," +
-                        "Billing_tier:sample_tier"},
+                {"NewApplication6",appTier, description, "{\"Ext_ref_id\":\"sample_ext_ref_id\"," +
+                        "\"Billing_tier\":\"sample_tier\"}"},
         };
     }
 
