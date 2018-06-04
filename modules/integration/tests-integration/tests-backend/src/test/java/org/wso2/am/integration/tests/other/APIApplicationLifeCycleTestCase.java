@@ -64,6 +64,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")
     public void testAPIApplicationLifeCycleITestCase() throws Exception {
+        init(TestUserMode.SUPER_TENANT_ADMIN);
         String apiData = "";
         String APIName = "APILifeCycleTestAPI";
         String APIContext = "testAPI";
@@ -205,9 +206,11 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         HttpResponse removeSubscriptionnResponse = apiStore.removeAPISubscription(APIName, APIVersion, providerName, "1");
         apiData = removeSubscriptionnResponse.getData();
         assertTrue(apiData.contains("error"), "Error while unsubscribe from API");
-
-        apiPublisher.logout();
+        
         apiStore.removeApplication(applicationName);
+        //restore role permissions for "Gold" tier 
+        apiPublisher.updatePermissions("Gold", "allow", "admin");
+        apiPublisher.logout();
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test invalid scenario", dependsOnMethods = "testAPIApplicationLifeCycleITestCase")
@@ -777,10 +780,6 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-        //Update role permissions
-        apiPublisher.updatePermissions("Gold", "allow", "admin");
         super.cleanUp();
     }
 }
