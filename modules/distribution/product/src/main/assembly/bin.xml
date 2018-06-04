@@ -736,16 +736,6 @@
                 <include>*</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
-            </outputDirectory>
-            <includes>
-                <include>micro-gateway#v0.9.war</include>
-            </includes>
-        </fileSet>
 
         <!-- Copying forget me tool -->
         <fileSet>
