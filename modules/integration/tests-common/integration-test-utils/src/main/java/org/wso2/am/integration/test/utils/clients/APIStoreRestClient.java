@@ -1286,10 +1286,11 @@ public class APIStoreRestClient {
                             tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
                             "&application=" + application + "&applicationAttributes=" +
                             urlAppAttributes), "", requestHeaders);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-                    + " with custom attributes. Error: " + e.getMessage(), e);
-
+        } catch (IOException e) {
+            String message = "Unable to add application - " + application + " with custom attributes. Error: "
+                    + e.getMessage();
+            log.error(message);
+            throw new APIManagerIntegrationTestException(message, e);
         }
     }
 }
