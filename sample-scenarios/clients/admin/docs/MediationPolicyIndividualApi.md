@@ -1,6 +1,6 @@
 # MediationPolicyIndividualApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.12*
+All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.13*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

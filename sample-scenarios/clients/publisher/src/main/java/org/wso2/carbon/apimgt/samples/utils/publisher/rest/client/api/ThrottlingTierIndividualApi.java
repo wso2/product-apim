@@ -128,7 +128,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Delete a Tier
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -141,7 +141,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Delete a Tier
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -156,7 +156,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Delete a Tier (asynchronously)
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -417,7 +417,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update a Tier
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
@@ -434,7 +434,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update a Tier
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
@@ -452,7 +452,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update a Tier (asynchronously)
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.12/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations. 
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)

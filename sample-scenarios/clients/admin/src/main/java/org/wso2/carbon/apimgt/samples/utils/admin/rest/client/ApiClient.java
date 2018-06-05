@@ -116,7 +116,7 @@ public class ApiClient {
      */
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-    private String basePath = "https://localhost:9443/api/am/admin/v0.12";
+    private String basePath = "https://localhost:9443/api/am/admin/v0.13";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -223,7 +223,7 @@ public class ApiClient {
     /**
      * Set base path
      *
-     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/admin/v0.12
+     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/admin/v0.13
      * @return An instance of OkHttpClient
      */
     public ApiClient setBasePath(String basePath) {
@@ -1473,7 +1473,7 @@ public class ApiClient {
             json.addProperty("owner", "admin");
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.12/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.13/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
@@ -1517,7 +1517,7 @@ public class ApiClient {
             json.addProperty("owner", adminUsername + '@' + tenantDomain);
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.12/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.13/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
