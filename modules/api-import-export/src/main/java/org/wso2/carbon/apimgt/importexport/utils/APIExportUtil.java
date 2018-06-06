@@ -35,7 +35,6 @@ import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
@@ -217,7 +216,7 @@ public class APIExportUtil {
         exportSequences(apiToReturn, apiID, registry);
 
         //set API status to created
-        apiToReturn.setStatus(APIStatus.CREATED);
+        apiToReturn.setStatus(APIConstants.CREATED);
 
         //export meta information
         exportMetaInformation(apiToReturn, registry);

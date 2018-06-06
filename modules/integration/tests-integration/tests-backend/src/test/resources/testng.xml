@@ -74,6 +74,7 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.CustomLifeCycleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
