@@ -36,7 +36,7 @@
 			"preserve-list": [
 			    {
 				    "attribute-name": "applicationId",
-				    "re sponse-location": "applicationId"
+				    "response-location": "applicationId"
 			    }
 			]
 		},
