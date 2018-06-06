@@ -42,7 +42,6 @@
 
     <modules>
         <module>product</module>
-        <module>micro-gateway</module>
     </modules>
 
 </project>
