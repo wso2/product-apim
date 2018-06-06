@@ -998,37 +998,6 @@
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
 
-            <!-- Dependencies for On-Premise Gateway -->
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.common</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.usage.publisher</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.api.synchronizer</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.tenant.initializer</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.throttling.synchronizer</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.micro.gateway.rest.api</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
             <!-- Forget-me tool -->
             <dependency>
                 <groupId>org.wso2.carbon.privacy</groupId>
