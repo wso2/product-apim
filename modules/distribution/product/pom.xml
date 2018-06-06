@@ -324,6 +324,30 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>modify-identity-oAuth-token-generator</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.identity.oauth2.token.JWTTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;--&gt;" value="&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-persist-access-token-alias</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;PersistAccessTokenAlias&gt;false&lt;/PersistAccessTokenAlias&gt;--&gt;" value="&lt;PersistAccessTokenAlias&gt;true&lt;/PersistAccessTokenAlias&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
 
