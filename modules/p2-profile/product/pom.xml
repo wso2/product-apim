@@ -618,9 +618,6 @@
 
                                 <!-- On-Premise Gateway Features -->
                                 <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.micro.gateway.default.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.wso2.carbon.utils:org.wso2.carbon.database.utils.feature:${carbon.database.utils.version}
                                 </featureArtifactDef>
 
@@ -1296,10 +1293,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.micro.gateway.default.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
                                 <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
@@ -2998,10 +2991,6 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.micro.gateway.default.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
                                 <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
