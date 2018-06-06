@@ -95,6 +95,13 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         };
     }
 
+    @DataProvider(name = "createApplicationWithCustomAttributes")
+    public static Object[][] createApplicationWithCustomAttributes() throws Exception{
+        return new Object[][]{
+                {"NewApplication6",appTier, description, "{\"Ext_ref_id\":\"sample_ext_ref_id\"," +
+                        "\"Billing_tier\":\"sample_tier\"}"},
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -379,5 +386,22 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
             if(!getAllAppJsonArray.getJSONObject(i).getString("name").equals("DefaultApplication"))
                 apiStore.removeApplication(getAllAppJsonArray.getJSONObject(i).getString("name"));
         }
+    }
+
+    // Create application with custom attributes
+    @Test(groups = "webapp", dataProvider ="createApplicationWithCustomAttributes" ,
+            description = "Create an Application")
+    public void testApplicationCreationWithCustomAttributes(String applicationName, String tier, String description,
+                                                            String applicationAttributes) throws Exception {
+        HttpResponse addApplicationResponse = apiStore.addApplicationWithCustomAttributes(applicationName, tier,
+                "", description, applicationAttributes);
+        assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code is mismatched in add application: " + applicationName +
+                        " with custom attributes");
+        JSONObject applicationJsonObject = new JSONObject(addApplicationResponse.getData());
+        assertFalse(applicationJsonObject.getBoolean("error"),
+                "Error in Application Creation: " + applicationName);
+        assertEquals(applicationJsonObject.get("status"), "APPROVED", "Error in Application Creation: "
+                + applicationName);
     }
 }
