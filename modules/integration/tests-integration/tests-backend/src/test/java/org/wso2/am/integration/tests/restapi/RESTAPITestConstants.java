@@ -121,7 +121,7 @@ public final class RESTAPITestConstants {
     public static final String BASIC_AUTH_HEADER = "admin:admin";
 
     //client-registration link
-    public static final String CLIENT_REGISTRATION_URL = "client-registration/v0.12/register";
+    public static final String CLIENT_REGISTRATION_URL = "client-registration/v0.13/register";
 
     //token endpoint suffix
     public static final String TOKEN_ENDPOINT_SUFFIX = "token";

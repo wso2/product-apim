@@ -1,6 +1,6 @@
 # APIIndividualApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v0.12*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v0.13*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

@@ -26,23 +26,29 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APIBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.xml.sax.SAXException;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -58,6 +64,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")
     public void testAPIApplicationLifeCycleITestCase() throws Exception {
+        init(TestUserMode.SUPER_TENANT_ADMIN);
         String apiData = "";
         String APIName = "APILifeCycleTestAPI";
         String APIContext = "testAPI";
@@ -199,9 +206,11 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         HttpResponse removeSubscriptionnResponse = apiStore.removeAPISubscription(APIName, APIVersion, providerName, "1");
         apiData = removeSubscriptionnResponse.getData();
         assertTrue(apiData.contains("error"), "Error while unsubscribe from API");
-
-        apiPublisher.logout();
+        
         apiStore.removeApplication(applicationName);
+        //restore role permissions for "Gold" tier 
+        apiPublisher.updatePermissions("Gold", "allow", "admin");
+        apiPublisher.logout();
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test invalid scenario", dependsOnMethods = "testAPIApplicationLifeCycleITestCase")
@@ -257,40 +266,11 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                 "Invalid subscriber can login to the API publisher");
     }
 
-    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
-    public void testInvalidLoginAsTenantSubscriberTestCase()
-            throws Exception {
-        //Try login to publisher with tenant subscriber user
-        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        boolean loginFailed = false;
-        String loginResponseString = "";
-
-        tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "wso2", "demo");
-        if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
-            userManagementClient.addUser("subscriberUser@wso2.com", "password@123",
-                    new String[]{"Internal/subscriber"}, null);
-        }
-
-        try {
-            HttpResponse loginResponse = apiPublisherRestClient.login("subscriberUser@wso2.com",
-                    "password@123");
-            loginResponseString = loginResponse.getData();
-            JSONObject response = new JSONObject(loginResponseString);
-            String isLoginError = response.get("error").toString();
-            if (isLoginError.equals("true")) {
-                loginFailed = true;
-            }
-        } catch (Exception e) {
-            loginFailed = true;
-        }
-        Assert.assertTrue(loginFailed && loginResponseString.contains("Login failed. Insufficient privileges."),
-                "Invalid tenant subscriber can login to the API publisher");
-    }
-
     @Test(groups = {"wso2.am"}, description = "API visibility")
     public void testAPIVisibilityTestCase()
             throws Exception {
+
+        init(TestUserMode.SUPER_TENANT_ADMIN);
         userManagementClient.addUser("subscriberUser1", "password@123",
                 new String[]{"Internal/everyone"}, null);
 
@@ -382,10 +362,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
-        Assert.assertTrue(!apiData.contains(APIVersionOld),
+        Assert.assertTrue(!apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionOld + '"'),
                 "Old version available in the store");
 
-        Assert.assertTrue(apiData.contains(APIVersionNew),
+        Assert.assertTrue(apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionNew + '"'),
                 "New version not available in the store");
 
         //subscribe to the old API version
@@ -533,10 +515,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
-        Assert.assertTrue(!apiData.contains(APIVersionOld),
+        Assert.assertTrue(!apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionOld + '"'),
                 "Old version available in the store");
 
-        Assert.assertTrue(apiData.contains(APIVersionNew),
+        Assert.assertTrue(apiData.contains("\"name\" : \"APILifeCycleTestAPI\", \"provider\" : \"admin\", " +
+                        "\"version\" : \"" + APIVersionNew + '"'),
                 "New version not available in the store");
 
         //subscribe to the old API version
@@ -763,12 +747,39 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                 "API publisher can login to the API store");
     }
 
+    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
+    public void testInvalidLoginAsTenantSubscriberTestCase()
+            throws Exception {
+        init(TestUserMode.TENANT_ADMIN);
+        //Try login to publisher with tenant subscriber user
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        boolean loginFailed = false;
+        String loginResponseString = "";
+
+        if ((userManagementClient != null) &&
+                !userManagementClient.userNameExists("Internal/subscriber", "storeUser@wso2.com")) {
+            userManagementClient.addUser("storeUser", "password@123",
+                    new String[]{"Internal/subscriber"}, null);
+        }
+
+        try {
+            HttpResponse loginResponse = apiPublisherRestClient.login("storeUser@wso2.com",
+                    "password@123");
+            loginResponseString = loginResponse.getData();
+            JSONObject response = new JSONObject(loginResponseString);
+            String isLoginError = response.get("error").toString();
+            if (isLoginError.equals("true")) {
+                loginFailed = true;
+            }
+        } catch (Exception e) {
+            loginFailed = true;
+        }
+        Assert.assertTrue(loginFailed && loginResponseString.contains("Login failed. Insufficient privileges."),
+                "Invalid tenant subscriber can login to the API publisher");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-        //Update role permissions
-        apiPublisher.updatePermissions("Gold", "allow", "admin");
         super.cleanUp();
     }
 }

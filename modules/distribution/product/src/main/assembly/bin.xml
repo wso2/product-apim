@@ -393,9 +393,6 @@
             <includes>
                 <include>**/**</include>
             </includes>
-            <excludes>
-                <exclude>**/rxt.xsd</exclude>
-            </excludes>
         </fileSet>
         <fileSet>
              <directory>../../samples</directory>
@@ -475,7 +472,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.12.war</include>
+                <include>api#am#store#v0.13.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -495,7 +492,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.12.war</include>
+                <include>api#am#publisher#v0.13.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -505,7 +502,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.12.war</include>
+                <include>api#am#admin#v0.13.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -525,7 +522,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.12.war</include>
+                <include>client-registration#v0.13.war</include>
             </includes>
         </fileSet>
 
@@ -734,16 +731,6 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/stream-definitions/</outputDirectory>
             <includes>
                 <include>*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
-            </outputDirectory>
-            <includes>
-                <include>micro-gateway#v0.9.war</include>
             </includes>
         </fileSet>
 

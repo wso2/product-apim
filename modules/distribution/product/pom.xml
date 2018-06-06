@@ -152,26 +152,6 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>copy-micro-gateway-configurator</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon.apimgt</groupId>
-                                    <artifactId>org.wso2.carbon.apimgt.micro.gateway.configurator</artifactId>
-                                    <version>${carbon.apimgt.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/lib</outputDirectory>
-                                    <destFileName>org.wso2.carbon.apimgt.micro.gateway.configurator-${carbon.apimgt.version}.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
 
@@ -333,11 +313,11 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>modify-scope-validators-micro-gw</id>
+                        <id>modify-scope-validators-product</id>
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <replace file="${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;ScopeValidator class=&quot;org.wso2.carbon.identity.oauth2.validators.xacml.XACMLScopeValidator&quot;/&gt;" value="" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;ScopeValidator class=&quot;org.wso2.carbon.identity.oauth2.validators.XACMLScopeValidator&quot;/&gt;" value="" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -345,11 +325,23 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>modify-scope-validators-product</id>
+                        <id>modify-identity-oAuth-token-generator</id>
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;ScopeValidator class=&quot;org.wso2.carbon.identity.oauth2.validators.XACMLScopeValidator&quot;/&gt;" value="" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.identity.oauth2.token.JWTTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;--&gt;" value="&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-persist-access-token-alias</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;PersistAccessTokenAlias&gt;false&lt;/PersistAccessTokenAlias&gt;--&gt;" value="&lt;PersistAccessTokenAlias&gt;true&lt;/PersistAccessTokenAlias&gt;" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -435,23 +427,6 @@
                             </filters>
                             <descriptors>
                                 <descriptor>src/main/assembly/samples.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>micro-gateway</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attached</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>wso2am-micro-gw-${pom.version}</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <filters>
-                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
-                            </filters>
-                            <descriptors>
-                                <descriptor>src/main/assembly/microgw.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -590,130 +565,6 @@
                         </configuration>
                     </execution>
 
-                    <!-- Update Owasp.CsrfGuard.properties file location to fix IBM JDK issue -->
-                    <execution>
-                        <id>replace-for-owasp-micro-gateway</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/web.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/web-app/context-param/param-value</xpath>
-                                    <token>(/repository/conf/security/Owasp.CsrfGuard.Carbon.properties)</token>
-                                    <value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>replace-for-identity-micro-gateway</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                                    <token>(jdbc/WSO2CarbonDB)</token>
-                                    <value>jdbc/WSO2AM_DB</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.AuthorizationCodeGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.PasswordGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCredentialsGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler)</token>
-                                    <value>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-                    <!-- Disable MQTT as it's not needed -->
-                    <execution>
-                        <id>replace-for-broker-micro-gateway</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/broker.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/broker/transports/mqtt/@enabled</xpath>
-                                    <token>(true)</token>
-                                    <value>false</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/broker/performanceTuning/slots/windowSize</xpath>
-                                    <token>(1000)</token>
-                                    <value>50</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/broker/performanceTuning/slots/messageAccumulationTimeout</xpath>
-                                    <token>(2000)</token>
-                                    <value>50</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/broker/performanceTuning/slots/timerPeriod</xpath>
-                                    <token>(1000)</token>
-                                    <value>40</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/broker/deployment/mode</xpath>
-                                    <token>(default)</token>
-                                    <value>standalone</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-                    <!-- End disabling MQTT -->
-
-                    <!-- Replace the Datasource in the thrift-authentication.xml file -->
-                    <execution>
-                        <id>replace-for-thrift-micro-gateway</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${basedir}/../../p2-profile/micro-gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/thrift-authentication.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                                    <token>(jdbc/WSO2CarbonDB)</token>
-                                    <value>jdbc/WSO2AM_DB</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
                     <!-- Replace the Datasource in the consent-mgt-config.xml file -->
                     <execution>
                         <id>replace-for-consent-mgt</id>
