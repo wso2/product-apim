@@ -36,7 +36,7 @@ import java.net.URL;
 
 public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifecycleTestApi";
+    private static final String API_NAME = "APICustomLifecycleTestApi";
     String publisherURLHttp;
     private LifeCycleAdminClient lifeCycleAdminClient;
     private String customizedAPILifecyclePath =
