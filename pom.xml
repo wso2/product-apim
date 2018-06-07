@@ -1185,10 +1185,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!--Sample backend dependencies -->
-        <!--<httpclient.version>4.3.2.wso2v1</httpclient.version>-->
-
         <httpclient.version>4.3.6.wso2v2</httpclient.version>
-
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
