@@ -1082,7 +1082,6 @@
         <analytics.shared.version>1.0.4</analytics.shared.version>
         <siddhi.version>3.2.3</siddhi.version>
 
-
         <axis2-transports.wso2.version>2.0.0-wso2v22</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
