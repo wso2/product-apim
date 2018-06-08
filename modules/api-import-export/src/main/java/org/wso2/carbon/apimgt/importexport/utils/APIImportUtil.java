@@ -155,7 +155,6 @@ public final class APIImportUtil {
 
                 File destinationFile = new File(destination, currentEntry);
                 File destinationParent = destinationFile.getParentFile();
-
                 String canonicalizedDestinationFilePath = destinationFile.getCanonicalPath();
                 if (!canonicalizedDestinationFilePath.startsWith(new File(destination).getCanonicalPath())) {
                     String errorMessage = "Entry is outside of the target dir: " + currentEntry;
