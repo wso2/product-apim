@@ -157,7 +157,8 @@ public final class APIImportUtil {
                 File destinationParent = destinationFile.getParentFile();
                 String canonicalizedDestinationFilePath = destinationFile.getCanonicalPath();
                 if (!canonicalizedDestinationFilePath.startsWith(new File(destination).getCanonicalPath())) {
-                    String errorMessage = "Entry is outside of the target dir: " + currentEntry;
+                    String errorMessage = "Attempt to upload invalid zip archive with file at " + currentEntry +
+                            ". File path is outside target directory";
                     log.error(errorMessage);
                     throw new APIImportException(errorMessage);
                 }
