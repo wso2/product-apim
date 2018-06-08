@@ -24,22 +24,12 @@ package org.wso2.carbon.apimgt.importexport;
  */
 public class APIImportException extends Exception {
 
-    String errorDescription;
-
     public APIImportException(String errorMessage) {
-        this.errorDescription = errorMessage;
+        super(errorMessage);
     }
 
     public APIImportException(String msg, Throwable e) {
         super(msg, e);
     }
 
-    /**
-     * This method returns the error description to the caller.
-     *
-     * @return errorDescription a string which contains the error
-     */
-    public String getErrorDescription() {
-        return this.errorDescription;
-    }
 }
