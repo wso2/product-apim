@@ -1046,7 +1046,7 @@
         <apimserver.version>2.5.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
-	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
+	    <cipher.tool.version>1.0.0-wso2v7</cipher.tool.version>
 
         <carbon.commons.version>4.6.33</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
