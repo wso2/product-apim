@@ -47,54 +47,6 @@
         </filter>
     </handler>
 
-    <!-- This handler process the uploaded  WSDL files -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.WSDLMediaTypeHandler">
-        <!--property name="createService">false</property>
-        <property name="disableWSDLValidation">true</property-->
-        <property name="disableSymlinkCreation">true</property>
-        <property name="schemaLocationConfiguration" type="xml">
-            <location>/trunk/schemas/</location>            
-	</property>
-        <property name="wsdlLocationConfiguration" type="xml">
-            <location>/trunk/wsdls/</location>            
-	</property>
-        <property name="policyLocationConfiguration" type="xml">
-            <location>/trunk/policies/</location>            
-	</property>
-
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/wsdl+xml</property>
-        </filter>
-    </handler>
-
-    <!-- This handler processes .zip & .gar files being added to the registry -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.ZipWSDLMediaTypeHandler">
-        <property name="wsdlMediaType">application/wsdl+xml</property>
-        <property name="schemaMediaType">application/xsd+xml</property>
-        <property name="threadPoolSize">50</property>
-        <property name="disableSymlinkCreation">true</property>
-        <!--property name="createService">false</property>
-	    <property name="useOriginalSchema">true</property>
-        <property name="disableWSDLValidation">true</property>
-        <property name="disableSchemaValidation">true</property>
-        <property name="wsdlExtension">.wsdl</property>
-        <property name="schemaExtension">.xsd</property>
-        <property name="archiveExtension">.gar</property>
-        <property name="tempFilePrefix">wsdl</property-->
-        <property name="numberOfRetry">3</property>
-        <property name="schemaLocationConfiguration" type="xml">
-            <location>/trunk/schemas/</location>
-        </property>
-        <property name="wsdlLocationConfiguration" type="xml">
-            <location>/trunk/wsdls/</location>
-        </property>
-	<filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2.governance-archive</property>
-        </filter>
-    </handler>
-
     <!-- This handler processes the services being added to the registry -->
 
     <handler class="org.wso2.carbon.registry.extensions.handlers.ServiceMediaTypeHandler">
