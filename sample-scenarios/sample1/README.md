@@ -1,4 +1,4 @@
-#Managing APIs
+# Managing APIs
 
 This sample scenario elaborates as to how you can manage public vs. partner vs. private APIs with WSO2 API Manager.
 
@@ -50,7 +50,7 @@ The following user cases are related to the above mentioned sample business scen
 
 6.  When a public user gets the details with regard to the price of a phone, which belongs to brand "A" and model "B", that same user should automatically shown the prices of the phone pouches that correspond to that relevant phone model. 
 
-###Running the sample
+### Running the sample
 
 Run the sample as follows to populate the sample data:
 
@@ -62,11 +62,7 @@ Run the sample as follows to populate the sample data:
 
 5.  Go to `<API-M_HOME>/sample-scenarios` directory and execute the `run.sh` file. 
 
-    |
-
-    `./run.sh`
-
-     |
+    |`./run.sh`|
 
 6.  Enter the scenario number as 1, when prompted.
 
