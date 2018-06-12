@@ -1,114 +1,80 @@
-# API Development
+# Managing APIs
 
-## Managing Public, Partner vs Private APIs Sample Documentation
+This sample scenario elaborates as to how you can manage public vs. partner vs. private APIs with WSO2 API Manager.
 
 ### Usecase
 
-* Enable the internal use of APIs
+The following are the use cases with regard to managing public vs. partner vs. private APIs.
 
-* Help pick and choose subset of those to be used with partners
+-   Ability to use some of the APIs internally.
 
-* Enabling building API ecosystems with partners that can unlock partnerships that cross industries (book a hotel and a car when you book a flight)
+-   Ability to share a subset of the internal APIs with partners.
 
-        * Connect with APIs from partners
+-   As a result of the latter mentioned use case, it should facilitate the development of an API ecosystems with partners across industries (e.g., ability to book a hotel and a car as well at the time of booking a flight).
 
-        * Enable partners to connect with ours
+-   Connect with APIs that are owned by your partner
 
-* A further subset to be exposed as public APIs. Many of the same APIs used internally and with partners can be used as public APIs to drive additional business and help obtain new customers.
+-   Enable partners to connect with your APIs
 
-*The sample scenario I have created is mentioned below.*
+-   Expose some of the APIs as public APIs to expand the business operations.\
+    Maintain a further subset of the APIs so that it can be exposed as public APIs. Many of the APIs that are used internally and with partners can be used as public APIs in order to drive additional business and help obtain new customers.
 
 ### Business Story
 
-* Let ABC organisation is an organisation that has separate departments for finance and operations other than their core business department which is mobile phone manufacturing.
+-   ABC organization is an organization that has separate departments for finance and operations other than their core business department which is mobile phone manufacturing.
 
-* Let the core business department be department_core while finance department be depratment_finance and operations department be department_operations.
+-   The core business, finance, and operations departments are named `department_core` , `department_finance,` and `department_operations` respectively.
 
-* Let the finance department handle salaries of employees while core department is responsible to maintain the mobile phone manufacturing stock while operations department handles maintenance work of the organization
+-   The finance department handles the salaries of employees. The core department is responsible for maintaining the mobile phone manufacturing stock. The operations department handles maintenance work of the organization.
+
+Description of each API is as follows:
+
+1.  `Employee_info_API` - Used by the core and finance departments.
+2.  `Mobile_stock_API` - This API is used to get details of the current mobile stock details, and is used by the core department.
+3.  `Salary_details_API` - This API is used to get details with regard to the salary of the employees, and is used by the finance department.
+4.  `Maintenance_Task_API` - An API used to get maintenance tasks required for the day.
 
 ![](images/image_0.png)
 
-### Business Use Cases
+The following user cases are related to the above mentioned sample business scenario.
 
-1. For the above mentioned business scenario, deparment_finance needs to get salaries of each and every employee. This data is private to the Finance Department.
+1.  The finance department (`deparment_finance)` needs to get the salary of each and every employee. This data is private to the finance department.
 
-2. Further, department_core needs to know details of stocks such as current stock price. This too is private to the Core Department.
+2.  The core department (`department_core)` needs to know the details about the stocks (e.g., the current stock price). This is private to the core department.
 
-3. Both Finance and Core departments need to know the employee details of employees working in Core department. This data is only provided to the Core and Finance departments, and the Operations department should not be able to access this data.
+3.  The finance and core departments both need to know the details of the employees who are working in Core department. This data is only provided to the core and finance departments. The operations department should not be able to access the latter mentioned data.
 
-4. Further, department_core and the public needs to know the current prices of the mobile phones.
+4.  The core department (`department_core)` and the public need to know the current prices of the mobile phones.
 
-5. Operations department needs to know the maintenance tasks required for the day.
+5.  The operations department ( `department_operations`) needs to know the maintenance tasks required for the day.
 
-6. When a public user gets a phone price of a phone in Brand "A" and model “B”, that user should be able predicted the prices of the pouches for the relevant model phone. 
+6.  When a public user gets the details with regard to the price of a phone, which belongs to brand "A" and model "B", that same user should automatically shown the prices of the phone pouches that correspond to that relevant phone model. 
 
-### Sample Business Use Cases Related to Sample One
+### Running the sample
 
-#### **API Development**
+Run the sample as follows to populate the sample data:
 
-Managing Public, Partner vs Private APIs
+1.  Download the WSO2 API Manager sample scenarios.
 
-* Enable the internal use of APIs (business use case #1, #2)
+2.  Unzip the sample-scenarios ZIP file and rename the unzipped folder to `sample-scenarios`.
+3.  Copy the sample-scenarios folder to the `<API-M_HOME>` folder.
+4.  Start the WSO2 API Manager Server.
 
-* Help pick and choose subset of those to be used with partners (business use case #3)
+5.  Go to `<API-M_HOME>/sample-scenarios` directory and execute the `run.sh` file. 
 
-* Enabling building API ecosystems with partners that can unlock partnerships that cross industries (book a hotel and a car when you book a flight)
+    |`./run.sh`|
 
-    * Connect with APIs from partners
+6.  Enter the scenario number as 1, when prompted.
 
-    * Enable partners to connect with ours
+### User credentials
 
-((business use case  #6)
+The following are the user credentials that you need to use when signing in to the WSO2 API Manager instance that has the sample data populated.
 
-* A further subset to be exposed as public APIs. Many of the same APIs used internally and with partners can be used as public APIs to drive additional business and help obtain new customers. (business use case  #4)
-
-Above defines how the business story is related to a real world business scenario
-
-.
-
-### **How this Business Scenario can be Achieved Using WSO2 API Manager**
-
-In our API manager we need to create
-
-* Three different tenants for the three departments with users that can create APIs
-
-* An API only visible to the tenant relevant of finance department to get employee salary details.
-
-* An API only visible to the tenant relevant of core department to get current mobile stock details
-
-* An API only visible to the tenant relevant of operations department to get required maintenance task for the day.
-
-* An API subscription only visible to finance and core departments but restricted to operations departments to get the employee details of employees working in the core departments.
-
-* API visible to public to get mobile phone prices by exposing a api to mobile phone prices. This API should be tagged as "mobile". An API to get mobile pouch princess. This should also have the tag “mobile”. In this scenario when an application client calls the mobile phone prices it will call another API to the API’s which has the same tag and get the relevant results. (When a user buys a mobile, matching pouches are predicted to buy.)
-
-### How to run the sample to populate the above mentioned sample data
-
-* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
-
-* Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
-
-#### User credentials needed for login to API Manager instance which the sample data is populated
-
-##### Finance department user
-
-Username: [john@finance.abc.com](mailto:john@finance.abc.com)
-
-Password: 123123
-
-##### Manufacturing department user
-
-Username: [tom@core.abc.com](mailto:tom@core.abc.com)
-
-Password: 123123
-
-##### Maintenance department user
-
-Username: [bob@operations.abc.com](mailto:bob@operations.abc.com)
-
-Password: 123123
-
-Screenshots on how to create tenants and how to control API visibility is mentioned below.
+|User|Username|Password|
+| --- | --- | --- |
+|Finance department user| john@finance.abc.com | 123123 |
+| Manufacturing department user | tom@core.abc.com | 123123 |
+| Maintenance department user | bob@operations.abc.com | 123123 |
 
 Created APIs looks like below screenshot
 
