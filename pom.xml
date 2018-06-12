@@ -1027,7 +1027,7 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.41</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.3.48</carbon.apimgt.version>
@@ -1042,21 +1042,21 @@
         <carbon.governance.version>4.7.27</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.31</carbon.kernel.version>
+        <carbon.kernel.version>4.4.32</carbon.kernel.version>
         <apimserver.version>2.5.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
-	    <cipher.tool.version>1.0.0-wso2v7</cipher.tool.version>
+	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
 
-        <carbon.commons.version>4.6.33</carbon.commons.version>
+        <carbon.commons.version>4.6.37</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.83</carbon.mediation.version>
+        <carbon.mediation.version>4.6.85</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.11.245</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.10</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.11.254</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.13</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.8</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>5.3.7</carbon.identity-local-auth-basicauth.version>
@@ -1082,7 +1082,7 @@
         <analytics.shared.version>1.0.4</analytics.shared.version>
         <siddhi.version>3.2.3</siddhi.version>
 
-        <axis2-transports.wso2.version>2.0.0-wso2v22</axis2-transports.wso2.version>
+        <axis2-transports.wso2.version>2.0.0-wso2v23</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
@@ -1093,7 +1093,7 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>2.1.7-wso2v63</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v26</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v27</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
         <servlet-api.version>2.4</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
