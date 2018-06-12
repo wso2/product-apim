@@ -210,7 +210,7 @@ case $1 in
 			timeStamp
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
-;;
+		;;
 	-Dprofile=traffic-manager)
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
 		disableTransportSenderWS
