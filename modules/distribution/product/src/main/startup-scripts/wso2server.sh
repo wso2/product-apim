@@ -157,13 +157,13 @@ do
     elif [ "$c" = "--test" ] || [ "$c" = "-test" ] || [ "$c" = "test" ]; then
           CMD="test"
     elif [ "$c" = "--optimize" ] || [ "$c" = "-optimize" ] || [ "$c" = "optimize" ]; then
-          echo Started to optimize the API-M
           for profile in $*
           do
             case "$profile" in
               *Dprofile=*)
                 cd $(dirname "$0")
                 sh profileSetup.sh $profile
+                echo "Starting the server..."
                 ;;
             esac
           done

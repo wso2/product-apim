@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# ----------------------------------------------------------------------------
+#  Copyright 2018 WSO2, Inc. http://www.wso2.org
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 pathToApiManagerXML='../repository/conf/api-manager.xml'
 pathToAxis2XML='../repository/conf/axis2/axis2.xml'
 pathToRegistry='../repository/conf/registry.xml'
@@ -19,11 +34,7 @@ disableDataPublisher(){
 	then
 		sed -i "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the DataPublisher from api-manager.xml"
-	elif [ "$value" = "false" ]
-	then
-		timeStamp
-  	echo "[${timestamp}] INFO - DataPublisher from api-manager.xml is already configured"
+  	echo "[${timestamp}] INFO - Disabled the <DataPublisher> from api-manager.xml file"
 	fi
 }
 
@@ -33,11 +44,7 @@ disableJMSConnectionDetails(){
 	then
 		sed -i "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the JMSConnectionDetails from api-manager.xml"
-	elif [ "$value" = "false" ]
-	then
-		timeStamp
-  	echo "[${timestamp}] INFO - JMSConnectionDetails from api-manager.xml is already configured"
+  	echo "[${timestamp}] INFO - Disabled the <JMSConnectionDetails> from api-manager.xml file"
 	fi
 }
 
@@ -47,11 +54,7 @@ disablePolicyDeployer(){
 	then
 		sed -i "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the PolicyDeployer from api-manager.xml"
-	elif [ "$value" = "false" ]
-	then
-		timeStamp
-  	echo "[${timestamp}] INFO - PolicyDeployer from api-manager.xml is already configured"
+  	echo "[${timestamp}] INFO - Disabled the <PolicyDeployer> from api-manager.xml file"
 	fi
 }
 
@@ -61,10 +64,7 @@ disableTransportSenderWS(){
 	then
 		sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the TransportSenderWS from axis2.xml"
-	else
-		timeStamp
-		echo "[${timestamp}] INFO - TransportSenderWS from axis2.xml is already commented"
+  	echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 	fi
 }
 
@@ -74,10 +74,7 @@ disableTransportSenderWSS(){
 	then
 		sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the TransportSenderWSS from axis2.xml"
-	else
-		timeStamp
-  	echo "[${timestamp}] INFO - TransportSenderWSS from axis2.xml is already commented"
+  	echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 	fi
 }
 
@@ -86,10 +83,7 @@ removeWebSocketInboundEndpoint(){
 	then
 		rm -r ${pathToInboundEndpoints}WebSocketInboundEndpoint.xml
 		timeStamp
-  	echo "[${timestamp}] INFO - Removed WebSocketInboundEndpoint xml file"
-	else
-		timeStamp
-  	echo "[${timestamp}] INFO - WebSocketInboundEndpoint xml file is already removed"
+  	echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
 }
 
@@ -98,10 +92,7 @@ removeSecureWebSocketInboundEndpoint(){
 	then
 		rm -r ${pathToInboundEndpoints}SecureWebSocketInboundEndpoint.xml
 		timeStamp
-  	echo "[${timestamp}] INFO - Removed SecureWebSocketInboundEndpoint xml file"
-	else
-		timeStamp
-  	echo "[${timestamp}] INFO - SecureWebSocketInboundEndpoint xml file is already removed"
+  	echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
 }
 
@@ -111,37 +102,23 @@ disableIndexingConfiguration(){
 	then
 		sed -i "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
 		timeStamp
-  	echo "[${timestamp}] INFO - Disable the indexingConfiguration from registry.xml"
-	elif [ "$value" = "false" ]
-	then
-		timeStamp
-  	echo "[${timestamp}] INFO - IndexingConfiguration from registry.xml is already configured"
+  	echo "[${timestamp}] INFO - Disabled the <indexingConfiguration> from registry.xml file"
 	fi
 }
 
 removeSynapseConfigs(){
-	if [ "$(find ${pathToSynapseConfigs} -type d -or -type f -not -name 'synapse.xml' | wc -l)" -gt 1 ]
-	then
-		if [ "$(find ${pathToSynapseConfigs} -type d | wc -l)" -gt 1 ]
-		then
-			rm -R ${pathToSynapseConfigs}/*/
-		fi
-
-		if [ -e ${pathToSynapseConfigs}/registry.xml ]
-		then
-			rm -r ${pathToSynapseConfigs}/registry.xml
-		fi
+	for i in $(find $pathToSynapseConfigs -maxdepth 1 -type d -or -type f -not -name 'synapse.xml' | sed 1d ); do
+		rm -r $i
+		file=`basename "$i"`
 		timeStamp
-  	echo "[${timestamp}] INFO - Removed the SynapseConfigs files"
-	else
-		timeStamp
-  	echo "[${timestamp}] INFO - SynapseConfigs are already removed"
-	fi
+		echo "[${timestamp}] INFO - Removed the $file from $pathToSynapseConfigs"
+	done
 }
 
 #main
 case $1 in
 	-Dprofile=api-key-manager)
+		echo "Starting to optimize API Manager for the Key Manager profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
@@ -150,28 +127,30 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
-		#remove unnecessary webapps
-		if [ "$(find $pathToWebapps -type f -not \( -name 'client-registration#v0.12.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v1.war' -o -name 'api#identity#consent-mgt#v1.0.war' \) | wc -l)" -gt 0 ]
-		then
-			find $pathToWebapps -type f -not \( -name 'client-registration#v0.12.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v1.war' -o -name 'api#identity#consent-mgt#v1.0.war' \)  -delete
+		# remove unnecessary webapps
+		for i in $(find $pathToWebapps -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+			rm -r $i
+			file=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Removed the unnecessary webapps for key-manager profile"
-		else
+	  	echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=$(echo "$file" | cut -f 1 -d '.')
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
+		# remove unnecessary jaggeryapps
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
+			rm -r $i
+			folder=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary webapps for key-manager profile are already removed"
-		fi
-		#remove jaggeryapps
-		if [ -d $pathToJaggeryapps ]
-		then
-			rm -r $pathToJaggeryapps
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary jaggeryapps for key-manager profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary jaggeryapps for key-manager profile are already removed"
-		fi
+			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
+		done
 		;;
 	-Dprofile=api-publisher)
+		echo "Starting to optimize API Manager for the API Publisher profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disableTransportSenderWS
@@ -179,28 +158,30 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
-		#remove unnecessary webapps
-		if [ "$(find $pathToWebapps -type f -not -name 'api#am#publisher#v0.12.war' | wc -l)" -gt 0 ]
-		then
-			find $pathToWebapps -type f -not -name 'api#am#publisher#v0.12.war' -delete
+		# remove unnecessary webapps
+		for i in $(find $pathToWebapps -type f -not -name 'api#am#publisher#v*.war'); do
+			rm -r $i
+			file=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary webapps for publisher profile"
-		else
+	  	echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=$(echo "$file" | cut -f 1 -d '.')
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
+		# remove unnecessary jaggeryapps
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not \( -name 'admin' -o -name 'publisher' \) | sed 1d); do
+			rm -r $i
+			folder=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary webapps for publisher profile are already removed"
-		fi
-		#remove unnecessary Jaggeryapps
-		if [ -d ${pathToJaggeryapps}/store ]
-		then
-			rm -r ${pathToJaggeryapps}/store
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary jaggeryapps for publisher profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary jaggeryapps for publisher profile are already removed"
-		fi
+			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
+		done
 		;;
 	-Dprofile=api-store)
+		echo "Starting to optimize API Manager for the Developer Portal (API Store) profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
@@ -208,89 +189,87 @@ case $1 in
 		disableTransportSenderWSS
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
-		#remove unnecessary webapps
-		if [ "$(find $pathToWebapps -type f -not -name 'api#am#store#v0.12.war' | wc -l)" -gt 0 ]
-		then
-			find $pathToWebapps -type f -not -name 'api#am#store#v0.12.war' -delete
+		# remove unnecessary webapps
+		for i in $(find $pathToWebapps -type f -not -name 'api#am#store#*.war'); do
+			rm -r $i
+			file=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Removed the unnecessary webapps for store profile"
-		else
+	  	echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=$(echo "$file" | cut -f 1 -d '.')
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
+		# remove unnecessary jaggeryapps
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'store'| sed 1d); do
+			rm -r $i
+			folder=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary webapps for store profile are already removed"
-		fi
-		#remove unnecessary jaggeryapps
-		if [ -d ${pathToJaggeryapps}/admin ]
-		then
-			rm -r ${pathToJaggeryapps}/admin
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed admin Jaggeryapp for store profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Admin jaggeryapp for store profile is already removed"
-		fi
-		if [ -d ${pathToJaggeryapps}/publisher ]
-		then
-			rm -r ${pathToJaggeryapps}/publisher
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed publisher Jaggeryapp for store profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Publisher jaggeryapp for store profile is already removed"
-		fi
-		;;
+			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
+		done
+;;
 	-Dprofile=traffic-manager)
+		echo "Starting to optimize API Manager for the Traffic Manager profile"
 		disableTransportSenderWS
 		disableTransportSenderWSS
+		disableIndexingConfiguration
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
-		disableIndexingConfiguration
 		removeSynapseConfigs
-		#remove webapps
-		if [ -d $pathToWebapps ]
-		then
-			rm -r $pathToWebapps
+		# remove unnecessary webapps
+		for i in $(find $pathToWebapps -type f ); do
+			rm -r $i
+			file=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary webapps for traffic-manager profile"
-		else
+	  	echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=$(echo "$file" | cut -f 1 -d '.')
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
+		# remove unnecessary jaggeryapps
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
+			rm -r $i
+			folder=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary webapps for traffic-manager profile are already removed"
-		fi
-		#remove jaggeryapps
-		if [ -d $pathToJaggeryapps ]
-		then
-			rm -r $pathToJaggeryapps
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary jaggeryapps for traffic-manager profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary jaggeryapps for traffic-manager profile are already removed"
-		fi
+			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
+		done
 		;;
 	-Dprofile=gateway-worker)
+		echo "Starting to optimize API Manager for the Gateway worker profile"
 		disablePolicyDeployer
 		disableIndexingConfiguration
-		#remove unnecessary webapps
-		if [ "$(find $pathToWebapps -type f -not -name 'am#sample#pizzashack#v1.war' | wc -l)" -gt 0 ]
-		then
-			find $pathToWebapps -type f -not -name 'am#sample#pizzashack#v1.war' -delete
+		# remove unnecessary webapps
+		for i in $(find $pathToWebapps -type f -not -name 'am#sample#pizzashack#v*.war'); do
+			rm -r $i
+			file=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary Webapps for gateway-worker profile"
-		else
+	  	echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=$(echo "$file" | cut -f 1 -d '.')
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
+		# remove unnecessary jaggeryapps
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
+			rm -r $i
+			folder=`basename "$i"`
 			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary Webapps for gateway-worker profile are already removed"
-		fi
-		#remove jaggeryapps
-		if [ -d $pathToJaggeryapps ]
-		then
-			rm -r $pathToJaggeryapps
-			timeStamp
-	  	echo "[${timestamp}] INFO - Removed unnecessary jaggeryapps for gateway-worker profile"
-		else
-			timeStamp
-	  	echo "[${timestamp}] INFO - Unnecessary jaggeryapps for gateway-worker profile are already removed"
-		fi
+			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
+		done
 		;;
 	*)
 		echo "Profile is not specifed properly, please try again"
 		exit
 esac
+
+echo Finished the optimizations
