@@ -36,7 +36,7 @@
 
 * They need the users of their system to be authenticated to facilitate that only the permitted set of users are using the system and when the API invocation happens they need to authorize the users whether they are permitted to access the API’s.
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 We need to create and API to get Salary details of the employees
 
@@ -44,13 +44,13 @@ We need to have separate tenants to manage there API’s through tenants. You ca
 
 We need to enable audit logs to trance the API’s creations, API invocations and etc..
 
-As and example to enable custom security algorithms we can engage Kerberos OAuth2 Grant by following this documentation(https://docs.wso2.com/display/AM210/Kerberos+OAuth2+Grant). [2]
+As and example to enable custom security algorithms we can engage Kerberos OAuth2 Grant by following this documentation(https://docs.wso2.com/display/AM220/Kerberos+OAuth2+Grant). [2]
 
 We can authorize the users through API Manager access tokens and we can use scopes to authorise the API consumers when consuming the APIS.
 
 By executing the scenario 4 using the run.sh as mentioned below will add the sample data relate the the above business use case to WSO2 API Manager distribution
 
-### How to run the sample to populate the above mentioned sample data
+### Running the sample
 
 1. Start wso2am-2.2.0-updateX is distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
 
@@ -200,9 +200,9 @@ Further it will invoke the get with the scope and it will return the response as
 
 ### References
 
-[1] - [https://docs.wso2.com/display/AM2xx/Managing+Public%2C+Partner+vs+Private+APIs+Sample+Documentation](https://docs.wso2.com/display/AM2xx/Managing+Public%2C+Partner+vs+Private+APIs+Sample+Documentation)
+[1] - [https://docs.wso2.com/display/AM220/Managing+APIs](https://docs.wso2.com/display/AM220/Managing+APIs)
 
-[2] - [https://docs.wso2.com/display/AM210/Kerberos+OAuth2+Grant](https://docs.wso2.com/display/AM210/Kerberos+OAuth2+Grant)
+[2] - [https://docs.wso2.com/display/AM220/Kerberos+OAuth2+Grant](https://docs.wso2.com/display/AM220/Kerberos+OAuth2+Grant)
 
-[3] - [https://docs.wso2.com/display/AM2xx/API+Governanc](https://docs.wso2.com/display/AM2xx/API+Governance)[e](https://docs.wso2.com/display/AM2xx/API+Governance)
+[3] - [https://docs.wso2.com/display/AM220/API+Governance](https://docs.wso2.com/display/AM220/API+Governance)[e](https://docs.wso2.com/display/AM220/API+Governance)
 

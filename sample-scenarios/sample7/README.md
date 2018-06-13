@@ -44,7 +44,7 @@ ABC organisation need to get produce sales_promotions
 
 ABC organisation need to needs to stop offering promotions when they capture the market.
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 Need to have separate API’s for the following scenario 
 
@@ -82,7 +82,7 @@ Now you will be getting notification for the api that you have subscribed. These
 
 * API to produce sales_promotions will be in REJECTED state once the organization decides there will be no longer promotions available in future. (Since we need to represent the sales_promotions api in BLOCKING state as well, we are creating a new AP sales_promotions_2 to represent the REJECTED state)
 
-### How to run the sample to populate the above mentioned sample data
+### Running the sample
 
 * Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
@@ -92,9 +92,9 @@ List of all the API’s in different statesTwo Published and Blocked API’s in 
 
 ### References
 
-[1] -[ ](https://docs.wso2.com/display/AM210/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)[https://docs.wso2.com/display/AM210/Customize+API+Life+Cycle](https://docs.wso2.com/display/AM210/Customize+API+Life+Cycle)
+[1] -[ ](https://docs.wso2.com/display/AM220/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)[https://docs.wso2.com/display/AM220/Customize+API+Life+Cycle](https://docs.wso2.com/display/AM220/Customize+API+Life+Cycle)
 
-[2] - https://docs.wso2.com/display/AM210/Enabling+Notifications
+[2] - https://docs.wso2.com/display/AM220/Enabling+Notifications
 
 [3] - https://wso2.com/library/articles/eventing-notifications-wso2-governance-registry/
 

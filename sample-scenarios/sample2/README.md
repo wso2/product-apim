@@ -20,9 +20,9 @@
 
 * Let the finance department handle salaries of employees while manufacturing department is responsible to maintain the mobile phone manufacturing stock while operations department handles maintenance work of the organization
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
-In our API manager we need to create
+We need to create
 
 * Three different tenants(finance.abc.com, core.abc.com and operations.abc.com) for the three departments with users(John, Tom and Bob respectively) that can create APIs
 

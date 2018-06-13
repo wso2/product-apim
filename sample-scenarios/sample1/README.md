@@ -112,7 +112,7 @@ Below two screenshots shows that both John and TOm can subscribe to Employee_inf
 
 ### References
 
-[1] -[ https://docs.wso2.com/display/AM210/Key+Concepts#KeyConcepts-APIvisibilityandsubscription](https://docs.wso2.com/display/AM210/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)
+[1] -[https://docs.wso2.com/display/AM220/Key+Concepts#KeyConcepts-APIvisibilityandsubscription](https://docs.wso2.com/display/AM220/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)
 
 You can invoke and check the API’s giving results after subscribing to the relevant API’s and generating the keys.
 

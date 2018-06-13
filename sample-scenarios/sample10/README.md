@@ -36,7 +36,7 @@
 
 * They need to control the number of requests comes at given time to limit the burst requests.
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 In WSO2 API MAnager we need to,
 
@@ -50,7 +50,7 @@ In WSO2 API MAnager we need to,
 
 By executing the scenario 10 using the run.sh as mentioned below will add the sample data relate the the above business use case to WSO2 API Manager distribution
 
-### How to run the sample to populate the above mentioned sample data
+### Running the sample
 
 1. Start wso2am-2.2.0-updateX is distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
 

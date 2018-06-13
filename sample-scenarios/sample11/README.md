@@ -32,7 +32,7 @@
 
 * Bandwidth consumption
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 We have the following subscription tires that have been defined already.
 
@@ -48,4 +48,4 @@ Hence using the above mentioned subscription approach we can have a free subscri
 
 ### References
 
-[1] https://docs.wso2.com/display/AM210/Enabling+Monetization+of+APIs
+[1] https://docs.wso2.com/display/AM220/Enabling+Monetization+of+APIs
