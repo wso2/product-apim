@@ -200,9 +200,9 @@ Further it will invoke the get with the scope and it will return the response as
 
 ### References
 
-[1] - [https://docs.wso2.com/display/AM220/Managing+APIs](https://docs.wso2.com/display/AM220/Managing+APIs)
+[1] - [https://docs.wso2.com/display/AM250/Managing+APIs](https://docs.wso2.com/display/AM250/Managing+APIs)
 
-[2] - [https://docs.wso2.com/display/AM220/Kerberos+OAuth2+Grant](https://docs.wso2.com/display/AM220/Kerberos+OAuth2+Grant)
+[2] - [https://docs.wso2.com/display/AM250/Kerberos+OAuth2+Grant](https://docs.wso2.com/display/AM250/Kerberos+OAuth2+Grant)
 
-[3] - [https://docs.wso2.com/display/AM220/API+Governance](https://docs.wso2.com/display/AM220/API+Governance)[e](https://docs.wso2.com/display/AM220/API+Governance)
+[3] - [https://docs.wso2.com/display/AM250/API+Governance](https://docs.wso2.com/display/AM250/API+Governance)[e](https://docs.wso2.com/display/AM250/API+Governance)
 

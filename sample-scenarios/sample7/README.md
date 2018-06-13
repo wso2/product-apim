@@ -92,9 +92,9 @@ List of all the API’s in different statesTwo Published and Blocked API’s in 
 
 ### References
 
-[1] -[ ](https://docs.wso2.com/display/AM220/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)[https://docs.wso2.com/display/AM220/Customize+API+Life+Cycle](https://docs.wso2.com/display/AM220/Customize+API+Life+Cycle)
+[1] -[ ](https://docs.wso2.com/display/AM250/Key+Concepts#KeyConcepts-APIvisibilityandsubscription)[https://docs.wso2.com/display/AM250/Customize+API+Life+Cycle](https://docs.wso2.com/display/AM250/Customize+API+Life+Cycle)
 
-[2] - https://docs.wso2.com/display/AM220/Enabling+Notifications
+[2] - https://docs.wso2.com/display/AM250/Enabling+Notifications
 
 [3] - https://wso2.com/library/articles/eventing-notifications-wso2-governance-registry/
 

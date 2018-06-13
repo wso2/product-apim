@@ -48,4 +48,4 @@ Hence using the above mentioned subscription approach we can have a free subscri
 
 ### References
 
-[1] https://docs.wso2.com/display/AM220/Enabling+Monetization+of+APIs
+[1] https://docs.wso2.com/display/AM250/Enabling+Monetization+of+APIs

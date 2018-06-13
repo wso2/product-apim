@@ -60,5 +60,5 @@ Old API in PUBLISHED state
 
 ### References
 
-[1] - https://docs.wso2.com/display/AM220/Enabling+Notifications
+[1] - https://docs.wso2.com/display/AM250/Enabling+Notifications
 

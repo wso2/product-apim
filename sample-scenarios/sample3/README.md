@@ -48,7 +48,7 @@ Furthermore, the client may be accessing this using a mobile device. For this th
 
 ### The API developer should be able to optimize API output by identifying its client
 
-API developers can use the headers that the client send and detect the type of the client (ex: if the client is a mobile device or not). For an example, consider a client who is accessing the banks API’s and performing online account balance checking. In this scenario, if the API developer needs to restrict the mobile device clients from accessing all of the account information, instead restrict access to a select set of data of the account, and expose all the data to desktop application clients, that can be achieved by having a custom sequence in the API definition. A detailed guide on adding custom sequences can be found in this [documentation](https://docs.wso2.com/display/AM220/Adding+Mediation+Extensions).
+API developers can use the headers that the client send and detect the type of the client (ex: if the client is a mobile device or not). For an example, consider a client who is accessing the banks API’s and performing online account balance checking. In this scenario, if the API developer needs to restrict the mobile device clients from accessing all of the account information, instead restrict access to a select set of data of the account, and expose all the data to desktop application clients, that can be achieved by having a custom sequence in the API definition. A detailed guide on adding custom sequences can be found in this [documentation](https://docs.wso2.com/display/AM250/Adding+Mediation+Extensions).
 
 Consider a scenario where the developer needs to restrict sending the address element for the mobile device clients.
 

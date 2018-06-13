@@ -82,7 +82,7 @@ Ip range to accept
 
 ### References
 
-https://docs.wso2.com/display/AM220/Introducing+Throttling+Use-Cases
+https://docs.wso2.com/display/AM250/Introducing+Throttling+Use-Cases
 
 				 				 				 
 
