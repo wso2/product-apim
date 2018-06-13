@@ -29,6 +29,7 @@
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
                 <exclude>**/bin/wso2server.bat</exclude>
+                <exclude>**/bin/profileSetup.bat</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
                 <exclude>**/conf/axis2/axis2.xml_NHTTP</exclude>
                 <exclude>**/conf/axis2/axis2.xml_PT</exclude>
@@ -92,7 +93,7 @@
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
-                
+
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
                 <exclude>**/repository/components/plugins/netty-all_4.0.23.wso2v1.jar</exclude>
@@ -697,7 +698,7 @@
                 <include>**/*.*</include>
             </includes>
         </fileSet>
-	
+
 	<!-- Tomcat carbon web.xml -->
 	<fileSet>
 	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/</directory>
@@ -1029,6 +1030,13 @@
         </file>
 
         <file>
+            <source>src/main/startup-scripts/profileSetup.sh</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
             <source>src/main/startup-scripts/wso2server.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
@@ -1113,7 +1121,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-    	</file>	
+    	</file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
