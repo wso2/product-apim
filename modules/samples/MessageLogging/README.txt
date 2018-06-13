@@ -2,15 +2,15 @@ How to log request/response message details with custom sequences ?
 ===================================================================
 Steps :
 -------
-1. Extract wso2am-zzz.zip (e.g. wso2am-1.9.0.zip)
+1. Extract wso2am-zzz.zip (e.g. wso2am-2.5.0.zip)
 
-2. Go to <AM_HOME>/bin folder and start wso2am-1.9.0 by executing wso2am-1.9.0/bin/wso2server.sh
+2. Go to <AM_HOME>/bin folder and start wso2am-2.5.0 by executing wso2am-2.5.0/bin/wso2server.sh
 
 3. You can log in to API Publisher Console.
-URL - http://localhost:9763/publisher/
+URL - https://localhost:9443/publisher/
 Username/password - admin/admin
 
-4. create an API.
+4. Create an API.
 
 We can log custom request/response messages when invoking the API using a custom sequence extension.
 
@@ -22,7 +22,7 @@ To add the custom logs to API Manager to be used when adding an API follow the s
 steps :
 -----
 (a). Open API Manager Management console.
-     URL - http://localhost:9763/carbon/
+     URL - https://localhost:9443/carbon/
      Username/password - admin/admin
 
 (b). Go to the registry path and add the custom_log_sequence.xml file provided in the sample as an In sequence or an Out sequence.
@@ -51,7 +51,7 @@ __________|__________________________________________________|
 (g). Save the changes to the API and publish it.
 
 (h). Log in to the Store API, subscribe to the API and invoke it.
-     URL - http://localhost:9763/store/
+     URL - https://localhost:9443/store/
      Username/password - admin/admin or you can use self sign up
 
 The above sequence prints a log message on the console on  the invocation of that particular API only.
@@ -69,12 +69,8 @@ If we want to log request/response messages in every API invocation we can add a
 (c). save the xml file in <APIM_HOME>/repository/deployment/server/synapse-configs/default/sequences directory.
 
 (d). Log in to the Store API, subscribe to the API and invoke it.
-     URL - http://localhost:9763/store/
+     URL - https://localhost:9443/store/
      Username/password - admin/admin or you can use self sign up
 
 
 The above sequence prints a log message on the console on every API invocation.
-
-
-
-
