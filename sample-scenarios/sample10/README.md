@@ -14,15 +14,15 @@
 
 ### Business Story
 
-* Let ABC organization has an API to expose there mobile phone prices. For the time bean let's assume this organization exposes prices to the sales agents and they have big number of third party sales agents.
-
-* Further they need to limit the total number of API calls(50PerMin) for this mobile price API
-
-* Hence this organisation need to limit the number of requests(5000 requests) that a specific third party agent can call to the mobile price API.
-
-* Further they only need to allow the API calls comes from a specific locations(IP address - 192.168.1.1 to 192.168.1.100) and they need to restrict specific device types such as mobiles
-
-* Further even though they allow a specific number of API calls per a given period of time they need to limit the API call that comes at a given time to restrict the bust requests and to prevent their back end service.
+* ABC organization has an API to expose there mobile phone prices. This organization currently exposes prices to the sales agents and they have a large number of third party sales agents.
+ 
+* They need to limit the total number of API calls to 50PerMin for this mobile price API
+ 
+* They need to limit the number of requests to 5000, when specific third party agent calls the mobile price API.
+ 
+* They need to allow API calls coming from a specific location (IP address - 192.168.1.1 to 192.168.1.100) and they need to restrict specific device types such as mobiles.
+ 
+* Even though they allow a specific number of API calls for a given period of time, they need to limit the API calls that come at a given point in time to restrict the burst requests and to prevent their back end service.
 
 ### Business Use Cases
 
@@ -38,7 +38,7 @@
 
 ### Implement using WSO2 API Manager
 
-In WSO2 API MAnager we need to,
+In WSO2 API Manager we need to,
 
 * Create an API to expose there mobile phone prices.
 
