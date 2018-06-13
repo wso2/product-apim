@@ -52,7 +52,7 @@ By executing the scenario 10 using the run.sh as mentioned below will add the sa
 
 ### Running the sample
 
-1. Start wso2am-2.2.0-updateX is distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
+1. Start the wso2am-2.5.0 is distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
 
 2. Run the file run.sh in sample scenarios root directory**[APIM_HOME/sample-scenarios] **as ./run.sh and enter number 10.
 
@@ -62,7 +62,7 @@ Username: admin
 
 Password: admin
 
-### Screenshots on how this can be seen in API Manager 2.1.0
+### Screenshots on how this can be seen in API Manager 2.2.0
 
 Subscription tiers
 ![](images/image_0.png)
@@ -82,7 +82,7 @@ Ip range to accept
 
 ### References
 
-https://docs.wso2.com/display/AM210/Introducing+Throttling+Use-Cases
+https://docs.wso2.com/display/AM220/Introducing+Throttling+Use-Cases
 
 				 				 				 
 

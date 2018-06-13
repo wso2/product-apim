@@ -46,7 +46,7 @@ Furthermore, the client may be accessing this using a mobile device. For this th
 
 ![](images/image_0.png)
 
-### The API developer should be able to optimize the API output by identifying its client
+### The API developer should be able to optimize API output by identifying its client
 
 API developers can use the headers that the client send and detect the type of the client (ex: if the client is a mobile device or not). For an example, consider a client who is accessing the banks API’s and performing online account balance checking. In this scenario, if the API developer needs to restrict the mobile device clients from accessing all of the account information, instead restrict access to a select set of data of the account, and expose all the data to desktop application clients, that can be achieved by having a custom sequence in the API definition. A detailed guide on adding custom sequences can be found in this [documentation](https://docs.wso2.com/display/AM220/Adding+Mediation+Extensions).
 
@@ -144,9 +144,9 @@ Output for the mobile devices will be as follows,
 
 ### Optimization can be a composition of the multiple backend or stripdown
 
-This is currently identified as a gap in API manager 2.1.0 implementation and a new feature addressing this via API composition is being developed in WSO2 Carbon 5.0 based release of the API Manager.
+This is currently identified as a gap in API manager 2.x.x implementation and a new feature addressing this via API composition is being developed in WSO2 Carbon 5.0 based release of the API Manager.
 
 ### Client based prioritization of the APIs
 
-This is also currently identified as a gap in the API Manager 2.1.0 implementation, and will be addressed in the new features that will be delivered in the WSO2 Carbon 5.0 based release of the API Manager.
+This is also currently identified as a gap in the API Manager 2.x.x implementation, and will be addressed in the new features that will be delivered in the WSO2 Carbon 5.0 based release of the API Manager.
 

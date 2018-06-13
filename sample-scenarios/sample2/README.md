@@ -20,7 +20,7 @@
 
 * Let the finance department handle salaries of employees while manufacturing department is responsible to maintain the mobile phone manufacturing stock while operations department handles maintenance work of the organization
 
-### Implement using WSO2 API Manager
+### Implementing using WSO2 API Manager
 
 We need to create
 
@@ -64,7 +64,7 @@ Below two screenshots shows that both John and TOm can subscribe to Employee_inf
 
 ### How to run the sample to populate the above mentioned sample data
 
-* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
 * Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
