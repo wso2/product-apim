@@ -1,4 +1,4 @@
-# API Rate Monitization
+# API Rate Monetization
 
 ### Sample use case
 
@@ -22,7 +22,7 @@
 
 ### Business Story
 
-* Let ABC organization has an API to expose there mobile phone prices. For the time bean let's assume this organization exposes prices to the sales agents and they have big number of third party sales agents.
+* ABC organization has an API to expose there mobile phone prices. For the time bean let's assume this organization exposes prices to the sales agents and they have big number of third party sales agents.
 
 * Further they need to gain revenue from third party agents based on the there subscription models. As an example let's use the following subscription models
 
@@ -32,7 +32,7 @@
 
 * Bandwidth consumption
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 We have the following subscription tires that have been defined already.
 
@@ -42,10 +42,10 @@ You can add any custom subscription tires as well.
 
 We can connect to a billing engine as mentioned in the following document[1] and connect the API manager node to the billing engine and charge according to the API usage and bandwidth consumption.
 
-By using connecting the API Manager to our API MAnager analytics server we can identify the API usages along with the billing engine outcomes.
+By using connecting the API Manager to the API Manager analytics server we can identify the API usages along with the billing engine outcomes.
 
 Hence using the above mentioned subscription approach we can have a free subscription tier for free trail version users. Once they reach they can be offered the prices subscriptions which will gain the revenue. 
 
 ### References
 
-[1] https://docs.wso2.com/display/AM210/Enabling+Monetization+of+APIs
+[1] https://docs.wso2.com/display/AM250/Enabling+Monetization+of+APIs

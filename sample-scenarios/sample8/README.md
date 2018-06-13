@@ -16,17 +16,17 @@ Transferring contracts with app developers to newer versions.
 
 ### Business Story
 
-APi versioning is a key functionality that needs to be addressed once the users used to expose a specific API for a long time and when they need to add, remove or change the API’ in future. When doing this there may be uses who are using the old API. Hence while introducing the new API Old API should also be supported for a specific time period. That time period is offered basically because to guide the uses and give a period for them to switch to the new API. 
+API versioning is a key functionality that needs to be addressed once the users used to expose a specific API for a long time and when they need to add, remove or change the API’ in future. When doing this there may be uses who are using the old API. Hence while introducing the new API Old API should also be supported for a specific time period. That time period is offered basically because to guide the uses and give a period for them to switch to the new API. 
 
 ### Business Use Cases
 
-Let ABC company is a mobile phone manufacturing company. Assume they had a requirement to publish  mobile phone prices through and API previously. 
+* ABC company is a mobile phone manufacturing company. They have a requirement to publish mobile phone prices through an API.
 
-Further when the industry grow up with the prices they need to publish some more data such as a rating , user reviews of the mobile phones. 
+* When the industry grows with the prices, they need to publish some additional data such as a rating, user reviews of the mobile phones, etc.
 
-Users the Old APi should know that there is a new API version released and they need to be notified. 
+* Users of the old API should know that there is a new API version released, and they need to be notified.
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
 * We need an API to expose the mobile phone details of ABC company which will stand as the Old API
 
@@ -52,13 +52,13 @@ Old API in PUBLISHED state
 
 **User can configure to get notifications for the newly created API version by following this documentation [1]**
 
-### How to run the sample to populate the above mentioned sample data
+### Running the sample
 
-* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
 * Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
 ### References
 
-[1] - https://docs.wso2.com/display/AM210/Enabling+Notifications
+[1] - https://docs.wso2.com/display/AM250/Enabling+Notifications
 

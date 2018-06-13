@@ -20,7 +20,7 @@
 
 As an example, let’s take ABC organization which is a bank which provides financial facilities such as loans, fixed deposits etc. For these financial services they have a requirement to produce the loan and fixed deposit rates. Further, they have an online facility for clients to log in and check their account information and perform transactions. Their requirement extends to developing a mobile banking solution as well.
 
-### How this Business Scenario can be Achieved Using WSO2 API Manager?
+### Implement using WSO2 API Manager
 
 For the above sample business scenario, the organization will need an API to 
 
@@ -32,13 +32,13 @@ For the above sample business scenario, the organization will need an API to
 
 In the future, they will need more and more functionality exposed through APIs, but as for now, let’s consider only the above mentioned three APIs and consider how we could achieve this using WSO2 API Manager.
 
-### Business APIs can be access different parties via different devices
+### Business APIs can be accessed by different parties via different devices
 
 WSO2 API Manager provides a SDK feature that generates SDKs for a variety of programming languages. This particular feature will address the first part of the sample scenario, i.e. "Business APIs can be access different parties via different devices", where different SDKs can address the needs of the different types of consumers involved.
 
 Here the API consumers can create different clients using the programming language they prefer. For an example, let’s consider two parties that needs an application that consumes the APIs using Python and Java. They can develop two applications using the SDK’s for Python and Java separately. The SDK which is automatically generated through WSO2 API Manager, will handle the API invocation logic while the application developer only needs to focus on the business logic of the client and call the method with the respective parameters in the SDK.
 
-### Same API can be access by different clients
+### Same API can be accessed by different clients
 
 In WSO2 API Manager, clients can create separate Applications for the same API and access the API. In our example, different users can get bank loan and fixed deposit rates by subscribing to the Applications that provide relevant APIs which the bank will be exposing to the public. 
 
@@ -46,9 +46,9 @@ Furthermore, the client may be accessing this using a mobile device. For this th
 
 ![](images/image_0.png)
 
-### API developer should be able to optimize API output by identifying its client
+### The API developer should be able to optimize API output by identifying its client
 
-API developers can use the headers that the client send and detect the type of the client (ex: if the client is a mobile device or not). For an example, consider a client who is accessing the banks API’s and performing online account balance checking. In this scenario, if the API developer needs to restrict the mobile device clients from accessing all of the account information, instead restrict access to a select set of data of the account, and expose all the data to desktop application clients, that can be achieved by having a custom sequence in the API definition. A detailed guide on adding custom sequences can be found in this [documentation](https://docs.wso2.com/display/AM210/Adding+Mediation+Extensions).
+API developers can use the headers that the client send and detect the type of the client (ex: if the client is a mobile device or not). For an example, consider a client who is accessing the banks API’s and performing online account balance checking. In this scenario, if the API developer needs to restrict the mobile device clients from accessing all of the account information, instead restrict access to a select set of data of the account, and expose all the data to desktop application clients, that can be achieved by having a custom sequence in the API definition. A detailed guide on adding custom sequences can be found in this [documentation](https://docs.wso2.com/display/AM250/Adding+Mediation+Extensions).
 
 Consider a scenario where the developer needs to restrict sending the address element for the mobile device clients.
 
@@ -144,9 +144,9 @@ Output for the mobile devices will be as follows,
 
 ### Optimization can be a composition of the multiple backend or stripdown
 
-This is currently identified as a gap in API manager 2.1.0 implementation and a new feature addressing this via API composition is being developed in WSO2 Carbon 5.0 based release of the API Manager.
+This is currently identified as a gap in API manager 2.x.x implementation and a new feature addressing this via API composition is being developed in WSO2 Carbon 5.0 based release of the API Manager.
 
 ### Client based prioritization of the APIs
 
-This is also currently identified as a gap in the API Manager 2.1.0 implementation, and will be addressed in the new features that will be delivered in the WSO2 Carbon 5.0 based release of the API Manager.
+This is also currently identified as a gap in the API Manager 2.x.x implementation, and will be addressed in the new features that will be delivered in the WSO2 Carbon 5.0 based release of the API Manager.
 
