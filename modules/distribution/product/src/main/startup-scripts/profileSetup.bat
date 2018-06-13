@@ -1,20 +1,5 @@
 @echo off
 
-REM ---------------------------------------------------------------------------
-REM        Copyright 2018 WSO2, Inc. http://www.wso2.org
-REM
-REM  Licensed under the Apache License, Version 2.0 (the "License");
-REM  you may not use this file except in compliance with the License.
-REM  You may obtain a copy of the License at
-REM
-REM      http://www.apache.org/licenses/LICENSE-2.0
-REM
-REM  Unless required by applicable law or agreed to in writing, software
-REM  distributed under the License is distributed on an "AS IS" BASIS,
-REM  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-REM  See the License for the specific language governing permissions and
-REM  limitations under the License.
-
 set pathToApiManagerXML=..\repository\conf\api-manager.xml
 set pathToAxis2XML=..\repository\conf\axis2\axis2.xml
 set pathToRegistry=..\repository\conf\registry.xml
@@ -226,19 +211,23 @@ for /f %%i in ('powershell -Command "$xml = [xml] (Get-Content %pathToApiManager
 EXIT /B 0
 
 :disableTransportSenderWS
-for /f %%i in ('powershell -Command "$xml = [xml] (Get-Content %pathToAxis2XML%); $xml.SelectSingleNode('//transportSender[@name="ws"]');"') do (
-	powershell -Command "$xml = [xml] (Get-Content %pathToAxis2XML%); $node=$xml.SelectSingleNode('//transportSender[@name="ws"]; $node.ParentNode.InnerXml = $node.ParentNode.InnerXml.Replace($node.OuterXml, $node.OuterXml.Insert(0, "<!--").Insert($node.OuterXml.Length+4, "-->")); $xml.Save('%pathToAxis2XML%');"
+for /f %%i in ('powershell -Command "& {$xml = [xml] (Get-Content %pathToAxis2XML%); $xml.selectSingleNode('//transportSender[@name=\"ws\"]'); }" ') do (
+	powershell -Command "& { $xml = [xml] (Get-Content %pathToAxis2XML%); $xml.selectNodes('//transportSender[@name=\"ws\"]') | ForEach-Object { $node = $_; $comment = $xml.CreateComment($node.OuterXml); $node=$node.ParentNode.ReplaceChild($comment, $node);}; $xml.Save('%pathToAxis2XML%');}"
 	call :Timestamp value
 	echo %value% INFO - Disabled the ^<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender"^> from axis2.xml file
+	goto skipLoop1
 )
+:skipLoop1
 EXIT /B 0
 
 :disableTransportSenderWSS
-for /f %%i in ('powershell -Command "$xml = [xml] (Get-Content %pathToAxis2XML%); $xml.SelectSingleNode('//transportSender[@name="wss"]');"') do (
-	powershell -Command "$xml = [xml] (Get-Content %pathToAxis2XML%); $node=$xml.SelectSingleNode('//transportSender[@name="wss"]; $node.ParentNode.InnerXml = $node.ParentNode.InnerXml.Replace($node.OuterXml, $node.OuterXml.Insert(0, "<!--").Insert($node.OuterXml.Length+4, "-->")); $xml.Save('%pathToAxis2XML%');"
+for /f %%i in ('powershell -Command "& {$xml = [xml] (Get-Content %pathToAxis2XML%); $xml.SelectSingleNode('//transportSender[@name=\"wss\"]'); }" ') do (
+	powershell -Command "& { $xml = [xml] (Get-Content %pathToAxis2XML%); $xml.selectNodes('//transportSender[@name=\"wss\"]') | ForEach-Object { $node = $_; $comment = $xml.CreateComment($node.OuterXml); $node=$node.ParentNode.ReplaceChild($comment, $node);}; $xml.Save('%pathToAxis2XML%');}"
 	call :Timestamp value
 	echo %value% INFO - Disabled the ^<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender"^> from axis2.xml file
-)
+	goto skipLoop2
+	)
+:skipLoop2
 EXIT /B 0
 
 :disableIndexingConfiguration
