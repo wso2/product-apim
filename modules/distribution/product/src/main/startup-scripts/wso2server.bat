@@ -74,6 +74,7 @@ rem ----- Process the input command -------------------------------------------
 
 rem Slurp the command line arguments. This loop allows for an unlimited number
 rem of arguments (up to the command line limit, anyway).
+set originalArgs=%*
 
 :setupArgs
 if ""%1""=="""" goto doneStart
@@ -93,8 +94,8 @@ if ""%1""==""--debug""  goto commandDebug
 if ""%1""==""version""   goto commandVersion
 if ""%1""==""-version""  goto commandVersion
 if ""%1""==""--version"" goto commandVersion
- 
-if ""%1""==""optimize""  	goto profileOptimizer 
+
+if ""%1""==""optimize""  	goto profileOptimizer
 if ""%1""==""-optimize"" 	goto profileOptimizer
 if ""%1""==""--optimize""	goto profileOptimizer
 
@@ -126,23 +127,20 @@ rem ----- commandLifecycle -----------------------------------------------------
 :commandLifecycle
 goto findJdk
 
-rem ----- profile optimize then start the server-------------------------------------------------------
+rem ----- profile optimization then start the server---------------------------------
 :profileOptimizer
 setlocal enableDelayedExpansion
 set found=false
-for %%x in (%*) do ( 
-	if !found!==true ( 
-		set profile=-Dprofile=%%x 
-		set found=false	)
-	if %%x==-Dprofile ( set found=true
+for %%a in (!originalArgs!) do (
+	if !found!==true (
+		set profile=-Dprofile=%%a
+		set found=false
+	)
+	if %%a==-Dprofile ( set found=true
 	)
 )
-set currentLocation=%cd%
-cd /d %~dp0
-call profileSetup.bat %profile%
-cd %currentLocation%
+call bin\profileSetup.bat %profile%
 endlocal
-echo Starting the server...
 goto findJdk
 
 :doneStart
@@ -196,4 +194,3 @@ goto endlocal
 :endlocal
 
 :END
-
