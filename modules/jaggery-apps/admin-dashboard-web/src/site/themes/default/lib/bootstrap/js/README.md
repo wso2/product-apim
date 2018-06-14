@@ -1,5 +1,5 @@
 ## 2.0 BOOTSTRAP JS PHILOSOPHY
-These are the high-level design rules which guide the development of Bootstrap's plugin apis.
+These are the high-level design rules that guide the development of Bootstrap's plugin APIs.
 
 ---
 
@@ -7,11 +7,11 @@ These are the high-level design rules which guide the development of Bootstrap's
 
 We believe you should be able to use all plugins provided by Bootstrap purely through the markup API without writing a single line of javascript.
 
-We acknowledge that this isn't always the most performant and sometimes it may be desirable to turn this functionality off altogether. Therefore, as of 2.0 we provide the ability to disable the data attribute API by unbinding all events on the body namespaced with `'data-api'`. This looks like this:
+We acknowledge that this isn't always the most performant and sometimes it may be desirable to turn this functionality off altogether. Therefore, as of API-M 2.0.0, we provide the ability to disable the data attribute API by unbinding all events on the body namespaced with `'data-api'`. This looks like this:
 
     $('body').off('.data-api')
 
-To target a specific plugin, just include the plugins name as a namespace along with the data-api namespace like this:
+To target a specific plugin, just include the plugin name as a namespace along with the data-api namespace like this:
 
     $('body').off('.alert.data-api')
 
@@ -25,7 +25,7 @@ All public APIs should be single, chainable methods, and return the collection a
 
     $(".btn.danger").button("toggle").addClass("fat")
 
-All methods should accept an optional options object, a string which targets a particular method, or null which initiates the default behavior:
+All methods should accept an optional options object, a string that targets a particular method, or null, which initiates the default behavior:
 
     $("#myModal").modal() // initialized with defaults
     $("#myModal").modal({ keyboard: false }) // initialized with now keyboard
@@ -35,9 +35,9 @@ All methods should accept an optional options object, a string which targets a p
 
 ### OPTIONS
 
-Options should be sparse and add universal value. We should pick the right defaults.
+Options should be sparse and add universal value. We should pick the right default values.
 
-All plugins should have a default object which can be modified to effect all instance's default options. The defaults object should be available via `$.fn.plugin.defaults`.
+All plugins should have a default object that can be modified to affect the default options of all instances. The defaults object should be available via `$.fn.plugin.defaults`.
 
     $.fn.modal.defaults = { … }
 
@@ -55,7 +55,7 @@ examples:
 
 ### EVENTS
 
-All events should have an infinitive and past participle form. The infinitive is fired just before an action takes place, the past participle on completion of the action.
+All events should have an infinitive and past participle form. The infinitive is fired just before an action takes place, while the past participle is fired upon completion of the action.
 
     show | shown
     hide | hidden
