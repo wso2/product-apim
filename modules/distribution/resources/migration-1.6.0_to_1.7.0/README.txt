@@ -75,7 +75,7 @@ Tenant Migration (Only needs to be done if you are migrating a multi-tenanted se
 
 2. Start AM 1.7.0 and Login to the respective tenant space
 
-3.  Change the registry extension file[api.rxt file] with the new one[which can be found from /rxt/api.rxt] using management console. Navigate to path 'Home-> Extensions-> Configure-> Artifact Types' from management console and click the link 'View/Edit' and replace above mentioned new api.rxt and save.
+3. Change the registry extension file[api.rxt file] with the new one[which can be found from /rxt/api.rxt] using management console. Navigate to path 'Home-> Extensions-> Configure-> Artifact Types' from management console and click the link 'View/Edit' and replace above mentioned new api.rxt and save.
 
 4. Change the registry extension file[documentation.rxt file] with the new one[which can be found from /rxt/documentation.rxt] using management console. Navigate to path 'Home-> Extensions-> Configure-> Artifact Types' from management console and click the link 'View/Edit' and replace above mentioned new documentation.rxt and save.
 
@@ -88,7 +88,7 @@ Tenant Migration (Only needs to be done if you are migrating a multi-tenanted se
    port= Port of running AM server [In a distributed setup, give the port of the Publisher node]   
    version= Version of AM server
 
-6. Go inside swagger-resource-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message if it ran correctly.
+6. Go inside swagger-resource-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message run correctly.
 
 7. Configure doc-file-migration/build.xml with the information for the below properties. (doc-file-migration folder should be already copied to <APIM_1.7.0_HOME>)
 
