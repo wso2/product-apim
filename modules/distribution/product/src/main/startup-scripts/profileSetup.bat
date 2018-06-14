@@ -272,7 +272,6 @@ for /f %%i in ('dir "%pathToSynapseConfigs%" /A:-D /b ^| find /v "synapse.xml"')
 EXIT /B 0
 
 :Timestamp
-::echo timestamp function
 set "%~1=[%date:~10,14%-%date:~4,2%-%date:~7,2% %time%]"
 EXIT /B 0
 
