@@ -184,9 +184,9 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
      */
     private boolean isUserAvailableInActiveSubscriptionInUserTab(String responsePageOfUsersTabData, String userName) {
         String temp1 =
-                responsePageOfUsersTabData.substring(responsePageOfUsersTabData.indexOf("Active Subscriptions<"));
+                responsePageOfUsersTabData.substring(responsePageOfUsersTabData.indexOf("Manage Subscriptions<"));
         String temp2 =
-                temp1.substring(temp1.indexOf("Active Subscriptions<"), temp1.indexOf("Usage by Current Subscribers"));
+                temp1.substring(temp1.indexOf("Manage Subscriptions<"), temp1.indexOf("Usage by Current Subscribers"));
         return temp2.contains(userName);
     }
 
