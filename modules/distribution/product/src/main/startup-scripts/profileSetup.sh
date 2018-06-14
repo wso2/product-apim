@@ -115,7 +115,7 @@ removeSynapseConfigs(){
 		echo "[${timestamp}] INFO - Removed the $folder directory from $pathToSynapseConfigs"
 	done
 
-	for i in $(find $pathToSynapseConfigs -type f -not -name 'synapse.xml'); do
+	for i in $(find $pathToSynapseConfigs -maxdepth 1 -type f -not -name 'synapse.xml'); do
 		rm -r $i
 		file=`basename "$i"`
 		timeStamp
@@ -136,12 +136,12 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
 	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=$(echo "$file" | cut -f 1 -d '.')
+			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
 				rm -r ${pathToWebapps}/$folder
@@ -167,12 +167,12 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -type f -not -name 'api#am#publisher#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#publisher#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
 	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=$(echo "$file" | cut -f 1 -d '.')
+			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
 				rm -r ${pathToWebapps}/$folder
@@ -198,12 +198,12 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -type f -not -name 'api#am#store#*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#store#*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
 	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=$(echo "$file" | cut -f 1 -d '.')
+			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
 				rm -r ${pathToWebapps}/$folder
@@ -228,12 +228,12 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -type f ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
 	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=$(echo "$file" | cut -f 1 -d '.')
+			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
 				rm -r ${pathToWebapps}/$folder
@@ -254,12 +254,12 @@ case $1 in
 		disablePolicyDeployer
 		disableIndexingConfiguration
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -type f -not -name 'am#sample#pizzashack#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'am#sample#pizzashack#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
 	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=$(echo "$file" | cut -f 1 -d '.')
+			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
 				rm -r ${pathToWebapps}/$folder
