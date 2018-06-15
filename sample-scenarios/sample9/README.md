@@ -32,9 +32,9 @@
 
 * Further let's assume they need to monitor the API usage of the API’s which they can used to manage the traffic allocations that they have done the the API’s
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implement using WSO2 API Manager
 
-* We need to place wso2am-analytics-2.2.0-updateX pack in the same location which is the wso2am-2.2.0-updateX is placed.
+* We need to place wso2am-analytics-2.5.0 pack in the same location where the wso2am-2.5.0 pack is placed.
 
 * We need custom advance throttling policies that can be engage to the API’s
 
@@ -78,7 +78,7 @@ Added advance throttling policies in Admin app![](images/image_6.png)![](images/
 
  
 
-#### After users starts invoking statistics will appear as follows in publisher
+#### After users starts invoking, the statistics will appear as follows in the API Publisher
 
 ![](images/image_9.png)
 
@@ -86,15 +86,15 @@ Added advance throttling policies in Admin app![](images/image_6.png)![](images/
 
 ![](images/image_11.png)
 
-### How to run the sample to populate the above mentioned sample data
+### Running the sample
 
-* Start wso2am-analytics-2.2.0-updateX distribution by executing [ANALYTICS_HOME]/bin/wso2server.sh or [ANALYTICS_HOME]/bin/wso2server.bat
+* Start the wso2am-analytics-2.5.0 distribution by executing [ANALYTICS_HOME]/bin/wso2server.sh or [ANALYTICS_HOME]/bin/wso2server.bat
 
-* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
+* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
 
-* Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
+* Run the file run.sh in the sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
-#### User credentials needed for login to API Manager instance.
+#### User credentials needed to login to API Manager.
 
 ##### For Super tenant
 

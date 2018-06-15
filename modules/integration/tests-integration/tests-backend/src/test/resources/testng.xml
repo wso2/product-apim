@@ -74,6 +74,7 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.CustomLifeCycleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
@@ -206,11 +207,13 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationRegenerateConsumerSecretTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1628_OAuthAppUpdateViaRestApiTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1638_UrlEncodedApiNameTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationScopeValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>
         </classes>
     </test>
     <test name="apim-mediation-tests" preserve-order="true" parallel="false">

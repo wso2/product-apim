@@ -229,10 +229,10 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             assertTrue(
-                    serviceResponse.getData().contains("ws://wsserverhost:9797/" + WS_API_CONTEXT + "/" + API_VERSION));
+                    serviceResponse.getData().contains("ws://localhost:9099/" + WS_API_CONTEXT + "/" + API_VERSION));
         } else {
             assertTrue(serviceResponse.getData()
-                    .contains("ws://wsserverhost:9797/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION));
+                    .contains("ws://localhost:9099/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION));
         }
 
     }

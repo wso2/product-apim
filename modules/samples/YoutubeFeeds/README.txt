@@ -21,13 +21,13 @@ Steps:
 ------
 ** IMPORTANT: If you have already configured any other sample, start from Step 7 **
 
-1. Extract wso2am-xxx.zip (eg: wso2am-1.8.0.zip)
+1. Extract wso2am-xxx.zip (eg: wso2am-2.5.0.zip)
 
-2. Go to wso2am-1.8.0/bin folder & type 'ant'
+2. Go to wso2am-2.5.0/bin folder & type 'ant'
 
-3. Start WSO2AM by executing wso2am-1.8.0/bin/wso2server.sh
+3. Start WSO2AM by executing wso2am-2.5.0/bin/wso2server.sh
  You can login to API Publisher's console
-URL - http://localhost:9763/publisher/
+URL - https://localhost:9443/publisher/
 Username/password - admin/admin
 
 Take a note of the fact that there are no APIs published. Next step adds an API & publishes it to API store.
@@ -40,7 +40,7 @@ You will see an output similar to following on the console. Refresh above page &
 {"error" : "false"}
 
 8. Now let's try to access Youtube live feeds through our newly deployed API. First you need to login
-to the API Store and obtain an API key. Launch a web browser and enter the URL http://localhost:9763/store
+to the API Store and obtain an API key. Launch a web browser and enter the URL https://localhost:9443/store
 
 9. Login as the user "admin" with password "admin". Click on the "Applications" tab at
 the top of the page, and create a new application. Provide any name you prefer.

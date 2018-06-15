@@ -168,7 +168,7 @@ is recommended.
 Installation & Running
 ==================================
 
-1. Extract the wso2am-2.2.0.zip and go to the 'bin' directory
+1. Extract the wso2am-2.5.0.zip and go to the 'bin' directory
 2. Run the wso2server.sh or wso2server.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - http://localhost:9763/publisher
@@ -182,7 +182,7 @@ Documentation
 ==============
 
 On-line product documentation is available at:
-        https://docs.wso2.com/display/AM220/WSO2+API+Manager+Documentation
+        https://docs.wso2.com/display/AM250/WSO2+API+Manager+Documentation
 
 Support
 ==================================

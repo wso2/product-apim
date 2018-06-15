@@ -23,8 +23,8 @@ package org.wso2.am.integration.test.utils.bean;
  * API life cycle state used too update API's in test cases
  */
 public enum APILifeCycleState {
-    PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"),
-    BLOCKED("BLOCKED"), RETIRED("RETIRED"),PROTOTYPED("PROTOTYPED");
+    PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"), RETIRED(
+            "RETIRED"), PROTOTYPED("PROTOTYPED"), PROMOTE("Promote"), PROMOTED("PROMOTED");
     private String state;
 
     APILifeCycleState(String state) {

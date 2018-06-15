@@ -5,7 +5,7 @@
   "defaultQuotaPolicy": {
     "type": "requestCount",
     "limit": {
-      "requestCount": "8",
+      "requestCount": "2",
       "timeUnit": "min",
       "dataAmount": 0,
       "dataUnit": "",

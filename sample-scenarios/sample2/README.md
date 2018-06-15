@@ -20,9 +20,9 @@
 
 * Let the finance department handle salaries of employees while manufacturing department is responsible to maintain the mobile phone manufacturing stock while operations department handles maintenance work of the organization
 
-### How this Business Scenario can be achieved Using WSO2 API Manager ?
+### Implementing using WSO2 API Manager
 
-In our API manager we need to create
+We need to create
 
 * Three different tenants(finance.abc.com, core.abc.com and operations.abc.com) for the three departments with users(John, Tom and Bob respectively) that can create APIs
 
@@ -64,7 +64,7 @@ Below two screenshots shows that both John and TOm can subscribe to Employee_inf
 
 ### How to run the sample to populate the above mentioned sample data
 
-* Start wso2am-2.2.0-updateX is distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
 * Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 

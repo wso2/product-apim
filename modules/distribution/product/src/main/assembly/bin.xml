@@ -92,7 +92,7 @@
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
-                
+
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
                 <exclude>**/repository/components/plugins/netty-all_4.0.23.wso2v1.jar</exclude>
@@ -472,7 +472,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.12.war</include>
+                <include>api#am#store#v0.13.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -492,7 +492,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.12.war</include>
+                <include>api#am#publisher#v0.13.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -502,7 +502,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.12.war</include>
+                <include>api#am#admin#v0.13.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -522,7 +522,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.12.war</include>
+                <include>client-registration#v0.13.war</include>
             </includes>
         </fileSet>
 
@@ -697,7 +697,7 @@
                 <include>**/*.*</include>
             </includes>
         </fileSet>
-	
+
 	<!-- Tomcat carbon web.xml -->
 	<fileSet>
 	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/</directory>
@@ -765,6 +765,15 @@
                 <include>**/conf/datasources/sample-um-datasources.xml</include>
             </includes>
             <fileMode>644</fileMode>
+        </fileSet>
+
+        <!--Copying the relevant XSD for API RXT with micro-gateway labels-->
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/</outputDirectory>
+            <includes>
+                <include>**/rxt.xsd</include>
+            </includes>
         </fileSet>
     </fileSets>
 
@@ -1028,6 +1037,20 @@
         </file>
 
         <file>
+            <source>src/main/startup-scripts/profileSetup.sh</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/profileSetup.bat</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
             <source>src/main/startup-scripts/wso2server.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
@@ -1112,7 +1135,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-    	</file>	
+    	</file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>

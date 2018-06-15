@@ -42,10 +42,10 @@ import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminEx
 import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.rmi.RemoteException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.xpath.XPathExpressionException;
 
 /**
  * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-3706
@@ -72,6 +72,8 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
     private String storeURLHttp;
     private APIStoreRestClient apiStore;
     private String consumerKey;
+    private String consumerSecret;
+    private String regeneratedConsumerSecret;
     private String publisherURLHttps;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -102,6 +104,7 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
         verifyResponse(response);
         String responseString = response.getData();
         consumerKey = getConsumerKey(responseString);
+        consumerSecret = getConsumerSecret(responseString);
         Assert.assertNotNull(consumerKey);
 
         OAuthConsumerAppDTO authApp = getAuthAppDetails(consumerKey);
@@ -140,6 +143,18 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
          Assert.assertEquals(currentCallbackURL, UPDATE_APP_CALLBACK_URL, "CallBack URL has not updated.");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test regenerate consumer secret after application key generate",
+            dependsOnMethods = "testApplicationCreation")
+    public void testRegenerateConsumerSecret() throws Exception {
+
+        HttpResponse response = apiStore.regenerateConsumerSecret(consumerKey);
+        verifyResponse(response);
+        String responseString = response.getData();
+        regeneratedConsumerSecret = getRegeneratedConsumerSecret(responseString);
+        Assert.assertNotNull(regeneratedConsumerSecret);
+        Assert.assertNotEquals(consumerSecret, regeneratedConsumerSecret);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME_TO_UPDATE);
@@ -161,6 +176,40 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
      */
     private String getConsumerKey(String response) {
         Pattern pattern = Pattern.compile("\"consumerKey\" : \"(\\w|\\d)+\"");
+        Matcher matcher = pattern.matcher(response);
+        String key = null;
+        if (matcher.find()) {
+            key = matcher.group(0).split(":")[1].trim().replace("\"", "");
+        }
+        return key;
+    }
+
+    /**
+     * Get the consumer secret from the generated response.
+     *
+     * @param response Generated response.
+     * @return Consumer Secret.
+     */
+    private String getConsumerSecret(String response) {
+
+        Pattern pattern = Pattern.compile("\"consumerSecret\" : \"(\\w|\\d)+\"");
+        Matcher matcher = pattern.matcher(response);
+        String key = null;
+        if (matcher.find()) {
+            key = matcher.group(0).split(":")[1].trim().replace("\"", "");
+        }
+        return key;
+    }
+
+    /**
+     * Get the regenerated consumer secret from the generated response.
+     *
+     * @param response Generated response.
+     * @return Regenerated Consumer Secret.
+     */
+    private String getRegeneratedConsumerSecret(String response) {
+
+        Pattern pattern = Pattern.compile("\"key\" : \"(\\w|\\d)+\"");
         Matcher matcher = pattern.matcher(response);
         String key = null;
         if (matcher.find()) {

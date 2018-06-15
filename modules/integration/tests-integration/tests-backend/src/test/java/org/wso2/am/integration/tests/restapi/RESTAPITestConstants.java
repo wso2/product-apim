@@ -121,7 +121,7 @@ public final class RESTAPITestConstants {
     public static final String BASIC_AUTH_HEADER = "admin:admin";
 
     //client-registration link
-    public static final String CLIENT_REGISTRATION_URL = "client-registration/v0.12/register";
+    public static final String CLIENT_REGISTRATION_URL = "client-registration/v0.13/register";
 
     //token endpoint suffix
     public static final String TOKEN_ENDPOINT_SUFFIX = "token";
@@ -152,4 +152,7 @@ public final class RESTAPITestConstants {
 
     //text to represent index of particular object, in case of a response consisting of an array of objects
     public static final String RESPONSE_OBJECT_INDEX = "object-index";
+
+    //text to represent the user directory
+    public static final String USER_DIR = "user.dir";
 }

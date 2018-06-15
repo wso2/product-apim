@@ -1,7 +1,7 @@
 Work Flow integration for API manager
 =====================================
 
-We can engage business process execution for API management releated operations. With API manager we have added 3 workflow plug points for below operations.
+We can engage business process execution for API management-releated operations. With API manager we have added 3 workflow plug points for below operations.
 01. User creation process.
 02. Application creation process.
 03. Subscription process.
@@ -23,7 +23,7 @@ Business Process Server Configurations
 Set port offset as 2 in carbon.xml file of Business Process Server 3.1.0. Edit following element of carbon.xml file. If you require to make the offset something other than 2, see section 'Changing port offset of BPS' section below.
        <Offset>2</Offset>
 
-Copy /epr folder in to repository/conf folder of Business Process Server.
+Copy the /epr folder in to the repository/conf folder of Business Process Server.
 Then copy human tasks (archived) files to repository/deployment/server/humantasks folder of Business Process Server.
 Then copy business process (archived) files to repository/deployment/server/bpel folder of Business Process Server.
 Then start server.
@@ -35,7 +35,7 @@ should aware about exact service location of workflow.
 
 API Manager Configurations 
 ==========================
-Edit API manager configuration stored in registry to enable web service based workflow execution. For this we need to log in to APIManager admin console (https://<Server Host>:9443/carbon) and select Browse under Resources.Go to /_system/governance/apimgt/applicationdata/workflow-extensions.xml resource and edit the file as follows to disable the Simple Workflow Executor and enable WS Workflow Executor:
+Edit the  API manager configurations stored in the registry to enable web service based workflow execution. For this we need to log in to APIManager admin console (https://<Server Host>:9443/carbon) and select Browse under Resources.Go to /_system/governance/apimgt/applicationdata/workflow-extensions.xml resource and edit the file as follows to disable the Simple Workflow Executor and enable WS Workflow Executor:
 Edit WorkFlowExtensions as follows. Please note that all workflow process services
 are running on port 9765 of Business Process Server(as it is running with port offset2). 
 

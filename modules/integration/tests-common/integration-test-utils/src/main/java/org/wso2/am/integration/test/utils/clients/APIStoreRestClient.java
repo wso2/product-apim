@@ -35,7 +35,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.extensions.servers.httpserver.SimpleHttpClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 /**
  * Provides set of method to invoke publisher API
@@ -592,6 +592,25 @@ public class APIStoreRestClient {
         }
     }
 
+    /**
+     * Regenerate consumer secret.
+     *
+     * @param clientId Consumer Key of an application for which consumer secret need to be regenerate.
+     * @return Regenerated consumer secret.
+     * @throws APIManagerIntegrationTestException Throws if regeneration of consumer secret fail.
+     */
+    public HttpResponse regenerateConsumerSecret(String clientId) throws APIManagerIntegrationTestException {
+
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(new URL(backendURL
+                    + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+                    "action=regenerateConsumerSecret&clientId=" + clientId), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to regenerate consumer secrete. "
+                    + " Error: " + e.getMessage(), e);
+        }
+    }
     /**
      * Get all subscriptions
      *
@@ -1240,6 +1259,38 @@ public class APIStoreRestClient {
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to change password. Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Add application with custom attributes
+     *
+     * @param application - application  name
+     * @param tier        - throttling tier
+     * @param callbackUrl - callback url
+     * @param description - description of app
+     * @param applicationAttributes - Json string of custom attributes defined by user
+     * @return - http response of add application
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     */
+    public HttpResponse addApplicationWithCustomAttributes (String application, String tier, String callbackUrl,
+                                       String description, String applicationAttributes)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL +
+                            "store/site/blocks/application/application-add" +
+                            "/ajax/application-add.jag?action=addApplication&tier=" +
+                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
+                            "&application=" + application + "&applicationAttributes=" +
+                            urlAppAttributes), "", requestHeaders);
+        } catch (IOException e) {
+            String message = "Unable to add application - " + application + " with custom attributes. Error: "
+                    + e.getMessage();
+            log.error(message);
+            throw new APIManagerIntegrationTestException(message, e);
         }
     }
 }

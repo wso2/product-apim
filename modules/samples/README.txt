@@ -8,7 +8,7 @@ Introduction
 WSO2 API Manager ships with a collection of basic samples that demonstrate its
 core functionality. You will find all the relevant configurations, scripts and
 instructions required to run these samples in the subdirectories of the 'samples'
-top level directory. As of now following samples are available and released with
+top level directory. As of now, the following samples are available and released with
 the API Manager binary distribution.
 
 1. WikipediaAPI -
@@ -18,7 +18,7 @@ the API Manager binary distribution.
     A sample to generate bill for API usage of consumers. 
 
 3. PizzaShack sample
-   A sample to demo use of rest API.
+   A sample to demonstrate use of REST APIs.
 
 These samples are packaged according to the following file hierarchy under the
 'samples' directory.

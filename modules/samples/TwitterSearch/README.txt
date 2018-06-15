@@ -1,4 +1,4 @@
- Deploy & Test TwitterSearch Sample
+Deploy & Test TwitterSearch Sample
 ====================================
 
 ###########################################################################################
@@ -20,7 +20,7 @@ Steps:
 ------
 ** IMPORTANT: If you have already configured any other sample, start from Step 7 **
 
-1. Extract wso2am-xxx.zip (eg: wso2am-1.8.0.zip)
+1. Extract wso2am-xxx.zip (eg: wso2am-2.5.0.zip)
 
 2. Go to AM_HOME/bin folder & type 'ant'
 
@@ -41,7 +41,7 @@ populate-user-database:
       
       
 6. Start WSO2AM server  and  you can login to API Publisher's console with the username/password as provider1/provider1.
-Provider URL - http://localhost:9763/publisher/
+Provider URL - https://localhost:9443/publisher/
 
 Add/Publish API
 -------------------
@@ -59,8 +59,8 @@ Output will be similar to following .
  ----------------
  
 8. Now let's try to access Twitter's search function through the newly deployed API. First you need to login
-to the API Store and obtain an API accesstoken. Go to store console.
-URL: http://localhost:9763/store
+to the API Store and obtain an API access token. Go to store console.
+URL: https://localhost:9443/store
 
 9. Login with username/password as subscriber1/subscriber1. Click on the "Applications" tab at
 the top of the page, and create a new application.
@@ -73,7 +73,7 @@ on the "Generate" option in the box titled "Production" to obtain an Application
 
 curl -k -d "q=wso2&count=5" -H "Authorization :Bearer 9nEQnijLZ0Gi0gZ6a3pZICktVUca" https://localhost:8280/twitter/1.0.0/search.atom
 
-NOTE: Replace the Bearer token with the Application accesstoken you generated earlier.
+NOTE: Replace the Bearer token with the Application access token you generated earlier.
 
 You should be able to see search results from Twitter.
 eg:

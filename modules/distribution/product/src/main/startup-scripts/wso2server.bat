@@ -1,5 +1,4 @@
 @echo off
-
 REM ---------------------------------------------------------------------------
 REM        Copyright 2005-2009 WSO2, Inc. http://www.wso2.org
 REM
@@ -75,7 +74,7 @@ rem ----- Process the input command -------------------------------------------
 
 rem Slurp the command line arguments. This loop allows for an unlimited number
 rem of arguments (up to the command line limit, anyway).
-
+set originalArgs=%*
 
 :setupArgs
 if ""%1""=="""" goto doneStart
@@ -95,6 +94,10 @@ if ""%1""==""--debug""  goto commandDebug
 if ""%1""==""version""   goto commandVersion
 if ""%1""==""-version""  goto commandVersion
 if ""%1""==""--version"" goto commandVersion
+
+if ""%1""==""optimize""  	goto profileOptimizer
+if ""%1""==""-optimize"" 	goto profileOptimizer
+if ""%1""==""--optimize""	goto profileOptimizer
 
 shift
 goto setupArgs
@@ -122,6 +125,22 @@ goto end
 
 rem ----- commandLifecycle -----------------------------------------------------
 :commandLifecycle
+goto findJdk
+
+rem ----- profile optimization then start the server---------------------------------
+:profileOptimizer
+setlocal enableDelayedExpansion
+set found=false
+for %%a in (!originalArgs!) do (
+	if !found!==true (
+		set profile=-Dprofile=%%a
+		set found=false
+	)
+	if %%a==-Dprofile ( set found=true
+	)
+)
+call bin\profileSetup.bat %profile%
+endlocal
 goto findJdk
 
 :doneStart

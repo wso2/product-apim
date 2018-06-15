@@ -25,9 +25,9 @@ Data Migration 1.7.0 to 1.8.0
    port= Port of running AM server [In a distributed setup, give the port of the Publisher node]   
    version= Version of AM server
 
-9. Go inside swagger-doc-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message if it ran correctly.
+9. Go inside swagger-doc-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message if run correctly.
 
-10. To re-index log in to carbon console (ex: http://localhost:9443/carbon) and delete 'lastaccesstime' resource in '/_system/local/repository/components/org.wso2.carbon.registry/indexing' location. For that go to Home-> Resources->Browse and navigate to the above given location. You can delete the 'lastaccesstime' resource by selecting Actions-> Delete
+10. Re-index log in to carbon console (ex: http://localhost:9443/carbon) and delete 'lastaccesstime' resource in '/_system/local/repository/components/org.wso2.carbon.registry/indexing' location. To do this, go to Home-> Resources->Browse and navigate to the above given location. You can delete the 'lastaccesstime' resource by selecting Actions-> Delete
 
 11. shutdown AM 1.8.0 and delete <APIM_1.8.0_HOME>/repository/conf/solr directory and restart the server. 
 
@@ -35,7 +35,7 @@ Data Migration 1.7.0 to 1.8.0
 Tenant Migration (Only needs to be done if you are migrating a multi-tenanted setup)
 ====================================================================================
 
-1. Move your tenant synapse configurations to APIM_1.8.0. For that, copy and replace specific folders for tenants(shown as 1,2,...) from APIM_1.7.0/repository/tenants/ to APIM_1.8.0/repository/tenants. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory.
+1. Move your tenant synapse configurations to APIM_1.8.0. To do that, copy and replace specific folders for tenants(shown as 1,2,...) from APIM_1.7.0/repository/tenants/ to APIM_1.8.0/repository/tenants. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory.
 
 2. Start AM 1.8.0.
 
