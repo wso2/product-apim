@@ -202,7 +202,7 @@
     </dependencies>
 
     <properties>
-        <carbon.apimgt.version>6.3.74</carbon.apimgt.version>
+        <carbon.apimgt.version>6.3.77</carbon.apimgt.version>
         <carbon.governance.version>4.7.27</carbon.governance.version>
         <carbon.kernel.version>4.4.32</carbon.kernel.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
