@@ -21,9 +21,9 @@
         <property name="IN_MESSAGE" value="Regular_expression_policy"/>
     </log>
     <property name="threatType" expression="get-property('threatType')" value="SQL-Injection"/>
-    <property name="regex" expression="get-property('regex')" value=".*'.*|.*ALTER.*|.*ALTER TABLE.*|.*ALTER VIEW.*|
-    .*CREATE DATABASE.*|.*CREATE PROCEDURE.*|.*CREATE SCHEMA.*|.*create table.*|.*CREATE VIEW.*|.*DELETE.*|.
-    *DROP DATABASE.*|.*DROP PROCEDURE.*|.*DROP.*|.*SELECT.*"/>
+    <property name="regex" expression="get-property('regex')" value=".*'.*|.* ALTER .*|.* ALTER TABLE .*|.* ALTER VIEW .*|
+    .* CREATE DATABASE .*|.* CREATE PROCEDURE .*|.* CREATE SCHEMA .*|.* create table .*|.* CREATE VIEW .*|.* DELETE .*|.
+    * DROP DATABASE .*|.* DROP PROCEDURE .*|.* DROP .*|.* SELECT .*"/>
     <property name="enabledCheckBody" expression="get-property('checkBodyEnable')" value="true"/>
     <property name="enabledCheckHeaders" expression="get-property('enabledCheckHeaders')" value="true"/>
     <property name="enabledCheckPathParams" expression="get-property('enabledCheckPathParams')" value="true"/>
