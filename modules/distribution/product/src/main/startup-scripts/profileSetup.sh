@@ -55,7 +55,7 @@ disablePolicyDeployer(){
 	then
 		sed -i "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		timeStamp
-  	    echo "[${timestamp}] INFO - Disabled the <PolicyDeployer> from api-manager.xml file"
+		echo "[${timestamp}] INFO - Disabled the <PolicyDeployer> from api-manager.xml file"
 	fi
 }
 
@@ -68,7 +68,7 @@ disableTransportSenderWS(){
 		then
 			sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 		fi
 	fi
 }
@@ -82,7 +82,7 @@ disableTransportSenderWSS(){
 		then
 			sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 		fi
 	fi
 }
@@ -92,7 +92,7 @@ removeWebSocketInboundEndpoint(){
 	then
 		rm -r ${pathToInboundEndpoints}WebSocketInboundEndpoint.xml
 		timeStamp
-  	    echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
+		echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
 }
 
@@ -101,7 +101,7 @@ removeSecureWebSocketInboundEndpoint(){
 	then
 		rm -r ${pathToInboundEndpoints}SecureWebSocketInboundEndpoint.xml
 		timeStamp
-  	echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
+		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
 }
 
@@ -111,7 +111,7 @@ disableIndexingConfiguration(){
 	then
 		sed -i "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
 		timeStamp
-  	    echo "[${timestamp}] INFO - Disabled the <indexingConfiguration> from registry.xml file"
+		echo "[${timestamp}] INFO - Disabled the <indexingConfiguration> from registry.xml file"
 	fi
 }
 
@@ -148,7 +148,7 @@ case $1 in
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
 			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
@@ -178,7 +178,7 @@ case $1 in
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
 			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
@@ -209,7 +209,7 @@ case $1 in
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
 			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
@@ -239,7 +239,7 @@ case $1 in
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
 			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
@@ -265,7 +265,7 @@ case $1 in
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
-	  	    echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
 			folder=`basename $file .war`
 			if [ -d ${pathToWebapps}/$folder ]
 			then
