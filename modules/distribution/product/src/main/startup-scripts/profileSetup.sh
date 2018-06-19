@@ -26,7 +26,7 @@ timestamp=""
 cd `dirname "$0"`
 
 timeStamp() {
-	timestamp=`date '+%Y-%m-%d %H:%M:%S'`
+	timestamp=`date '+%Y-%m-%d %H:%M:%S:%N' | sed 's/\(:[0-9][0-9][0-9]\)[0-9]*$/\1/' `
 }
 
 disableDataPublisher(){
@@ -60,22 +60,30 @@ disablePolicyDeployer(){
 }
 
 disableTransportSenderWS(){
-	value=`grep -E '<!--.*"ws"' $pathToAxis2XML`
-	if [ -z "$value" ]
+	value=`grep -E '"ws"' $pathToAxis2XML`
+	if [ -n "$value" ]
 	then
-		sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
-		timeStamp
-  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+		value=`grep -E '<!--.*"ws"' $pathToAxis2XML`
+		if [ -z "$value" ]
+		then
+			sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			timeStamp
+	  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+		fi
 	fi
 }
 
 disableTransportSenderWSS(){
-	value=`grep -E '<!--.*"wss"' $pathToAxis2XML`
-	if [ -z "$value" ]
+	value=`grep -E '"wss"' $pathToAxis2XML`
+	if [ -n "$value" ]
 	then
-		sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
-		timeStamp
-  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+		value=`grep -E '<!--.*"wss"' $pathToAxis2XML`
+		if [ -z "$value" ]
+		then
+			sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			timeStamp
+	  	    echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
+		fi
 	fi
 }
 
@@ -165,7 +173,6 @@ case $1 in
 		disableTransportSenderWSS
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
-		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#publisher#v*.war'); do
 			rm -r $i
