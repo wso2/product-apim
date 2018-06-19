@@ -45,7 +45,7 @@ disableJMSConnectionDetails(){
 	then
 		sed -i "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		timeStamp
-  	    echo "[${timestamp}] INFO - Disabled the <JMSConnectionDetails> from api-manager.xml file"
+  	    	echo "[${timestamp}] INFO - Disabled the <JMSConnectionDetails> from api-manager.xml file"
 	fi
 }
 
