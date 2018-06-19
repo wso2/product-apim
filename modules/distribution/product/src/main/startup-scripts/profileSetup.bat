@@ -76,7 +76,6 @@ call :disableTransportSenderWS
 call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
-call :removeSynapseConfigs
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /A:-D /b ^| findstr /v "api#am#publisher#v.*war"') do (
 	del /f %pathToWebapps%\%%i
