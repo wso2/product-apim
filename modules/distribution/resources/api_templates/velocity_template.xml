@@ -151,7 +151,6 @@
     <implementation type="memory" maxSize="500"/>
 </cache>
 #end
-
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 #if($isSoapToRestMode)
 <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>

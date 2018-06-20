@@ -155,7 +155,7 @@ System Requirements
 
 1. Minimum memory - 2GB
 2. Processor      - Pentium 800MHz or equivalent at minimum
-3. Java 1.7 or higher
+3. Java 1.8 or higher
 4. The Management Console requires you to enable Javascript of the Web browser,
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
@@ -163,7 +163,7 @@ System Requirements
 5. Apache Ant is required to compile and run the sample clients. Apache Ant 1.7.0 
 is recommended.
 6. To build WSO2 API Manager from the Source distribution, it is necessary that you have
-   JDK 1.7 version and Maven 3.0.4 or later
+   JDK 1.8 version and Maven 3.0.4 or later
 
 Installation & Running
 ==================================
@@ -171,10 +171,10 @@ Installation & Running
 1. Extract the wso2am-2.5.0.zip and go to the 'bin' directory
 2. Run the wso2server.sh or wso2server.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
-    * API Publisher web application is running at - http://localhost:9763/publisher
+    * API Publisher web application is running at - https://localhost:9443/publisher
       You may sign in to the Publisher using the default administrator credentials 
       (username: admin, password: admin).
-    * API Store web application is running at - http://localhost:9763/store
+    * API Store web application is running at - https://localhost:9443/store
       You may sign in to the Store using the default administrator credentials 
       (username: admin, password: admin).
 
@@ -201,7 +201,7 @@ Known Issues of WSO2 API Manager
 All known issues of WSO2 API Manager are filed at:
 
 * https://wso2.org/jira/issues/?filter=14454 
-* https://github.com/wso2/product-apim/issues?q=is%3Aopen+is%3Aissue+label%3A2.2.0 
+* https://github.com/wso2/product-apim/issues?q=is%3Aopen+is%3Aissue+label%3A2.5.0 
 
 Issue Tracker
 ==================================

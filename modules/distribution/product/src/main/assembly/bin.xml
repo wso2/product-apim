@@ -740,7 +740,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>micro-gateway#v0.9.war</include>
+                <include>micro-gateway#v0.10.war</include>
             </includes>
         </fileSet>
 
