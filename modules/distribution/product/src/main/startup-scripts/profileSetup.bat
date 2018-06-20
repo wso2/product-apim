@@ -288,5 +288,6 @@ EXIT /B 0
 echo Finished the optimizations
 goto end
 
+
 :end
 cd /d %usertLocation%
