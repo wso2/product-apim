@@ -152,12 +152,6 @@
 </cache>
 #end
 
-## check and set enable schema validation
-#if($EnableSchemaValidation)
-<property name="localentry" expression="get-property('$!apiID')" scope="default" type="STRING"/>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.SwaggerSchemaValidator"/>
-#end
-
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 #if($isSoapToRestMode)
 <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
