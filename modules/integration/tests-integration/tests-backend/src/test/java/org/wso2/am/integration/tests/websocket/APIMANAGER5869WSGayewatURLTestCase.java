@@ -48,8 +48,9 @@ import static org.testng.Assert.*;
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest {
+//    private  double apiNameExt = Math.random();
     private final Log log = LogFactory.getLog(APIMANAGER5869WSGayewatURLTestCase.class);
-    private final String API_NAME = "WSGayewatURLAPIName";
+    private  String API_NAME = "WSGayewatURLAPIName";
     private final String API_CONTEXT = "WSGayewatURLContext";
     private final String WS_API_NAME = "WSGayewatURLWSAPIName";
     private final String WS_API_CONTEXT = "WSGayewatURLWSContext";
@@ -64,6 +65,9 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
+    private final String applicationName = "WebSocketApplication";
+    private String providerNameApi = "";
+
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5869WSGayewatURLTestCase(TestUserMode userMode) {
@@ -80,6 +84,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
         apiStore.login(user.getUserName(), user.getPassword());
+        providerNameApi = publisherContext.getContextTenant().getContextUser().getUserName();
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation")
@@ -108,7 +113,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
@@ -239,10 +244,14 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        apiStore.removeAPISubscriptionByName(API_NAME,API_VERSION,providerNameApi,applicationName);
+        apiStore.removeApplication(applicationName);
+        apiPublisher.deleteAPI(API_NAME,API_VERSION,providerNameApi);
         super.cleanUp();
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration(true);
-        }
+          
+           }
     }
 
     @DataProvider
