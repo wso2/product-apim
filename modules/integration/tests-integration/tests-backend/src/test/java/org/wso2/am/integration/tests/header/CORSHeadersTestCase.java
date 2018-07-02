@@ -218,7 +218,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         this.userMode = userMode;
     }
 
-  @AfterClass(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeAPISubscriptionByName(API_NAME,API_VERSION,providerNameApi,APPLICATION_NAME);
         apiStore.removeApplication(APPLICATION_NAME);
