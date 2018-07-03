@@ -81,6 +81,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private APIIdentifier apiIdentifier;
     private String accessToken;
 
+    private String providerNameApi = "admin";
     Log log = LogFactory.getLog(CORSHeadersTestCase.class);
 
     @BeforeClass(alwaysRun = true)
@@ -126,7 +127,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
                                        apiStoreClientUser1, APPLICATION_NAME);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
-    }
+        providerNameApi = publisherContext.getContextTenant().getContextUser().getUserName();
+      }
 
     @Test(groups = {"wso2.am"}, description = "Checking CORS headers in pre-flight response")
     public void CheckCORSHeadersInPreFlightResponse() throws Exception {
@@ -204,10 +206,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
                    "but it should not be.");
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        super.cleanUp();
-    }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -219,4 +217,18 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     public CORSHeadersTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        apiStore.removeAPISubscriptionByName(API_NAME,API_VERSION,providerNameApi,APPLICATION_NAME);
+        apiStore.removeApplication(APPLICATION_NAME);
+        apiStoreClientUser1.removeAPISubscriptionByName(API_NAME,API_VERSION,providerNameApi,APPLICATION_NAME);
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        apiPublisher.deleteAPI(API_NAME,API_VERSION,providerNameApi);
+        apiPublisherClientUser1.deleteAPI(API_NAME,API_VERSION,providerNameApi);
+        super.cleanUp();
+    }
+
+
+
 }
