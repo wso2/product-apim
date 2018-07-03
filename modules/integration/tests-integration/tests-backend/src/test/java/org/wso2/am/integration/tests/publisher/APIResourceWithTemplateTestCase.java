@@ -172,7 +172,7 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
 
         //add test api
         HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-       //verifyResponse(serviceResponse);
+        verifyResponse(serviceResponse);
 
         //add a application
         serviceResponse = apiStore
