@@ -113,7 +113,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        //verifyResponse(serviceResponse);
+        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
