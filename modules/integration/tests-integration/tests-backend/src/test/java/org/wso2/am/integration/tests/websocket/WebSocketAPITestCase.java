@@ -250,6 +250,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
         HttpResponse addPolicyResponse = adminDashboardRestClient.addThrottlingPolicy(IOUtils.toString(inputStream));
+        verifyResponse(addPolicyResponse);
 
         //Update Throttling policy of the API
         apiRequest.setApiTier("WebSocketTestThrottlingPolicy");
@@ -288,7 +289,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-       // testThrottling(userAccessToken);
+        testThrottling(userAccessToken);
     }
 
     @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
