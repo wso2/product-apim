@@ -250,7 +250,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
         HttpResponse addPolicyResponse = adminDashboardRestClient.addThrottlingPolicy(IOUtils.toString(inputStream));
-       // verifyResponse(addPolicyResponse);
 
         //Update Throttling policy of the API
         apiRequest.setApiTier("WebSocketTestThrottlingPolicy");
