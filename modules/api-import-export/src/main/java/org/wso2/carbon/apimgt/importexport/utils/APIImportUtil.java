@@ -231,9 +231,16 @@ public final class APIImportUtil {
                 }
                 importedApi = new Gson().fromJson(configElement, API.class);
             } else {
-                apiId.addProperty(APIImportExportConstants.PROVIDER_ELEMENT, APIUtil.replaceEmailDomain(currentUser));
-                importedApi = new Gson().fromJson(configElement, API.class);
+                String prevProviderWithDomain = APIUtil.replaceEmailDomain(prevProvider);
+                String currentUserWithDomain = APIUtil.replaceEmailDomain(currentUser);
+                apiId.addProperty(APIImportExportConstants.PROVIDER_ELEMENT, currentUserWithDomain);
+                if (configObject.get(APIImportExportConstants.WSDL_URL) != null) {
+                    configObject.addProperty(APIImportExportConstants.WSDL_URL,
+                            configObject.get(APIImportExportConstants.WSDL_URL).getAsString()
+                                    .replace(prevProviderWithDomain, currentUserWithDomain));
+                }
 
+                importedApi = new Gson().fromJson(configElement, API.class);
                 //Replace context to match with current provider
                 importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }

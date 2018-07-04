@@ -76,6 +76,8 @@ public final class APIImportExportConstants {
     //extension of wsdl files
     public static final String WSDL_EXTENSION = ".wsdl";
 
+    public static final String WSDL_URL = "wsdlUrl";
+
     public static final String DOCUMENT_DIRECTORY = "Docs";
 
     public static final String INLINE_DOCUMENT_DIRECTORY = "InlineContents";
@@ -90,5 +92,4 @@ public final class APIImportExportConstants {
     public static final String CHARSET = "UTF-8";
 
     public static final String AUTHENTICATION_ADMIN_SERVICE_ENDPOINT = "AuthenticationAdmin";
-
 }
