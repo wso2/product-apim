@@ -234,6 +234,37 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Token equality test")
+    public void testTokenEqualityBeforeExpiration() throws Exception {
+
+        apiStore.login(user.getUserName(), user.getPassword());
+        apiStore.addApplication("TokenTestApp", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "this-is-test");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("TokenTestApp");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject jsonResponse = new JSONObject(responseString);
+        String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
+                "&scope=default";
+
+        HttpResponse firstResponse = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                tokenEndpointURL);
+        JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
+        //get an access token for the first time
+        String firstAccessToken = firstAccessTokenGenerationResponse.getString("access_token");
+
+        HttpResponse secondResponse = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                tokenEndpointURL);
+        JSONObject secondAccessTokenGenerationResponse = new JSONObject(secondResponse.getData());
+        //get an access token for the second time (using the same consumerKey, consumerSecret)
+        String secondAccessToken = secondAccessTokenGenerationResponse.getString("access_token");
+        //compare the two tokens, those should be equal
+        assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
+    }
+
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("TokenTestAPI-Application");
