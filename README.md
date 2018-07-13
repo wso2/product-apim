@@ -8,7 +8,8 @@
 | :------------ |:-------------
 | master | [![Build Status](https://wso2.org/jenkins/job/products/job/product-apim_2.x/badge/icon)](https://wso2.org/jenkins/view/products/job/products/job/product-apim_2.x/) |
 
-[![Join the chat at https://gitter.im/wso2/product-apim](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wso2/product-apim?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[<img src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-logo.svg" width="120">](https://stackoverflow.com/tags/wso2-am/)
+
 ---
 
 WSO2 API Manager (WSO2 API-M) is a powerful platform for creating, managing, consuming, and
