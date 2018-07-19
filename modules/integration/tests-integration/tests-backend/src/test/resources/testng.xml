@@ -233,7 +233,8 @@
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
-            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
+            <!--THis test will be enabled once the stats event streams are finalized  -->
+            <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
