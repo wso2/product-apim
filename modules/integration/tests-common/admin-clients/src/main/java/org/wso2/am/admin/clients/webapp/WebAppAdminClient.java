@@ -60,7 +60,7 @@ public class WebAppAdminClient {
     public boolean uploadWarFile(String filePath) throws RemoteException, MalformedURLException {
         File file = new File(filePath);
         String fileName = file.getName();
-        URL url = new URL("file://" + filePath);
+        URL url = new URL("file:///" + filePath);
         DataHandler dh = new DataHandler(url);
         WebappUploadData webApp;
         webApp = new WebappUploadData();
