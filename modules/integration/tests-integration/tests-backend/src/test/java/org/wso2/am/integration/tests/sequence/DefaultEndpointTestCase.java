@@ -32,6 +32,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AddDynamicEndpointAndInvokeAPI";
+    private final String RESOURCE_PATH_SEPARATOR = "/";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
@@ -74,13 +75,13 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         boolean isResourceAdded = resourceAdminServiceStub.addResource(
                 "/_system/governance/apimgt/applicationdata/provider" +
-                File.separator + apiUser + File.separator + API_NAME + File.separator + API_VERSION_1_0_0 + File.separator +
+                        RESOURCE_PATH_SEPARATOR + apiUser + RESOURCE_PATH_SEPARATOR + API_NAME + RESOURCE_PATH_SEPARATOR + API_VERSION_1_0_0 + RESOURCE_PATH_SEPARATOR +
                 //"/admin/AddNewMediationAndInvokeAPITest/1.0.0/" +
                 "in/default_endpoint.xml",
                 "application/xml",
                 "xml files",
-                new DataHandler(new URL("file:///" + getAMResourceLocation() + File.separator + "sequence"
-                                        + File.separator + "default_endpoint.xml")));
+                new DataHandler(new URL("file:///" + getAMResourceLocation() + RESOURCE_PATH_SEPARATOR + "sequence"
+                                        + RESOURCE_PATH_SEPARATOR + "default_endpoint.xml")));
 
         assertTrue(isResourceAdded, "Adding Mediation Sequence File failed");
 
