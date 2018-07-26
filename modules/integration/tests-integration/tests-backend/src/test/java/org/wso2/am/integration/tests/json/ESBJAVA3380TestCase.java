@@ -88,10 +88,9 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
         gatewaySessionCookie = createSession(gatewayContextMgt);
 
         String apiMngrSynapseConfigPath = "/artifacts/AM/synapseconfigs/property/json_to_xml.xml";
-        String relativeFilePath = apiMngrSynapseConfigPath.replaceAll(
-                "[\\\\]", File.separator);
+                
         if(userMode == TestUserMode.SUPER_TENANT_USER || userMode == TestUserMode.SUPER_TENANT_ADMIN) {
-            loadSynapseConfigurationFromClasspath(relativeFilePath, gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(apiMngrSynapseConfigPath, gatewayContextMgt, gatewaySessionCookie);
         } else {
             //changing the context when the user is tenant
             String apiConfiguration = FileManager.readFile(TestConfigurationProvider.getResourceLocation() + apiMngrSynapseConfigPath);
