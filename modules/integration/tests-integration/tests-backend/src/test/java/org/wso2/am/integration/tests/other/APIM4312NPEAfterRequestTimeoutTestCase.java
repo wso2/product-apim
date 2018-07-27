@@ -80,8 +80,7 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
         } else {
             apiMngrSynapseConfigPath = "/artifacts/AM/synapseconfigs/rest/dummy_api_APIMANAGER-4312_tenant.xml";
         }
-        String relativeFilePath = apiMngrSynapseConfigPath.replaceAll("[\\\\/]", File.separator);
-        loadSynapseConfigurationFromClasspath(relativeFilePath, gatewayContextMgt, gatewaySessionCookie);
+        loadSynapseConfigurationFromClasspath(apiMngrSynapseConfigPath, gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = { "noRestart" },
