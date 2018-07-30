@@ -2,7 +2,7 @@
 
 <suite name="ApiManager_IntegrationTest_Suite" verbose="1">
 
-    <test name="REST_API_IntegrationTest" preserve-order="true" parallel="false">
+    <test name="REST_API_IntegrationTest" preserve-order="true" parallel="false" thread-count="1">
         <classes>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.APIMgtBaseIntegrationIT"/>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.publisher.APILifeCycleTestCaseIT"/>

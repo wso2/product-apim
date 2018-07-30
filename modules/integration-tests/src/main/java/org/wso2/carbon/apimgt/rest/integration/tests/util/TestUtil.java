@@ -106,19 +106,7 @@ public class TestUtil {
         OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
         Response response = tokenServiceStub.generatePasswordGrantAccessToken(username, password, scopes, -1,
                 clientId, clientSecret);
-        if (response.status() == APIMgtConstants.HTTPStatusCodes.SC_200_OK) {   //200 - Success
-            logger.debug("A new access token is successfully generated.");
-            try {
-                OAuth2TokenInfo oAuth2TokenInfo = (OAuth2TokenInfo) new GsonDecoder().decode(response,
-                        OAuth2TokenInfo.class);
-                return new TokenInfo(oAuth2TokenInfo.getAccessToken(), System.currentTimeMillis() +
-                        oAuth2TokenInfo.getExpiresIn());
-            } catch (IOException e) {
-                throw new AMIntegrationTestException("Error occurred while parsing token response", e);
-            }
-        } else {
-            throw new AMIntegrationTestException("Error occurred while Generating token");
-        }
+        return getTokenInfo(response);
     }
 
     private static DCRClientInfo generateClient() throws APIManagementException {
@@ -330,5 +318,36 @@ public class TestUtil {
 
     public static API getApi(String apiName) {
         return apiMap.get(apiName);
+    }
+
+    public static TokenInfo generateToken(String scopes, String refreshToken)
+            throws AMIntegrationTestException {
+        if (StringUtils.isEmpty(clientId) | StringUtils.isEmpty(clientSecret)) {
+            try {
+                generateClient();
+            } catch (APIManagementException e) {
+                throw new AMIntegrationTestException(e);
+            }
+        }
+        OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
+        Response response = tokenServiceStub.generateRefreshGrantAccessToken(refreshToken, scopes, -1, clientId,
+                clientSecret);
+        return getTokenInfo(response);
+    }
+
+    private static TokenInfo getTokenInfo(Response response) throws AMIntegrationTestException {
+        if (response.status() == APIMgtConstants.HTTPStatusCodes.SC_200_OK) {   //200 - Success
+            logger.debug("A new access token is successfully generated.");
+            try {
+                OAuth2TokenInfo oAuth2TokenInfo = (OAuth2TokenInfo) new GsonDecoder().decode(response,
+                        OAuth2TokenInfo.class);
+                return new TokenInfo(oAuth2TokenInfo.getAccessToken(), System.currentTimeMillis() +
+                        oAuth2TokenInfo.getExpiresIn(), oAuth2TokenInfo.getRefreshToken());
+            } catch (IOException e) {
+                throw new AMIntegrationTestException("Error occurred while parsing token response", e);
+            }
+        } else {
+            throw new AMIntegrationTestException("Error occurred while Generating token");
+        }
     }
 }

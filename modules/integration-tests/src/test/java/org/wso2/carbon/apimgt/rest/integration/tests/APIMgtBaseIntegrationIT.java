@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests;
 
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
@@ -32,10 +33,11 @@ public class APIMgtBaseIntegrationIT {
     }
 
     @Test
-    public void testapi(){
+    public void testapi() {
 
     }
 
+    @AfterSuite
     public void cleanup() throws AMIntegrationTestException {
         TestUtil.destroyApplications();
         TestUtil.destroyApis();

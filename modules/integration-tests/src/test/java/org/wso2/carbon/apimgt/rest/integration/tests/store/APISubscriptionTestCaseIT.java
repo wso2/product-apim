@@ -23,11 +23,17 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
+import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.RestAPIException;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.ApplicationIndividualApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.store.api.SubscriptionCollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.SubscriptionIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Subscription;
+import org.wso2.carbon.apimgt.rest.integration.tests.store.model.SubscriptionList;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TestUtil;
+
+import java.util.Map;
 
 public class APISubscriptionTestCaseIT {
 
@@ -51,36 +57,13 @@ public class APISubscriptionTestCaseIT {
         application = applicationIndividualApi.applicationsPost(application);
     }
 
-    @Test
-    public void testCreateApplicationWithAlreadyExistingNameNegative() {
-        Application application1 = new Application().name("testApplication1").description("This is a Test App")
-                .throttlingTier("Unlimited");
-        try {
-            applicationIndividualApi.applicationsPost(application1);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(true);
-        }
-    }
-
-    @Test
-    public void testCreateApplicationWithUnavailablePolicyNegative() {
-        Application application3 = new Application().name("testApplication1").description("This is a Test App")
-                .throttlingTier("UnlimitedUnlimited1");
-        try {
-            applicationIndividualApi.applicationsPost(application3);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(true);
-        }
-    }
-
-    @Test
+    // This need to be enable once Scope validation done at auth end
+    @Test(enabled = false)
     public void testCreateApplicationWithInSufficientPermissionNegative() throws AMIntegrationTestException {
         ApplicationIndividualApi applicationIndividualApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
                 ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(ApplicationIndividualApi.class);
         Application application2 = new Application().name("testApplication1").description("This is a Test App")
-                .throttlingTier("UnlimitedUnlimited1");
+                .throttlingTier("Unlimited");
         try {
             applicationIndividualApi.applicationsPost(application2);
             Assert.fail();
@@ -89,28 +72,47 @@ public class APISubscriptionTestCaseIT {
         }
     }
 
-    @Test
+    @Test(dependsOnMethods = {"testCreateApplication"})
     public void testCreateSubscription() {
         subscription = new Subscription().apiIdentifier(TestUtil.getApi("baseapi1").getId())
                 .applicationId(application.getApplicationId()).policy("Gold");
         subscription = subscriptionIndividualApi.subscriptionsPost(subscription);
     }
 
-    @Test
-    public void testCreateSubscriptionWIthNonExistingPolicy() {
-        Subscription subscriptionNegative = new Subscription().apiIdentifier(TestUtil.getApi("baseapi1").getId())
-                .applicationId(application.getApplicationId()).policy("Bronze");
-        try {
-            subscriptionIndividualApi.subscriptionsPost(subscriptionNegative);
-            Assert.fail();
-        } catch (Exception e) {
-            Assert.assertTrue(true);
-        }
+    @Test(dependsOnMethods = "testCreateSubscription")
+    public void testGetAllSubscriptionsByApplication() throws AMIntegrationTestException {
+        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
+                ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
+        SubscriptionList subscriptionList = subscriptionCollectionApi.subscriptionsGet("", application
+                .getApplicationId(), "", 0, 10, "");
+        Assert.assertNotNull(subscriptionList);
+        Assert.assertEquals(subscriptionList.getCount().intValue(), 1);
+        Subscription subscription = subscriptionList.getList().get(0);
+        Assert.assertEquals(subscription.getApiIdentifier(), this.subscription.getApiIdentifier());
+        Assert.assertEquals(subscription.getPolicy(), this.subscription.getPolicy());
+    }
+
+    @Test(dependsOnMethods = "testCreateSubscription")
+    public void testGetAllSubscriptionsByAPIId() throws AMIntegrationTestException {
+        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
+                ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
+        SubscriptionList subscriptionList = subscriptionCollectionApi.subscriptionsGet(subscription.getApiIdentifier
+                (), "", "", 0, 10, "");
+        Assert.assertNotNull(subscriptionList);
+        Assert.assertEquals(subscriptionList.getCount().intValue(), 1);
+        Subscription subscription = subscriptionList.getList().get(0);
+        Assert.assertEquals(subscription.getApplicationId(), this.subscription.getApplicationId());
+        Assert.assertEquals(subscription.getPolicy(), this.subscription.getPolicy());
     }
 
     @AfterClass
     public void destroy() {
-        subscriptionIndividualApi.subscriptionsSubscriptionIdDelete(subscription.getSubscriptionId(), "", "");
-        applicationIndividualApi.applicationsApplicationIdDelete(application.getApplicationId(), "", "");
+        if (subscriptionIndividualApi.subscriptionsSubscriptionIdGet(subscription.getSubscriptionId(), "", "") !=
+                null) {
+            subscriptionIndividualApi.subscriptionsSubscriptionIdDelete(subscription.getSubscriptionId(), "", "");
+        }
+        if (applicationIndividualApi.applicationsApplicationIdGet(application.getApplicationId(), "", "") != null) {
+            applicationIndividualApi.applicationsApplicationIdDelete(application.getApplicationId(), "", "");
+        }
     }
 }

@@ -29,10 +29,8 @@ public class OAuth implements RequestInterceptor {
     private String username;
     private String password;
     private String scopes;
-    static final int MILLIS_PER_SECOND = 1000;
 
-    private volatile String accessToken;
-    private Long expirationTimeMillis;
+    private volatile TokenInfo tokenInfo;
 
     public OAuth(String username, String password, String scopes) {
         this.username = username;
@@ -47,34 +45,35 @@ public class OAuth implements RequestInterceptor {
             return;
         }
         // If first time, get the token
-        if (expirationTimeMillis == null || System.currentTimeMillis() >= expirationTimeMillis) {
-            updateAccessToken();
+        if (tokenInfo == null) {
+            generateFirstToken();
+        } else if (System.currentTimeMillis() - tokenInfo.getExpiryTime() >= 1000) {
+            generateTokenFromRefreshGrant();
         }
         if (getAccessToken() != null) {
             template.header("Authorization", "Bearer " + getAccessToken());
         }
     }
 
-    public synchronized void updateAccessToken() {
-        TokenInfo tokenInfo;
+    public synchronized void generateFirstToken() {
         try {
             tokenInfo = TestUtil.generateToken(username, password, scopes);
-
         } catch (Exception e) {
             throw new RetryableException(e.getMessage(), e, null);
         }
-        if (tokenInfo != null && tokenInfo.getToken() != null) {
-            setAccessToken(tokenInfo.getToken(), tokenInfo.getExpiryTime());
+    }
+
+    public synchronized void generateTokenFromRefreshGrant() {
+        try {
+            tokenInfo = TestUtil.generateToken(scopes, tokenInfo.getRefreshToken());
+        } catch (Exception e) {
+            throw new RetryableException(e.getMessage(), e, null);
         }
     }
 
 
     public synchronized String getAccessToken() {
-        return accessToken;
+        return tokenInfo.getToken();
     }
 
-    public synchronized void setAccessToken(String accessToken, Long expiresIn) {
-        this.accessToken = accessToken;
-        this.expirationTimeMillis = System.currentTimeMillis() + expiresIn * MILLIS_PER_SECOND;
-    }
 }

@@ -26,6 +26,9 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.core.models.APIStatus;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
 import org.wso2.carbon.apimgt.rest.integration.tests.APIMgtBaseIntegrationIT;
+import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.RestAPIException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.FileInfo;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.SampleTestObjectCreator;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
@@ -38,15 +41,21 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Subscription;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.SubscriptionList;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TestUtil;
 
+import java.io.File;
+import java.util.Collections;
+
 public class APILifeCycleTestCaseIT {
+
     private API api;
     APICollectionApi apiCollectionApi;
     APIIndividualApi apiIndividualApi;
-    private static final Logger log = LoggerFactory.getLogger(APILifeCycleTestCaseIT.class);
+    SubscriptionIndividualApi subscriptionIndividualApi;
 
+    private static final Logger log = LoggerFactory.getLogger(APILifeCycleTestCaseIT.class);
 
     @BeforeClass
     public void init() throws AMIntegrationTestException {
+
         apiCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
                 AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
         apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
@@ -55,6 +64,7 @@ public class APILifeCycleTestCaseIT {
 
     @Test
     public void testCreateApi() {
+
         api = SampleTestObjectCreator.ApiToCreate("api1-lifecycle", "1.0.0", "/apiLifecycle");
         api = apiCollectionApi.apisPost(api);
         Assert.assertNotNull(api.getId());
@@ -62,13 +72,24 @@ public class APILifeCycleTestCaseIT {
 
     @Test(dependsOnMethods = {"testCreateApi"})
     public void testUpdateApi() {
+
         api.addPoliciesItem("Gold");
         api.addTransportItem("http");
         api = apiIndividualApi.apisApiIdPut(api.getId(), api, "", "");
     }
 
     @Test(dependsOnMethods = {"testUpdateApi"})
+    public void testUpdateImage() {
+
+        FileInfo fileInfo = apiIndividualApi.apisApiIdThumbnailPost(api.getId(), new File(Thread.currentThread()
+                .getContextClassLoader().getResource("img1.jpg").getPath()),null,null);
+        apiIndividualApi.apisApiIdThumbnailGet(api.getId(),null,null);
+
+    }
+
+    @Test(dependsOnMethods = {"testUpdateImage"})
     public void testMakeApiProtoType() {
+
         apiIndividualApi.apisChangeLifecyclePost(APIStatus.PROTOTYPED.getStatus(), api.getId(),
                 AMIntegrationTestConstants.DEFAULT_LIFE_CYCLE_CHECK_LIST, "", "");
         Assert.assertEquals(apiIndividualApi.apisApiIdGet(api.getId(), "", "").getLifeCycleStatus(), APIStatus
@@ -77,6 +98,7 @@ public class APILifeCycleTestCaseIT {
 
     @Test(dependsOnMethods = {"testMakeApiProtoType"})
     public void testMakeApiPublished() {
+
         apiIndividualApi.apisChangeLifecyclePost(APIStatus.PUBLISHED.getStatus(), api.getId(),
                 AMIntegrationTestConstants.DEFAULT_LIFE_CYCLE_CHECK_LIST, "", "");
         Assert.assertEquals(apiIndividualApi.apisApiIdGet(api.getId(), "", "").getLifeCycleStatus(), APIStatus
@@ -85,6 +107,7 @@ public class APILifeCycleTestCaseIT {
 
     @Test(dependsOnMethods = {"testMakeApiPublished"})
     public void testCopyApiVersion() {
+
         apiIndividualApi.apisCopyApiPost("v2.0.0", api.getId());
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
                 0, "name:api1-lifecycle", "");
@@ -92,9 +115,9 @@ public class APILifeCycleTestCaseIT {
         Assert.assertEquals(apiList.getCount().intValue(), 2);
     }
 
-
     @Test(dependsOnMethods = {"testCopyApiVersion"})
     public void testMakeApiDeprecated() throws AMIntegrationTestException {
+
         apiIndividualApi.apisChangeLifecyclePost(APIStatus.DEPRECATED.getStatus(), api.getId(),
                 AMIntegrationTestConstants.DEFAULT_LIFE_CYCLE_CHECK_LIST, "", "");
         Assert.assertEquals(apiIndividualApi.apisApiIdGet(api.getId(), "", "").getLifeCycleStatus(), APIStatus
@@ -112,12 +135,14 @@ public class APILifeCycleTestCaseIT {
 
     @Test(dependsOnMethods = {"testMakeApiDeprecated"})
     public void testMakeApiRetired() {
+
         apiIndividualApi.apisChangeLifecyclePost(APIStatus.RETIRED.getStatus(), api.getId(),
                 AMIntegrationTestConstants.DEFAULT_LIFE_CYCLE_CHECK_LIST, "", "");
     }
 
     @AfterClass
     public void destroy() {
+
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
                 0, "name:api1-lifecycle", "");
         for (org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIInfo apiInfo : apiList.getList()) {
