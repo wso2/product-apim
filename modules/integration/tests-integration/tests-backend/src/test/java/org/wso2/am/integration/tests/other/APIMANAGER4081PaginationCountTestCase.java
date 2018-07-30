@@ -138,7 +138,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             }
 
             //give a short time to apply the changes and build index, otherwise it will not be visible in the store
-            //Thread.sleep(60000);
+            Thread.sleep(60000);
             //after adding the APIs, send the request to log-in to the api store
             storeLoginResponse = apiStore.login("admin", "admin");
 
