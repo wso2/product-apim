@@ -181,7 +181,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean res1 = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         APIResourceBean res2 = new APIResourceBean("GET",
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
                 APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/get");
@@ -482,7 +482,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean resource = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
         //add test api
@@ -559,7 +559,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean resource = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
         //add test api
