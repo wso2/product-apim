@@ -146,7 +146,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
         ArrayList<APIResourceBean> resList = new ArrayList<APIResourceBean>();
         APIResourceBean res = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "test");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "test");
         resList.add(res);
         apiCreationRequestBean.setResourceBeanList(resList);
 
