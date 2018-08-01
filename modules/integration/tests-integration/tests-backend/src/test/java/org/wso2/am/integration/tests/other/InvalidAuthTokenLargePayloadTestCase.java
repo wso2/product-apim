@@ -47,9 +47,7 @@ import java.util.*;
  * This test case is used test the unauthorised response when large payload is sent
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class
-
-InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTest {
+public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(InvalidAuthTokenLargePayloadTestCase.class);
     private final String API_NAME = "InvalidAuthTokenLargePayloadAPIName";
     private final String API_CONTEXT = "InvalidAuthTokenLargePayloadContext";
