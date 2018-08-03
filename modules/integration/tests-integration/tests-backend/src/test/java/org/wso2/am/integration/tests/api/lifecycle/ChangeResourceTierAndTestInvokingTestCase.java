@@ -19,24 +19,17 @@
 package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -170,7 +163,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                "\"" + APIMIntegrationConstants.RESOURCE_TIER.PLUS
+                "\"" + APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN
                 + "\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
                 ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
                 "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
@@ -182,7 +175,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
         apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, executionMode);
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, executionMode);
 
         long startTime = System.currentTimeMillis();
         long currentTime;

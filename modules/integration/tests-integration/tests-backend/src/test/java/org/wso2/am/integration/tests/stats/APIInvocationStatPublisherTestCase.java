@@ -49,9 +49,7 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.databridge.commons.Event;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,10 +126,10 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/add");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/add");
         APIResourceBean res2 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/multiply");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/multiply");
         resList.add(res1);
         resList.add(res2);
 

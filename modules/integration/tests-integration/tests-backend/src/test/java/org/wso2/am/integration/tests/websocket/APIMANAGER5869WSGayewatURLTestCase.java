@@ -95,7 +95,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/add");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/add");
         resList.add(res1);
 
         apiCreationRequestBean.setResourceBeanList(resList);

@@ -23,7 +23,6 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -52,9 +51,7 @@ import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,7 +161,7 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         List<APIResourceBean> resList = new ArrayList<APIResourceBean>();
         APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/add");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/add");
         resList.add(res1);
 
         apiCreationRequestBean.setResourceBeanList(resList);

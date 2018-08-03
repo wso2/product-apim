@@ -102,7 +102,7 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean resource = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
 
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
