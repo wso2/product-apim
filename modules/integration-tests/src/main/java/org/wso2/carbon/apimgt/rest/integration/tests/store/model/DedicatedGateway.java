@@ -16,14 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * DedicatedGateway
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class DedicatedGateway {
   @JsonProperty("isEnabled")
   private Boolean isEnabled = null;
@@ -38,7 +37,7 @@ public class DedicatedGateway {
    * @return isEnabled
   **/
   @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether an API should have a dedicated Gateway or not. ")
-  public Boolean isIsEnabled() {
+  public Boolean getIsEnabled() {
     return isEnabled;
   }
 
@@ -48,7 +47,7 @@ public class DedicatedGateway {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -79,12 +78,12 @@ public class DedicatedGateway {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

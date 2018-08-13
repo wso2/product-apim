@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -27,19 +26,19 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleSt
 /**
  * LifecycleStateCheckItemBeanList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class LifecycleStateCheckItemBeanList {
   @JsonProperty("permissionBeans")
-  private List<LifecycleStatePermissionBeans> permissionBeans = null;
+  private List<LifecycleStatePermissionBeans> permissionBeans = new ArrayList<LifecycleStatePermissionBeans>();
 
   @JsonProperty("name")
   private String name = null;
 
   @JsonProperty("validationBeans")
-  private List<LifecycleStateValidationBeans> validationBeans = null;
+  private List<LifecycleStateValidationBeans> validationBeans = new ArrayList<LifecycleStateValidationBeans>();
 
   @JsonProperty("targets")
-  private List<String> targets = null;
+  private List<String> targets = new ArrayList<String>();
 
   @JsonProperty("value")
   private Boolean value = null;
@@ -50,9 +49,6 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addPermissionBeansItem(LifecycleStatePermissionBeans permissionBeansItem) {
-    if (this.permissionBeans == null) {
-      this.permissionBeans = new ArrayList<LifecycleStatePermissionBeans>();
-    }
     this.permissionBeans.add(permissionBeansItem);
     return this;
   }
@@ -61,7 +57,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get permissionBeans
    * @return permissionBeans
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStatePermissionBeans> getPermissionBeans() {
     return permissionBeans;
   }
@@ -94,9 +90,6 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addValidationBeansItem(LifecycleStateValidationBeans validationBeansItem) {
-    if (this.validationBeans == null) {
-      this.validationBeans = new ArrayList<LifecycleStateValidationBeans>();
-    }
     this.validationBeans.add(validationBeansItem);
     return this;
   }
@@ -105,7 +98,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get validationBeans
    * @return validationBeans
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStateValidationBeans> getValidationBeans() {
     return validationBeans;
   }
@@ -120,9 +113,6 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addTargetsItem(String targetsItem) {
-    if (this.targets == null) {
-      this.targets = new ArrayList<String>();
-    }
     this.targets.add(targetsItem);
     return this;
   }
@@ -131,7 +121,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get targets
    * @return targets
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getTargets() {
     return targets;
   }
@@ -150,7 +140,7 @@ public class LifecycleStateCheckItemBeanList {
    * @return value
   **/
   @ApiModelProperty(example = "false", value = "")
-  public Boolean isValue() {
+  public Boolean getValue() {
     return value;
   }
 
@@ -160,7 +150,7 @@ public class LifecycleStateCheckItemBeanList {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -199,12 +189,12 @@ public class LifecycleStateCheckItemBeanList {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

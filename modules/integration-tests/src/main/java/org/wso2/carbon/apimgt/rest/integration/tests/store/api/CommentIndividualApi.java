@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Comment;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Error;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface CommentIndividualApi extends ApiClient.Api {
 
 
@@ -26,13 +25,13 @@ public interface CommentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /apis/{apiId}/comments/{commentId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void apisApiIdCommentsCommentIdDelete(@Param("commentId") String commentId, @Param("apiId") String apiId, @Param
-          ("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void apisApiIdCommentsCommentIdDelete(@Param("commentId") String commentId, @Param("apiId") String apiId, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Get details of an API comment
@@ -45,13 +44,13 @@ public interface CommentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/comments/{commentId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  Comment apisApiIdCommentsCommentIdGet(@Param("commentId") String commentId, @Param("apiId") String apiId, @Param
-          ("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  Comment apisApiIdCommentsCommentIdGet(@Param("commentId") String commentId, @Param("apiId") String apiId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Update an API comment
@@ -71,8 +70,7 @@ public interface CommentIndividualApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  Comment apisApiIdCommentsCommentIdPut(@Param("commentId") String commentId, @Param("apiId") String apiId, Comment
-          body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  Comment apisApiIdCommentsCommentIdPut(@Param("commentId") String commentId, @Param("apiId") String apiId, Comment body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Add an API comment

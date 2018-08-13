@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,13 +24,13 @@ import java.util.List;
 /**
  * ScopeBindings
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class ScopeBindings {
   @JsonProperty("type")
   private String type = null;
 
   @JsonProperty("values")
-  private List<String> values = null;
+  private List<String> values = new ArrayList<String>();
 
   public ScopeBindings type(String type) {
     this.type = type;
@@ -42,7 +41,7 @@ public class ScopeBindings {
    * Type of binding role / permission 
    * @return type
   **/
-  @ApiModelProperty(value = "Type of binding role / permission ")
+  @ApiModelProperty(example = "null", value = "Type of binding role / permission ")
   public String getType() {
     return type;
   }
@@ -57,9 +56,6 @@ public class ScopeBindings {
   }
 
   public ScopeBindings addValuesItem(String valuesItem) {
-    if (this.values == null) {
-      this.values = new ArrayList<String>();
-    }
     this.values.add(valuesItem);
     return this;
   }
@@ -68,7 +64,7 @@ public class ScopeBindings {
    * Get values
    * @return values
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getValues() {
     return values;
   }
@@ -79,7 +75,7 @@ public class ScopeBindings {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -112,12 +108,12 @@ public class ScopeBindings {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

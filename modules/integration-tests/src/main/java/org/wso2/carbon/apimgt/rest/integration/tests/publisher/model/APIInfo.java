@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ import java.util.List;
 /**
  * APIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class APIInfo {
   @JsonProperty("id")
   private String id = null;
@@ -52,7 +51,7 @@ public class APIInfo {
   private String workflowStatus = null;
 
   @JsonProperty("securityScheme")
-  private List<String> securityScheme = null;
+  private List<String> securityScheme = new ArrayList<String>();
 
   public APIInfo id(String id) {
     this.id = id;
@@ -204,9 +203,6 @@ public class APIInfo {
   }
 
   public APIInfo addSecuritySchemeItem(String securitySchemeItem) {
-    if (this.securityScheme == null) {
-      this.securityScheme = new ArrayList<String>();
-    }
     this.securityScheme.add(securitySchemeItem);
     return this;
   }
@@ -215,7 +211,7 @@ public class APIInfo {
    * Get securityScheme
    * @return securityScheme
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getSecurityScheme() {
     return securityScheme;
   }
@@ -226,7 +222,7 @@ public class APIInfo {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -273,12 +269,12 @@ public class APIInfo {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

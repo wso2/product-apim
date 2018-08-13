@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefinitionValidationResponseWsdlInfo;
@@ -24,7 +23,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefiniti
 /**
  * APIDefinitionValidationResponse
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class APIDefinitionValidationResponse {
   @JsonProperty("isValid")
   private Boolean isValid = null;
@@ -41,11 +40,6 @@ public class APIDefinitionValidationResponse {
 
     DefinitionTypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -80,7 +74,7 @@ public class APIDefinitionValidationResponse {
    * @return isValid
   **/
   @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether this definition is valid or not. ")
-  public Boolean isIsValid() {
+  public Boolean getIsValid() {
     return isValid;
   }
 
@@ -115,7 +109,7 @@ public class APIDefinitionValidationResponse {
    * Get wsdlInfo
    * @return wsdlInfo
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public APIDefinitionValidationResponseWsdlInfo getWsdlInfo() {
     return wsdlInfo;
   }
@@ -126,7 +120,7 @@ public class APIDefinitionValidationResponse {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -161,12 +155,12 @@ public class APIDefinitionValidationResponse {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

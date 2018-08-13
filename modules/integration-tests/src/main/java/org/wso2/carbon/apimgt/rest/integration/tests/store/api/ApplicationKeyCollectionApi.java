@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.store.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeys;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeysList;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public interface ApplicationKeyCollectionApi extends ApiClient.Api {
 
 
@@ -25,6 +24,7 @@ public interface ApplicationKeyCollectionApi extends ApiClient.Api {
    */
   @RequestLine("GET /applications/{applicationId}/keys")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
   })
   ApplicationKeysList applicationsApplicationIdKeysGet(@Param("applicationId") String applicationId);
@@ -38,8 +38,8 @@ public interface ApplicationKeyCollectionApi extends ApiClient.Api {
    */
   @RequestLine("GET /applications/{applicationId}/keys/{keyType}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
   })
-  ApplicationKeys applicationsApplicationIdKeysKeyTypeGet(@Param("applicationId") String applicationId, @Param
-          ("keyType") String keyType);
+  ApplicationKeys applicationsApplicationIdKeysKeyTypeGet(@Param("applicationId") String applicationId, @Param("keyType") String keyType);
 }

@@ -1,7 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.admin.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.AdvancedThrottlePolicy;
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.AdvancedThrottlePolicyList;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:24:45.778+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:59:16.844+05:30")
 public interface AdvancedPoliciesApi extends ApiClient.Api {
 
 
@@ -26,13 +26,13 @@ public interface AdvancedPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/advanced")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  AdvancedThrottlePolicyList policiesThrottlingAdvancedGet(@Param("ifNoneMatch") String ifNoneMatch, @Param
-          ("ifModifiedSince") String ifModifiedSince);
+  AdvancedThrottlePolicyList policiesThrottlingAdvancedGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Delete an Advanced level throttle policy
@@ -43,13 +43,13 @@ public interface AdvancedPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /policies/throttling/advanced/{id}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void policiesThrottlingAdvancedIdDelete(@Param("id") String id, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void policiesThrottlingAdvancedIdDelete(@Param("id") String id, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Retrieve an Advanced Policy
@@ -61,13 +61,13 @@ public interface AdvancedPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/advanced/{id}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  AdvancedThrottlePolicy policiesThrottlingAdvancedIdGet(@Param("id") String id, @Param("ifNoneMatch") String
-          ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  AdvancedThrottlePolicy policiesThrottlingAdvancedIdGet(@Param("id") String id, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Update an Advanced level throttle policy
@@ -86,8 +86,7 @@ public interface AdvancedPoliciesApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  AdvancedThrottlePolicy policiesThrottlingAdvancedIdPut(@Param("id") String id, AdvancedThrottlePolicy body, @Param
-          ("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  AdvancedThrottlePolicy policiesThrottlingAdvancedIdPut(@Param("id") String id, AdvancedThrottlePolicy body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Add an Advanced level throttle policy

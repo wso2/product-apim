@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import java.util.List;
 /**
  * BaseAPI
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = CompositeAPI.class, name = "CompositeAPI"),
   @JsonSubTypes.Type(value = API.class, name = "API"),
@@ -56,10 +55,10 @@ public class BaseAPI {
   private String apiDefinition = null;
 
   @JsonProperty("transport")
-  private List<String> transport = null;
+  private List<String> transport = new ArrayList<String>();
 
   @JsonProperty("labels")
-  private List<String> labels = null;
+  private List<String> labels = new ArrayList<String>();
 
   @JsonProperty("hasOwnGateway")
   private Boolean hasOwnGateway = null;
@@ -76,11 +75,6 @@ public class BaseAPI {
 
     TypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -111,7 +105,7 @@ public class BaseAPI {
    * UUID of the api registry artifact 
    * @return id
   **/
-  @ApiModelProperty(value = "UUID of the api registry artifact ")
+  @ApiModelProperty(example = "null", value = "UUID of the api registry artifact ")
   public String getId() {
     return id;
   }
@@ -129,7 +123,7 @@ public class BaseAPI {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getName() {
     return name;
   }
@@ -147,7 +141,7 @@ public class BaseAPI {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getDescription() {
     return description;
   }
@@ -165,7 +159,7 @@ public class BaseAPI {
    * Get context
    * @return context
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getContext() {
     return context;
   }
@@ -183,7 +177,7 @@ public class BaseAPI {
    * Get version
    * @return version
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getVersion() {
     return version;
   }
@@ -201,7 +195,7 @@ public class BaseAPI {
    * If the provider value is not given user invoking the api will be used as the provider. 
    * @return provider
   **/
-  @ApiModelProperty(required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
+  @ApiModelProperty(example = "null", required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
   public String getProvider() {
     return provider;
   }
@@ -219,7 +213,7 @@ public class BaseAPI {
    * Swagger definition of the API which contains details about URI templates and scopes 
    * @return apiDefinition
   **/
-  @ApiModelProperty(value = "Swagger definition of the API which contains details about URI templates and scopes ")
+  @ApiModelProperty(example = "null", value = "Swagger definition of the API which contains details about URI templates and scopes ")
   public String getApiDefinition() {
     return apiDefinition;
   }
@@ -234,9 +228,6 @@ public class BaseAPI {
   }
 
   public BaseAPI addTransportItem(String transportItem) {
-    if (this.transport == null) {
-      this.transport = new ArrayList<String>();
-    }
     this.transport.add(transportItem);
     return this;
   }
@@ -245,7 +236,7 @@ public class BaseAPI {
    * Get transport
    * @return transport
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getTransport() {
     return transport;
   }
@@ -260,9 +251,6 @@ public class BaseAPI {
   }
 
   public BaseAPI addLabelsItem(String labelsItem) {
-    if (this.labels == null) {
-      this.labels = new ArrayList<String>();
-    }
     this.labels.add(labelsItem);
     return this;
   }
@@ -271,7 +259,7 @@ public class BaseAPI {
    * Get labels
    * @return labels
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<String> getLabels() {
     return labels;
   }
@@ -289,8 +277,8 @@ public class BaseAPI {
    * Get hasOwnGateway
    * @return hasOwnGateway
   **/
-  @ApiModelProperty(value = "")
-  public Boolean isHasOwnGateway() {
+  @ApiModelProperty(example = "null", value = "")
+  public Boolean getHasOwnGateway() {
     return hasOwnGateway;
   }
 
@@ -307,7 +295,7 @@ public class BaseAPI {
    * Get type
    * @return type
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public TypeEnum getType() {
     return type;
   }
@@ -318,7 +306,7 @@ public class BaseAPI {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -369,12 +357,12 @@ public class BaseAPI {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

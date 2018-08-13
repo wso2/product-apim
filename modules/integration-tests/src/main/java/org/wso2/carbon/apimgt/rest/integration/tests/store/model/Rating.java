@@ -16,14 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Rating
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:26:55.409+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
 public class Rating {
   @JsonProperty("ratingId")
   private String ratingId = null;
@@ -46,7 +45,7 @@ public class Rating {
    * Get ratingId
    * @return ratingId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getRatingId() {
     return ratingId;
   }
@@ -64,7 +63,7 @@ public class Rating {
    * Get apiId
    * @return apiId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public String getApiId() {
     return apiId;
   }
@@ -82,7 +81,7 @@ public class Rating {
    * If username is not given user invoking the API will be taken as the username. 
    * @return username
   **/
-  @ApiModelProperty(required = true, value = "If username is not given user invoking the API will be taken as the username. ")
+  @ApiModelProperty(example = "null", required = true, value = "If username is not given user invoking the API will be taken as the username. ")
   public String getUsername() {
     return username;
   }
@@ -100,7 +99,7 @@ public class Rating {
    * Get rating
    * @return rating
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(example = "null", required = true, value = "")
   public Integer getRating() {
     return rating;
   }
@@ -111,7 +110,7 @@ public class Rating {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -148,12 +147,12 @@ public class Rating {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

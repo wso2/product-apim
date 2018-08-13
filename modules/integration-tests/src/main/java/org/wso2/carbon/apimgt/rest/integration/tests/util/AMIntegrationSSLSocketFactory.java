@@ -36,7 +36,9 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-
+/**
+ * SSL Socket Factory for Disable SSL Verifications
+ */
 public final class AMIntegrationSSLSocketFactory extends SSLSocketFactory {
 
     private static final Map<String, SSLSocketFactory> sslSocketFactories = new HashMap<>();

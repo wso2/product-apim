@@ -1,7 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.admin.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.SubscriptionThrottlePolicy;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:24:45.778+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:59:16.844+05:30")
 public interface SubscriptionPoliciesApi extends ApiClient.Api {
 
 
@@ -26,13 +26,13 @@ public interface SubscriptionPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/subscription")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  SubscriptionThrottlePolicyList policiesThrottlingSubscriptionGet(@Param("ifNoneMatch") String ifNoneMatch, @Param
-          ("ifModifiedSince") String ifModifiedSince);
+  SubscriptionThrottlePolicyList policiesThrottlingSubscriptionGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Delete a Subscription level throttle policy
@@ -43,13 +43,13 @@ public interface SubscriptionPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /policies/throttling/subscription/{id}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void policiesThrottlingSubscriptionIdDelete(@Param("id") String id, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void policiesThrottlingSubscriptionIdDelete(@Param("id") String id, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Retrieve a Subscription Policy
@@ -61,13 +61,13 @@ public interface SubscriptionPoliciesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/subscription/{id}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  SubscriptionThrottlePolicy policiesThrottlingSubscriptionIdGet(@Param("id") String id, @Param("ifNoneMatch") String
-          ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  SubscriptionThrottlePolicy policiesThrottlingSubscriptionIdGet(@Param("id") String id, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Update a Subscription level throttle policy
@@ -86,8 +86,7 @@ public interface SubscriptionPoliciesApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  SubscriptionThrottlePolicy policiesThrottlingSubscriptionIdPut(@Param("id") String id, SubscriptionThrottlePolicy
-          body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  SubscriptionThrottlePolicy policiesThrottlingSubscriptionIdPut(@Param("id") String id, SubscriptionThrottlePolicy body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Add a Subscription level throttle policy

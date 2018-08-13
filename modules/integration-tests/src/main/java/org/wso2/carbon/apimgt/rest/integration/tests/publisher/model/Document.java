@@ -16,14 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Document
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class Document {
   @JsonProperty("documentId")
   private String documentId = null;
@@ -53,11 +52,6 @@ public class Document {
 
     TypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -96,11 +90,6 @@ public class Document {
 
     SourceTypeEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -151,11 +140,6 @@ public class Document {
 
     VisibilityEnum(String value) {
       this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
     }
 
     @Override
@@ -360,7 +344,7 @@ public class Document {
    * Get permission
    * @return permission
   **/
-  @ApiModelProperty(example = "[{\"groupId\" : 1000, \"permission\" : [\"READ\",\"UPDATE\"]},{\"groupId\" : 1001, \"permission\" : [\"READ\",\"UPDATE\"]}]", value = "")
+  @ApiModelProperty(example = "[{&quot;groupId&quot; : 1000, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]},{&quot;groupId&quot; : 1001, &quot;permission&quot; : [&quot;READ&quot;,&quot;UPDATE&quot;]}]", value = "")
   public String getPermission() {
     return permission;
   }
@@ -414,7 +398,7 @@ public class Document {
    * Get createdBy
    * @return createdBy
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getCreatedBy() {
     return createdBy;
   }
@@ -450,7 +434,7 @@ public class Document {
    * Get lastUpdatedBy
    * @return lastUpdatedBy
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public String getLastUpdatedBy() {
     return lastUpdatedBy;
   }
@@ -461,7 +445,7 @@ public class Document {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -520,12 +504,12 @@ public class Document {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

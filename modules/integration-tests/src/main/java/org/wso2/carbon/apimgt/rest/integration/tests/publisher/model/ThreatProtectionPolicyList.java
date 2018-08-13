@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -26,10 +25,10 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.ThreatProte
 /**
  * ThreatProtectionPolicyList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class ThreatProtectionPolicyList {
   @JsonProperty("list")
-  private List<ThreatProtectionPolicy> list = null;
+  private List<ThreatProtectionPolicy> list = new ArrayList<ThreatProtectionPolicy>();
 
   public ThreatProtectionPolicyList list(List<ThreatProtectionPolicy> list) {
     this.list = list;
@@ -37,9 +36,6 @@ public class ThreatProtectionPolicyList {
   }
 
   public ThreatProtectionPolicyList addListItem(ThreatProtectionPolicy listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<ThreatProtectionPolicy>();
-    }
     this.list.add(listItem);
     return this;
   }
@@ -48,7 +44,7 @@ public class ThreatProtectionPolicyList {
    * Get list
    * @return list
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<ThreatProtectionPolicy> getList() {
     return list;
   }
@@ -59,7 +55,7 @@ public class ThreatProtectionPolicyList {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -90,12 +86,12 @@ public class ThreatProtectionPolicyList {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Tier;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public interface ThrottlingTierIndividualApi extends ApiClient.Api {
 
 
@@ -27,11 +26,11 @@ public interface ThrottlingTierIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/{tierLevel}/{tierName}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  Tier policiesTierLevelTierNameGet(@Param("tierName") String tierName, @Param("tierLevel") String tierLevel, @Param
-          ("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  Tier policiesTierLevelTierNameGet(@Param("tierName") String tierName, @Param("tierLevel") String tierLevel, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 }

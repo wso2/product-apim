@@ -1,7 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.admin.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.WorkflowList;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:24:45.778+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:59:16.844+05:30")
 public interface WorkflowsCollectionApi extends ApiClient.Api {
 
 
@@ -26,13 +26,13 @@ public interface WorkflowsCollectionApi extends ApiClient.Api {
    */
   @RequestLine("GET /workflows?workflowType={workflowType}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  WorkflowList workflowsGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String
-          ifModifiedSince, @Param("workflowType") String workflowType);
+  WorkflowList workflowsGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince, @Param("workflowType") String workflowType);
 
   /**
    * Get all the uncompleted Workflows
@@ -53,13 +53,13 @@ public interface WorkflowsCollectionApi extends ApiClient.Api {
    */
   @RequestLine("GET /workflows?workflowType={workflowType}")
   @Headers({
+  "Content-Type: application/json",
   "Accept: application/json",
       "If-None-Match: {ifNoneMatch}",
       
       "If-Modified-Since: {ifModifiedSince}"
   })
-  WorkflowList workflowsGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String
-          ifModifiedSince, @QueryMap(encoded = true) Map<String, Object> queryParams);
+  WorkflowList workflowsGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince, @QueryMap(encoded=true) Map<String, Object> queryParams);
 
   /**
    * A convenience class for generating query parameters for the

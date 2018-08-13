@@ -1,7 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.admin.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.admin.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.CustomRule;
 import org.wso2.carbon.apimgt.rest.integration.tests.admin.model.CustomRuleList;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:24:45.778+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:59:16.844+05:30")
 public interface CustomRulesApi extends ApiClient.Api {
 
 
@@ -26,13 +26,13 @@ public interface CustomRulesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/custom")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  CustomRuleList policiesThrottlingCustomGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince")
-          String ifModifiedSince);
+  CustomRuleList policiesThrottlingCustomGet(@Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Add a Custom Rule
@@ -56,13 +56,13 @@ public interface CustomRulesApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /policies/throttling/custom/{ruleId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  void policiesThrottlingCustomRuleIdDelete(@Param("ruleId") String ruleId, @Param("ifMatch") String ifMatch, @Param
-          ("ifUnmodifiedSince") String ifUnmodifiedSince);
+  void policiesThrottlingCustomRuleIdDelete(@Param("ruleId") String ruleId, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Retrieve a Custom Rule
@@ -74,13 +74,13 @@ public interface CustomRulesApi extends ApiClient.Api {
    */
   @RequestLine("GET /policies/throttling/custom/{ruleId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  CustomRule policiesThrottlingCustomRuleIdGet(@Param("ruleId") String ruleId, @Param("ifNoneMatch") String
-          ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+  CustomRule policiesThrottlingCustomRuleIdGet(@Param("ruleId") String ruleId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Update a Custom Rule
@@ -99,6 +99,5 @@ public interface CustomRulesApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  CustomRule policiesThrottlingCustomRuleIdPut(@Param("ruleId") String ruleId, CustomRule body, @Param("ifMatch")
-          String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  CustomRule policiesThrottlingCustomRuleIdPut(@Param("ruleId") String ruleId, CustomRule body, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 }

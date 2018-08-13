@@ -16,7 +16,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleSt
 /**
  * LifecycleState
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public class LifecycleState {
   @JsonProperty("lcName")
   private String lcName = null;
@@ -42,19 +41,19 @@ public class LifecycleState {
   private String lifecyelId = null;
 
   @JsonProperty("checkItemBeanList")
-  private List<LifecycleStateCheckItemBeanList> checkItemBeanList = null;
+  private List<LifecycleStateCheckItemBeanList> checkItemBeanList = new ArrayList<LifecycleStateCheckItemBeanList>();
 
   @JsonProperty("inputBeanList")
-  private List<LifecycleStateInputBeanList> inputBeanList = null;
+  private List<LifecycleStateInputBeanList> inputBeanList = new ArrayList<LifecycleStateInputBeanList>();
 
   @JsonProperty("customCodeBeanList")
-  private List<LifecycleStateValidationBeans> customCodeBeanList = null;
+  private List<LifecycleStateValidationBeans> customCodeBeanList = new ArrayList<LifecycleStateValidationBeans>();
 
   @JsonProperty("availableTransitionBeanList")
-  private List<LifecycleStateAvailableTransitionBeanList> availableTransitionBeanList = null;
+  private List<LifecycleStateAvailableTransitionBeanList> availableTransitionBeanList = new ArrayList<LifecycleStateAvailableTransitionBeanList>();
 
   @JsonProperty("permissionBeanList")
-  private List<LifecycleStatePermissionBeans> permissionBeanList = null;
+  private List<LifecycleStatePermissionBeans> permissionBeanList = new ArrayList<LifecycleStatePermissionBeans>();
 
   public LifecycleState lcName(String lcName) {
     this.lcName = lcName;
@@ -116,9 +115,6 @@ public class LifecycleState {
   }
 
   public LifecycleState addCheckItemBeanListItem(LifecycleStateCheckItemBeanList checkItemBeanListItem) {
-    if (this.checkItemBeanList == null) {
-      this.checkItemBeanList = new ArrayList<LifecycleStateCheckItemBeanList>();
-    }
     this.checkItemBeanList.add(checkItemBeanListItem);
     return this;
   }
@@ -127,7 +123,7 @@ public class LifecycleState {
    * Get checkItemBeanList
    * @return checkItemBeanList
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStateCheckItemBeanList> getCheckItemBeanList() {
     return checkItemBeanList;
   }
@@ -142,9 +138,6 @@ public class LifecycleState {
   }
 
   public LifecycleState addInputBeanListItem(LifecycleStateInputBeanList inputBeanListItem) {
-    if (this.inputBeanList == null) {
-      this.inputBeanList = new ArrayList<LifecycleStateInputBeanList>();
-    }
     this.inputBeanList.add(inputBeanListItem);
     return this;
   }
@@ -153,7 +146,7 @@ public class LifecycleState {
    * Get inputBeanList
    * @return inputBeanList
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStateInputBeanList> getInputBeanList() {
     return inputBeanList;
   }
@@ -168,9 +161,6 @@ public class LifecycleState {
   }
 
   public LifecycleState addCustomCodeBeanListItem(LifecycleStateValidationBeans customCodeBeanListItem) {
-    if (this.customCodeBeanList == null) {
-      this.customCodeBeanList = new ArrayList<LifecycleStateValidationBeans>();
-    }
     this.customCodeBeanList.add(customCodeBeanListItem);
     return this;
   }
@@ -179,7 +169,7 @@ public class LifecycleState {
    * Get customCodeBeanList
    * @return customCodeBeanList
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStateValidationBeans> getCustomCodeBeanList() {
     return customCodeBeanList;
   }
@@ -194,9 +184,6 @@ public class LifecycleState {
   }
 
   public LifecycleState addAvailableTransitionBeanListItem(LifecycleStateAvailableTransitionBeanList availableTransitionBeanListItem) {
-    if (this.availableTransitionBeanList == null) {
-      this.availableTransitionBeanList = new ArrayList<LifecycleStateAvailableTransitionBeanList>();
-    }
     this.availableTransitionBeanList.add(availableTransitionBeanListItem);
     return this;
   }
@@ -205,7 +192,7 @@ public class LifecycleState {
    * Get availableTransitionBeanList
    * @return availableTransitionBeanList
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStateAvailableTransitionBeanList> getAvailableTransitionBeanList() {
     return availableTransitionBeanList;
   }
@@ -220,9 +207,6 @@ public class LifecycleState {
   }
 
   public LifecycleState addPermissionBeanListItem(LifecycleStatePermissionBeans permissionBeanListItem) {
-    if (this.permissionBeanList == null) {
-      this.permissionBeanList = new ArrayList<LifecycleStatePermissionBeans>();
-    }
     this.permissionBeanList.add(permissionBeanListItem);
     return this;
   }
@@ -231,7 +215,7 @@ public class LifecycleState {
    * Get permissionBeanList
    * @return permissionBeanList
   **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "null", value = "")
   public List<LifecycleStatePermissionBeans> getPermissionBeanList() {
     return permissionBeanList;
   }
@@ -242,7 +226,7 @@ public class LifecycleState {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -287,12 +271,12 @@ public class LifecycleState {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
   }
-
+  
 }
 

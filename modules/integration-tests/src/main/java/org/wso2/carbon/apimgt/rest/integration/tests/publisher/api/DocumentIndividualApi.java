@@ -1,7 +1,6 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.EncodingUtils;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Document;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-03-27T17:28:03.315+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
 public interface DocumentIndividualApi extends ApiClient.Api {
 
 
@@ -27,14 +26,13 @@ public interface DocumentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/documents/{documentId}/content")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/octet-stream",
     "If-None-Match: {ifNoneMatch}",
     
     "If-Modified-Since: {ifModifiedSince}"
   })
-  void apisApiIdDocumentsDocumentIdContentGet(@Param("apiId") String apiId, @Param("documentId") String documentId,
-                                              @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince")
-                                                      String ifModifiedSince);
+  void apisApiIdDocumentsDocumentIdContentGet(@Param("apiId") String apiId, @Param("documentId") String documentId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
 
   /**
    * Upload the content of an API document
@@ -55,8 +53,7 @@ public interface DocumentIndividualApi extends ApiClient.Api {
     
     "If-Unmodified-Since: {ifUnmodifiedSince}"
   })
-  Document apisApiIdDocumentsDocumentIdContentPost(@Param("apiId") String apiId, @Param("documentId") String
-          documentId, @Param("file") File file, @Param("inlineContent") String inlineContent, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
+  Document apisApiIdDocumentsDocumentIdContentPost(@Param("apiId") String apiId, @Param("documentId") String documentId, @Param("file") File file, @Param("inlineContent") String inlineContent, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
    * Delete a document of an API
@@ -68,6 +65,7 @@ public interface DocumentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("DELETE /apis/{apiId}/documents/{documentId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-Match: {ifMatch}",
     
@@ -86,6 +84,7 @@ public interface DocumentIndividualApi extends ApiClient.Api {
    */
   @RequestLine("GET /apis/{apiId}/documents/{documentId}")
   @Headers({
+    "Content-Type: application/json",
     "Accept: application/json",
     "If-None-Match: {ifNoneMatch}",
     
