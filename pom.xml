@@ -1036,7 +1036,6 @@
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.3.132</carbon.apimgt.version>
-
         <carbon.apimgt.imp.pkg.version>[6.3.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
