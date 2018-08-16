@@ -1035,7 +1035,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.3.130</carbon.apimgt.version>
+        <carbon.apimgt.version>6.3.132</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.3.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1060,11 +1060,11 @@
         <carbon.mediation.version>4.6.89</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.11.256</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.14</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.12.98</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.32</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.8</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
-        <carbon.identity-local-auth-basicauth.version>5.3.7</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-local-auth-basicauth.version>6.0.4</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.13</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.12</carbon.extension.identity.oauth2.grantType.jwt.version>
@@ -1195,7 +1195,7 @@
         <!-- Forget-me tool -->
         <forgetme.tool.version>1.1.20</forgetme.tool.version>
         <!--Concent Management dependencies-->
-        <carbon.consent.mgt.version>1.0.50</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.0.11</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
     </properties>
 
