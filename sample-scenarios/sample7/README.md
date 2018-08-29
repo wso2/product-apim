@@ -84,7 +84,7 @@ Now you will be getting notification for the api that you have subscribed. These
 
 ### Running the sample
 
-* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+* Start the wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
 * Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
