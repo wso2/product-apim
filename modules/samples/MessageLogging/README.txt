@@ -2,9 +2,9 @@ How to log request/response message details with custom sequences ?
 ===================================================================
 Steps :
 -------
-1. Extract wso2am-zzz.zip (e.g. wso2am-2.5.0.zip)
+1. Extract wso2am-zzz.zip (e.g. wso2am-2.6.0.zip)
 
-2. Go to <AM_HOME>/bin folder and start wso2am-2.5.0 by executing wso2am-2.5.0/bin/wso2server.sh
+2. Go to <AM_HOME>/bin folder and start wso2am-2.6.0 by executing wso2am-2.6.0/bin/wso2server.sh
 
 3. You can log in to API Publisher Console.
 URL - https://localhost:9443/publisher/

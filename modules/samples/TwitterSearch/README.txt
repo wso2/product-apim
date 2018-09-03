@@ -20,7 +20,7 @@ Steps:
 ------
 ** IMPORTANT: If you have already configured any other sample, start from Step 7 **
 
-1. Extract wso2am-xxx.zip (eg: wso2am-2.5.0.zip)
+1. Extract wso2am-xxx.zip (eg: wso2am-2.6.0.zip)
 
 2. Go to AM_HOME/bin folder & type 'ant'
 
