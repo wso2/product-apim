@@ -74,8 +74,8 @@ public class GIT_1638_UrlEncodedApiNameTestCase extends APIMIntegrationBaseTest 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/v0.13/";
-        publisherRestApiBaseUrl = getStoreURLHttps() + "api/am/publisher/v0.13/";
+        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/v0.14/";
+        publisherRestApiBaseUrl = getStoreURLHttps() + "api/am/publisher/v0.14/";
         tokenApiUrl = new URL(getKeyManagerURLHttps() + "oauth2/token");
         Map<String, String> dataMap = RESTAPITestUtil.registerOAuthApplication(getKeyManagerURLHttps());
         String accessToken = generateOAuthAccessToken(user.getUserName(), user.getPassword(),
