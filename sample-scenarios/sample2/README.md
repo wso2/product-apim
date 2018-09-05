@@ -64,7 +64,7 @@ Below two screenshots shows that both John and TOm can subscribe to Employee_inf
 
 ### How to run the sample to populate the above mentioned sample data
 
-* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
+* Start the wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
 
 * Run the file run.sh in sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
