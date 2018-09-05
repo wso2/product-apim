@@ -56,10 +56,21 @@
 #else
         ##add default timeout config
 <timeout>
-<duration>60000</duration>
-<responseAction>fault</responseAction>
+     <responseAction>fault</responseAction>
 </timeout>
         #end
+
+        #if( $config.get("suspendDuration") == 0)
+       <suspendOnFailure>
+           <errorCodes>-1</errorCodes>
+           <initialDuration>0</initialDuration>
+           <progressionFactor>1.0</progressionFactor>
+           <maximumDuration>0</maximumDuration>
+       </suspendOnFailure>
+       <markForSuspension>
+           <errorCodes>-1</errorCodes>
+       </markForSuspension>
+        #else
 <suspendOnFailure>
 #print_list( "errorCodes" $config.get("suspendErrorCode"))
 #print_if_exist_only("initialDuration" $config.get("suspendDuration"))
@@ -72,6 +83,7 @@
 <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
 </markForSuspension>
         #end
+#end
 
         ##macro for http_endpoints in failover and load balance types
         #macro ( http_endpoint $name $ep )
