@@ -19,6 +19,8 @@
 package org.wso2.am.integration.tests.restapi;
 
 
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+
 import java.io.File;
 
 /**
@@ -121,7 +123,7 @@ public final class RESTAPITestConstants {
     public static final String BASIC_AUTH_HEADER = "admin:admin";
 
     //client-registration link
-    public static final String CLIENT_REGISTRATION_URL = "client-registration/v0.14/register";
+    public static final String CLIENT_REGISTRATION_URL = "client-registration/" + APIMIntegrationConstants.REST_API_VERSION + "/register";
 
     //token endpoint suffix
     public static final String TOKEN_ENDPOINT_SUFFIX = "token";
