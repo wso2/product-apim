@@ -6,7 +6,7 @@
          },
          "data":{
             "method":"POST",
-            "url":"/api/am/publisher/v0.13//apis",
+            "url":"/api/am/publisher/v0.14//apis",
             "query-parameters":"",
             "request-headers":{
                "Authorization":"Bearer"
@@ -65,7 +65,7 @@
          },
          "data":{
             "method":"GET",
-            "url":"/api/am/publisher/v0.13//environments/?apiId={apiId}",
+            "url":"/api/am/publisher/v0.14//environments/?apiId={apiId}",
             "query-parameters":"",
             "request-headers":{
                "Authorization":"Bearer"
@@ -88,7 +88,7 @@
          },
          "data":{
             "method":"DELETE",
-            "url":"/api/am/publisher/v0.13//apis/{apiId}",
+            "url":"/api/am/publisher/v0.14//apis/{apiId}",
             "query-parameters":"",
             "request-headers":{
                "Authorization":"Bearer"

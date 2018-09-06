@@ -269,7 +269,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Create a Tier
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -283,7 +283,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Create a Tier
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -298,7 +298,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Create a Tier (asynchronously)
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)

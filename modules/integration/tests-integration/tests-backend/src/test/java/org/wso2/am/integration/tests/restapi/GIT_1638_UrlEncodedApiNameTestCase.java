@@ -33,6 +33,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.restapi.utils.RESTAPITestUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -74,8 +75,8 @@ public class GIT_1638_UrlEncodedApiNameTestCase extends APIMIntegrationBaseTest 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/v0.13/";
-        publisherRestApiBaseUrl = getStoreURLHttps() + "api/am/publisher/v0.13/";
+        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/" + APIMIntegrationConstants.REST_API_VERSION + "/";
+        publisherRestApiBaseUrl = getStoreURLHttps() + "api/am/publisher/" + APIMIntegrationConstants.REST_API_VERSION + "/";
         tokenApiUrl = new URL(getKeyManagerURLHttps() + "oauth2/token");
         Map<String, String> dataMap = RESTAPITestUtil.registerOAuthApplication(getKeyManagerURLHttps());
         String accessToken = generateOAuthAccessToken(user.getUserName(), user.getPassword(),

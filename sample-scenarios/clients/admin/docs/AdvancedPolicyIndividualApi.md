@@ -1,6 +1,6 @@
 # AdvancedPolicyIndividualApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.13*
+All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.14*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
