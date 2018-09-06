@@ -55,6 +55,8 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,6 +76,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();

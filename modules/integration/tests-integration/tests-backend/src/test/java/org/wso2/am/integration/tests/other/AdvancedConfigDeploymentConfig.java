@@ -33,10 +33,13 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.ServerConstants;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
 import java.io.FileInputStream;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(AdvancedConfigDeploymentConfig.class);
     private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
