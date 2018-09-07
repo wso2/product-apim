@@ -115,12 +115,13 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
-    public void testChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException {
+    public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);
         blockUpdateRequest.setVersion(API_VERSION_1_0_0);
         //Change API lifecycle  to Block
+        Thread.sleep(1000); // this is to make sure published and blocked timestamps are different
         HttpResponse blockAPIActionResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
