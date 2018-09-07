@@ -30,11 +30,14 @@ import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
 
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AdvancedThrottlingConfig extends APIMIntegrationBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
     private AutomationContext superTenantKeyManagerContext;
