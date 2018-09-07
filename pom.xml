@@ -1060,8 +1060,8 @@
         <carbon.mediation.version>4.6.99</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.12.141</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.50</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.12.146</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.53</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.0.5</carbon.identity-local-auth-basicauth.version>
@@ -1195,7 +1195,7 @@
         <!-- Forget-me tool -->
         <forgetme.tool.version>1.1.20</forgetme.tool.version>
         <!--Concent Management dependencies-->
-        <carbon.consent.mgt.version>2.0.15</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.0.17</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
     </properties>
 
