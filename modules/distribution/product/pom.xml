@@ -330,6 +330,7 @@
                         <configuration>
                             <tasks>
                                 <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.identity.oauth2.token.JWTTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;--&gt;" value="&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;IDTokenIssuerID&gt;${carbon.protocol}://${carbon.host}:${carbon.management.port}/oauth2/token&lt;/IDTokenIssuerID&gt;" value="&lt;IDTokenIssuerID&gt;https://localhost:9443/oauth2/token&lt;/IDTokenIssuerID&gt;" />
                             </tasks>
                         </configuration>
                         <goals>
