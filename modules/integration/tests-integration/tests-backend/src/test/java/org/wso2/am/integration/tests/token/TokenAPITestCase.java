@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.token;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -36,6 +37,7 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -48,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
@@ -264,6 +267,88 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
     }
 
+
+    @Test(groups = {"wso2.am"}, description = "JWT Token API Test other")
+    public void testJWTTokenAPITestCase() throws Exception {
+
+        String APIName = "JWTTokenTestAPI";
+        String APIContext = "jwtTokenTestAPI";
+        String tags = "jwt, token";
+        String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
+        String description = "This is test API create by API manager integration test";
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        String APIVersion = "1.0.0";
+
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url), new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersion);
+        apiRequest.setSandbox(url);
+        apiRequest.setProvider(user.getUserName());
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        //Time to index the published api in store.
+        Thread.sleep(10000);
+
+        // Create application with JWT token type
+        apiStore.addApplicationWithTokenType("JWTTokenTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "this-is-test", "JWT");
+
+        String provider = storeContext.getContextTenant().getContextUser().getUserName();
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, provider);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        subscriptionRequest.setApplicationName("JWTTokenTestAPI-Application");
+        apiStore.subscribe(subscriptionRequest);
+
+        //Generate sandbox JWT
+        APPKeyRequestGenerator generateAppKeyRequestSandBox =
+                new APPKeyRequestGenerator("JWTTokenTestAPI-Application");
+        generateAppKeyRequestSandBox.setKeyType("SANDBOX");
+        String responseStringSandBox =
+                apiStore.generateApplicationKey(generateAppKeyRequestSandBox).getData();
+        JSONObject responseSandBOX = new JSONObject(responseStringSandBox);
+        String sandboxJWT =
+                responseSandBOX.getJSONObject("data").getJSONObject("key").get("accessToken")
+                        .toString();
+
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(sandboxJWT);
+        JSONObject jsonObject1 = new JSONObject(decodedJWTString);
+        String claim1 = jsonObject1.getString("application");
+        JSONObject jsonSubObject = new JSONObject(claim1);
+
+        assertEquals(jsonSubObject.get("name"), "JWTTokenTestAPI-Application");
+        assertEquals(jsonSubObject.get("tier"), "Unlimited");
+        assertTrue(jsonSubObject.get("owner").toString().contains("admin"));
+
+        String claim2 = jsonObject1.getString("subscribedAPIs");
+        JSONArray jsonArray = new JSONArray(claim2);
+        JSONObject jsonSubObject2 = (JSONObject) jsonArray.get(0);
+
+        assertEquals(jsonSubObject2.get("name"), "JWTTokenTestAPI");
+        assertEquals(jsonSubObject2.get("context"), "/jwtTokenTestAPI/1.0.0");
+        assertEquals(jsonSubObject2.get("version"), "1.0.0");
+        assertTrue(jsonSubObject2.get("publisher").toString().contains("admin"));
+        assertEquals(jsonSubObject2.get("subscriptionTier"), "Gold");
+        assertEquals(jsonSubObject2.get("subscriberTenantDomain"), "carbon.super");
+
+        String claim3 = jsonObject1.getString("keytype");
+        assertEquals("SANDBOX", claim3);
+
+        //Generate production JWT
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("JWTTokenTestAPI-Application");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String productionJWT = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        String decodedProductionJWTString = APIMTestCaseUtils.getDecodedJWT(productionJWT);
+        JSONObject jsonObject2 = new JSONObject(decodedProductionJWTString);
+        String claim4 = jsonObject2.getString("keytype");
+        assertEquals("PRODUCTION", claim4);
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
