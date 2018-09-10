@@ -158,9 +158,9 @@ public class HTTPSClientUtils {
     public static CloseableHttpClient getHttpsClient() {
         int timeout = 7;
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeout * 1000)
-                .setConnectionRequestTimeout(timeout * 1000)
-                .setSocketTimeout(timeout * 1000).build();
+                .setConnectTimeout(timeout * 10000)
+                .setConnectionRequestTimeout(timeout * 10000)
+                .setSocketTimeout(timeout * 10000).build();
 
         CloseableHttpClient httpClient = HttpClients.custom().disableRedirectHandling()
                 .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).
