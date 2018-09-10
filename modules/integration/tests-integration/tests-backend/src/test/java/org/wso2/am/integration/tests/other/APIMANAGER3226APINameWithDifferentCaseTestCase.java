@@ -93,7 +93,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         apiRequest.setProvider(providerName);
         HttpResponse addDuplicateAPIResponse = apiPublisher.addAPI(apiRequest);
         log.info("Response: " + addDuplicateAPIResponse.getData());
-        assertTrue(addDuplicateAPIResponse.getData().contains("A duplicate API name already exists for ECho"),
+        assertTrue(addDuplicateAPIResponse.getData().contains("A duplicate API already exists for ECho"),
                 "Validation fails for adding API with same name with different case");
 
     }
