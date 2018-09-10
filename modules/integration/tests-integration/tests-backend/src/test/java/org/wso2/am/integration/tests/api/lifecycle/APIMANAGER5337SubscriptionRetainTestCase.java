@@ -107,8 +107,6 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             response = apiStore.subscribe(subscriptionRequest);
             verifyResponse(response);
 
-            Thread.sleep(1000);
-
             //Demote the API to the Created State
             APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(apiName,
                     user.getUserName(), APILifeCycleState.CREATED);

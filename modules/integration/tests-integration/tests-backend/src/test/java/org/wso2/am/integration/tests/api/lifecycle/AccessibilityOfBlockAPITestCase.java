@@ -32,12 +32,11 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -121,7 +120,6 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);
         blockUpdateRequest.setVersion(API_VERSION_1_0_0);
         //Change API lifecycle  to Block
-        Thread.sleep(1000); // this is to make sure published and blocked timestamps are different
         HttpResponse blockAPIActionResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");

@@ -23,6 +23,7 @@
                     <testOnBorrow>true</testOnBorrow>
                     <validationQuery>SELECT 1</validationQuery>
                     <validationInterval>30000</validationInterval>
+                    <defaultAutoCommit>true</defaultAutoCommit>
                 </configuration>
             </definition>
         </datasource>
@@ -38,7 +39,7 @@
                     <url>jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE</url>
                     <username>wso2carbon</username>
                     <password>wso2carbon</password>
-                    <defaultAutoCommit>false</defaultAutoCommit>
+                    <defaultAutoCommit>true</defaultAutoCommit>
                     <driverClassName>org.h2.Driver</driverClassName>
                     <maxActive>50</maxActive>
                     <maxWait>60000</maxWait>
@@ -60,7 +61,7 @@
                     <url>jdbc:h2:../tmpStatDB/WSO2AM_STATS_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000;AUTO_SERVER=TRUE</url>
                     <username>wso2carbon</username>
                     <password>wso2carbon</password>
-                    <defaultAutoCommit>false</defaultAutoCommit>
+                    <defaultAutoCommit>true</defaultAutoCommit>
                     <driverClassName>org.h2.Driver</driverClassName>
                     <maxActive>50</maxActive>
                     <maxWait>60000</maxWait>

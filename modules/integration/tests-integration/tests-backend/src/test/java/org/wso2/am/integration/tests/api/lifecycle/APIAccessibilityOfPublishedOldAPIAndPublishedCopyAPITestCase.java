@@ -34,13 +34,12 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -113,8 +112,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         assertEquals(getValueFromJSON(httpResponseCopyAPI, "error"), "false",
                      "Copy  API response data is invalid" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
                      "Response Data:" + httpResponseCopyAPI.getData());
-
-        Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
     }
 
 
