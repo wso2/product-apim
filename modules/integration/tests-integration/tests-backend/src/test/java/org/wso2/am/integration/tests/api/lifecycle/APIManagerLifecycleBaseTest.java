@@ -23,23 +23,26 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.ws.rs.core.Response;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import javax.ws.rs.core.Response;
 
 /**
  * Base test class for all API Manager lifecycle test cases. This class contents the all the
@@ -273,11 +276,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             log.info("API Created :" + getAPIIdentifierString(apiIdentifier));
-            try {
-                Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
-            } catch (InterruptedException e) {
-                throw new APIManagerIntegrationTestException(e.getMessage(), e);
-            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&

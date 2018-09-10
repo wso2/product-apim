@@ -33,12 +33,12 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -112,7 +112,6 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
                 "Response data mismatched when invoke  API  before Retire" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
-        Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
     }
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
@@ -130,7 +129,6 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                 APILifeCycleState.DEPRECATED), "API status Change is invalid when retire an API :" +
                 getAPIIdentifierString(apiIdentifier) +
                 " Response Code:" + blockAPIActionResponse.getData());
-        Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
     }
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",

@@ -20,7 +20,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.lifecycle.LifeCycleAdminClient;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -80,7 +79,6 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
         apiLifeCycleStatusChangeRequest.setVersion(apiIdentifier.getVersion());
 
         //Change api status to custom state
-        Thread.sleep(1000); // this is to make sure published and promoted timestamps are different
         HttpResponse publishAPIResponse = apiPublisherClient.changeAPILifeCycleStatus(apiLifeCycleStatusChangeRequest);
         Boolean statusChangeSuccess = verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.PUBLISHED,
                 APILifeCycleState.PROMOTED);

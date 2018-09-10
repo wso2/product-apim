@@ -187,6 +187,7 @@ public class APIPublisherRestClient {
     public HttpResponse changeAPILifeCycleStatus(APILifeCycleStateRequest updateRequest)
             throws APIManagerIntegrationTestException {
         try {
+            Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
             return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag"),
@@ -424,6 +425,7 @@ public class APIPublisherRestClient {
     public HttpResponse changeAPILifeCycleStatusToPublish(APIIdentifier apiIdentifier, boolean isRequireReSubscription)
             throws APIManagerIntegrationTestException {
         try {
+            Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
             APILifeCycleStateRequest publishUpdateRequest =
                     new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
