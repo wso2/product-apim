@@ -176,7 +176,7 @@
                           class="org.apache.axis2.json.JSONBadgerfishMessageFormatter"/>
         <messageFormatter contentType="text/javascript"
                           class="org.apache.axis2.json.JSONMessageFormatter"/>
-        <messageFormatter contentType="application/octet-streaml" 
+        <messageFormatter contentType="application/octet-stream" 
                           class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
 
         <!-- See https://wso2.org/jira/browse/ESBJAVA-1725 before enabling bellow line -->
