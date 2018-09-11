@@ -75,6 +75,8 @@ public interface RegistryService {
     
     void updateRXTResource(final String rxtName, final String content) throws UserStoreException, RegistryException;
 
+    void updateGenericAPIArtifactsForAccessControl (String resourcePath, GenericArtifact artifact);
+
     void setGovernanceRegistryResourcePermissions(String userName, String visibility, String[] roles,
                                                   String resourcePath) throws APIManagementException;
 }

@@ -256,4 +256,26 @@ public class Constants {
     public static final String SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME = "uri-template";
     public static final String SYNAPSE_IS_STAT_ENABLED_PROPERTY_NAME = "isStatEnabled";
 
+    /**
+     * Migration client argument property names.
+     */
+    public static final String ARG_MIGRATE_TENANTS = "tenants";
+    public static final String ARG_MIGRATE_TENANTS_RANGE = "tenantRange";
+    public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
+    public static final String ARG_MIGRATE_ACCESS_CONTROL = "migrateAccessControl";
+
+    /**
+     * Publisher Access Control related registry properties and values.
+     */
+    public static final String PUBLISHER_ROLES = "publisher_roles";
+    public static final String ACCESS_CONTROL = "publisher_access_control";
+    public static final String NO_ACCESS_CONTROL = "all";
+    public static final String NULL_USER_ROLE_LIST = "null";
+    public static final String STORE_VIEW_ROLES = "store_view_roles";
+    public static final String PUBLIC_STORE_VISIBILITY = "public";
+    public static final String RESTRICTED_STORE_VISIBILITY = "restricted";
+    public static final String PRIVATE_STORE_VISIBILITY = "private";
+    public static final String API_OVERVIEW_VISIBILITY = "overview_visibility";
+    public static final String API_OVERVIEW_VISIBLE_ROLES = "overview_visibleRoles";
+
 }

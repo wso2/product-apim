@@ -42,7 +42,7 @@ public abstract class MigrationClientBase {
     private static final String GET_MYSQL_SESSION_MODE = "SELECT @@SESSION.sql_mode AS MODE";
     private  static final String NO_ZERO_DATE_MODE = "NO_ZERO_DATE";
 
-    public MigrationClientBase(String tenantArguments, String blackListTenantArguments, TenantManager tenantManager)
+    public MigrationClientBase(String tenantArguments, String blackListTenantArguments, String tenantRange, TenantManager tenantManager)
                                                                                             throws UserStoreException {
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
             tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
@@ -75,6 +75,24 @@ public abstract class MigrationClientBase {
 
                 if (!isBlackListed) {
                     tenantsArray.add(tenant);
+                }
+            }
+        } else if (tenantRange != null) {
+            tenantsArray = new ArrayList<Tenant>();
+            int l, u;
+            try {
+                l = Integer.parseInt(tenantRange.split("-")[0].trim());
+                u = Integer.parseInt(tenantRange.split("-")[1].trim());
+            } catch (Exception e) {
+                throw new UserStoreException("TenantRange argument is not properly set. use format 1-12", e);
+            }
+            log.debug("no of Tenants " + tenantManager.getAllTenants().length);
+            int lastIndex = tenantManager.getAllTenants().length - 1;
+            log.debug("last Tenant id " + tenantManager.getAllTenants()[lastIndex].getId());
+            for (Tenant t : tenantManager.getAllTenants()) {
+                if (t.getId() > l && t.getId() < u) {
+                    log.debug("using tenants " + t.getDomain() + "(" + t.getId() + ")");
+                    tenantsArray.add(t);
                 }
             }
         } else {  // Load all tenants

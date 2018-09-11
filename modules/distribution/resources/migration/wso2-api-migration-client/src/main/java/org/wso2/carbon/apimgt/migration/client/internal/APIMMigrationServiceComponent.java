@@ -75,7 +75,9 @@ public class APIMMigrationServiceComponent {
         String specificVersion = System.getProperty(Constants.ARG_RUN_SPECIFIC_VERSION);
         String component = System.getProperty(Constants.ARG_COMPONENT);
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
+        String tenantRange = System.getProperty(Constants.ARG_MIGRATE_TENANTS_RANGE);
         String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
+        boolean isAccessControlMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ACCESS_CONTROL));
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
         boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
@@ -86,25 +88,30 @@ public class APIMMigrationServiceComponent {
                 System.getProperty(Constants.ARG_REMOVE_DECRYPTION_FAILED_CONSUMER_KEYS_FROM_DB));
 
         try {
-            RegistryServiceImpl registryService = new RegistryServiceImpl();
-            TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
+            MigrationClient accessControlMigrationClient = new AccessControlMigrationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
+            if (isAccessControlMigration) {
+                log.info("Migrating WSO2 API Manager registry resources for Publisher Access Control feature.");
+                accessControlMigrationClient.registryResourceMigration();
+            } else {
+                RegistryServiceImpl registryService = new RegistryServiceImpl();
+                TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
-            MigrationClientFactory.initFactory(tenants, blackListTenants, registryService, tenantManager,
-                    removeDecryptionFailedKeysFromDB);
+                MigrationClientFactory.initFactory(tenants, blackListTenants, registryService, tenantManager,
+                        removeDecryptionFailedKeysFromDB);
 
-            MigrationExecutor.Arguments arguments = new MigrationExecutor.Arguments();
-            arguments.setMigrateFromVersion(migrateFromVersion);
-            arguments.setSpecificVersion(specificVersion);
-            arguments.setComponent(component);
-            arguments.setMigrateAll(migrateAll);
-            arguments.setCleanupNeeded(cleanupNeeded);
-            arguments.setDBMigration(isDBMigration);
-            arguments.setRegistryMigration(isRegistryMigration);
-            arguments.setFileSystemMigration(isFileSystemMigration);
-            arguments.setStatMigration(isStatMigration);
-            arguments.setOptions(options);
-            MigrationExecutor.execute(arguments);
-
+                MigrationExecutor.Arguments arguments = new MigrationExecutor.Arguments();
+                arguments.setMigrateFromVersion(migrateFromVersion);
+                arguments.setSpecificVersion(specificVersion);
+                arguments.setComponent(component);
+                arguments.setMigrateAll(migrateAll);
+                arguments.setCleanupNeeded(cleanupNeeded);
+                arguments.setDBMigration(isDBMigration);
+                arguments.setRegistryMigration(isRegistryMigration);
+                arguments.setFileSystemMigration(isFileSystemMigration);
+                arguments.setStatMigration(isStatMigration);
+                arguments.setOptions(options);
+                MigrationExecutor.execute(arguments);
+            }
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
@@ -163,6 +170,7 @@ public class APIMMigrationServiceComponent {
     protected void setRealmService(RealmService realmService) {
         log.debug("Setting RealmService for WSO2 API Manager migration");
         ServiceHolder.setRealmService(realmService);
+        IdentityTenantUtil.setRealmService(realmService);
     }
 
     /**
@@ -175,6 +183,7 @@ public class APIMMigrationServiceComponent {
             log.debug("Unset Realm service");
         }
         ServiceHolder.setRealmService(null);
+        IdentityTenantUtil.setRealmService(null);
     }
 
     /**
