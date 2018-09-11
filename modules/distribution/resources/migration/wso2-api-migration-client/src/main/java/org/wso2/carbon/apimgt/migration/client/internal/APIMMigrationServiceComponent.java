@@ -77,7 +77,6 @@ public class APIMMigrationServiceComponent {
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
         String tenantRange = System.getProperty(Constants.ARG_MIGRATE_TENANTS_RANGE);
         String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
-        boolean isAccessControlMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ACCESS_CONTROL));
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
         boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
@@ -89,29 +88,27 @@ public class APIMMigrationServiceComponent {
 
         try {
             MigrationClient accessControlMigrationClient = new AccessControlMigrationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
-            if (isAccessControlMigration) {
-                log.info("Migrating WSO2 API Manager registry resources for Publisher Access Control feature.");
-                accessControlMigrationClient.registryResourceMigration();
-            } else {
-                RegistryServiceImpl registryService = new RegistryServiceImpl();
-                TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
+            RegistryServiceImpl registryService = new RegistryServiceImpl();
+            TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
-                MigrationClientFactory.initFactory(tenants, blackListTenants, registryService, tenantManager,
-                        removeDecryptionFailedKeysFromDB);
+            MigrationClientFactory.initFactory(tenants, blackListTenants, registryService, tenantManager,
+                    removeDecryptionFailedKeysFromDB);
 
-                MigrationExecutor.Arguments arguments = new MigrationExecutor.Arguments();
-                arguments.setMigrateFromVersion(migrateFromVersion);
-                arguments.setSpecificVersion(specificVersion);
-                arguments.setComponent(component);
-                arguments.setMigrateAll(migrateAll);
-                arguments.setCleanupNeeded(cleanupNeeded);
-                arguments.setDBMigration(isDBMigration);
-                arguments.setRegistryMigration(isRegistryMigration);
-                arguments.setFileSystemMigration(isFileSystemMigration);
-                arguments.setStatMigration(isStatMigration);
-                arguments.setOptions(options);
-                MigrationExecutor.execute(arguments);
-            }
+            MigrationExecutor.Arguments arguments = new MigrationExecutor.Arguments();
+            arguments.setMigrateFromVersion(migrateFromVersion);
+            arguments.setSpecificVersion(specificVersion);
+            arguments.setComponent(component);
+            arguments.setMigrateAll(migrateAll);
+            arguments.setCleanupNeeded(cleanupNeeded);
+            arguments.setDBMigration(isDBMigration);
+            arguments.setRegistryMigration(isRegistryMigration);
+            arguments.setFileSystemMigration(isFileSystemMigration);
+            arguments.setStatMigration(isStatMigration);
+            arguments.setOptions(options);
+            MigrationExecutor.execute(arguments);
+
+            //Publisher Access Contro feature related migrations
+            accessControlMigrationClient.registryResourceMigration();
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {

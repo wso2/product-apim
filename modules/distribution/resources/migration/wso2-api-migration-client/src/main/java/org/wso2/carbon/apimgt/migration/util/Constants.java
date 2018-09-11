@@ -262,7 +262,6 @@ public class Constants {
     public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_TENANTS_RANGE = "tenantRange";
     public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
-    public static final String ARG_MIGRATE_ACCESS_CONTROL = "migrateAccessControl";
 
     /**
      * Publisher Access Control related registry properties and values.

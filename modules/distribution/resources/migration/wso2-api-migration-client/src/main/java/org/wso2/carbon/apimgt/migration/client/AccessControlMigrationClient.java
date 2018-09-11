@@ -52,7 +52,6 @@ public class AccessControlMigrationClient extends MigrationClientBase implements
     /**
      * This method is used to update the API artifacts in the registry to Publisher Access Control feature.
      *
-     *
      * @throws APIMigrationException
      */
     private void updateAPAIArtifactsForAccessControl() throws APIMigrationException {
@@ -62,7 +61,7 @@ public class AccessControlMigrationClient extends MigrationClientBase implements
             try {
                 registryService.startTenantFlow(tenant);
 
-                log.info("Updating APIs for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.debug("Updating APIs for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
 
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
@@ -76,7 +75,6 @@ public class AccessControlMigrationClient extends MigrationClientBase implements
                     }
                 }
                 log.info("End Updating API artifacts tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
-
             } catch (GovernanceException e) {
                 log.error("Error when accessing API artifact in registry for tenant " + tenant.getId() + '(' +
                         tenant.getDomain() + ')', e);
