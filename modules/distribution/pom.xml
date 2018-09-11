@@ -361,12 +361,6 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.analytics</groupId>
-            <artifactId>org.wso2.carbon.stream.processor.statistics.feature</artifactId>
-            <version>${carbon.analytics.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.analytics</groupId>
             <artifactId>org.wso2.carbon.siddhi.metrics.core.feature</artifactId>
             <type>zip</type>
         </dependency>

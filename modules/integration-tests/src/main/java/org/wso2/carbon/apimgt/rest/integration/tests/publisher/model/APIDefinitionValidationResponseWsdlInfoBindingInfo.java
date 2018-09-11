@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -23,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
  * WSDL binding related information 
  */
 @ApiModel(description = "WSDL binding related information ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
   @JsonProperty("hasHttpBinding")
   private Boolean hasHttpBinding = null;
@@ -40,7 +41,7 @@ public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
    * Indicates whether the WSDL contains HTTP Bindings
    * @return hasHttpBinding
   **/
-  @ApiModelProperty(example = "null", value = "Indicates whether the WSDL contains HTTP Bindings")
+  @ApiModelProperty(value = "Indicates whether the WSDL contains HTTP Bindings")
   public Boolean getHasHttpBinding() {
     return hasHttpBinding;
   }
@@ -58,7 +59,7 @@ public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
    * Indicates whether the WSDL contains SOAP Bindings
    * @return hasSoapBinding
   **/
-  @ApiModelProperty(example = "null", value = "Indicates whether the WSDL contains SOAP Bindings")
+  @ApiModelProperty(value = "Indicates whether the WSDL contains SOAP Bindings")
   public Boolean getHasSoapBinding() {
     return hasSoapBinding;
   }

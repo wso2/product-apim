@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,13 +26,13 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.ScopeListLi
 /**
  * ScopeList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class ScopeList {
   @JsonProperty("count")
   private Integer count = null;
 
   @JsonProperty("list")
-  private List<ScopeListList> list = new ArrayList<ScopeListList>();
+  private List<ScopeListList> list = null;
 
   public ScopeList count(Integer count) {
     this.count = count;
@@ -57,6 +58,9 @@ public class ScopeList {
   }
 
   public ScopeList addListItem(ScopeListList listItem) {
+    if (this.list == null) {
+      this.list = new ArrayList<ScopeListList>();
+    }
     this.list.add(listItem);
     return this;
   }
@@ -65,7 +69,7 @@ public class ScopeList {
    * Get list
    * @return list
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<ScopeListList> getList() {
     return list;
   }

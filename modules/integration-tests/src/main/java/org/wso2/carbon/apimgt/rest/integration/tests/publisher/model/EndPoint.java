@@ -16,14 +16,16 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointConfig;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointSecurity;
 
 /**
  * EndPoint
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class EndPoint {
   @JsonProperty("id")
   private String id = null;
@@ -32,7 +34,7 @@ public class EndPoint {
   private String name = null;
 
   @JsonProperty("endpointConfig")
-  private String endpointConfig = null;
+  private EndPointEndpointConfig endpointConfig = null;
 
   @JsonProperty("endpointSecurity")
   private EndPointEndpointSecurity endpointSecurity = null;
@@ -79,21 +81,21 @@ public class EndPoint {
     this.name = name;
   }
 
-  public EndPoint endpointConfig(String endpointConfig) {
+  public EndPoint endpointConfig(EndPointEndpointConfig endpointConfig) {
     this.endpointConfig = endpointConfig;
     return this;
   }
 
    /**
-   * Endpoint Configuration
+   * Get endpointConfig
    * @return endpointConfig
   **/
-  @ApiModelProperty(example = "{url: http://localhost:8280, timeout: 1000}", value = "Endpoint Configuration")
-  public String getEndpointConfig() {
+  @ApiModelProperty(value = "")
+  public EndPointEndpointConfig getEndpointConfig() {
     return endpointConfig;
   }
 
-  public void setEndpointConfig(String endpointConfig) {
+  public void setEndpointConfig(EndPointEndpointConfig endpointConfig) {
     this.endpointConfig = endpointConfig;
   }
 
@@ -106,7 +108,7 @@ public class EndPoint {
    * Get endpointSecurity
    * @return endpointSecurity
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public EndPointEndpointSecurity getEndpointSecurity() {
     return endpointSecurity;
   }

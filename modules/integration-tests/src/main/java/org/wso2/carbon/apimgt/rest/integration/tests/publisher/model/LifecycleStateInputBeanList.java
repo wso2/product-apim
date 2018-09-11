@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * LifecycleStateInputBeanList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class LifecycleStateInputBeanList {
   @JsonProperty("name")
   private String name = null;
@@ -93,7 +94,7 @@ public class LifecycleStateInputBeanList {
    * Get label
    * @return label
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getLabel() {
     return label;
   }
@@ -111,7 +112,7 @@ public class LifecycleStateInputBeanList {
    * Get placeHolder
    * @return placeHolder
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getPlaceHolder() {
     return placeHolder;
   }
@@ -129,7 +130,7 @@ public class LifecycleStateInputBeanList {
    * Get tooltip
    * @return tooltip
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getTooltip() {
     return tooltip;
   }
@@ -147,7 +148,7 @@ public class LifecycleStateInputBeanList {
    * Get regex
    * @return regex
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getRegex() {
     return regex;
   }
@@ -165,7 +166,7 @@ public class LifecycleStateInputBeanList {
    * Get values
    * @return values
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getValues() {
     return values;
   }

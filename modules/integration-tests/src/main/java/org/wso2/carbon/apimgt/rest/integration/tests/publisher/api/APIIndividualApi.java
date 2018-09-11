@@ -1,6 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public interface APIIndividualApi extends ApiClient.Api {
 
 
@@ -205,6 +206,39 @@ public interface APIIndividualApi extends ApiClient.Api {
   void apisApiIdThreatProtectionPoliciesDelete(@Param("apiId") String apiId, @Param("policyId") String policyId);
 
   /**
+   * Delete a threat protection policy from an API
+   * 
+   * Note, this is equivalent to the other <code>apisApiIdThreatProtectionPoliciesDelete</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisApiIdThreatProtectionPoliciesDeleteQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>policyId - Threat protection policy id (required)</li>
+   *   </ul>
+   */
+  @RequestLine("DELETE /apis/{apiId}/threat-protection-policies?policyId={policyId}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+  })
+  void apisApiIdThreatProtectionPoliciesDelete(@Param("apiId") String apiId, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisApiIdThreatProtectionPoliciesDelete</code> method in a fluent style.
+   */
+  public static class ApisApiIdThreatProtectionPoliciesDeleteQueryParams extends HashMap<String, Object> {
+    public ApisApiIdThreatProtectionPoliciesDeleteQueryParams policyId(final String value) {
+      put("policyId", EncodingUtils.encode(value));
+      return this;
+    }
+  }
+
+  /**
    * Get all threat protection policies associated with an API
    * 
     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
@@ -229,6 +263,39 @@ public interface APIIndividualApi extends ApiClient.Api {
     "Accept: application/json",
   })
   void apisApiIdThreatProtectionPoliciesPost(@Param("apiId") String apiId, @Param("policyId") String policyId);
+
+  /**
+   * Add a threat protection policy to an API
+   * 
+   * Note, this is equivalent to the other <code>apisApiIdThreatProtectionPoliciesPost</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisApiIdThreatProtectionPoliciesPostQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>policyId - Threat protection policy id (required)</li>
+   *   </ul>
+   */
+  @RequestLine("POST /apis/{apiId}/threat-protection-policies?policyId={policyId}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+  })
+  void apisApiIdThreatProtectionPoliciesPost(@Param("apiId") String apiId, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisApiIdThreatProtectionPoliciesPost</code> method in a fluent style.
+   */
+  public static class ApisApiIdThreatProtectionPoliciesPostQueryParams extends HashMap<String, Object> {
+    public ApisApiIdThreatProtectionPoliciesPostQueryParams policyId(final String value) {
+      put("policyId", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 
   /**
    * Get thumbnail image
@@ -322,6 +389,54 @@ public interface APIIndividualApi extends ApiClient.Api {
   WorkflowResponse apisChangeLifecyclePost(@Param("action") String action, @Param("apiId") String apiId, @Param("lifecycleChecklist") String lifecycleChecklist, @Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince);
 
   /**
+   * Change API Status
+   * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information. 
+   * Note, this is equivalent to the other <code>apisChangeLifecyclePost</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisChangeLifecyclePostQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+   * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>action - The action to demote or promote the state of the API.  Supported actions are [ **Publish, Deploy as a Prototype, Demote to Created, Demote to Prototyped, Move to Maintenance, Deprecate, Re-Publish, Retire **]  (required)</li>
+   *   <li>lifecycleChecklist -  You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier.  Eg: \&quot;Deprecate Old Versions:true\&quot; will deprecate older versions of a particular API when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format.  Supported checklist items are as follows. 1. **Deprecate Old Versions**: Setting this to true will deprecate older versions of a particular API when it is promoted to Published state from Created state. 2. **Require Re-Subscription**: If you set this to true, users need to re subscribe to the API although they may have subscribed to an older version.  (optional)</li>
+   *   <li>apiId - **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)</li>
+   *   </ul>
+   * @return WorkflowResponse
+   */
+  @RequestLine("POST /apis/change-lifecycle?action={action}&lifecycleChecklist={lifecycleChecklist}&apiId={apiId}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+      "If-Match: {ifMatch}",
+      
+      "If-Unmodified-Since: {ifUnmodifiedSince}"
+  })
+  WorkflowResponse apisChangeLifecyclePost(@Param("ifMatch") String ifMatch, @Param("ifUnmodifiedSince") String ifUnmodifiedSince, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisChangeLifecyclePost</code> method in a fluent style.
+   */
+  public static class ApisChangeLifecyclePostQueryParams extends HashMap<String, Object> {
+    public ApisChangeLifecyclePostQueryParams action(final String value) {
+      put("action", EncodingUtils.encode(value));
+      return this;
+    }
+    public ApisChangeLifecyclePostQueryParams lifecycleChecklist(final String value) {
+      put("lifecycleChecklist", EncodingUtils.encode(value));
+      return this;
+    }
+    public ApisChangeLifecyclePostQueryParams apiId(final String value) {
+      put("apiId", EncodingUtils.encode(value));
+      return this;
+    }
+  }
+
+  /**
    * Create a new API version
    * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state. 
     * @param newVersion Version of the new API. (required)
@@ -333,4 +448,41 @@ public interface APIIndividualApi extends ApiClient.Api {
     "Accept: application/json",
   })
   void apisCopyApiPost(@Param("newVersion") String newVersion, @Param("apiId") String apiId);
+
+  /**
+   * Create a new API version
+   * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state. 
+   * Note, this is equivalent to the other <code>apisCopyApiPost</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisCopyApiPostQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>newVersion - Version of the new API. (required)</li>
+   *   <li>apiId - **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)</li>
+   *   </ul>
+   */
+  @RequestLine("POST /apis/copy-api?newVersion={newVersion}&apiId={apiId}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+  })
+  void apisCopyApiPost(@QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisCopyApiPost</code> method in a fluent style.
+   */
+  public static class ApisCopyApiPostQueryParams extends HashMap<String, Object> {
+    public ApisCopyApiPostQueryParams newVersion(final String value) {
+      put("newVersion", EncodingUtils.encode(value));
+      return this;
+    }
+    public ApisCopyApiPostQueryParams apiId(final String value) {
+      put("apiId", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 }

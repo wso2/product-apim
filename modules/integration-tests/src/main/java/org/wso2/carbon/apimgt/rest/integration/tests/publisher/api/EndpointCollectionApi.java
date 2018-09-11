@@ -1,6 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointList;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public interface EndpointCollectionApi extends ApiClient.Api {
 
 
@@ -46,6 +47,40 @@ public interface EndpointCollectionApi extends ApiClient.Api {
     "If-None-Match: {ifNoneMatch}"
   })
   void endpointsHead(@Param("name") String name, @Param("ifNoneMatch") String ifNoneMatch);
+
+  /**
+   * Check given Endpoint is already exist 
+   * Using this operation, you can check a given Endpoint name is already used. You need to provide the name you want to check. 
+   * Note, this is equivalent to the other <code>endpointsHead</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link EndpointsHeadQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>name -  (optional)</li>
+   *   </ul>
+   */
+  @RequestLine("HEAD /endpoints?name={name}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+      "If-None-Match: {ifNoneMatch}"
+  })
+  void endpointsHead(@Param("ifNoneMatch") String ifNoneMatch, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>endpointsHead</code> method in a fluent style.
+   */
+  public static class EndpointsHeadQueryParams extends HashMap<String, Object> {
+    public EndpointsHeadQueryParams name(final String value) {
+      put("name", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 
   /**
    * Add a new endpoint

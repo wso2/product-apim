@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -26,19 +27,19 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleSt
 /**
  * LifecycleStateCheckItemBeanList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class LifecycleStateCheckItemBeanList {
   @JsonProperty("permissionBeans")
-  private List<LifecycleStatePermissionBeans> permissionBeans = new ArrayList<LifecycleStatePermissionBeans>();
+  private List<LifecycleStatePermissionBeans> permissionBeans = null;
 
   @JsonProperty("name")
   private String name = null;
 
   @JsonProperty("validationBeans")
-  private List<LifecycleStateValidationBeans> validationBeans = new ArrayList<LifecycleStateValidationBeans>();
+  private List<LifecycleStateValidationBeans> validationBeans = null;
 
   @JsonProperty("targets")
-  private List<String> targets = new ArrayList<String>();
+  private List<String> targets = null;
 
   @JsonProperty("value")
   private Boolean value = null;
@@ -49,6 +50,9 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addPermissionBeansItem(LifecycleStatePermissionBeans permissionBeansItem) {
+    if (this.permissionBeans == null) {
+      this.permissionBeans = new ArrayList<LifecycleStatePermissionBeans>();
+    }
     this.permissionBeans.add(permissionBeansItem);
     return this;
   }
@@ -57,7 +61,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get permissionBeans
    * @return permissionBeans
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStatePermissionBeans> getPermissionBeans() {
     return permissionBeans;
   }
@@ -90,6 +94,9 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addValidationBeansItem(LifecycleStateValidationBeans validationBeansItem) {
+    if (this.validationBeans == null) {
+      this.validationBeans = new ArrayList<LifecycleStateValidationBeans>();
+    }
     this.validationBeans.add(validationBeansItem);
     return this;
   }
@@ -98,7 +105,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get validationBeans
    * @return validationBeans
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStateValidationBeans> getValidationBeans() {
     return validationBeans;
   }
@@ -113,6 +120,9 @@ public class LifecycleStateCheckItemBeanList {
   }
 
   public LifecycleStateCheckItemBeanList addTargetsItem(String targetsItem) {
+    if (this.targets == null) {
+      this.targets = new ArrayList<String>();
+    }
     this.targets.add(targetsItem);
     return this;
   }
@@ -121,7 +131,7 @@ public class LifecycleStateCheckItemBeanList {
    * Get targets
    * @return targets
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getTargets() {
     return targets;
   }

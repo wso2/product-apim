@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Application;
@@ -23,7 +24,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Application
 /**
  * Subscription
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class Subscription {
   @JsonProperty("subscriptionId")
   private String subscriptionId = null;
@@ -54,6 +55,11 @@ public class Subscription {
 
     SubscriptionStatusEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -102,7 +108,7 @@ public class Subscription {
    * Get applicationInfo
    * @return applicationInfo
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public Application getApplicationInfo() {
     return applicationInfo;
   }

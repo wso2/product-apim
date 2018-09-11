@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.Map;
 /**
  * Tier
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class Tier {
   @JsonProperty("name")
   private String name = null;
@@ -49,6 +50,11 @@ public class Tier {
       this.value = value;
     }
 
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -69,7 +75,7 @@ public class Tier {
   private TierLevelEnum tierLevel = null;
 
   @JsonProperty("attributes")
-  private Map<String, String> attributes = new HashMap<String, String>();
+  private Map<String, String> attributes = null;
 
   @JsonProperty("requestCount")
   private Long requestCount = null;
@@ -92,6 +98,11 @@ public class Tier {
 
     TierPlanEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -176,6 +187,9 @@ public class Tier {
   }
 
   public Tier putAttributesItem(String key, String attributesItem) {
+    if (this.attributes == null) {
+      this.attributes = new HashMap<String, String>();
+    }
     this.attributes.put(key, attributesItem);
     return this;
   }

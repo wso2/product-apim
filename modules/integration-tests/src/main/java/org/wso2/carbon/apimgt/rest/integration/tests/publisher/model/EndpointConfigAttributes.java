@@ -21,17 +21,17 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * ScopeListList
+ * EndpointConfigAttributes
  */
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
-public class ScopeListList {
+public class EndpointConfigAttributes {
   @JsonProperty("name")
   private String name = null;
 
-  @JsonProperty("description")
-  private String description = null;
+  @JsonProperty("value")
+  private String value = null;
 
-  public ScopeListList name(String name) {
+  public EndpointConfigAttributes name(String name) {
     this.name = name;
     return this;
   }
@@ -40,7 +40,7 @@ public class ScopeListList {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "apim:api_view", value = "")
+  @ApiModelProperty(example = "Suspension time", value = "")
   public String getName() {
     return name;
   }
@@ -49,22 +49,22 @@ public class ScopeListList {
     this.name = name;
   }
 
-  public ScopeListList description(String description) {
-    this.description = description;
+  public EndpointConfigAttributes value(String value) {
+    this.value = value;
     return this;
   }
 
    /**
-   * Get description
-   * @return description
+   * Get value
+   * @return value
   **/
-  @ApiModelProperty(example = "Scope for Api view", value = "")
-  public String getDescription() {
-    return description;
+  @ApiModelProperty(example = "2s", value = "")
+  public String getValue() {
+    return value;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setValue(String value) {
+    this.value = value;
   }
 
 
@@ -76,24 +76,24 @@ public class ScopeListList {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ScopeListList scopeListList = (ScopeListList) o;
-    return Objects.equals(this.name, scopeListList.name) &&
-        Objects.equals(this.description, scopeListList.description);
+    EndpointConfigAttributes endpointConfigAttributes = (EndpointConfigAttributes) o;
+    return Objects.equals(this.name, endpointConfigAttributes.name) &&
+        Objects.equals(this.value, endpointConfigAttributes.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, description);
+    return Objects.hash(name, value);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ScopeListList {\n");
+    sb.append("class EndpointConfigAttributes {\n");
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("}");
     return sb.toString();
   }

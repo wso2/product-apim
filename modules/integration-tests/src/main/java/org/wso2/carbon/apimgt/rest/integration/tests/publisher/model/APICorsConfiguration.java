@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,22 +26,22 @@ import java.util.List;
  * CORS configuration for the API 
  */
 @ApiModel(description = "CORS configuration for the API ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APICorsConfiguration {
   @JsonProperty("corsConfigurationEnabled")
   private Boolean corsConfigurationEnabled = false;
 
   @JsonProperty("accessControlAllowOrigins")
-  private List<String> accessControlAllowOrigins = new ArrayList<String>();
+  private List<String> accessControlAllowOrigins = null;
 
   @JsonProperty("accessControlAllowCredentials")
   private Boolean accessControlAllowCredentials = false;
 
   @JsonProperty("accessControlAllowHeaders")
-  private List<String> accessControlAllowHeaders = new ArrayList<String>();
+  private List<String> accessControlAllowHeaders = null;
 
   @JsonProperty("accessControlAllowMethods")
-  private List<String> accessControlAllowMethods = new ArrayList<String>();
+  private List<String> accessControlAllowMethods = null;
 
   public APICorsConfiguration corsConfigurationEnabled(Boolean corsConfigurationEnabled) {
     this.corsConfigurationEnabled = corsConfigurationEnabled;
@@ -51,7 +52,7 @@ public class APICorsConfiguration {
    * Get corsConfigurationEnabled
    * @return corsConfigurationEnabled
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public Boolean getCorsConfigurationEnabled() {
     return corsConfigurationEnabled;
   }
@@ -66,6 +67,9 @@ public class APICorsConfiguration {
   }
 
   public APICorsConfiguration addAccessControlAllowOriginsItem(String accessControlAllowOriginsItem) {
+    if (this.accessControlAllowOrigins == null) {
+      this.accessControlAllowOrigins = new ArrayList<String>();
+    }
     this.accessControlAllowOrigins.add(accessControlAllowOriginsItem);
     return this;
   }
@@ -74,7 +78,7 @@ public class APICorsConfiguration {
    * Get accessControlAllowOrigins
    * @return accessControlAllowOrigins
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getAccessControlAllowOrigins() {
     return accessControlAllowOrigins;
   }
@@ -92,7 +96,7 @@ public class APICorsConfiguration {
    * Get accessControlAllowCredentials
    * @return accessControlAllowCredentials
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public Boolean getAccessControlAllowCredentials() {
     return accessControlAllowCredentials;
   }
@@ -107,6 +111,9 @@ public class APICorsConfiguration {
   }
 
   public APICorsConfiguration addAccessControlAllowHeadersItem(String accessControlAllowHeadersItem) {
+    if (this.accessControlAllowHeaders == null) {
+      this.accessControlAllowHeaders = new ArrayList<String>();
+    }
     this.accessControlAllowHeaders.add(accessControlAllowHeadersItem);
     return this;
   }
@@ -115,7 +122,7 @@ public class APICorsConfiguration {
    * Get accessControlAllowHeaders
    * @return accessControlAllowHeaders
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getAccessControlAllowHeaders() {
     return accessControlAllowHeaders;
   }
@@ -130,6 +137,9 @@ public class APICorsConfiguration {
   }
 
   public APICorsConfiguration addAccessControlAllowMethodsItem(String accessControlAllowMethodsItem) {
+    if (this.accessControlAllowMethods == null) {
+      this.accessControlAllowMethods = new ArrayList<String>();
+    }
     this.accessControlAllowMethods.add(accessControlAllowMethodsItem);
     return this;
   }
@@ -138,7 +148,7 @@ public class APICorsConfiguration {
    * Get accessControlAllowMethods
    * @return accessControlAllowMethods
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getAccessControlAllowMethods() {
     return accessControlAllowMethods;
   }

@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefinitionValidationResponseWsdlInfo;
@@ -23,7 +24,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefiniti
 /**
  * APIDefinitionValidationResponse
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APIDefinitionValidationResponse {
   @JsonProperty("isValid")
   private Boolean isValid = null;
@@ -40,6 +41,11 @@ public class APIDefinitionValidationResponse {
 
     DefinitionTypeEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -109,7 +115,7 @@ public class APIDefinitionValidationResponse {
    * Get wsdlInfo
    * @return wsdlInfo
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public APIDefinitionValidationResponseWsdlInfo getWsdlInfo() {
     return wsdlInfo;
   }

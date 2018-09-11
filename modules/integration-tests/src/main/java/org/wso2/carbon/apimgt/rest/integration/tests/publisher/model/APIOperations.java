@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint
 /**
  * APIOperations
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APIOperations {
   @JsonProperty("id")
   private String id = null;
@@ -43,10 +44,10 @@ public class APIOperations {
   private String policy = null;
 
   @JsonProperty("endpoint")
-  private List<APIEndpoint> endpoint = new ArrayList<APIEndpoint>();
+  private List<APIEndpoint> endpoint = null;
 
   @JsonProperty("scopes")
-  private List<String> scopes = new ArrayList<String>();
+  private List<String> scopes = null;
 
   public APIOperations id(String id) {
     this.id = id;
@@ -75,7 +76,7 @@ public class APIOperations {
    * Get uritemplate
    * @return uritemplate
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getUritemplate() {
     return uritemplate;
   }
@@ -93,7 +94,7 @@ public class APIOperations {
    * Get httpVerb
    * @return httpVerb
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getHttpVerb() {
     return httpVerb;
   }
@@ -111,7 +112,7 @@ public class APIOperations {
    * Get authType
    * @return authType
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getAuthType() {
     return authType;
   }
@@ -144,6 +145,9 @@ public class APIOperations {
   }
 
   public APIOperations addEndpointItem(APIEndpoint endpointItem) {
+    if (this.endpoint == null) {
+      this.endpoint = new ArrayList<APIEndpoint>();
+    }
     this.endpoint.add(endpointItem);
     return this;
   }
@@ -152,7 +156,7 @@ public class APIOperations {
    * Get endpoint
    * @return endpoint
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<APIEndpoint> getEndpoint() {
     return endpoint;
   }
@@ -167,6 +171,9 @@ public class APIOperations {
   }
 
   public APIOperations addScopesItem(String scopesItem) {
+    if (this.scopes == null) {
+      this.scopes = new ArrayList<String>();
+    }
     this.scopes.add(scopesItem);
     return this;
   }
@@ -175,7 +182,7 @@ public class APIOperations {
    * Get scopes
    * @return scopes
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getScopes() {
     return scopes;
   }

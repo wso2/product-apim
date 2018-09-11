@@ -254,12 +254,6 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.analytics</groupId>
-                <artifactId>org.wso2.carbon.stream.processor.statistics.feature</artifactId>
-                <version>${carbon.analytics.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.analytics</groupId>
                 <artifactId>org.wso2.carbon.siddhi.metrics.core.feature</artifactId>
                 <version>${carbon.analytics.version}</version>
                 <type>zip</type>
@@ -316,7 +310,7 @@
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.164</carbon.apimgt.version>
+        <carbon.apimgt.version>7.0.189-SNAPSHOT</carbon.apimgt.version>
         <carbon.auth.version>1.0.46</carbon.auth.version>
         <product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
