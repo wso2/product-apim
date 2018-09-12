@@ -84,7 +84,7 @@ public abstract class MigrationClientBase {
                 l = Integer.parseInt(tenantRange.split("-")[0].trim());
                 u = Integer.parseInt(tenantRange.split("-")[1].trim());
             } catch (Exception e) {
-                throw new UserStoreException("TenantRange argument is not properly set. use format 1-12", e);
+                throw new APIMigrationException("TenantRange argument is not properly set. use format 1-12", e);
             }
             log.debug("no of Tenants " + tenantManager.getAllTenants().length);
             int lastIndex = tenantManager.getAllTenants().length - 1;
