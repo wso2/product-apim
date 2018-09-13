@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -27,13 +28,13 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefiniti
  * Summary of the WSDL including the basic information
  */
 @ApiModel(description = "Summary of the WSDL including the basic information")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APIDefinitionValidationResponseWsdlInfo {
   @JsonProperty("version")
   private String version = null;
 
   @JsonProperty("endpoints")
-  private List<APIDefinitionValidationResponseWsdlInfoEndpoints> endpoints = new ArrayList<APIDefinitionValidationResponseWsdlInfoEndpoints>();
+  private List<APIDefinitionValidationResponseWsdlInfoEndpoints> endpoints = null;
 
   @JsonProperty("bindingInfo")
   private APIDefinitionValidationResponseWsdlInfoBindingInfo bindingInfo = null;
@@ -62,6 +63,9 @@ public class APIDefinitionValidationResponseWsdlInfo {
   }
 
   public APIDefinitionValidationResponseWsdlInfo addEndpointsItem(APIDefinitionValidationResponseWsdlInfoEndpoints endpointsItem) {
+    if (this.endpoints == null) {
+      this.endpoints = new ArrayList<APIDefinitionValidationResponseWsdlInfoEndpoints>();
+    }
     this.endpoints.add(endpointsItem);
     return this;
   }
@@ -70,7 +74,7 @@ public class APIDefinitionValidationResponseWsdlInfo {
    * A list of endpoints the service exposes 
    * @return endpoints
   **/
-  @ApiModelProperty(example = "null", value = "A list of endpoints the service exposes ")
+  @ApiModelProperty(value = "A list of endpoints the service exposes ")
   public List<APIDefinitionValidationResponseWsdlInfoEndpoints> getEndpoints() {
     return endpoints;
   }
@@ -88,7 +92,7 @@ public class APIDefinitionValidationResponseWsdlInfo {
    * Get bindingInfo
    * @return bindingInfo
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public APIDefinitionValidationResponseWsdlInfoBindingInfo getBindingInfo() {
     return bindingInfo;
   }

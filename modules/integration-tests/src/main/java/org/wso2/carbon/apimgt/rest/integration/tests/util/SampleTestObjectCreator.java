@@ -21,7 +21,12 @@ package org.wso2.carbon.apimgt.rest.integration.tests.util;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointConfig;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointSecurity;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndpointConfig;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Utility for Sample Test Object creation
@@ -35,9 +40,17 @@ public class SampleTestObjectCreator {
         api.setVersion(version);
         api.addSecuritySchemeItem("Oauth");
         api.addTransportItem("http");
-        api.addEndpointItem(new APIEndpoint().type("production").inline(new EndPoint().name(name + "-" + version)
-                .type("http").endpointSecurity(new EndPointEndpointSecurity().enabled(false)).endpointConfig
-                        ("{\"serviceUrl\":\"https://localhost:9443/publisher/public/app/petstore/pet/1.json\"}")));
+
+        EndpointConfig petStoreEndpoint = new EndpointConfig()
+                .url("https://localhost:9443/publisher/public/app/petstore/pet/1.json").timeout("1000");
+        List<EndpointConfig> endpointConfigList = Collections.singletonList(petStoreEndpoint);
+        EndPointEndpointConfig endpointConfig = new EndPointEndpointConfig().endpointType(EndPointEndpointConfig
+                .EndpointTypeEnum.SINGLE).list(endpointConfigList);
+        EndPoint endPoint = new EndPoint().name(name + "-" + version).endpointSecurity(new EndPointEndpointSecurity()
+                .enabled(false)).endpointConfig(endpointConfig);
+        APIEndpoint apiEndpoint = new APIEndpoint().type("production").inline(endPoint);
+        api.addEndpointItem(apiEndpoint);
+
         return api;
     }
 }

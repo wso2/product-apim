@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -24,13 +25,13 @@ import java.util.List;
 /**
  * ScopeBindings
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class ScopeBindings {
   @JsonProperty("type")
   private String type = null;
 
   @JsonProperty("values")
-  private List<String> values = new ArrayList<String>();
+  private List<String> values = null;
 
   public ScopeBindings type(String type) {
     this.type = type;
@@ -41,7 +42,7 @@ public class ScopeBindings {
    * Type of binding role / permission 
    * @return type
   **/
-  @ApiModelProperty(example = "null", value = "Type of binding role / permission ")
+  @ApiModelProperty(value = "Type of binding role / permission ")
   public String getType() {
     return type;
   }
@@ -56,6 +57,9 @@ public class ScopeBindings {
   }
 
   public ScopeBindings addValuesItem(String valuesItem) {
+    if (this.values == null) {
+      this.values = new ArrayList<String>();
+    }
     this.values.add(valuesItem);
     return this;
   }
@@ -64,7 +68,7 @@ public class ScopeBindings {
    * Get values
    * @return values
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getValues() {
     return values;
   }

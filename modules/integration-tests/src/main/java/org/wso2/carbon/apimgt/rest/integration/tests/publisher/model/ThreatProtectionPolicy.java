@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ThreatProtectionPolicy
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class ThreatProtectionPolicy {
   @JsonProperty("uuid")
   private String uuid = null;
@@ -45,7 +46,7 @@ public class ThreatProtectionPolicy {
    * Policy ID
    * @return uuid
   **/
-  @ApiModelProperty(example = "null", value = "Policy ID")
+  @ApiModelProperty(value = "Policy ID")
   public String getUuid() {
     return uuid;
   }
@@ -63,7 +64,7 @@ public class ThreatProtectionPolicy {
    * Name of the policy
    * @return name
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Name of the policy")
+  @ApiModelProperty(required = true, value = "Name of the policy")
   public String getName() {
     return name;
   }
@@ -81,7 +82,7 @@ public class ThreatProtectionPolicy {
    * Type of the policy
    * @return type
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Type of the policy")
+  @ApiModelProperty(required = true, value = "Type of the policy")
   public String getType() {
     return type;
   }
@@ -99,7 +100,7 @@ public class ThreatProtectionPolicy {
    * policy as a json string
    * @return policy
   **/
-  @ApiModelProperty(example = "null", required = true, value = "policy as a json string")
+  @ApiModelProperty(required = true, value = "policy as a json string")
   public String getPolicy() {
     return policy;
   }

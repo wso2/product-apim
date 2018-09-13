@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.ErrorListIt
 /**
  * Error
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class Error {
   @JsonProperty("code")
   private Long code = null;
@@ -40,7 +41,7 @@ public class Error {
   private String moreInfo = null;
 
   @JsonProperty("error")
-  private List<ErrorListItem> error = new ArrayList<ErrorListItem>();
+  private List<ErrorListItem> error = null;
 
   public Error code(Long code) {
     this.code = code;
@@ -51,7 +52,7 @@ public class Error {
    * Get code
    * @return code
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public Long getCode() {
     return code;
   }
@@ -69,7 +70,7 @@ public class Error {
    * Error message.
    * @return message
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Error message.")
+  @ApiModelProperty(required = true, value = "Error message.")
   public String getMessage() {
     return message;
   }
@@ -87,7 +88,7 @@ public class Error {
    * A detail description about the error message. 
    * @return description
   **/
-  @ApiModelProperty(example = "null", value = "A detail description about the error message. ")
+  @ApiModelProperty(value = "A detail description about the error message. ")
   public String getDescription() {
     return description;
   }
@@ -105,7 +106,7 @@ public class Error {
    * Preferably an url with more details about the error. 
    * @return moreInfo
   **/
-  @ApiModelProperty(example = "null", value = "Preferably an url with more details about the error. ")
+  @ApiModelProperty(value = "Preferably an url with more details about the error. ")
   public String getMoreInfo() {
     return moreInfo;
   }
@@ -120,6 +121,9 @@ public class Error {
   }
 
   public Error addErrorItem(ErrorListItem errorItem) {
+    if (this.error == null) {
+      this.error = new ArrayList<ErrorListItem>();
+    }
     this.error.add(errorItem);
     return this;
   }
@@ -128,7 +132,7 @@ public class Error {
    * If there are more than one error list them out. For example, list out validation errors by each field. 
    * @return error
   **/
-  @ApiModelProperty(example = "null", value = "If there are more than one error list them out. For example, list out validation errors by each field. ")
+  @ApiModelProperty(value = "If there are more than one error list them out. For example, list out validation errors by each field. ")
   public List<ErrorListItem> getError() {
     return error;
   }

@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleSt
 /**
  * LifecycleState
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class LifecycleState {
   @JsonProperty("lcName")
   private String lcName = null;
@@ -41,19 +42,19 @@ public class LifecycleState {
   private String lifecyelId = null;
 
   @JsonProperty("checkItemBeanList")
-  private List<LifecycleStateCheckItemBeanList> checkItemBeanList = new ArrayList<LifecycleStateCheckItemBeanList>();
+  private List<LifecycleStateCheckItemBeanList> checkItemBeanList = null;
 
   @JsonProperty("inputBeanList")
-  private List<LifecycleStateInputBeanList> inputBeanList = new ArrayList<LifecycleStateInputBeanList>();
+  private List<LifecycleStateInputBeanList> inputBeanList = null;
 
   @JsonProperty("customCodeBeanList")
-  private List<LifecycleStateValidationBeans> customCodeBeanList = new ArrayList<LifecycleStateValidationBeans>();
+  private List<LifecycleStateValidationBeans> customCodeBeanList = null;
 
   @JsonProperty("availableTransitionBeanList")
-  private List<LifecycleStateAvailableTransitionBeanList> availableTransitionBeanList = new ArrayList<LifecycleStateAvailableTransitionBeanList>();
+  private List<LifecycleStateAvailableTransitionBeanList> availableTransitionBeanList = null;
 
   @JsonProperty("permissionBeanList")
-  private List<LifecycleStatePermissionBeans> permissionBeanList = new ArrayList<LifecycleStatePermissionBeans>();
+  private List<LifecycleStatePermissionBeans> permissionBeanList = null;
 
   public LifecycleState lcName(String lcName) {
     this.lcName = lcName;
@@ -115,6 +116,9 @@ public class LifecycleState {
   }
 
   public LifecycleState addCheckItemBeanListItem(LifecycleStateCheckItemBeanList checkItemBeanListItem) {
+    if (this.checkItemBeanList == null) {
+      this.checkItemBeanList = new ArrayList<LifecycleStateCheckItemBeanList>();
+    }
     this.checkItemBeanList.add(checkItemBeanListItem);
     return this;
   }
@@ -123,7 +127,7 @@ public class LifecycleState {
    * Get checkItemBeanList
    * @return checkItemBeanList
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStateCheckItemBeanList> getCheckItemBeanList() {
     return checkItemBeanList;
   }
@@ -138,6 +142,9 @@ public class LifecycleState {
   }
 
   public LifecycleState addInputBeanListItem(LifecycleStateInputBeanList inputBeanListItem) {
+    if (this.inputBeanList == null) {
+      this.inputBeanList = new ArrayList<LifecycleStateInputBeanList>();
+    }
     this.inputBeanList.add(inputBeanListItem);
     return this;
   }
@@ -146,7 +153,7 @@ public class LifecycleState {
    * Get inputBeanList
    * @return inputBeanList
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStateInputBeanList> getInputBeanList() {
     return inputBeanList;
   }
@@ -161,6 +168,9 @@ public class LifecycleState {
   }
 
   public LifecycleState addCustomCodeBeanListItem(LifecycleStateValidationBeans customCodeBeanListItem) {
+    if (this.customCodeBeanList == null) {
+      this.customCodeBeanList = new ArrayList<LifecycleStateValidationBeans>();
+    }
     this.customCodeBeanList.add(customCodeBeanListItem);
     return this;
   }
@@ -169,7 +179,7 @@ public class LifecycleState {
    * Get customCodeBeanList
    * @return customCodeBeanList
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStateValidationBeans> getCustomCodeBeanList() {
     return customCodeBeanList;
   }
@@ -184,6 +194,9 @@ public class LifecycleState {
   }
 
   public LifecycleState addAvailableTransitionBeanListItem(LifecycleStateAvailableTransitionBeanList availableTransitionBeanListItem) {
+    if (this.availableTransitionBeanList == null) {
+      this.availableTransitionBeanList = new ArrayList<LifecycleStateAvailableTransitionBeanList>();
+    }
     this.availableTransitionBeanList.add(availableTransitionBeanListItem);
     return this;
   }
@@ -192,7 +205,7 @@ public class LifecycleState {
    * Get availableTransitionBeanList
    * @return availableTransitionBeanList
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStateAvailableTransitionBeanList> getAvailableTransitionBeanList() {
     return availableTransitionBeanList;
   }
@@ -207,6 +220,9 @@ public class LifecycleState {
   }
 
   public LifecycleState addPermissionBeanListItem(LifecycleStatePermissionBeans permissionBeanListItem) {
+    if (this.permissionBeanList == null) {
+      this.permissionBeanList = new ArrayList<LifecycleStatePermissionBeans>();
+    }
     this.permissionBeanList.add(permissionBeanListItem);
     return this;
   }
@@ -215,7 +231,7 @@ public class LifecycleState {
    * Get permissionBeanList
    * @return permissionBeanList
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<LifecycleStatePermissionBeans> getPermissionBeanList() {
     return permissionBeanList;
   }

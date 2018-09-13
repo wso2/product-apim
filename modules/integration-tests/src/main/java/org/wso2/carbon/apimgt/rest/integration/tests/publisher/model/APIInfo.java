@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.List;
 /**
  * APIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class APIInfo {
   @JsonProperty("id")
   private String id = null;
@@ -51,7 +52,7 @@ public class APIInfo {
   private String workflowStatus = null;
 
   @JsonProperty("securityScheme")
-  private List<String> securityScheme = new ArrayList<String>();
+  private List<String> securityScheme = null;
 
   public APIInfo id(String id) {
     this.id = id;
@@ -203,6 +204,9 @@ public class APIInfo {
   }
 
   public APIInfo addSecuritySchemeItem(String securitySchemeItem) {
+    if (this.securityScheme == null) {
+      this.securityScheme = new ArrayList<String>();
+    }
     this.securityScheme.add(securitySchemeItem);
     return this;
   }
@@ -211,7 +215,7 @@ public class APIInfo {
    * Get securityScheme
    * @return securityScheme
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getSecurityScheme() {
     return securityScheme;
   }

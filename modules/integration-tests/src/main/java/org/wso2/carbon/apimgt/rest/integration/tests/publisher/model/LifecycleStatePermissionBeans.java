@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -24,10 +25,10 @@ import java.util.List;
 /**
  * LifecycleStatePermissionBeans
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:41:58.538+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
 public class LifecycleStatePermissionBeans {
   @JsonProperty("roles")
-  private List<String> roles = new ArrayList<String>();
+  private List<String> roles = null;
 
   @JsonProperty("forTarget")
   private String forTarget = null;
@@ -38,6 +39,9 @@ public class LifecycleStatePermissionBeans {
   }
 
   public LifecycleStatePermissionBeans addRolesItem(String rolesItem) {
+    if (this.roles == null) {
+      this.roles = new ArrayList<String>();
+    }
     this.roles.add(rolesItem);
     return this;
   }
@@ -46,7 +50,7 @@ public class LifecycleStatePermissionBeans {
    * Get roles
    * @return roles
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getRoles() {
     return roles;
   }
@@ -64,7 +68,7 @@ public class LifecycleStatePermissionBeans {
    * Get forTarget
    * @return forTarget
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getForTarget() {
     return forTarget;
   }
