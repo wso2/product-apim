@@ -1056,6 +1056,12 @@
 	    <fileMode>644</fileMode>
         </file>
         <file>
+            <source>../resources/updates/product.txt</source>
+            <outputDirectory>wso2am-${pom.version}/updates/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>src/main/conf/cloud-services-desc.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <filtered>true</filtered>
@@ -1087,7 +1093,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-	<file>
+	    <file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/lifecycles/APILifeCycle.xml
             </source>
