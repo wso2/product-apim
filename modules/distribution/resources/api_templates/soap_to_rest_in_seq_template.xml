@@ -22,7 +22,7 @@ $mapping.get('properties')
 #end
 <payloadFactory description="transform" media-type="xml">
   <format>
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="${namespace}">
+  <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="${namespace}">
   <soapenv:Header/>
   <soapenv:Body>
   	$mapping.get('sequence')
