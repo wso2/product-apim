@@ -135,6 +135,7 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
+                    <skip>${maven.test.skip}</skip>
                 </configuration>
             </plugin>
             <plugin>
@@ -176,6 +177,7 @@
                             </run>
                         </image>
                     </images>
+                    <skip>${maven.test.skip}</skip>
                 </configuration>
             </plugin>
         </plugins>
