@@ -162,7 +162,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>wso2am:${product.apim.version}</name>
+                            <name>wso2am:${project.version}</name>
                             <alias>product-apim</alias>
                             <run>
                                 <namingStrategy>alias</namingStrategy>

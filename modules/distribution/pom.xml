@@ -1331,7 +1331,7 @@
                                 <resource>
                                     <directory>${project.build.directory}</directory>
                                     <includes>
-                                        <include>wso2apim-${product.apim.version}.zip</include>
+                                        <include>wso2apim-${project.version}.zip</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -1361,11 +1361,14 @@
                                 <dockerFileDir>${project.basedir}/docker</dockerFileDir>
                                 <cleanup>true</cleanup>
                                 <tags>
-                                    <tag>${product.apim.version}</tag>
+                                    <tag>${project.version}</tag>
                                 </tags>
                             </build>
                         </image>
                     </images>
+                    <buildArgs>
+                        <version>${project.version}</version>
+                    </buildArgs>
                     <skip>${maven.test.skip}</skip>
                 </configuration>
             </plugin>
@@ -1383,7 +1386,7 @@
                                 <fileset>
                                     <directory>${project.basedir}/docker</directory>
                                     <includes>
-                                        <include>wso2apim-${product.apim.version}.zip</include>
+                                        <include>wso2apim-${project.version}.zip</include>
                                     </includes>
                                 </fileset>
                             </filesets>
