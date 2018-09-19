@@ -17,3 +17,5 @@
 -org.wso2.carbon.throttle.module.*
 -org.wso2.carbon.throttle.core.impl.ipbase.*
 -org.wso2.uri.template.parser.*
+-*.stub*
+-*.stub_
