@@ -26,6 +26,7 @@ import feign.gson.GsonDecoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.apimgt.core.auth.DCRMServiceStub;
 import org.wso2.carbon.apimgt.core.auth.DCRMServiceStubFactory;
 import org.wso2.carbon.apimgt.core.auth.OAuth2ServiceStubs;
 import org.wso2.carbon.apimgt.core.auth.dto.DCRClientInfo;
@@ -37,9 +38,6 @@ import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTes
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointSecurity;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.GroupIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.GroupsApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.UserIndividualApi;
@@ -114,10 +112,8 @@ public class TestUtil {
         dcrClientInfo.setClientName("apim-integration-test");
         dcrClientInfo.setGrantTypes(Arrays.asList(new String[]{"password", "client_credentials"}));
         try {
-            Response response = DCRMServiceStubFactory.getDCRMServiceStub(DYNAMIC_CLIENT_REGISTRATION_ENDPOINT,
-                    username, password, KEY_MANAGER_CERT_ALIAS).registerApplication(dcrClientInfo);
-            DCRClientInfo dcrClientInfoResponse = (DCRClientInfo) new GsonDecoder().decode(response,
-                    DCRClientInfo.class);
+            Response response = getDcrmServiceStub(username, password).registerApplication(dcrClientInfo);
+            DCRClientInfo dcrClientInfoResponse = getDCRClientInfo(response);
             clientId = dcrClientInfoResponse.getClientId();
             clientSecret = dcrClientInfoResponse.getClientSecret();
             return dcrClientInfoResponse;
@@ -125,6 +121,15 @@ public class TestUtil {
             logger.error("Couldn't create client", e);
             throw new APIManagementException("Couldn't create client", e);
         }
+    }
+
+    public static DCRMServiceStub getDcrmServiceStub(String username,String password) throws APIManagementException {
+
+        return DCRMServiceStubFactory.getDCRMServiceStub(DYNAMIC_CLIENT_REGISTRATION_ENDPOINT,
+                username, password, KEY_MANAGER_CERT_ALIAS);
+    }
+    public static DCRClientInfo getDCRClientInfo(Response response) throws IOException {
+        return (DCRClientInfo) new GsonDecoder().decode(response,DCRClientInfo.class);
     }
 
     private static OAuth2ServiceStubs.TokenServiceStub getOauth2Client() throws AMIntegrationTestException {
