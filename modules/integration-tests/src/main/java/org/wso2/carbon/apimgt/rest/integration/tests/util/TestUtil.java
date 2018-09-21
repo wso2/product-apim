@@ -134,7 +134,7 @@ public class TestUtil {
 
     private static OAuth2ServiceStubs.TokenServiceStub getOauth2Client() throws AMIntegrationTestException {
         try {
-            return new OAuth2ServiceStubs(TOKEN_ENDPOINT_URL, "", "", "wso2carbon", "admin", "admin")
+            return new OAuth2ServiceStubs(TOKEN_ENDPOINT_URL, "", "", "", "wso2carbon", "admin", "admin")
                     .getTokenServiceStub();
         } catch (APIManagementException e) {
             throw new AMIntegrationTestException(e);

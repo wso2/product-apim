@@ -312,12 +312,18 @@
                 <version>${carbon.auth.version}</version>
                 <type>zip</type>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.auth</groupId>
+                <artifactId>org.wso2.carbon.auth.oidc.rest.api.feature</artifactId>
+                <version>${carbon.auth.version}</version>
+                <type>zip</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.192</carbon.apimgt.version>
-        <carbon.auth.version>1.0.49</carbon.auth.version>
+        <carbon.apimgt.version>7.0.195</carbon.apimgt.version>
+        <carbon.auth.version>1.0.50</carbon.auth.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
