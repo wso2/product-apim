@@ -24,7 +24,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.6.0-rc2-SNAPSHOT</version>
+    <version>2.6.1-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>http://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1035,7 +1035,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.40-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.50</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1048,7 +1048,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.35</carbon.kernel.version>
-        <apimserver.version>2.6.0-rc2-SNAPSHOT</apimserver.version>
+        <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
@@ -1057,7 +1057,7 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.103</carbon.mediation.version>
+        <carbon.mediation.version>4.6.105</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.12.153</carbon.identity.version>
@@ -1069,7 +1069,7 @@
         <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.15</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.2.9</carbon.identity.carbon.auth.saml2.version>
-        <carbon.identity.auth.version>1.1.18</carbon.identity.auth.version>
+        <carbon.identity.auth.version>1.1.20</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.19</carbon.deployment.version>

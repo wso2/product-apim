@@ -22,14 +22,14 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>2.6.0-m2-SNAPSHOT</version>
+        <version>2.6.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.is-km</groupId>
     <artifactId>org.wso2.is-km</artifactId>
-    <version>5.6.0</version>
+    <version>5.7.0</version>
     <packaging>pom</packaging>
     <name>IS as Key Manager</name>
     <url>http://wso2.org</url>
@@ -62,6 +62,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
                                     <version>${keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
+                                    <version>${carbon-governance.version}</version>
                                 </feature>                                                                
                             </features>
                         </configuration>
@@ -220,8 +224,9 @@
     </pluginRepositories>
 
     <properties>
-		<is_folder_name>wso2is-5.6.0</is_folder_name>
+		<is_folder_name>wso2is-km-5.7.0</is_folder_name>
 		<p2_repo_folder>../p2-profile/product/target/p2-repo</p2_repo_folder>
 		<keymanager.feature.version>${carbon.apimgt.version}</keymanager.feature.version>
+		<carbon-governance.version>${carbon.governance.version}</carbon-governance.version>
     </properties>
 </project>
