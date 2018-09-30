@@ -1,5 +1,6 @@
 #users with groups to create
 users:
+  admin: admin
   user1: pass1
   user2: pass2
   user3: pass3
@@ -8,6 +9,10 @@ users:
   user6: pass6
   user7: pass7
 groups:
+  creator: ["user1","user2","user3"]
+  publisher: ["user2","user3"]
+  subscriber: ["user4","user5"]
+  admin: ["user6","user7"]
   group1: ["user1","user2"]
   group2: ["user2","user3"]
   group3: ["user4","user5"]
@@ -22,7 +27,7 @@ admin: ["group4"]
 
 applications:
   -
-    user: user4
+    user: admin
     name: application1
     description: this is application1
     throttlingTier: Unlimited
@@ -30,7 +35,7 @@ applications:
 # List Apis To create
 apis:
   -
-    user: user1
+    user: admin
     name: baseapi1
     context:  /baseapi1/1.0.0
     version:  1.0.0

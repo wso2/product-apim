@@ -18,6 +18,8 @@ package org.wso2.carbon.apimgt.rest.integration.tests.util.auth;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.RetryableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TestUtil;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TokenInfo;
 
@@ -26,6 +28,8 @@ import org.wso2.carbon.apimgt.rest.integration.tests.util.TokenInfo;
  */
 
 public class OAuth implements RequestInterceptor {
+    private static Logger log = LoggerFactory.getLogger(OAuth.class);
+
     private String username;
     private String password;
     private String scopes;
@@ -57,6 +61,7 @@ public class OAuth implements RequestInterceptor {
 
     public synchronized void generateFirstToken() {
         try {
+            log.info("Generate Token for user:" + username);
             tokenInfo = TestUtil.generateToken(username, password, scopes);
         } catch (Exception e) {
             throw new RetryableException(e.getMessage(), e, null);

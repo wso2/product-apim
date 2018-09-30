@@ -322,9 +322,9 @@
     </dependencyManagement>
 
     <properties>
-        <carbon.apimgt.version>7.0.195</carbon.apimgt.version>
-        <carbon.auth.version>1.0.50</carbon.auth.version>
-        <!-- Maven plugins -->
+        <carbon.apimgt.version>7.0.203-SNAPSHOT</carbon.apimgt.version>
+        <carbon.auth.version>1.0.51-SNAPSHOT</carbon.auth.version>
+        <!-- Maven mplugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
 
@@ -379,7 +379,7 @@
 
     <modules>
         <module>modules/distribution</module>
-        <module>modules/gateway</module>
+        <!--<module>modules/gateway</module>-->
         <module>modules/integration-tests</module>
     </modules>
 </project>
