@@ -99,7 +99,7 @@ public class APIService {
             if (APIExportUtil.isCrossTenantAccessPermissionsViolated(apiDomain, userName)) {
                 String error = "Not authorized to export API :\"" + name + "-" + version + "-" + providerName;
                 String backEndError = error + ". Reason: Cross Tenant API access is not allowed. Both the facts; setting " +
-                        "'migrationEnabled=true' system property set at APIM Server startup and the requester being a super " +
+                        "'migrationMode=true' system property set at APIM Server startup and the requester being a super " +
                         "tenant admin, should be satisfied for this to be allowed";
                 log.error(backEndError);
                 return Response.status(Response.Status.FORBIDDEN).entity(error).type(MediaType.APPLICATION_JSON).build();

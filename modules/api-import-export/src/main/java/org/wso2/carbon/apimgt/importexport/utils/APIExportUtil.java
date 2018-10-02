@@ -40,7 +40,6 @@ import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.context.CarbonContext;
@@ -818,7 +817,7 @@ public class APIExportUtil {
 
     /**
      * Checks whether the request is violating cross tenant permission policies. Cross tenant resource access is allowed
-     * only for the super tenant admin user, only if the server is started with 'migrationEnabled=true' system property set.
+     * only for the super tenant admin user, only if the server is started with 'migrationMode=true' system property set.
      *
      * @param apiDomain Tenant domain of the API's provider
      * @param username  Logged in user name
@@ -832,7 +831,7 @@ public class APIExportUtil {
         if (!isCrossTenantAccess) {
             return false;
         }
-        boolean migrationEnabled = Boolean.getBoolean(APIImportExportConstants.MIGRATION_ENABLED);
+        boolean migrationMode = Boolean.getBoolean(APIImportExportConstants.MIGRATION_MODE);
         String superAdminRole = null;
         try {
             superAdminRole = ServiceReferenceHolder.getInstance().getRealmService().
@@ -862,7 +861,7 @@ public class APIExportUtil {
         }
 
         boolean isSuperTenantAdmin = isSuperTenantUser && isSuperAdminRoleNameExist;
-        boolean hasMigrationSpecificPermissions = migrationEnabled && isSuperTenantAdmin;
+        boolean hasMigrationSpecificPermissions = migrationMode && isSuperTenantAdmin;
 
         return !hasMigrationSpecificPermissions;
     }
