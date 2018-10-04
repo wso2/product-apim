@@ -34,9 +34,8 @@ public class API {
     List<String> lifecycleStatusChain;
     String visibility;
     List<String> visibleRoles;
-
     List<String> subscriptionPolicies = new ArrayList<>();
-
+    List<Document> documents = new ArrayList();
     public String getUser() {
         return user;
     }
@@ -115,5 +114,15 @@ public class API {
 
     public void setVisibleRoles(List<String> visibleRoles) {
         this.visibleRoles = visibleRoles;
+    }
+
+    public List<Document> getDocuments() {
+
+        return documents;
+    }
+
+    public void setDocuments(List<Document> documents) {
+
+        this.documents = documents;
     }
 }

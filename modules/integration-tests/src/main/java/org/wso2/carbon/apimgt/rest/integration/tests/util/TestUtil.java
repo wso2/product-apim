@@ -280,6 +280,12 @@ public class TestUtil {
         return new ApiClient(APIM_HOST + AMIntegrationTestConstants.STORE_REST_API_URL, username, password, scopes);
     }
 
+    public static ApiClient getStoreApiClientWithoutUser() throws
+            AMIntegrationTestException {
+
+        return new ApiClient(APIM_HOST + AMIntegrationTestConstants.STORE_REST_API_URL);
+    }
+
     public static ApiClient getAdminApiClient(String username, String password, String scopes) throws
             AMIntegrationTestException {
 

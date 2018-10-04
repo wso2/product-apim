@@ -71,6 +71,19 @@ public class ApiClient {
                         (hostname, sslSession) -> true));
     }
 
+    public ApiClient(String basePath) throws AMIntegrationTestException {
+
+        this.basePath = basePath;
+        objectMapper = createObjectMapper();
+        feignBuilder = Feign.builder()
+                .encoder(new FormEncoder(new JacksonEncoder(objectMapper)))
+                .decoder(new JacksonDecoder(objectMapper))
+                .errorDecoder(new RestAPIErrorDecoder())
+                .logger(new Slf4jLogger())
+                .client(new Client.Default(AMIntegrationSSLSocketFactory.getSSLSocketFactory(KEY_MANAGER_CERT_ALIAS),
+                        (hostname, sslSession) -> true));
+    }
+
 
     private ObjectMapper createObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();

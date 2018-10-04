@@ -122,7 +122,7 @@ public class APILifeCycleTestCaseIT {
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
                 0, "name:api1-lifecycle", "");
         Assert.assertNotNull(apiList);
-        Assert.assertEquals(apiList.getCount().intValue(), 2);
+        Assert.assertTrue(apiList.getCount().intValue() > 1);
     }
 
     @Test(dependsOnMethods = {"testCopyApiVersion"})
@@ -157,7 +157,7 @@ public class APILifeCycleTestCaseIT {
     @AfterClass
     public void destroy() {
 
-        org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
+        org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(10,
                 0, "name:api1-lifecycle", "");
         for (org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIInfo apiInfo : apiList.getList()) {
             if (api.getName().equals(apiInfo.getName())) {

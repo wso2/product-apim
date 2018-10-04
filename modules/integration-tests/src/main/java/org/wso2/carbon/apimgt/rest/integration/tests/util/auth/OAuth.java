@@ -28,15 +28,15 @@ import org.wso2.carbon.apimgt.rest.integration.tests.util.TokenInfo;
  */
 
 public class OAuth implements RequestInterceptor {
+
     private static Logger log = LoggerFactory.getLogger(OAuth.class);
 
     private String username;
     private String password;
     private String scopes;
 
-    private volatile TokenInfo tokenInfo;
-
     public OAuth(String username, String password, String scopes) {
+
         this.username = username;
         this.password = password;
         this.scopes = scopes;
@@ -48,37 +48,20 @@ public class OAuth implements RequestInterceptor {
         if (template.headers().containsKey("Authorization")) {
             return;
         }
-        // If first time, get the token
-        if (tokenInfo == null) {
-            generateFirstToken();
-        } else if (System.currentTimeMillis() - tokenInfo.getExpiryTime() >= 1000) {
-            generateTokenFromRefreshGrant();
-        }
-        if (getAccessToken() != null) {
-            template.header("Authorization", "Bearer " + getAccessToken());
+            TokenInfo tokenInfo = generateFirstToken();
+        if (tokenInfo != null) {
+            template.header("Authorization", "Bearer " + tokenInfo.getToken());
         }
     }
 
-    public synchronized void generateFirstToken() {
+    public TokenInfo generateFirstToken() {
+
         try {
             log.info("Generate Token for user:" + username);
-            tokenInfo = TestUtil.generateToken(username, password, scopes);
+            return TestUtil.generateToken(username, password, scopes);
         } catch (Exception e) {
             throw new RetryableException(e.getMessage(), e, null);
         }
-    }
-
-    public synchronized void generateTokenFromRefreshGrant() {
-        try {
-            tokenInfo = TestUtil.generateToken(scopes, tokenInfo.getRefreshToken());
-        } catch (Exception e) {
-            throw new RetryableException(e.getMessage(), e, null);
-        }
-    }
-
-
-    public synchronized String getAccessToken() {
-        return tokenInfo.getToken();
     }
 
 }
