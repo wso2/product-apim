@@ -177,7 +177,6 @@
                                 </wait>
                                 <wait>
                                     <log>WSO2 Carbon Kernel started</log>
-                                    <time>20000</time>
                                 </wait>
                                 <ports>
                                     <port>+bind.host.name:9443:9443</port>
