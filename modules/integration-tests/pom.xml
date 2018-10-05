@@ -129,9 +129,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--<environmentVariables>
-                        <SERVER_HOST>${docker.container.product-apim.ip}:9443</SERVER_HOST>
-                    </environmentVariables>-->
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
@@ -167,16 +164,8 @@
                             <run>
                                 <namingStrategy>alias</namingStrategy>
                                 <wait>
-                                    <tcp>
-                                        <mode>mapped</mode>
-                                        <ports>
-                                            <port>9443</port>
-                                        </ports>
-                                    </tcp>
-                                    <time>60000</time>
-                                </wait>
-                                <wait>
                                     <log>WSO2 Carbon Kernel started</log>
+                                    <time>60000</time>
                                 </wait>
                                 <ports>
                                     <port>+bind.host.name:9443:9443</port>
