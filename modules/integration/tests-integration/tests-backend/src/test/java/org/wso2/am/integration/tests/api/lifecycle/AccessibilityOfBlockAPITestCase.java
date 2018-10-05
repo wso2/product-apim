@@ -32,12 +32,11 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -115,7 +114,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
-    public void testChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException {
+    public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);

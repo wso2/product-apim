@@ -62,8 +62,7 @@ public class RegistryServiceImpl implements RegistryService {
             log.error("Start tenant flow called without ending previous tenant flow");
             throw new IllegalStateException("Previous tenant flow has not been ended, " +
                                                 "'RegistryService.endTenantFlow()' needs to be called");
-        }
-        else {
+        } else {
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
@@ -77,8 +76,7 @@ public class RegistryServiceImpl implements RegistryService {
             log.error("End tenant flow called even though tenant flow has already been ended or was not started");
             throw new IllegalStateException("Previous tenant flow has already been ended, " +
                     "unnecessary additional RegistryService.endTenantFlow()' call has been detected");
-        }
-        else {
+        } else {
             PrivilegedCarbonContext.endTenantFlow();
             this.tenant = null;
             this.apiProvider = null;
@@ -342,6 +340,65 @@ public class RegistryServiceImpl implements RegistryService {
             }
 
     }
-    
-    
+
+    /**
+     * Update API artifacts for Publisher Access Control feature
+     * @param resourcePath resource path
+     * @param artifact generic artifact
+     */
+    @Override
+    public void updateGenericAPIArtifactsForAccessControl(String resourcePath, GenericArtifact artifact) {
+        try {
+            Registry registry = getGovernanceRegistry();
+            Resource resource = registry.get(resourcePath);
+            boolean isResourceUpdated = false;
+
+            if (resource != null) {
+                String publisherAccessControl = resource.getProperty(Constants.PUBLISHER_ROLES);
+
+                if (publisherAccessControl == null || publisherAccessControl.trim().isEmpty()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("API at " + resourcePath + "did not have property : " + Constants.PUBLISHER_ROLES
+                                + ", hence adding the null value for that API resource.");
+                    }
+                    resource.setProperty(Constants.PUBLISHER_ROLES, Constants.NULL_USER_ROLE_LIST);
+                    resource.setProperty(Constants.ACCESS_CONTROL, Constants.NO_ACCESS_CONTROL);
+                    isResourceUpdated = true;
+                }
+
+                String storeViewRoles = resource.getProperty(Constants.STORE_VIEW_ROLES);
+                String storeVisibility = artifact.getAttribute(Constants.API_OVERVIEW_VISIBILITY);
+                String storeVisibleRoles = artifact.getAttribute(Constants.API_OVERVIEW_VISIBLE_ROLES);
+
+                if (storeViewRoles == null) {
+                    if (Constants.PUBLIC_STORE_VISIBILITY.equals(storeVisibility) || publisherAccessControl == null ||
+                            publisherAccessControl.trim().isEmpty() || publisherAccessControl.equals(Constants.NULL_USER_ROLE_LIST)) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("API at " + resourcePath + "has the public visibility, but  : "
+                                    + Constants.STORE_VIEW_ROLES + " property is not set to "
+                                    + Constants.NULL_USER_ROLE_LIST + ". Hence setting the correct value.");
+                        }
+                        resource.setProperty(Constants.STORE_VIEW_ROLES, Constants.NULL_USER_ROLE_LIST);
+                        isResourceUpdated = true;
+                    } else {
+                        StringBuilder combinedRoles = new StringBuilder(publisherAccessControl);
+                        String[] roles = storeVisibleRoles.split(",");
+
+                        for (String role : roles) {
+                            combinedRoles.append(",").append(role.trim().toLowerCase());
+                        }
+                        resource.setProperty(Constants.STORE_VIEW_ROLES, String.valueOf(combinedRoles));
+                        isResourceUpdated = true;
+                    }
+                }
+                if (isResourceUpdated) {
+                    registry.put(resourcePath, resource);
+                }
+            }
+        } catch (RegistryException e) {
+            log.error("Error occurred when updating GenericArtifacts in registry for the Publisher Access Control feature.", e);
+        } catch (UserStoreException e) {
+            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
+        }
+    }
 }

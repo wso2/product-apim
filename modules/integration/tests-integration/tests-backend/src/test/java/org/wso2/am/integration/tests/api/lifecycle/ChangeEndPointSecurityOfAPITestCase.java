@@ -18,6 +18,9 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -30,12 +33,12 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -45,6 +48,7 @@ import static org.testng.Assert.assertTrue;
  * the response body.
  */
 public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBaseTest {
+    private static final Log log = LogFactory.getLog(ChangeEndPointSecurityOfAPITestCase.class);
     private final String API_NAME = "ChangeEndPointSecurityOfAPITest";
     private final String API_CONTEXT = "ChangeEndPointSecurityOfAPI";
     private final String API_TAGS = "security, username, password";
@@ -153,15 +157,32 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
             waitForAPIDeployment();
 
-            HttpResponse httpResponseGet =
-                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
-                            requestHeadersGet);
-            assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
-                    "endpoint type secured. username:" + endpointUsername + " password:" + String.valueOf(endpointPassword));
-            assertTrue(httpResponseGet.getData().contains(encodedUserNamePassword), "Response Data not match for GET" +
-                    " request for endpoint type secured. Expected value : " + encodedUserNamePassword + " not contains in " +
-                    "response data: " + httpResponseGet.getData() + " username:" + endpointUsername + " password:" +
-                    String.valueOf(endpointPassword));
+            int retries = 3;
+            for (int j = 0; j <= retries; j++) {
+                HttpResponse httpResponseGet = HttpRequestUtil.doGet(
+                        getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec", requestHeadersGet);
+                assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                        "Invocation fails for GET request for endpoint type secured. username:"
+                                + endpointUsername + " password:" + String.valueOf(endpointPassword));
+                if (httpResponseGet.getData().contains(encodedUserNamePassword)) {
+                    Assert.assertTrue(true);
+                    break;
+                } else {
+                    if (j == retries) {
+                        log.error("Max retry count reached!!!");
+                        Assert.fail("Response Data not match for GET request for endpoint type secured. " +
+                                        "Expected value : " + encodedUserNamePassword + " not contains in " +
+                                        "response data: " + httpResponseGet.getData() + " username:" + endpointUsername
+                                        + " password:" + String.valueOf(endpointPassword));
+                    } else {
+                        log.warn("[Warning] Response Data not match for GET request for endpoint type secured. " +
+                                "Expected value : " + encodedUserNamePassword + " not contains in " +
+                                "response data: " + httpResponseGet.getData() + " username:" + endpointUsername
+                                + " password:" + String.valueOf(endpointPassword) + " Retrying...");
+                        waitForAPIDeployment();
+                    }
+                }
+            }
         }
     }
 

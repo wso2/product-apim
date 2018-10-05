@@ -25,19 +25,20 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.xml.xpath.XPathExpressionException;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Publish a API and check its visibility in the API Store.
@@ -114,7 +115,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @Test(groups = {"wso2.am"}, description = "Test the API publishing action. " +
             "Response HTTP message should contains API status change from  CREATED to PUBLISHED",
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
-    public void testAPIPublishing() throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void testAPIPublishing() throws Exception {
         //Publish the API
         HttpResponse publishAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);

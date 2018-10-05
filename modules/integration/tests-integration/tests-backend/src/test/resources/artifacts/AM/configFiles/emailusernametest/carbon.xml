@@ -348,6 +348,33 @@
     <EnableEmailUserName>true</EnableEmailUserName>
 
     <!--
+    Configurations related to Carbon Crypto Service which is a crypto framework used inside Carbon products.
+ -->
+    <CryptoService>
+
+        <Enabled>true</Enabled>
+
+        <!-- The crypto provider which is used for internal data encryption and decryption -->
+        <InternalCryptoProviderClassName>org.wso2.carbon.crypto.provider.KeyStoreBasedInternalCryptoProvider</InternalCryptoProviderClassName>
+
+        <!--
+            The crypto provider which is used for the crypto needs which come when communicating with external parties.
+            e.g. Signing, Decrypting.
+        -->
+        <ExternalCryptoProviderClassName>org.wso2.carbon.core.encryption.KeyStoreBasedExternalCryptoProvider</ExternalCryptoProviderClassName>
+
+        <!--
+            The list of key resolvers which will be used based on the context when handling crypto with external parties.
+
+            e.g. Resolving the public key of an external entity.
+        -->
+        <KeyResolvers>
+            <KeyResolver className="org.wso2.carbon.crypto.defaultProvider.resolver.ContextIndependentKeyResolver" priority="-1"/>
+        </KeyResolvers>
+
+    </CryptoService>
+
+    <!--
       Security configurations
     -->
     <Security>
@@ -367,6 +394,24 @@
             <!-- Private Key password-->
             <KeyPassword>wso2carbon</KeyPassword>
         </KeyStore>
+
+        <!--
+          The KeyStore which is used for encrypting/decrypting internal data.
+          This block is read by Carbon Crypto Service.
+      -->
+        <InternalKeyStore>
+            <!-- Keystore file location-->
+            <Location>${carbon.home}/repository/resources/security/wso2carbon.jks</Location>
+            <!-- Keystore type (JKS/PKCS12 etc.)-->
+            <Type>JKS</Type>
+            <!-- Keystore password-->
+            <Password>wso2carbon</Password>
+            <!-- Private Key alias-->
+            <KeyAlias>wso2carbon</KeyAlias>
+            <!-- Private Key password-->
+            <KeyPassword>wso2carbon</KeyPassword>
+        </InternalKeyStore>
+
 
 		 <!--
 			Encrypt Decrypt Store will be used for encrypting and decrypting

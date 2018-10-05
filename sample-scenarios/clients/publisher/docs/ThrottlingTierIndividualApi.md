@@ -1,6 +1,6 @@
 # ThrottlingTierIndividualApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v0.13*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v0.14*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 Delete a Tier
 
-This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
 
 ### Example
 ```java
@@ -119,7 +119,7 @@ No authorization required
 
 Update a Tier
 
-This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.13/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
 
 ### Example
 ```java

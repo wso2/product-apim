@@ -52,7 +52,7 @@ By executing the scenario 4 using the run.sh as mentioned below will add the sam
 
 ### Running the sample
 
-1. Start the wso2am-2.5.0 distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
+1. Start the wso2am-2.6.0 distribution by executing **[APIM_HOME]**/bin/wso2server.sh or **[APIM_HOME]**/bin/wso2server.bat
 
 2. Run the file run.sh in sample scenarios root directory**[APIM_HOME/sample-scenarios] **as ./run.sh and enter number 4.
 

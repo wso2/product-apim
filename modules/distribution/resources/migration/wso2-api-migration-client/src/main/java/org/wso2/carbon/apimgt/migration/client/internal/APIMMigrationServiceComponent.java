@@ -75,6 +75,7 @@ public class APIMMigrationServiceComponent {
         String specificVersion = System.getProperty(Constants.ARG_RUN_SPECIFIC_VERSION);
         String component = System.getProperty(Constants.ARG_COMPONENT);
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
+        String tenantRange = System.getProperty(Constants.ARG_MIGRATE_TENANTS_RANGE);
         String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
@@ -86,6 +87,7 @@ public class APIMMigrationServiceComponent {
                 System.getProperty(Constants.ARG_REMOVE_DECRYPTION_FAILED_CONSUMER_KEYS_FROM_DB));
 
         try {
+            MigrationClient accessControlMigrationClient = new AccessControlMigrationClient(tenants, blackListTenants, tenantRange, registryService, tenantManager);
             RegistryServiceImpl registryService = new RegistryServiceImpl();
             TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
@@ -105,6 +107,8 @@ public class APIMMigrationServiceComponent {
             arguments.setOptions(options);
             MigrationExecutor.execute(arguments);
 
+            //Publisher Access Contro feature related migrations
+            accessControlMigrationClient.registryResourceMigration();
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
@@ -163,6 +167,7 @@ public class APIMMigrationServiceComponent {
     protected void setRealmService(RealmService realmService) {
         log.debug("Setting RealmService for WSO2 API Manager migration");
         ServiceHolder.setRealmService(realmService);
+        IdentityTenantUtil.setRealmService(realmService);
     }
 
     /**
@@ -175,6 +180,7 @@ public class APIMMigrationServiceComponent {
             log.debug("Unset Realm service");
         }
         ServiceHolder.setRealmService(null);
+        IdentityTenantUtil.setRealmService(null);
     }
 
     /**

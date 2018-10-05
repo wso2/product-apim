@@ -21,11 +21,11 @@ Steps:
 ------
 ** IMPORTANT: If you have already configured any other sample, start from Step 7 **
 
-1. Extract wso2am-xxx.zip (eg: wso2am-2.5.0.zip)
+1. Extract wso2am-xxx.zip (eg: wso2am-2.6.0.zip)
 
-2. Go to wso2am-2.5.0/bin folder & type 'ant'
+2. Go to wso2am-2.6.0/bin folder & type 'ant'
 
-3. Start WSO2AM by executing wso2am-2.5.0/bin/wso2server.sh
+3. Start WSO2AM by executing wso2am-2.6.0/bin/wso2server.sh
  You can login to API Publisher's console
 URL - https://localhost:9443/publisher/
 Username/password - admin/admin

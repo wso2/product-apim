@@ -51,6 +51,7 @@
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/identity.xml</exclude>
                 <exclude>**/user-mgt.xml</exclude>
+                <exclude>**/metrics.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
         	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
@@ -472,7 +473,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.13.war</include>
+                <include>api#am#store#v0.14.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -492,7 +493,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.13.war</include>
+                <include>api#am#publisher#v0.14.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -502,7 +503,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.13.war</include>
+                <include>api#am#admin#v0.14.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -522,7 +523,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.13.war</include>
+                <include>client-registration#v0.14.war</include>
             </includes>
         </fileSet>
 
@@ -957,7 +958,12 @@
             <destName>carbon.properties</destName>
             <filtered>true</filtered>
         </file>
-
+        <file>
+            <source>src/main/conf/metrics.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>metrics.xml</destName>
+            <filtered>true</filtered>
+        </file>
         <!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/rule-engine-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
@@ -1050,6 +1056,12 @@
 	    <fileMode>644</fileMode>
         </file>
         <file>
+            <source>../resources/updates/product.txt</source>
+            <outputDirectory>wso2am-${pom.version}/updates/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>src/main/conf/cloud-services-desc.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <filtered>true</filtered>
@@ -1081,7 +1093,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-	<file>
+	    <file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/lifecycles/APILifeCycle.xml
             </source>

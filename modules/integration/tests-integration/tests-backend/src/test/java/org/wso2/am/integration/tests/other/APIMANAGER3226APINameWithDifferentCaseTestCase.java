@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.other;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -38,6 +40,8 @@ import static org.testng.Assert.assertTrue;
 
 @SetEnvironment (executionEnvironments = { ExecutionEnvironment.STANDALONE})
 public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrationBaseTest {
+
+    private static final Log log = LogFactory.getLog(APIMANAGER3226APINameWithDifferentCaseTestCase.class);
 
     private APIPublisherRestClient apiPublisher;
     String apiName = "echo";
@@ -88,7 +92,8 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
         HttpResponse addDuplicateAPIResponse = apiPublisher.addAPI(apiRequest);
-        assertTrue(addDuplicateAPIResponse.getData().contains("A duplicate API name already exists for ECho"),
+        log.info("Response: " + addDuplicateAPIResponse.getData());
+        assertTrue(addDuplicateAPIResponse.getData().contains("A duplicate API already exists for ECho"),
                 "Validation fails for adding API with same name with different case");
 
     }

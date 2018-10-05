@@ -21,11 +21,11 @@ Steps:
 ------
 ** IMPORTANT: If you have already configured any other sample, start from Step 7 **
 
-1. Extract wso2am-xxx.zip (eg: wso2am-2.5.0.zip)
+1. Extract wso2am-xxx.zip (eg: wso2am-2.6.0.zip)
 
-2. Go to wso2am-2.5.0/bin folder & type 'ant'
+2. Go to wso2am-2.6.0/bin folder & type 'ant'
 
-3. Start WSO2AM by executing wso2am-2.5.0/bin/wso2server.sh
+3. Start WSO2AM by executing wso2am-2.6.0/bin/wso2server.sh
 This step will populate all master data required for WSO2AM server to start up. In next few steps, we are going to add
 some more master data required for this sample.
 
@@ -35,7 +35,7 @@ Username/password - admin/admin
 
 Take a note of the fact that there are no APIs published. Next step adds an API & publishes it to API store.
 
-7. Run wso2am-2.5.0/samples/WikipediaAPI/APIPopulator.sh  (or APIPopulator.bat if you are on Windows)
+7. Run wso2am-2.6.0/samples/WikipediaAPI/APIPopulator.sh  (or APIPopulator.bat if you are on Windows)
 You will see an output similar to following on the console. Refresh above page & you should be seeing the newly added Wikipedia API.
 
 {"error" : "false"}

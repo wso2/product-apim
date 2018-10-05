@@ -20,7 +20,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.lifecycle.LifeCycleAdminClient;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -72,7 +71,7 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Check custom life cycle state.")
-    public void testCustomLifeCycle() throws APIManagerIntegrationTestException {
+    public void testCustomLifeCycle() throws Exception {
         //Create and publish api
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClient, false);
         APILifeCycleStateRequest apiLifeCycleStatusChangeRequest = new APILifeCycleStateRequest(API_NAME,

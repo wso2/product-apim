@@ -492,6 +492,37 @@ public class APIStoreRestClient {
         }
     }
 
+
+    /**
+     * Add application with token type
+     *
+     * @param application - application  name
+     * @param tier        - throttling tier
+     * @param callbackUrl - callback url
+     * @param description - description of app
+     * @param tokenType - token type of app (JWT ot DEFAULT)
+     * @return - http response of add application
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     */
+    public HttpResponse addApplicationWithTokenType(String application, String tier, String callbackUrl,
+                                                    String description, String tokenType)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL +
+                            "store/site/blocks/application/application-add" +
+                            "/ajax/application-add.jag?action=addApplication&tier=" +
+                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
+                            "&application=" + application + "&tokenType=" + tokenType), "", requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to add application - " + application
+                    + ". Error: " + e.getMessage(), e);
+
+        }
+    }
+
     /**
      * Get application
      *

@@ -40,7 +40,7 @@ import static org.testng.Assert.assertTrue;
 
 /**
  * Test case for the fix for APIMANAGER-5898 - When the status is ON_HOLD, the publisher rest API should return the
- * external workflow id in the response to GET /api/am/publisher/v0.13//subscriptions/{subscriptionId1}
+ * external workflow id in the response to GET /api/am/publisher/v0.14//subscriptions/{subscriptionId1}
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE})
 public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTest {

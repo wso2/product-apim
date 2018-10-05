@@ -34,7 +34,7 @@
 
 ### Implement using WSO2 API Manager
 
-* We need to place wso2am-analytics-2.5.0 pack in the same location where the wso2am-2.5.0 pack is placed.
+* We need to place wso2am-analytics-2.6.0 pack in the same location where the wso2am-2.6.0 pack is placed.
 
 * We need custom advance throttling policies that can be engage to the API’s
 
@@ -88,9 +88,9 @@ Added advance throttling policies in Admin app![](images/image_6.png)![](images/
 
 ### Running the sample
 
-* Start the wso2am-analytics-2.5.0 distribution by executing [ANALYTICS_HOME]/bin/wso2server.sh or [ANALYTICS_HOME]/bin/wso2server.bat
+* Start the wso2am-analytics-2.6.0 distribution by executing [ANALYTICS_HOME]/bin/wso2server.sh or [ANALYTICS_HOME]/bin/wso2server.bat
 
-* Start the wso2am-2.5.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
+* Start the wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
 
 * Run the file run.sh in the sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 
