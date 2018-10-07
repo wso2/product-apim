@@ -1,0 +1,63 @@
+---
+apim:tier_view:
+- admin
+apim:tier_manage:
+- admin
+apim:bl_view:
+- admin
+apim:bl_manage:
+- admin
+apim:label_view:
+- admin
+apim:label_manage:
+- admin
+apim:workflow_view:
+- admin
+apim:workflow_approve:
+- admin
+apim:application_graph:
+- admin
+apim:api_graph:
+- admin
+apim:subscription_graph:
+- admin
+apim:api_view:
+- creator
+- publisher
+- admin
+apim:api_create:
+- creator
+- admin
+apim:api_update:
+- creator
+- admin
+apim:api_delete:
+- creator
+- publisher
+- admin
+apim:apidef_update:
+- creator
+- admin
+apim:api_publish:
+- publisher
+- admin
+apim:subscription_view:
+- creator
+- publisher
+- admin
+apim:subscription_block:
+- creator
+- publisher
+- admin
+apim:dedicated_gateway:
+- admin
+apim:external_services_discover:
+- creator
+- publisher
+- admin
+apim:subscribe:
+- subscriber
+- admin
+apim:self-signup:
+- subscriber
+- admin

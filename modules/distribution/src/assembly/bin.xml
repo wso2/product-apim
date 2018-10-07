@@ -180,6 +180,12 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>carbon-home/conf/system-scopes.yaml</source>
+            <outputDirectory>conf/default/</outputDirectory>
+            <fileMode>644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>carbon-home/conf/security/users.yaml</source>
             <outputDirectory>wso2/default/conf/security</outputDirectory>
             <fileMode>644</fileMode>

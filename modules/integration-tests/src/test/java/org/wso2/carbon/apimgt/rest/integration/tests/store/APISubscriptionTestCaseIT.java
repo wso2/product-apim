@@ -23,17 +23,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
-import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.RestAPIException;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.ApplicationIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.SubscriptionCollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.SubscriptionIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Subscription;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.SubscriptionList;
-import org.wso2.carbon.apimgt.rest.integration.tests.util.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TestUtil;
-
-import java.util.Map;
 
 public class APISubscriptionTestCaseIT {
 
@@ -57,8 +53,7 @@ public class APISubscriptionTestCaseIT {
         application = applicationIndividualApi.applicationsPost(application);
     }
 
-    // This need to be enable once Scope validation done at auth end
-    @Test(enabled = false)
+    @Test(description = "Try to create Application from Creator user")
     public void testCreateApplicationWithInSufficientPermissionNegative() throws AMIntegrationTestException {
         ApplicationIndividualApi applicationIndividualApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
                 ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(ApplicationIndividualApi.class);
@@ -81,8 +76,8 @@ public class APISubscriptionTestCaseIT {
 
     @Test(dependsOnMethods = "testCreateSubscription")
     public void testGetAllSubscriptionsByApplication() throws AMIntegrationTestException {
-        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
-                ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
+        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
         SubscriptionList subscriptionList = subscriptionCollectionApi.subscriptionsGet("", application
                 .getApplicationId(), "", 0, 10, "");
         Assert.assertNotNull(subscriptionList);
@@ -94,8 +89,8 @@ public class APISubscriptionTestCaseIT {
 
     @Test(dependsOnMethods = "testCreateSubscription")
     public void testGetAllSubscriptionsByAPIId() throws AMIntegrationTestException {
-        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user1", TestUtil.getUser
-                ("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
+        SubscriptionCollectionApi subscriptionCollectionApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionCollectionApi.class);
         SubscriptionList subscriptionList = subscriptionCollectionApi.subscriptionsGet(subscription.getApiIdentifier
                 (), "", "", 0, 10, "");
         Assert.assertNotNull(subscriptionList);

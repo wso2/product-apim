@@ -43,8 +43,10 @@ import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.GroupsApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.UserIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.api.UsersApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.model.Group;
+import org.wso2.carbon.apimgt.rest.integration.tests.scim.model.GroupList;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.model.Member;
 import org.wso2.carbon.apimgt.rest.integration.tests.scim.model.User;
+import org.wso2.carbon.apimgt.rest.integration.tests.scim.model.UserList;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.api.ApplicationIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 
@@ -62,6 +64,7 @@ import java.util.Set;
  * Utility class for Test
  */
 public class TestUtil {
+
     private static Logger logger = LoggerFactory.getLogger(TestUtil.class);
     public static String clientId;
     private static String clientSecret;
@@ -94,6 +97,7 @@ public class TestUtil {
      */
     public static TokenInfo generateToken(String username, String password, String scopes) throws
             AMIntegrationTestException {
+
         if (StringUtils.isEmpty(clientId) | StringUtils.isEmpty(clientSecret)) {
             try {
                 generateClient();
@@ -108,6 +112,7 @@ public class TestUtil {
     }
 
     private static DCRClientInfo generateClient() throws APIManagementException {
+
         DCRClientInfo dcrClientInfo = new DCRClientInfo();
         dcrClientInfo.setClientName("apim-integration-test");
         dcrClientInfo.setGrantTypes(Arrays.asList(new String[]{"password", "client_credentials"}));
@@ -123,16 +128,19 @@ public class TestUtil {
         }
     }
 
-    public static DCRMServiceStub getDcrmServiceStub(String username,String password) throws APIManagementException {
+    public static DCRMServiceStub getDcrmServiceStub(String username, String password) throws APIManagementException {
 
         return DCRMServiceStubFactory.getDCRMServiceStub(DYNAMIC_CLIENT_REGISTRATION_ENDPOINT,
                 username, password, KEY_MANAGER_CERT_ALIAS);
     }
+
     public static DCRClientInfo getDCRClientInfo(Response response) throws IOException {
-        return (DCRClientInfo) new GsonDecoder().decode(response,DCRClientInfo.class);
+
+        return (DCRClientInfo) new GsonDecoder().decode(response, DCRClientInfo.class);
     }
 
     private static OAuth2ServiceStubs.TokenServiceStub getOauth2Client() throws AMIntegrationTestException {
+
         try {
             return new OAuth2ServiceStubs(TOKEN_ENDPOINT_URL, "", "", "", "wso2carbon", "admin", "admin")
                     .getTokenServiceStub();
@@ -148,6 +156,7 @@ public class TestUtil {
      * @throws URISyntaxException if docker Host url is malformed this will throw
      */
     public static String getIpAddressOfContainer() {
+
         String ip = "localhost:9443";
         String dockerHost = System.getenv("SERVER_HOST");
         if (!StringUtils.isEmpty(dockerHost)) {
@@ -162,6 +171,7 @@ public class TestUtil {
      * @throws AMIntegrationTestException
      */
     public static void initConfiguration() throws AMIntegrationTestException {
+
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         try {
@@ -180,61 +190,115 @@ public class TestUtil {
 
     private static void createUsers() throws AMIntegrationTestException {
 
-
         UsersApi usersApi = new ApiClient(APIM_HOST + AMIntegrationTestConstants.SCIM_REST_API_URL, username,
                 password).buildClient(UsersApi.class);
         for (Map.Entry<String, String> user : users.getUsers().entrySet()) {
-            User scimUser = new User().userName(user.getKey()).password(user.getValue());
-            scimUser = usersApi.usersPost(scimUser);
-            userMap.put(user.getKey(), scimUser);
+            UserList userList = usersApi.usersGet(0, 1, EncodingUtils.encode("userName eq " + user.getKey()));
+            if (userList.getResources() == null || userList.getResources().isEmpty()) {
+                User scimUser = new User().userName(user.getKey()).password(user.getValue());
+                scimUser = usersApi.usersPost(scimUser);
+                userMap.put(user.getKey(), scimUser);
+                logger.info("User Created:" + user.getKey());
+            } else {
+                logger.info("User Already Exist:" + user.getKey());
+                userMap.put(user.getKey(), userList.getResources().get(0));
+            }
 
         }
         GroupsApi groupsApi = new ApiClient(APIM_HOST + AMIntegrationTestConstants.SCIM_REST_API_URL, username,
                 password).buildClient(GroupsApi.class);
+        GroupIndividualApi groupIndividualApi = new ApiClient(APIM_HOST + AMIntegrationTestConstants
+                .SCIM_REST_API_URL, username, password).buildClient(GroupIndividualApi.class);
         groups.getGroups().forEach((group, userList) -> {
-            Group group1 = new Group().displayName(group);
-            for (String user : userList) {
-                group1.addMembersItem(new Member().value(userMap.get(user).getId()));
+            GroupList groupList = groupsApi.groupsGet(0, 1, EncodingUtils.encode("displayName eq " + group));
+            Group createdGroup = null;
+            if (groupList.getResources() == null || groupList.getResources().isEmpty()) {
+                Group group1 = new Group().displayName(group);
+                createdGroup = groupsApi.groupsPost(group1);
+                logger.info("Group Created" + group);
+            } else {
+                for (Group group1 : groupList.getResources()) {
+                    if (group.equals(group1.getDisplayName())) {
+                        logger.info("Group Already Exist" + group);
+                        createdGroup = groupIndividualApi.groupsIdGet(group1.getId());
+                        break;
+                    }
+                }
             }
-            groupSet.add(groupsApi.groupsPost(group1));
-        });
+            if (createdGroup != null) {
+                for (String user : userList) {
+                    boolean userExist = false;
+                    if (createdGroup.getMembers() != null) {
+                        for (Member member : createdGroup.getMembers()) {
+                            if (user.equals(member.getDisplay())) {
+                                logger.info("User " + user + " Already Exist in Group: " + group);
+                                userExist = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!userExist) {
+                        logger.info("User " + user + " Added in to Group: " + group);
 
+                        createdGroup.addMembersItem(new Member().value(userMap.get(user).getId()));
+                    }
+                }
+                groupIndividualApi.groupsIdPut(createdGroup.getId(), createdGroup);
+                logger.info("Group " + group + " Updated with users");
+                groupSet.add(createdGroup);
+            }
+        });
     }
 
-
     public static void cleanupUsers() throws AMIntegrationTestException {
+
         UserIndividualApi userIndividualApi = new ApiClient(APIM_HOST + AMIntegrationTestConstants.SCIM_REST_API_URL,
                 username, password).buildClient(UserIndividualApi.class);
         GroupIndividualApi groupIndividualApi = new ApiClient(APIM_HOST + AMIntegrationTestConstants
                 .SCIM_REST_API_URL, username, password).buildClient(GroupIndividualApi.class);
         userMap.values().forEach(user -> {
-            userIndividualApi.usersIdDelete(user.getId());
+            if (!"admin".equals(user.getUserName())) {
+                userIndividualApi.usersIdDelete(user.getId());
+            }
         });
         groupSet.forEach(group -> {
-            groupIndividualApi.groupsIdDelete(group.getId());
+            if (!"admin".equals(group.getDisplayName())) {
+                groupIndividualApi.groupsIdDelete(group.getId());
+            }
         });
     }
 
     public static ApiClient getPublisherApiClient(String username, String password, String scopes) throws
             AMIntegrationTestException {
+
         return new ApiClient(APIM_HOST + AMIntegrationTestConstants.PUBLISHER_REST_API_URL, username, password, scopes);
     }
 
     public static ApiClient getStoreApiClient(String username, String password, String scopes) throws
             AMIntegrationTestException {
+
         return new ApiClient(APIM_HOST + AMIntegrationTestConstants.STORE_REST_API_URL, username, password, scopes);
+    }
+
+    public static ApiClient getStoreApiClientWithoutUser() throws
+            AMIntegrationTestException {
+
+        return new ApiClient(APIM_HOST + AMIntegrationTestConstants.STORE_REST_API_URL);
     }
 
     public static ApiClient getAdminApiClient(String username, String password, String scopes) throws
             AMIntegrationTestException {
+
         return new ApiClient(APIM_HOST + AMIntegrationTestConstants.ADMIN_REST_API_URL, username, password, scopes);
     }
 
     public static String getUser(String username) {
+
         return users.getUsers().get(username);
     }
 
     public static List<String> getGroupsOfUser(String username) {
+
         List<String> groupList = new ArrayList<>();
         groups.getGroups().forEach((group, userList) -> {
             if (userList.contains(username)) {
@@ -245,6 +309,7 @@ public class TestUtil {
     }
 
     public static Set<String> getApimUserGroupsOfUser(String username) {
+
         Set<String> userGroups = new HashSet<>();
         List<String> groupList = getGroupsOfUser(username);
         groupList.forEach(group -> {
@@ -265,6 +330,7 @@ public class TestUtil {
     }
 
     public static void createInitialApplications() throws AMIntegrationTestException {
+
         for (org.wso2.carbon.apimgt.rest.integration.tests.util.Application application : applicationList
                 .getApplications()) {
             ApplicationIndividualApi applicationIndividualApi = getStoreApiClient(application.getUser(), getUser
@@ -277,6 +343,7 @@ public class TestUtil {
     }
 
     public static void createInitialApis() throws AMIntegrationTestException {
+
         for (org.wso2.carbon.apimgt.rest.integration.tests.util.API api : apiList.getApis()) {
             APICollectionApi apiCollectionApi = getPublisherApiClient(api.getUser(), getUser(api.getUser()),
                     AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
@@ -295,6 +362,7 @@ public class TestUtil {
     }
 
     public static void destroyApplications() throws AMIntegrationTestException {
+
         for (org.wso2.carbon.apimgt.rest.integration.tests.util.Application application : applicationList
                 .getApplications()) {
             ApplicationIndividualApi applicationIndividualApi = getStoreApiClient(application.getUser(), getUser
@@ -308,6 +376,7 @@ public class TestUtil {
     }
 
     public static void destroyApis() throws AMIntegrationTestException {
+
         for (org.wso2.carbon.apimgt.rest.integration.tests.util.API api : apiList.getApis()) {
             APIIndividualApi apiIndividualApi = getPublisherApiClient(api.getUser(), getUser
                     (api.getUser()), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
@@ -318,15 +387,18 @@ public class TestUtil {
     }
 
     public static Application getApplication(String applicationName) {
+
         return applicationMap.get(applicationName);
     }
 
     public static API getApi(String apiName) {
+
         return apiMap.get(apiName);
     }
 
     public static TokenInfo generateToken(String scopes, String refreshToken)
             throws AMIntegrationTestException {
+
         if (StringUtils.isEmpty(clientId) | StringUtils.isEmpty(clientSecret)) {
             try {
                 generateClient();
@@ -341,6 +413,7 @@ public class TestUtil {
     }
 
     private static TokenInfo getTokenInfo(Response response) throws AMIntegrationTestException {
+
         if (response.status() == APIMgtConstants.HTTPStatusCodes.SC_200_OK) {   //200 - Success
             logger.debug("A new access token is successfully generated.");
             try {

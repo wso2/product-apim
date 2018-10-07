@@ -1,5 +1,6 @@
 #users with groups to create
 users:
+  admin: admin
   user1: pass1
   user2: pass2
   user3: pass3
@@ -7,22 +8,27 @@ users:
   user5: pass5
   user6: pass6
   user7: pass7
+  user8: pass8
 groups:
+  creator: ["user1","user2","user3"]
+  publisher: ["user2","user3"]
+  subscriber: ["user4","user5","user6","user7"]
+  admin: ["user6","user7"]
   group1: ["user1","user2"]
   group2: ["user2","user3"]
-  group3: ["user4","user5"]
-  group4: ["user6","user7"]
+  group3: ["user4","user5","user6"]
+  group4: ["user6","user7","user8"]
 
 creator: ["group1","group2"]
 publisher: ["group2"]
-subscriber: ["group3"]
+subscriber: ["group3","group4"]
 admin: ["group4"]
 
 # List Applications to Create
 
 applications:
   -
-    user: user4
+    user: admin
     name: application1
     description: this is application1
     throttlingTier: Unlimited
@@ -30,7 +36,7 @@ applications:
 # List Apis To create
 apis:
   -
-    user: user1
+    user: admin
     name: baseapi1
     context:  /baseapi1/1.0.0
     version:  1.0.0
@@ -40,3 +46,27 @@ apis:
     lifecycleStatusChain:  ["Published"]
     visibility: PUBLIC
     visibleRoles: []
+    documents:
+     -
+       name: How to Base
+       type: HOWTO
+       summary: This is a inline document
+       sourceType: INLINE
+       inlineContent: This is a inline Document
+     -
+       name:
+       type: HOWTO
+       summary: This is a File Document
+       sourceType: FILE
+       fileName: file1.pdf
+  -
+    user: admin
+    name: restrictedapi1
+    context:  /restrictedapi1/1.0.0
+    version:  1.0.0
+    description: this is base api1
+    subscriptionPolicies: ["Unlimited","Gold","Bronze"]
+    endpoint: http://localhost
+    lifecycleStatusChain:  ["Published"]
+    visibility: RESTRICTED
+    visibleRoles: ["group4"]
