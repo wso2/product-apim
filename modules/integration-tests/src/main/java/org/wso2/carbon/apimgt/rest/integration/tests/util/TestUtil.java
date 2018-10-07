@@ -111,6 +111,15 @@ public class TestUtil {
         return getTokenInfo(response);
     }
 
+    public static TokenInfo generateToken(String clientId, String clientSecret, String username, String password,
+                                          String scopes) throws
+            AMIntegrationTestException {
+        OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
+        Response response = tokenServiceStub.generatePasswordGrantAccessToken(username, password, scopes, -1,
+                clientId, clientSecret);
+        return getTokenInfo(response);
+    }
+
     private static DCRClientInfo generateClient() throws APIManagementException {
 
         DCRClientInfo dcrClientInfo = new DCRClientInfo();
