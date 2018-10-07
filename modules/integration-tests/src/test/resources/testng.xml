@@ -2,6 +2,9 @@
 
 <suite name="ApiManager_IntegrationTest_Suite" verbose="1">
 
+    <listeners>
+        <listener class-name="org.wso2.carbon.apimgt.rest.integration.tests.common.TestManagerListener"/>
+    </listeners>
     <test name="REST_API_IntegrationTest" preserve-order="true" parallel="false" thread-count="1">
         <classes>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.APIMgtBaseIntegrationIT"/>

@@ -17,11 +17,8 @@
  */
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.core.models.APIStatus;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
@@ -40,39 +37,32 @@ import java.io.File;
 public class APILifeCycleTestCaseIT {
 
     private API api;
-    APICollectionApi apiCollectionApi;
-    APIIndividualApi apiIndividualApi;
-
-    private static final Logger log = LoggerFactory.getLogger(APILifeCycleTestCaseIT.class);
-
-    @BeforeClass
-    public void init() throws AMIntegrationTestException {
-
-        apiCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
-                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
-        apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
-                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
-    }
 
     @Test
-    public void testCreateApi() {
+    public void testCreateApi() throws AMIntegrationTestException {
 
+        APICollectionApi apiCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
         api = SampleTestObjectCreator.ApiToCreate("api1-lifecycle", "1.0.0", "/apiLifecycle");
         api = apiCollectionApi.apisPost(api);
         Assert.assertNotNull(api.getId());
     }
 
     @Test(dependsOnMethods = {"testCreateApi"})
-    public void testUpdateApi() {
+    public void testUpdateApi() throws AMIntegrationTestException {
 
+        APIIndividualApi apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
         api.addPoliciesItem("Gold");
         api.addTransportItem("http");
         api = apiIndividualApi.apisApiIdPut(api.getId(), api, "", "");
     }
 
     @Test(dependsOnMethods = {"testUpdateApi"})
-    public void testUpdateImage() {
+    public void testUpdateImage() throws AMIntegrationTestException {
 
+        APIIndividualApi apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
         FileInfo fileInfo = apiIndividualApi.apisApiIdThumbnailPost(api.getId(), new File(Thread.currentThread()
                 .getContextClassLoader().getResource("img1.jpg").getPath()), null, null);
         apiIndividualApi.apisApiIdThumbnailGet(api.getId(), null, null);
@@ -116,7 +106,12 @@ public class APILifeCycleTestCaseIT {
     }
 
     @Test(dependsOnMethods = {"testMakeApiPublished"})
-    public void testCopyApiVersion() {
+    public void testCopyApiVersion() throws AMIntegrationTestException {
+
+        APIIndividualApi apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
+        APICollectionApi apiCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
 
         apiIndividualApi.apisCopyApiPost("v2.0.0", api.getId());
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
@@ -155,7 +150,12 @@ public class APILifeCycleTestCaseIT {
     }
 
     @AfterClass
-    public void destroy() {
+    public void destroy() throws AMIntegrationTestException {
+
+        APIIndividualApi apiIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);
+        APICollectionApi apiCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
 
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(10,
                 0, "name:api1-lifecycle", "");
