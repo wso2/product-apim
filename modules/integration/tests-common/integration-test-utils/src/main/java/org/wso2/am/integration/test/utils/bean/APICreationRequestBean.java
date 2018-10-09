@@ -46,6 +46,25 @@ public class APICreationRequestBean extends AbstractRequest {
     private String endpointAuthType = "basicAuth";
     private String httpChecked = "http";
     private String httpsChecked = "https";
+    private String mutualSSLChecked = "";
+
+    public String getMutualSSLChecked() {
+        return mutualSSLChecked;
+    }
+
+    public void setMutualSSLChecked(String mutualSSLChecked) {
+        this.mutualSSLChecked = mutualSSLChecked;
+    }
+
+    public String getOauth2Checked() {
+        return oauth2Checked;
+    }
+
+    public void setOauth2Checked(String oauth2Checked) {
+        this.oauth2Checked = oauth2Checked;
+    }
+
+    private String oauth2Checked = "";
     private String tags = "tags";
     private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
@@ -471,6 +490,8 @@ public class APICreationRequestBean extends AbstractRequest {
         }
         addParameter("http_checked", getHttpChecked());
         addParameter("https_checked", getHttpsChecked());
+        addParameter("oauth2_checked", getOauth2Checked());
+        addParameter("mutualssl_checked", getMutualSSLChecked());
         addParameter("tags", getTags());
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());

@@ -333,7 +333,7 @@
        <!-- ============================================== -->
        <parameter name="dynamicSSLProfilesConfig">
            <filePath>repository/resources/security/listenerprofiles.xml</filePath>
-           <fileReadInterval>600000</fileReadInterval>
+           <fileReadInterval>6000</fileReadInterval>
        </parameter>
        <parameter name="SSLVerifyClient">optional</parameter>
         <!--<parameter name="SSLVerifyClient">require</parameter>

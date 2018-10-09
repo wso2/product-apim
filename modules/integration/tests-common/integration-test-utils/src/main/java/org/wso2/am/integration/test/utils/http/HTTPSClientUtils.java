@@ -18,6 +18,8 @@
 */
 package org.wso2.am.integration.test.utils.http;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -27,16 +29,28 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
+import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +60,7 @@ import java.util.Map;
  * This class is high level implementation for the HTTP client for Secure connection
  */
 public class HTTPSClientUtils {
+    private static Log log = LogFactory.getLog(HttpRequestUtil.class);
 
     /**
      * do HTTP GET operation for the given URL
@@ -63,6 +78,7 @@ public class HTTPSClientUtils {
         return constructResponse(response);
     }
 
+
     /**
      * do HTTP POST operation for the given URL
      *
@@ -78,6 +94,24 @@ public class HTTPSClientUtils {
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
     }
+
+    /**
+     * To do HTTPS GET operation for the given URL with mutual SSL.
+     *
+     * @param url     request URL
+     * @param headers headers to be send
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doMutulSSLGet(String path, String url,
+            Map<String, String> headers)
+            throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
+            UnrecoverableKeyException {
+        CloseableHttpClient httpClient = getMutualSSLHttpsClient(path);
+        HttpResponse response = sendGetRequest(httpClient, url, headers);
+        return constructResponse(response);
+    }
+
 
     /**
      * do HTTP POST operation for the given URL
@@ -161,11 +195,40 @@ public class HTTPSClientUtils {
                 .setConnectTimeout(timeout * 10000)
                 .setConnectionRequestTimeout(timeout * 10000)
                 .setSocketTimeout(timeout * 10000).build();
-
         CloseableHttpClient httpClient = HttpClients.custom().disableRedirectHandling()
-                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).
-                        setDefaultRequestConfig(config).build();
+                .setDefaultRequestConfig(config).setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
         return httpClient;
+    }
+
+    /**
+     * To get the mutual SSL Https Client based on the keystore path.
+     *
+     * @param keyStorePath Path to the key store.
+     * @return http client that can handle mutual SSL.
+     * @throws KeyStoreException         Key Store Exception.
+     * @throws NoSuchAlgorithmException  No Such Algorithm Exception.
+     * @throws KeyManagementException    Key Management Exception.
+     * @throws UnrecoverableKeyException Un recoverable Key Exception.
+     */
+    private static CloseableHttpClient getMutualSSLHttpsClient(String keyStorePath)
+            throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException {
+        int timeout = 7;
+        RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 10000)
+                .setConnectionRequestTimeout(timeout * 10000).setSocketTimeout(timeout * 10000).build();
+
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        try (InputStream is = Files.newInputStream(Paths.get(keyStorePath))) {
+            trustStore.load(is, "password".toCharArray());
+        } catch (IOException | CertificateException e) {
+            log.error("Error while loading keystore", e);
+        }
+        SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(trustStore, new TrustSelfSignedStrategy())
+                .loadKeyMaterial(trustStore, "password".toCharArray()).build();
+        // Allow TLSv1 protocol only
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new String[] { "TLSv1" }, null,
+                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        return HttpClients.custom().setSSLSocketFactory(sslsf).disableRedirectHandling().setDefaultRequestConfig(config)
+                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
     }
 
     /**

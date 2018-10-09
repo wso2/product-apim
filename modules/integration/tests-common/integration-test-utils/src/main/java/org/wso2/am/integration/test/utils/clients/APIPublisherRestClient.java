@@ -23,13 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIDesignBean;
-import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -665,6 +659,17 @@ public class APIPublisherRestClient {
         }
     }
 
+    public HttpResponse uploadCertificate(ClientCertificateCreationBean clientCertificateCreationBean) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
+                    clientCertificateCreationBean.generateRequestParameters(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
+                    + "Error: " + e.getMessage(), e);
+        }
+    }
     /**
      * Update a API using APICreationRequestBean object
      *

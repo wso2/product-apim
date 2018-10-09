@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<parameter name="SSLProfiles">
+<profile>
+        <bindAddress>0.0.0.0</bindAddress>
+         <KeyStore>
+            <Location>repository/resources/security/wso2carbon.jks</Location>
+            <Type>JKS</Type>
+            <Password>wso2carbon</Password>
+            <KeyPassword>wso2carbon</KeyPassword>
+        </KeyStore>
+        <TrustStore>
+            <Location>repository/resources/security/client-truststore.jks</Location>
+            <Type>JKS</Type>
+            <Password>wso2carbon</Password>
+        </TrustStore>
+        <SSLVerifyClient>optional</SSLVerifyClient>
+    </profile>
+</parameter>
