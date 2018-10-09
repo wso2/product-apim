@@ -11,6 +11,7 @@
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.publisher.APILifeCycleTestCaseIT"/>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.store.APISubscriptionTestCaseIT"/>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.store.APIVisibilityTestCaseIT"/>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.oauth.RefreshGrantTestCaseIT"/>
         </classes>
 
     </test>

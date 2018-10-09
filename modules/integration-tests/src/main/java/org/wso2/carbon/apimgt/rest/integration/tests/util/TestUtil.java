@@ -108,12 +108,13 @@ public class TestUtil {
         OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
         Response response = tokenServiceStub.generatePasswordGrantAccessToken(username, password, scopes, -1,
                 clientId, clientSecret);
-        return getTokenInfo(response);
+        return getTokenInfo(getTokenInfo(response));
     }
 
-    public static TokenInfo generateToken(String clientId, String clientSecret, String username, String password,
-                                          String scopes) throws
+    public static OAuth2TokenInfo generateToken(String clientId, String clientSecret, String username, String password,
+                                                String scopes) throws
             AMIntegrationTestException {
+
         OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
         Response response = tokenServiceStub.generatePasswordGrantAccessToken(username, password, scopes, -1,
                 clientId, clientSecret);
@@ -405,31 +406,28 @@ public class TestUtil {
         return apiMap.get(apiName);
     }
 
-    public static TokenInfo generateToken(String scopes, String refreshToken)
+    public static OAuth2TokenInfo generateToken(String clientId, String clientSecret, String refreshToken, String
+            scopes)
             throws AMIntegrationTestException {
 
-        if (StringUtils.isEmpty(clientId) | StringUtils.isEmpty(clientSecret)) {
-            try {
-                generateClient();
-            } catch (APIManagementException e) {
-                throw new AMIntegrationTestException(e);
-            }
-        }
         OAuth2ServiceStubs.TokenServiceStub tokenServiceStub = getOauth2Client();
         Response response = tokenServiceStub.generateRefreshGrantAccessToken(refreshToken, scopes, -1, clientId,
                 clientSecret);
         return getTokenInfo(response);
     }
 
-    private static TokenInfo getTokenInfo(Response response) throws AMIntegrationTestException {
+    private static TokenInfo getTokenInfo(OAuth2TokenInfo oAuth2TokenInfo) {
+
+        return new TokenInfo(oAuth2TokenInfo.getAccessToken(), System.currentTimeMillis() +
+                oAuth2TokenInfo.getExpiresIn(), oAuth2TokenInfo.getRefreshToken());
+    }
+
+    private static OAuth2TokenInfo getTokenInfo(Response response) throws AMIntegrationTestException {
 
         if (response.status() == APIMgtConstants.HTTPStatusCodes.SC_200_OK) {   //200 - Success
             logger.debug("A new access token is successfully generated.");
             try {
-                OAuth2TokenInfo oAuth2TokenInfo = (OAuth2TokenInfo) new GsonDecoder().decode(response,
-                        OAuth2TokenInfo.class);
-                return new TokenInfo(oAuth2TokenInfo.getAccessToken(), System.currentTimeMillis() +
-                        oAuth2TokenInfo.getExpiresIn(), oAuth2TokenInfo.getRefreshToken());
+                return (OAuth2TokenInfo) new GsonDecoder().decode(response, OAuth2TokenInfo.class);
             } catch (IOException e) {
                 throw new AMIntegrationTestException("Error occurred while parsing token response", e);
             }
@@ -437,4 +435,5 @@ public class TestUtil {
             throw new AMIntegrationTestException("Error occurred while Generating token");
         }
     }
+
 }

@@ -41,4 +41,14 @@ public class TokenInfo {
     public String getRefreshToken() {
         return refreshToken;
     }
+
+    @Override
+    public String toString() {
+
+        return "TokenInfo{" +
+                "token='" + token + '\'' +
+                ", expiryTime=" + expiryTime +
+                ", refreshToken='" + refreshToken + '\'' +
+                '}';
+    }
 }
