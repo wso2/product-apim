@@ -26,6 +26,18 @@ under the License.
 
     <modelVersion>4.0.0</modelVersion>
     <name>WSO2 API Manager - Integration Common Test Module</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>7</source>
+                    <target>7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
     <packaging>jar</packaging>
 

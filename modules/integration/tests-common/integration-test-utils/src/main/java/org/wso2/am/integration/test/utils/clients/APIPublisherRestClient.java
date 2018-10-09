@@ -30,6 +30,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
+import org.wso2.am.integration.test.utils.bean.ClientCertificateCreationBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -665,6 +666,25 @@ public class APIPublisherRestClient {
         }
     }
 
+    /**
+     * To upload a client certificate against an API.
+     *
+     * @param clientCertificateCreationBean Client Certificate Creation Bean with required information for uploading
+     *                                      client certificate.
+     * @return Http response after uploading the certificate.
+     * @throws APIManagerIntegrationTestException API Manager Integration Test Exception.
+     */
+    public HttpResponse uploadCertificate(ClientCertificateCreationBean clientCertificateCreationBean) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
+                    clientCertificateCreationBean.generateRequestParameters(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
+                    + "Error: " + e.getMessage(), e);
+        }
+    }
     /**
      * Update a API using APICreationRequestBean object
      *
