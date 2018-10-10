@@ -19,7 +19,9 @@
 package org.wso2.carbon.apimgt.importexport.utils;
 
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
+import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
+import org.wso2.carbon.apimgt.impl.utils.SelfSignUpUtil;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 
 import com.google.gson.Gson;
@@ -52,6 +54,10 @@ import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -826,13 +832,10 @@ public class APIExportUtil {
      */
     public static Boolean isCrossTenantAccessPermissionsViolated(String apiDomain, String username) throws APIExportException {
         String resourceRquesterDomain = MultitenantUtils.getTenantDomain(username);
-
-        boolean isCrossTenantAccess = !resourceRquesterDomain.equals(apiDomain);
-        if (!isCrossTenantAccess) {
+        if (resourceRquesterDomain.equals(apiDomain)) {
             return false;
         }
-        boolean migrationMode = Boolean.getBoolean(APIImportExportConstants.MIGRATION_MODE);
-        String superAdminRole = null;
+        String superAdminRole;
         try {
             superAdminRole = ServiceReferenceHolder.getInstance().getRealmService().
                     getTenantUserRealm(MultitenantConstants.SUPER_TENANT_ID).getRealmConfiguration().getAdminRoleName();
@@ -842,7 +845,7 @@ public class APIExportUtil {
         }
 
         //check whether logged in user is a super tenant user
-        String superTenantDomain = null;
+        String superTenantDomain;
         try {
             superTenantDomain = ServiceReferenceHolder.getInstance().getRealmService().getTenantManager().getSuperTenantDomain();
         } catch (UserStoreException e) {
@@ -851,19 +854,40 @@ public class APIExportUtil {
         }
         boolean isSuperTenantUser = resourceRquesterDomain.equals(superTenantDomain);
 
+        if(!isSuperTenantUser) {
+            return true;
+        }
         //check whether the user has super tenant admin role
         boolean isSuperAdminRoleNameExist;
         try {
-            isSuperAdminRoleNameExist = APIUtil.isRoleNameExist(username, superAdminRole);
+            isSuperAdminRoleNameExist = isUserInRole(username, superAdminRole);
+        } catch (UserStoreException e) {
+            String errorMsg = "Error in checking whether the user" + username + " has admin role";
+            throw new APIExportException(errorMsg, e);
         } catch (APIManagementException e) {
             String errorMsg = "Error in checking whether the user" + username + " has admin role";
             throw new APIExportException(errorMsg, e);
         }
-
-        boolean isSuperTenantAdmin = isSuperTenantUser && isSuperAdminRoleNameExist;
-        boolean hasMigrationSpecificPermissions = migrationMode && isSuperTenantAdmin;
-
-        return !hasMigrationSpecificPermissions;
+        return !isSuperAdminRoleNameExist;
     }
 
+    /**
+     * Check whether the user has the given role
+     *
+     * @throws UserStoreException
+     * @throws APIManagementException
+     */
+    public static boolean isUserInRole(String user, String role) throws UserStoreException, APIManagementException {
+        String tenantDomain = MultitenantUtils.getTenantDomain(APIUtil.replaceEmailDomainBack(user));
+        UserRegistrationConfigDTO signupConfig = SelfSignUpUtil.getSignupConfiguration(tenantDomain);
+        user = SelfSignUpUtil.getDomainSpecificUserName(user, signupConfig);
+        String tenantAwareUserName = MultitenantUtils.getTenantAwareUsername(user);
+        RealmService realmService = ServiceReferenceHolder.getInstance().getRealmService();
+        int tenantId = ServiceReferenceHolder.getInstance().getRealmService().getTenantManager()
+                .getTenantId(tenantDomain);
+        UserRealm realm = (UserRealm) realmService.getTenantUserRealm(tenantId);
+        UserStoreManager manager = realm.getUserStoreManager();
+        AbstractUserStoreManager abstractManager = (AbstractUserStoreManager) manager;
+        return abstractManager.isUserInRole(tenantAwareUserName, role);
+    }
 }
