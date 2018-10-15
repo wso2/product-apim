@@ -357,9 +357,10 @@ public class TestUtil {
         for (org.wso2.carbon.apimgt.rest.integration.tests.util.API api : apiList.getApis()) {
             APICollectionApi apiCollectionApi = getPublisherApiClient(api.getUser(), getUser(api.getUser()),
                     AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
-            API apiToCreate = SampleTestObjectCreator.ApiToCreate(api.getName(), api.getVersion(), api.getContext())
-                    .description(api.getDescription()).policies(api.getSubscriptionPolicies()).visibleRoles(api
-                            .getVisibleRoles()).visibility(API.VisibilityEnum.fromValue(api.getVisibility()));
+            API apiToCreate = (API) SampleTestObjectCreator.ApiToCreate(api.getName(), api.getVersion(), api.getContext())
+                    .policies(api.getSubscriptionPolicies()).visibleRoles(api
+                            .getVisibleRoles()).visibility(API.VisibilityEnum.fromValue(api.getVisibility()))
+                    .description(api.getDescription());
             apiToCreate = apiCollectionApi.apisPost(apiToCreate);
             APIIndividualApi apiIndividualApi = getPublisherApiClient(api.getUser(), getUser(api.getUser()),
                     AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APIIndividualApi.class);

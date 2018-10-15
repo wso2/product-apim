@@ -24,6 +24,7 @@ import java.util.List;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIBusinessInformation;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APICorsConfiguration;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIEndpoint;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIInfo;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIOperations;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIThreatProtectionPolicies;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
@@ -31,34 +32,10 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
 /**
  * API
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
-public class API {
-  @JsonProperty("id")
-  private String id = null;
 
-  @JsonProperty("name")
-  private String name = null;
-
-  @JsonProperty("description")
-  private String description = null;
-
-  @JsonProperty("context")
-  private String context = null;
-
-  @JsonProperty("version")
-  private String version = null;
-
-  @JsonProperty("provider")
-  private String provider = null;
-
+public class API extends APIInfo {
   @JsonProperty("wsdlUri")
   private String wsdlUri = null;
-
-  @JsonProperty("lifeCycleStatus")
-  private String lifeCycleStatus = null;
-
-  @JsonProperty("workflowStatus")
-  private String workflowStatus = null;
 
   @JsonProperty("createdTime")
   private String createdTime = null;
@@ -82,7 +59,7 @@ public class API {
   private Boolean isDefaultVersion = null;
 
   @JsonProperty("transport")
-  private List<String> transport = new ArrayList<String>();
+  private List<String> transport = null;
 
   @JsonProperty("tags")
   private List<String> tags = null;
@@ -97,7 +74,7 @@ public class API {
   private List<String> storeLabels = null;
 
   @JsonProperty("policies")
-  private List<String> policies = new ArrayList<String>();
+  private List<String> policies = null;
 
   /**
    * Gets or Sets visibility
@@ -166,9 +143,6 @@ public class API {
   @JsonProperty("endpoint")
   private List<APIEndpoint> endpoint = null;
 
-  @JsonProperty("securityScheme")
-  private List<String> securityScheme = null;
-
   @JsonProperty("scopes")
   private List<String> scopes = null;
 
@@ -177,114 +151,6 @@ public class API {
 
   @JsonProperty("threatProtectionPolicies")
   private APIThreatProtectionPolicies threatProtectionPolicies = null;
-
-  public API id(String id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * UUID of the api registry artifact 
-   * @return id
-  **/
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api registry artifact ")
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public API name(String name) {
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @ApiModelProperty(example = "CalculatorAPI", required = true, value = "")
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public API description(String description) {
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * Get description
-   * @return description
-  **/
-  @ApiModelProperty(example = "A calculator API that supports basic operations", value = "")
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public API context(String context) {
-    this.context = context;
-    return this;
-  }
-
-   /**
-   * Get context
-   * @return context
-  **/
-  @ApiModelProperty(example = "CalculatorAPI", required = true, value = "")
-  public String getContext() {
-    return context;
-  }
-
-  public void setContext(String context) {
-    this.context = context;
-  }
-
-  public API version(String version) {
-    this.version = version;
-    return this;
-  }
-
-   /**
-   * Get version
-   * @return version
-  **/
-  @ApiModelProperty(example = "1.0.0", required = true, value = "")
-  public String getVersion() {
-    return version;
-  }
-
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-  public API provider(String provider) {
-    this.provider = provider;
-    return this;
-  }
-
-   /**
-   * If the provider value is not given user invoking the api will be used as the provider. 
-   * @return provider
-  **/
-  @ApiModelProperty(example = "admin", value = "If the provider value is not given user invoking the api will be used as the provider. ")
-  public String getProvider() {
-    return provider;
-  }
-
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
 
   public API wsdlUri(String wsdlUri) {
     this.wsdlUri = wsdlUri;
@@ -302,42 +168,6 @@ public class API {
 
   public void setWsdlUri(String wsdlUri) {
     this.wsdlUri = wsdlUri;
-  }
-
-  public API lifeCycleStatus(String lifeCycleStatus) {
-    this.lifeCycleStatus = lifeCycleStatus;
-    return this;
-  }
-
-   /**
-   * Get lifeCycleStatus
-   * @return lifeCycleStatus
-  **/
-  @ApiModelProperty(example = "CREATED", value = "")
-  public String getLifeCycleStatus() {
-    return lifeCycleStatus;
-  }
-
-  public void setLifeCycleStatus(String lifeCycleStatus) {
-    this.lifeCycleStatus = lifeCycleStatus;
-  }
-
-  public API workflowStatus(String workflowStatus) {
-    this.workflowStatus = workflowStatus;
-    return this;
-  }
-
-   /**
-   * Get workflowStatus
-   * @return workflowStatus
-  **/
-  @ApiModelProperty(example = "APPROVED", value = "")
-  public String getWorkflowStatus() {
-    return workflowStatus;
-  }
-
-  public void setWorkflowStatus(String workflowStatus) {
-    this.workflowStatus = workflowStatus;
   }
 
   public API createdTime(String createdTime) {
@@ -457,7 +287,7 @@ public class API {
    * Get isDefaultVersion
    * @return isDefaultVersion
   **/
-  @ApiModelProperty(example = "false", required = true, value = "")
+  @ApiModelProperty(example = "false", value = "")
   public Boolean getIsDefaultVersion() {
     return isDefaultVersion;
   }
@@ -472,6 +302,9 @@ public class API {
   }
 
   public API addTransportItem(String transportItem) {
+    if (this.transport == null) {
+      this.transport = new ArrayList<String>();
+    }
     this.transport.add(transportItem);
     return this;
   }
@@ -480,7 +313,7 @@ public class API {
    * Supported transports for the API (http and/or https). 
    * @return transport
   **/
-  @ApiModelProperty(example = "[\"http\",\"https\"]", required = true, value = "Supported transports for the API (http and/or https). ")
+  @ApiModelProperty(example = "[\"http\",\"https\"]", value = "Supported transports for the API (http and/or https). ")
   public List<String> getTransport() {
     return transport;
   }
@@ -591,6 +424,9 @@ public class API {
   }
 
   public API addPoliciesItem(String policiesItem) {
+    if (this.policies == null) {
+      this.policies = new ArrayList<String>();
+    }
     this.policies.add(policiesItem);
     return this;
   }
@@ -599,7 +435,7 @@ public class API {
    * Get policies
    * @return policies
   **/
-  @ApiModelProperty(example = "[\"Unlimited\"]", required = true, value = "")
+  @ApiModelProperty(example = "[\"Unlimited\"]", value = "")
   public List<String> getPolicies() {
     return policies;
   }
@@ -617,7 +453,7 @@ public class API {
    * Get visibility
    * @return visibility
   **/
-  @ApiModelProperty(example = "PUBLIC", required = true, value = "")
+  @ApiModelProperty(example = "PUBLIC", value = "")
   public VisibilityEnum getVisibility() {
     return visibility;
   }
@@ -828,32 +664,6 @@ public class API {
     this.endpoint = endpoint;
   }
 
-  public API securityScheme(List<String> securityScheme) {
-    this.securityScheme = securityScheme;
-    return this;
-  }
-
-  public API addSecuritySchemeItem(String securitySchemeItem) {
-    if (this.securityScheme == null) {
-      this.securityScheme = new ArrayList<String>();
-    }
-    this.securityScheme.add(securitySchemeItem);
-    return this;
-  }
-
-   /**
-   * Get securityScheme
-   * @return securityScheme
-  **/
-  @ApiModelProperty(value = "")
-  public List<String> getSecurityScheme() {
-    return securityScheme;
-  }
-
-  public void setSecurityScheme(List<String> securityScheme) {
-    this.securityScheme = securityScheme;
-  }
-
   public API scopes(List<String> scopes) {
     this.scopes = scopes;
     return this;
@@ -934,15 +744,7 @@ public class API {
       return false;
     }
     API API = (API) o;
-    return Objects.equals(this.id, API.id) &&
-        Objects.equals(this.name, API.name) &&
-        Objects.equals(this.description, API.description) &&
-        Objects.equals(this.context, API.context) &&
-        Objects.equals(this.version, API.version) &&
-        Objects.equals(this.provider, API.provider) &&
-        Objects.equals(this.wsdlUri, API.wsdlUri) &&
-        Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
-        Objects.equals(this.workflowStatus, API.workflowStatus) &&
+    return Objects.equals(this.wsdlUri, API.wsdlUri) &&
         Objects.equals(this.createdTime, API.createdTime) &&
         Objects.equals(this.apiPolicy, API.apiPolicy) &&
         Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
@@ -966,15 +768,15 @@ public class API {
         Objects.equals(this.businessInformation, API.businessInformation) &&
         Objects.equals(this.corsConfiguration, API.corsConfiguration) &&
         Objects.equals(this.endpoint, API.endpoint) &&
-        Objects.equals(this.securityScheme, API.securityScheme) &&
         Objects.equals(this.scopes, API.scopes) &&
         Objects.equals(this.operations, API.operations) &&
-        Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies);
+        Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies) &&
+        super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, wsdlUri, lifeCycleStatus, workflowStatus, createdTime, apiPolicy, lastUpdatedTime, responseCaching, cacheTimeout, destinationStatsEnabled, isDefaultVersion, transport, tags, hasOwnGateway, gatewayLabels, storeLabels, policies, visibility, visibleRoles, permission, userPermissionsForApi, visibleTenants, gatewayEnvironments, sequences, businessInformation, corsConfiguration, endpoint, securityScheme, scopes, operations, threatProtectionPolicies);
+    return Objects.hash(wsdlUri, createdTime, apiPolicy, lastUpdatedTime, responseCaching, cacheTimeout, destinationStatsEnabled, isDefaultVersion, transport, tags, hasOwnGateway, gatewayLabels, storeLabels, policies, visibility, visibleRoles, permission, userPermissionsForApi, visibleTenants, gatewayEnvironments, sequences, businessInformation, corsConfiguration, endpoint, scopes, operations, threatProtectionPolicies, super.hashCode());
   }
 
 
@@ -982,16 +784,8 @@ public class API {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class API {\n");
-    
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    description: ").append(toIndentedString(description)).append("\n");
-    sb.append("    context: ").append(toIndentedString(context)).append("\n");
-    sb.append("    version: ").append(toIndentedString(version)).append("\n");
-    sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
+    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    wsdlUri: ").append(toIndentedString(wsdlUri)).append("\n");
-    sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
-    sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    apiPolicy: ").append(toIndentedString(apiPolicy)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
@@ -1015,7 +809,6 @@ public class API {
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    endpoint: ").append(toIndentedString(endpoint)).append("\n");
-    sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
     sb.append("    threatProtectionPolicies: ").append(toIndentedString(threatProtectionPolicies)).append("\n");

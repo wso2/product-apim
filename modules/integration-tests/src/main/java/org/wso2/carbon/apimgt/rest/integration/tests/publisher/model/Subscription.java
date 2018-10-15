@@ -24,7 +24,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Application
 /**
  * Subscription
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
+
 public class Subscription {
   @JsonProperty("subscriptionId")
   private String subscriptionId = null;

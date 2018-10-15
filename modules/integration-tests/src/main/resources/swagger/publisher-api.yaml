@@ -120,6 +120,7 @@ paths:
 
           type: string
         - $ref : "#/parameters/If-None-Match"
+        - $ref : "#/parameters/expand"
       tags:
         - API (Collection)
       responses:
@@ -3784,6 +3785,14 @@ parameters:
     schema: {
       $ref: '#/definitions/ThreatProtectionPolicy'
     }
+# Specifies whether full details of APIs should be returned on apisGet call
+  expand:
+    name: expand
+    in: query
+    description: |
+      Defines whether the returned response should contain full details of API
+    default: false
+    type: boolean
 
 ######################################################
 # The resources used by some of the APIs above within the message body
@@ -3822,8 +3831,15 @@ definitions:
 # The API Info resource
 #-----------------------------------------------------
   APIInfo:
+    discriminator: type
     title: API Info object with basic API details.
     properties:
+      type:
+        type: string
+        example: API
+        description: |
+          Specify whether the api object is APIInfo or API Object .
+        default: "API"
       id:
         type: string
         example: 01234567-0123-0123-0123-012345678901
@@ -3868,203 +3884,138 @@ definitions:
       - isDefaultVersion
       - transport
       - visibility
-    properties:
-      id:
-        type: string
-        description: |
-          UUID of the api registry artifact
-        example: 01234567-0123-0123-0123-012345678901
-      name:
-        type: string
-        example: CalculatorAPI
-      description:
-        type: string
-        example: A calculator API that supports basic operations
-      context:
-        type: string
-        example: CalculatorAPI
-      version:
-        type: string
-        example: 1.0.0
-      provider:
-        description: |
-          If the provider value is not given user invoking the api will be used as the provider.
-        type: string
-        example: admin
-      wsdlUri:
-        description: |
-          WSDL URL if the API is based on a WSDL endpoint
-        type: string
-        example: "http://www.webservicex.com/globalweather.asmx?wsdl"
-      lifeCycleStatus:
-        type: string
-        example: CREATED
-      workflowStatus:
-        type: string
-        example: APPROVED
-      createdTime:
-        type: string
-        example: 2017-02-20T13:57:16.229
-      apiPolicy:
-        type: string
-        example: UNLIMITED
-      lastUpdatedTime:
-        type: string
-        example: 2017-02-20T13:57:16.229
-      responseCaching:
-        type: string
-        example: Disabled
-      cacheTimeout:
-        type: integer
-        example: 300
-      destinationStatsEnabled:
-        type: string
-        example: Disabled
-      isDefaultVersion:
-        type: boolean
-        example: false
-      transport:
-        description: |
-          Supported transports for the API (http and/or https).
-        type: array
-        items:
-          type: string
-        example: ["http","https"]
-      tags:
-        type: array
-        items:
-          type: string
-        example: ["substract","add"]
-      hasOwnGateway:
-        type: boolean
-        example : false
-      gatewayLabels:
-        type: array
-        items:
-          type: string
-        example: ["public","private"]
-      storeLabels:
-        type: array
-        items:
-          type: string
-        example: ["public","private"]
-      policies:
-        type: array
-        items:
-          type: string
-        example: ["Unlimited"]
-      visibility:
-        type: string
-        enum:
-          - PUBLIC
-          - PRIVATE
-          - RESTRICTED
-        example: PUBLIC
-      visibleRoles:
-        type: array
-        items:
-          type: string
-        example: []
-      permission:
-        type: string
-        example: "[{\"groupId\" : 1000, \"permission\" : [\"READ\",\"UPDATE\"]},{\"groupId\" : 1001, \"permission\" : [\"READ\",\"UPDATE\"]}]"
-      userPermissionsForApi:
-        type: array
-        description: |
-          LoggedIn user permissions for the API
-        items:
-          type: string
-        example: ["READ","UPDATE"]
-      visibleTenants:
-        type: array
-        items:
-          type: string
-        example: []
-      gatewayEnvironments:
-        description: |
-          Comma separated list of gateway environments.
-        type: string
-        example: Production and Sandbox
-      sequences:
-        type: array
-        items:
-          $ref: '#/definitions/Sequence'
-        example: []
-      businessInformation:
-        properties:
-          businessOwner:
+    allOf:
+      - $ref: '#/definitions/APIInfo'
+      - properties:
+          wsdlUri:
+            description: |
+              WSDL URL if the API is based on a WSDL endpoint
             type: string
-            example: businessowner
-          businessOwnerEmail:
+            example: "http://www.webservicex.com/globalweather.asmx?wsdl"
+          createdTime:
             type: string
-            example: businessowner@wso2.com
-          technicalOwner:
+            example: 2017-02-20T13:57:16.229
+          apiPolicy:
             type: string
-            example: technicalowner
-          technicalOwnerEmail:
+            example: UNLIMITED
+          lastUpdatedTime:
             type: string
-            example: technicalowner@wso2.com
-      corsConfiguration:
-        description: |
-          CORS configuration for the API
-        properties:
-          corsConfigurationEnabled:
+            example: 2017-02-20T13:57:16.229
+          responseCaching:
+            type: string
+            example: Disabled
+          cacheTimeout:
+            type: integer
+            example: 300
+          destinationStatsEnabled:
+            type: string
+            example: Disabled
+          isDefaultVersion:
             type: boolean
-            default: false
-          accessControlAllowOrigins:
-            type: array
-            items:
-               type: string
-          accessControlAllowCredentials:
-            type: boolean
-            default: false
-          accessControlAllowHeaders:
+            example: false
+          transport:
+            description: |
+              Supported transports for the API (http and/or https).
             type: array
             items:
               type: string
-          accessControlAllowMethods:
+            example: ["http","https"]
+          tags:
             type: array
             items:
               type: string
-      endpoint:
-        type: array
-        items:
-         properties:
-          key:
-           type: string
-           example: "01234567-0123-0123-0123-012345678901"
-          inline:
-           $ref: '#/definitions/EndPoint'
-          type:
+            example: ["substract","add"]
+          hasOwnGateway:
+            type: boolean
+            example : false
+          gatewayLabels:
+            type: array
+            items:
+              type: string
+            example: ["public","private"]
+          storeLabels:
+            type: array
+            items:
+              type: string
+            example: ["public","private"]
+          policies:
+            type: array
+            items:
+              type: string
+            example: ["Unlimited"]
+          visibility:
             type: string
-            example: "Production"
-      securityScheme:
-        type: array
-        items:
-          type: string
-      scopes:
-        type: array
-        items:
-          type: string
-      operations:
-       type: array
-       items:
-        properties:
-          id:
-           type: string
-           example: "postapiresource"
-          uritemplate:
+            enum:
+              - PUBLIC
+              - PRIVATE
+              - RESTRICTED
+            example: PUBLIC
+          visibleRoles:
+            type: array
+            items:
+              type: string
+            example: []
+          permission:
             type: string
-            default: "/*"
-          httpVerb:
+            example: "[{\"groupId\" : 1000, \"permission\" : [\"READ\",\"UPDATE\"]},{\"groupId\" : 1001, \"permission\" : [\"READ\",\"UPDATE\"]}]"
+          userPermissionsForApi:
+            type: array
+            description: |
+              LoggedIn user permissions for the API
+            items:
+              type: string
+            example: ["READ","UPDATE"]
+          visibleTenants:
+            type: array
+            items:
+              type: string
+            example: []
+          gatewayEnvironments:
+            description: |
+              Comma separated list of gateway environments.
             type: string
-            default: "GET"
-          authType:
-            type: string
-            default: "Any"
-          policy:
-            type: string
-            example: "Unlimited"
+            example: Production and Sandbox
+          sequences:
+            type: array
+            items:
+              $ref: '#/definitions/Sequence'
+            example: []
+          businessInformation:
+            properties:
+              businessOwner:
+                type: string
+                example: businessowner
+              businessOwnerEmail:
+                type: string
+                example: businessowner@wso2.com
+              technicalOwner:
+                type: string
+                example: technicalowner
+              technicalOwnerEmail:
+                type: string
+                example: technicalowner@wso2.com
+          corsConfiguration:
+            description: |
+              CORS configuration for the API
+            properties:
+              corsConfigurationEnabled:
+                type: boolean
+                default: false
+              accessControlAllowOrigins:
+                type: array
+                items:
+                   type: string
+              accessControlAllowCredentials:
+                type: boolean
+                default: false
+              accessControlAllowHeaders:
+                type: array
+                items:
+                  type: string
+              accessControlAllowMethods:
+                type: array
+                items:
+                  type: string
           endpoint:
             type: array
             items:
@@ -4081,16 +4032,51 @@ definitions:
             type: array
             items:
               type: string
-      threatProtectionPolicies:
-        properties:
-          list:
-            type: array
-            items:
-              properties:
-                policyId:
+          operations:
+           type: array
+           items:
+            properties:
+              id:
+               type: string
+               example: "postapiresource"
+              uritemplate:
+                type: string
+                default: "/*"
+              httpVerb:
+                type: string
+                default: "GET"
+              authType:
+                type: string
+                default: "Any"
+              policy:
+                type: string
+                example: "Unlimited"
+              endpoint:
+                type: array
+                items:
+                 properties:
+                  key:
+                   type: string
+                   example: "01234567-0123-0123-0123-012345678901"
+                  inline:
+                   $ref: '#/definitions/EndPoint'
+                  type:
+                    type: string
+                    example: "Production"
+              scopes:
+                type: array
+                items:
                   type: string
-                priority:
-                  type: integer
+          threatProtectionPolicies:
+            properties:
+              list:
+                type: array
+                items:
+                  properties:
+                    policyId:
+                      type: string
+                    priority:
+                      type: integer
 
 #-----------------------------------------------------
 # The Application resource

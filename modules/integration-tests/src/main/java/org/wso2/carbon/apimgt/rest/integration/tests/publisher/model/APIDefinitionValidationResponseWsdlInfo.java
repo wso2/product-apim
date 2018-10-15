@@ -28,7 +28,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIDefiniti
  * Summary of the WSDL including the basic information
  */
 @ApiModel(description = "Summary of the WSDL including the basic information")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
+
 public class APIDefinitionValidationResponseWsdlInfo {
   @JsonProperty("version")
   private String version = null;
