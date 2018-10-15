@@ -1042,10 +1042,10 @@
                                     <version>${jaggery.modules.i18n.feature.version}</version>
                                 </feature>
                                 
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.apimgt.feature.group</id>-->
+                                    <!--<version>${carbon.apimgt.version}</version>-->
+                                <!--</feature>-->
                                 
                                 <!--Registry Feature-->
                                 <feature>
@@ -1991,14 +1991,14 @@
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.store.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.apimgt.store.feature.group</id>-->
+                                    <!--<version>${carbon.apimgt.version}</version>-->
+                                <!--</feature>-->
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.apimgt.keymanager.feature.group</id>-->
+                                    <!--<version>${carbon.apimgt.version}</version>-->
+                                <!--</feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>${carbon.governance.version}</version>
@@ -2465,10 +2465,10 @@
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.apimgt.keymanager.feature.group</id>-->
+                                    <!--<version>${carbon.apimgt.version}</version>-->
+                                <!--</feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -2949,10 +2949,10 @@
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                <!--<feature>-->
+                                    <!--<id>org.wso2.carbon.apimgt.keymanager.feature.group</id>-->
+                                    <!--<version>${carbon.apimgt.version}</version>-->
+                                <!--</feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>${carbon.governance.version}</version>
