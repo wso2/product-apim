@@ -306,7 +306,7 @@
         <!--<parameter name="priorityConfigFile" locked="false">location of priority configuration file</parameter>
     </transportReceiver-->
 
-   <transportReceiver name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpSSLListener">
+   <transportReceiver name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener">
         <parameter name="port" locked="false">8243</parameter>
         <parameter name="non-blocking" locked="false">true</parameter>
         <!--parameter name="bind-address" locked="false">hostname or IP address</parameter-->
@@ -327,6 +327,15 @@
                 <Password>wso2carbon</Password>
             </TrustStore>
         </parameter>
+       <!-- ============================================== -->
+       <!-- Configuration for Listener Dynamic SSL Profile loading. -->
+       <!-- Configured for 10 mins. -->
+       <!-- ============================================== -->
+       <parameter name="dynamicSSLProfilesConfig">
+           <filePath>repository/resources/security/listenerprofiles.xml</filePath>
+           <fileReadInterval>600000</fileReadInterval>
+       </parameter>
+       <parameter name="SSLVerifyClient">optional</parameter>
         <!--<parameter name="SSLVerifyClient">require</parameter>
             supports optional|require or defaults to none -->
     </transportReceiver>
