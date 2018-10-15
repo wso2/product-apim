@@ -115,7 +115,7 @@ public class APILifeCycleTestCaseIT {
 
         apiIndividualApi.apisCopyApiPost("v2.0.0", api.getId());
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(2,
-                0, "name:api1-lifecycle", "");
+                0, "name:api1-lifecycle", "", false);
         Assert.assertNotNull(apiList);
         Assert.assertTrue(apiList.getCount().intValue() > 1);
     }
@@ -149,6 +149,18 @@ public class APILifeCycleTestCaseIT {
                 AMIntegrationTestConstants.DEFAULT_LIFE_CYCLE_CHECK_LIST, "", "");
     }
 
+    @Test(dependsOnMethods = {"testCreateApi"})
+    public void testGetExpandedAPI() throws AMIntegrationTestException {
+        APICollectionApi apiCollectionApi = TestUtil
+                .getPublisherApiClient("user1", TestUtil.getUser("user1"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
+        org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi
+                .apisGet(2, 0, "name:api1-lifecycle,version:1.0.0", "", true);
+        Assert.assertNotNull(apiList);
+        Assert.assertTrue(apiList.getCount() == 1);
+        API api = (API) apiList.getList().get(0);
+        Assert.assertTrue(api.getTransport().contains("http"));  // This is only available in the expanded api object.
+    }
+
     @AfterClass
     public void destroy() throws AMIntegrationTestException {
 
@@ -158,7 +170,7 @@ public class APILifeCycleTestCaseIT {
                 AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(APICollectionApi.class);
 
         org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList apiList = apiCollectionApi.apisGet(10,
-                0, "name:api1-lifecycle", "");
+                0, "name:api1-lifecycle", "",false);
         for (org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIInfo apiInfo : apiList.getList()) {
             if (api.getName().equals(apiInfo.getName())) {
                 apiIndividualApi.apisApiIdDelete(apiInfo.getId(), "", "");

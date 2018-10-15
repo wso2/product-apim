@@ -98,6 +98,7 @@
                     <language>java</language>
                     <configOptions>
                         <sourceFolder>src/main/java</sourceFolder>
+                        <hideGenerationTimestamp>true</hideGenerationTimestamp>
                     </configOptions>
                     <library>feign</library>
                     <invokerPackage>org.wso2.carbon.apimgt.rest.integration.tests.util</invokerPackage>

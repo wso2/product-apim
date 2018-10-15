@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
  * WSDL binding related information 
  */
 @ApiModel(description = "WSDL binding related information ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
+
 public class APIDefinitionValidationResponseWsdlInfoBindingInfo {
   @JsonProperty("hasHttpBinding")
   private Boolean hasHttpBinding = null;

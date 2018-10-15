@@ -16,6 +16,8 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,8 +27,15 @@ import java.util.List;
 /**
  * APIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-11T19:34:51.739+05:30")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = API.class, name = "API"),
+})
+
 public class APIInfo {
+  @JsonProperty("type")
+  private String type = "API";
+
   @JsonProperty("id")
   private String id = null;
 
@@ -53,6 +62,24 @@ public class APIInfo {
 
   @JsonProperty("securityScheme")
   private List<String> securityScheme = null;
+
+  public APIInfo type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Specify whether the api object is APIInfo or API Object . 
+   * @return type
+  **/
+  @ApiModelProperty(example = "API", value = "Specify whether the api object is APIInfo or API Object . ")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
 
   public APIInfo id(String id) {
     this.id = id;
@@ -234,7 +261,8 @@ public class APIInfo {
       return false;
     }
     APIInfo apIInfo = (APIInfo) o;
-    return Objects.equals(this.id, apIInfo.id) &&
+    return Objects.equals(this.type, apIInfo.type) &&
+        Objects.equals(this.id, apIInfo.id) &&
         Objects.equals(this.name, apIInfo.name) &&
         Objects.equals(this.description, apIInfo.description) &&
         Objects.equals(this.context, apIInfo.context) &&
@@ -247,7 +275,7 @@ public class APIInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, workflowStatus, securityScheme);
+    return Objects.hash(type, id, name, description, context, version, provider, lifeCycleStatus, workflowStatus, securityScheme);
   }
 
 
@@ -256,6 +284,7 @@ public class APIInfo {
     StringBuilder sb = new StringBuilder();
     sb.append("class APIInfo {\n");
     
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
