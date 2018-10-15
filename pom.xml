@@ -230,7 +230,7 @@
                 <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.osgi</groupId>
+                <groupId>org.wso2.eclipse.osgi</groupId>
                 <artifactId>org.eclipse.osgi</artifactId>
                 <version>${version.equinox.osgi}</version>
             </dependency>
@@ -245,7 +245,7 @@
                 <version>${version.equinox.http.helper}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.osgi</groupId>
+                <groupId>org.wso2.eclipse.osgi</groupId>
                 <artifactId>org.eclipse.osgi.services</artifactId>
                 <version>${version.equinox.osgi.services}</version>
             </dependency>
@@ -1035,7 +1035,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.60</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.73-SNAPSHOT</carbon.apimgt.version> <!-- carbon-apimgt branch: 6.x_java10 -->
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1047,7 +1047,7 @@
         <carbon.governance.version>4.7.27</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.35</carbon.kernel.version>
+        <carbon.kernel.version>4.4.37-SNAPSHOT</carbon.kernel.version> <!-- carbon-kernel branch: 4.4.x_java10 -->
         <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
@@ -1117,12 +1117,12 @@
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
         <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
-        <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
+        <version.equinox.osgi>3.11.0.v20160603-1336</version.equinox.osgi>
         <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
-        <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
+        <version.equinox.osgi.services>3.5.100.v20160504-1419</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
-        <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
+        <carbon.p2.plugin.version>1.6.1-SNAPSHOT</carbon.p2.plugin.version> <!-- maven-tools branch: master_java10 -->
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -1165,7 +1165,7 @@
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
         <google.guava.version>18.0</google.guava.version>
 
-        <carbon.metrics.version>1.2.3</carbon.metrics.version>
+        <carbon.metrics.version>1.2.4-SNAPSHOT</carbon.metrics.version> <!-- carbon-metrics branch: 1.x.x_java10 -->
         <!-- MB Features -->
         <carbon.messaging.version>3.2.44</carbon.messaging.version>
         <carbon.event-processing.version>2.1.23</carbon.event-processing.version>
