@@ -132,6 +132,7 @@
                 <configuration>
                     <environmentVariables>
                         <SERVER_HOST>${docker.container.product-apim.ip}:9443</SERVER_HOST>
+                        <!--<debug>true</debug>-->
                     </environmentVariables>
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -179,6 +180,11 @@
                                     </tcp>
                                     <time>60000</time>
                                 </wait>
+                                <log>
+                                    <prefix>TC</prefix>
+                                    <date>default</date>
+                                    <color>cyan</color>
+                                </log>
                             </run>
                         </image>
                     </images>

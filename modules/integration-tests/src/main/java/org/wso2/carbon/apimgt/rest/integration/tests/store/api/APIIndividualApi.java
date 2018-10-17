@@ -1,6 +1,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
 
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.API;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Comment;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public interface APIIndividualApi extends ApiClient.Api {
 
 
@@ -146,6 +147,47 @@ public interface APIIndividualApi extends ApiClient.Api {
   DocumentList apisApiIdDocumentsGet(@Param("apiId") String apiId, @Param("limit") Integer limit, @Param("offset") Integer offset, @Param("ifNoneMatch") String ifNoneMatch);
 
   /**
+   * Get a list of API documents
+   * Get a list of documents belonging to an API. 
+   * Note, this is equivalent to the other <code>apisApiIdDocumentsGet</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisApiIdDocumentsGetQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
+   * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>limit - Maximum size of resource array to return.  (optional, default to 25)</li>
+   *   <li>offset - Starting point within the complete list of items qualified.  (optional, default to 0)</li>
+   *   </ul>
+   * @return DocumentList
+   */
+  @RequestLine("GET /apis/{apiId}/documents?limit={limit}&offset={offset}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+      "If-None-Match: {ifNoneMatch}"
+  })
+  DocumentList apisApiIdDocumentsGet(@Param("apiId") String apiId, @Param("ifNoneMatch") String ifNoneMatch, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisApiIdDocumentsGet</code> method in a fluent style.
+   */
+  public static class ApisApiIdDocumentsGetQueryParams extends HashMap<String, Object> {
+    public ApisApiIdDocumentsGetQueryParams limit(final Integer value) {
+      put("limit", EncodingUtils.encode(value));
+      return this;
+    }
+    public ApisApiIdDocumentsGetQueryParams offset(final Integer value) {
+      put("offset", EncodingUtils.encode(value));
+      return this;
+    }
+  }
+
+  /**
    * Get details of an API
    * Get details of an API 
     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
@@ -177,6 +219,45 @@ public interface APIIndividualApi extends ApiClient.Api {
     "Accept: application/json",
   })
   RatingList apisApiIdRatingsGet(@Param("apiId") String apiId, @Param("limit") Integer limit, @Param("offset") Integer offset);
+
+  /**
+   * Get API ratings
+   * Get the rating of an API. 
+   * Note, this is equivalent to the other <code>apisApiIdRatingsGet</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisApiIdRatingsGetQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>limit - Maximum size of resource array to return.  (optional, default to 25)</li>
+   *   <li>offset - Starting point within the complete list of items qualified.  (optional, default to 0)</li>
+   *   </ul>
+   * @return RatingList
+   */
+  @RequestLine("GET /apis/{apiId}/ratings?limit={limit}&offset={offset}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/json",
+  })
+  RatingList apisApiIdRatingsGet(@Param("apiId") String apiId, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisApiIdRatingsGet</code> method in a fluent style.
+   */
+  public static class ApisApiIdRatingsGetQueryParams extends HashMap<String, Object> {
+    public ApisApiIdRatingsGetQueryParams limit(final Integer value) {
+      put("limit", EncodingUtils.encode(value));
+      return this;
+    }
+    public ApisApiIdRatingsGetQueryParams offset(final Integer value) {
+      put("offset", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 
   /**
    * Get a single API rating
@@ -258,4 +339,42 @@ public interface APIIndividualApi extends ApiClient.Api {
     "If-Modified-Since: {ifModifiedSince}"
   })
   void apisApiIdWsdlGet(@Param("apiId") String apiId, @Param("label") String label, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince);
+
+  /**
+   * Get API WSDL definition
+   * This operation can be used to retrieve the swagger definition of an API. 
+   * Note, this is equivalent to the other <code>apisApiIdWsdlGet</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ApisApiIdWsdlGetQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
+   * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+   * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>label - Gateway Label  (optional)</li>
+   *   </ul>
+   */
+  @RequestLine("GET /apis/{apiId}/wsdl?label={label}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/octet-stream",
+      "If-None-Match: {ifNoneMatch}",
+      
+      "If-Modified-Since: {ifModifiedSince}"
+  })
+  void apisApiIdWsdlGet(@Param("apiId") String apiId, @Param("ifNoneMatch") String ifNoneMatch, @Param("ifModifiedSince") String ifModifiedSince, @QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>apisApiIdWsdlGet</code> method in a fluent style.
+   */
+  public static class ApisApiIdWsdlGetQueryParams extends HashMap<String, Object> {
+    public ApisApiIdWsdlGetQueryParams label(final String value) {
+      put("label", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 }

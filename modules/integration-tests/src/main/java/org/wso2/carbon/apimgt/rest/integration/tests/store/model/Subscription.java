@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Subscription
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class Subscription {
   @JsonProperty("subscriptionId")
   private String subscriptionId = null;
@@ -62,6 +63,11 @@ public class Subscription {
       this.value = value;
     }
 
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -90,7 +96,7 @@ public class Subscription {
    * Get subscriptionId
    * @return subscriptionId
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getSubscriptionId() {
     return subscriptionId;
   }
@@ -108,7 +114,7 @@ public class Subscription {
    * Get applicationId
    * @return applicationId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApplicationId() {
     return applicationId;
   }
@@ -126,7 +132,7 @@ public class Subscription {
    * Get apiIdentifier
    * @return apiIdentifier
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApiIdentifier() {
     return apiIdentifier;
   }
@@ -144,7 +150,7 @@ public class Subscription {
    * Get apiName
    * @return apiName
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApiName() {
     return apiName;
   }
@@ -162,7 +168,7 @@ public class Subscription {
    * Get apiVersion
    * @return apiVersion
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApiVersion() {
     return apiVersion;
   }
@@ -180,7 +186,7 @@ public class Subscription {
    * Get policy
    * @return policy
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getPolicy() {
     return policy;
   }
@@ -198,7 +204,7 @@ public class Subscription {
    * Get lifeCycleStatus
    * @return lifeCycleStatus
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public LifeCycleStatusEnum getLifeCycleStatus() {
     return lifeCycleStatus;
   }

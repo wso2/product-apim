@@ -13,18 +13,19 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModelProperty;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * ApplicationKeys
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationKeys {
   @JsonProperty("consumerKey")
   private String consumerKey = null;
@@ -33,7 +34,7 @@ public class ApplicationKeys {
   private String consumerSecret = null;
 
   @JsonProperty("supportedGrantTypes")
-  private List<String> supportedGrantTypes = new ArrayList<String>();
+  private List<String> supportedGrantTypes = null;
 
   @JsonProperty("callbackUrl")
   private String callbackUrl = null;
@@ -50,6 +51,11 @@ public class ApplicationKeys {
 
     KeyTypeEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -71,6 +77,44 @@ public class ApplicationKeys {
   @JsonProperty("keyType")
   private KeyTypeEnum keyType = null;
 
+  /**
+   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. 
+   */
+  public enum TokenTypeEnum {
+    OAUTH("OAUTH"),
+    
+    JWT("JWT");
+
+    private String value;
+
+    TokenTypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static TokenTypeEnum fromValue(String text) {
+      for (TokenTypeEnum b : TokenTypeEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+  }
+
+  @JsonProperty("tokenType")
+  private TokenTypeEnum tokenType = TokenTypeEnum.OAUTH;
+
   public ApplicationKeys consumerKey(String consumerKey) {
     this.consumerKey = consumerKey;
     return this;
@@ -80,7 +124,7 @@ public class ApplicationKeys {
    * Consumer key of the application
    * @return consumerKey
   **/
-  @ApiModelProperty(example = "null", value = "Consumer key of the application")
+  @ApiModelProperty(value = "Consumer key of the application")
   public String getConsumerKey() {
     return consumerKey;
   }
@@ -98,7 +142,7 @@ public class ApplicationKeys {
    * Consumer secret of the application
    * @return consumerSecret
   **/
-  @ApiModelProperty(example = "null", value = "Consumer secret of the application")
+  @ApiModelProperty(value = "Consumer secret of the application")
   public String getConsumerSecret() {
     return consumerSecret;
   }
@@ -113,6 +157,9 @@ public class ApplicationKeys {
   }
 
   public ApplicationKeys addSupportedGrantTypesItem(String supportedGrantTypesItem) {
+    if (this.supportedGrantTypes == null) {
+      this.supportedGrantTypes = new ArrayList<String>();
+    }
     this.supportedGrantTypes.add(supportedGrantTypesItem);
     return this;
   }
@@ -121,7 +168,7 @@ public class ApplicationKeys {
    * Supported grant types for the application
    * @return supportedGrantTypes
   **/
-  @ApiModelProperty(example = "null", value = "Supported grant types for the application")
+  @ApiModelProperty(value = "Supported grant types for the application")
   public List<String> getSupportedGrantTypes() {
     return supportedGrantTypes;
   }
@@ -139,7 +186,7 @@ public class ApplicationKeys {
    * Callback URL
    * @return callbackUrl
   **/
-  @ApiModelProperty(example = "null", value = "Callback URL")
+  @ApiModelProperty(value = "Callback URL")
   public String getCallbackUrl() {
     return callbackUrl;
   }
@@ -157,13 +204,31 @@ public class ApplicationKeys {
    * Key type
    * @return keyType
   **/
-  @ApiModelProperty(example = "null", value = "Key type")
+  @ApiModelProperty(value = "Key type")
   public KeyTypeEnum getKeyType() {
     return keyType;
   }
 
   public void setKeyType(KeyTypeEnum keyType) {
     this.keyType = keyType;
+  }
+
+  public ApplicationKeys tokenType(TokenTypeEnum tokenType) {
+    this.tokenType = tokenType;
+    return this;
+  }
+
+   /**
+   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. 
+   * @return tokenType
+  **/
+  @ApiModelProperty(example = "OAUTH", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. ")
+  public TokenTypeEnum getTokenType() {
+    return tokenType;
+  }
+
+  public void setTokenType(TokenTypeEnum tokenType) {
+    this.tokenType = tokenType;
   }
 
 
@@ -180,12 +245,13 @@ public class ApplicationKeys {
         Objects.equals(this.consumerSecret, applicationKeys.consumerSecret) &&
         Objects.equals(this.supportedGrantTypes, applicationKeys.supportedGrantTypes) &&
         Objects.equals(this.callbackUrl, applicationKeys.callbackUrl) &&
-        Objects.equals(this.keyType, applicationKeys.keyType);
+        Objects.equals(this.keyType, applicationKeys.keyType) &&
+        Objects.equals(this.tokenType, applicationKeys.tokenType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consumerKey, consumerSecret, supportedGrantTypes, callbackUrl, keyType);
+    return Objects.hash(consumerKey, consumerSecret, supportedGrantTypes, callbackUrl, keyType, tokenType);
   }
 
 
@@ -199,6 +265,7 @@ public class ApplicationKeys {
     sb.append("    supportedGrantTypes: ").append(toIndentedString(supportedGrantTypes)).append("\n");
     sb.append("    callbackUrl: ").append(toIndentedString(callbackUrl)).append("\n");
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
+    sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
     sb.append("}");
     return sb.toString();
   }

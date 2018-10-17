@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ApplicationKeyMappingRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationKeyMappingRequest {
   @JsonProperty("consumerKey")
   private String consumerKey = null;
@@ -42,6 +43,11 @@ public class ApplicationKeyMappingRequest {
 
     KeyTypeEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -72,7 +78,7 @@ public class ApplicationKeyMappingRequest {
    * Consumer key of the application
    * @return consumerKey
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Consumer key of the application")
+  @ApiModelProperty(required = true, value = "Consumer key of the application")
   public String getConsumerKey() {
     return consumerKey;
   }
@@ -90,7 +96,7 @@ public class ApplicationKeyMappingRequest {
    * Consumer secret of the application
    * @return consumerSecret
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Consumer secret of the application")
+  @ApiModelProperty(required = true, value = "Consumer secret of the application")
   public String getConsumerSecret() {
     return consumerSecret;
   }
@@ -108,7 +114,7 @@ public class ApplicationKeyMappingRequest {
    * Get keyType
    * @return keyType
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public KeyTypeEnum getKeyType() {
     return keyType;
   }

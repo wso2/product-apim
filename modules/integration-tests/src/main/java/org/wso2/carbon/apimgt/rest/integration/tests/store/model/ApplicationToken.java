@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ApplicationToken
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationToken {
   @JsonProperty("accessToken")
   private String accessToken = null;
@@ -42,7 +43,7 @@ public class ApplicationToken {
    * Access token
    * @return accessToken
   **/
-  @ApiModelProperty(example = "null", value = "Access token")
+  @ApiModelProperty(value = "Access token")
   public String getAccessToken() {
     return accessToken;
   }
@@ -60,7 +61,7 @@ public class ApplicationToken {
    * Valid scopes for the access token
    * @return tokenScopes
   **/
-  @ApiModelProperty(example = "null", value = "Valid scopes for the access token")
+  @ApiModelProperty(value = "Valid scopes for the access token")
   public String getTokenScopes() {
     return tokenScopes;
   }
@@ -78,7 +79,7 @@ public class ApplicationToken {
    * Maximum validity time for the access token
    * @return validityTime
   **/
-  @ApiModelProperty(example = "null", value = "Maximum validity time for the access token")
+  @ApiModelProperty(value = "Maximum validity time for the access token")
   public Long getValidityTime() {
     return validityTime;
   }

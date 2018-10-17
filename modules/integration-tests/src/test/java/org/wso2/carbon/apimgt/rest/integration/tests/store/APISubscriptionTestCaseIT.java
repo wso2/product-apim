@@ -19,7 +19,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
@@ -35,19 +34,11 @@ public class APISubscriptionTestCaseIT {
 
     private Application application;
     private Subscription subscription;
-    ApplicationIndividualApi applicationIndividualApi;
-    SubscriptionIndividualApi subscriptionIndividualApi;
-
-    @BeforeClass
-    public void init() throws AMIntegrationTestException {
-        applicationIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
-                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(ApplicationIndividualApi.class);
-        subscriptionIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
-                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionIndividualApi.class);
-    }
 
     @Test
-    public void testCreateApplication() {
+    public void testCreateApplication() throws AMIntegrationTestException {
+        ApplicationIndividualApi applicationIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(ApplicationIndividualApi.class);
         application = new Application().name("testApplication1").description("This is a Test App").throttlingTier
                 ("Unlimited");
         application = applicationIndividualApi.applicationsPost(application);
@@ -68,7 +59,9 @@ public class APISubscriptionTestCaseIT {
     }
 
     @Test(dependsOnMethods = {"testCreateApplication"})
-    public void testCreateSubscription() {
+    public void testCreateSubscription() throws AMIntegrationTestException {
+        SubscriptionIndividualApi subscriptionIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionIndividualApi.class);
         subscription = new Subscription().apiIdentifier(TestUtil.getApi("baseapi1").getId())
                 .applicationId(application.getApplicationId()).policy("Gold");
         subscription = subscriptionIndividualApi.subscriptionsPost(subscription);
@@ -101,7 +94,12 @@ public class APISubscriptionTestCaseIT {
     }
 
     @AfterClass
-    public void destroy() {
+    public void destroy() throws AMIntegrationTestException {
+        SubscriptionIndividualApi subscriptionIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(SubscriptionIndividualApi.class);
+        ApplicationIndividualApi applicationIndividualApi = TestUtil.getStoreApiClient("user4", TestUtil.getUser
+                ("user4"), AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(ApplicationIndividualApi.class);
+
         if (subscriptionIndividualApi.subscriptionsSubscriptionIdGet(subscription.getSubscriptionId(), "", "") !=
                 null) {
             subscriptionIndividualApi.subscriptionsSubscriptionIdDelete(subscription.getSubscriptionId(), "", "");

@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * ApplicationInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationInfo {
   @JsonProperty("applicationId")
   private String applicationId = null;
@@ -51,7 +52,7 @@ public class ApplicationInfo {
    * Get applicationId
    * @return applicationId
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getApplicationId() {
     return applicationId;
   }
@@ -69,7 +70,7 @@ public class ApplicationInfo {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getName() {
     return name;
   }
@@ -87,7 +88,7 @@ public class ApplicationInfo {
    * Get subscriber
    * @return subscriber
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getSubscriber() {
     return subscriber;
   }
@@ -105,7 +106,7 @@ public class ApplicationInfo {
    * Get throttlingTier
    * @return throttlingTier
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getThrottlingTier() {
     return throttlingTier;
   }
@@ -123,7 +124,7 @@ public class ApplicationInfo {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getDescription() {
     return description;
   }
@@ -141,7 +142,7 @@ public class ApplicationInfo {
    * Get lifeCycleStatus
    * @return lifeCycleStatus
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getLifeCycleStatus() {
     return lifeCycleStatus;
   }

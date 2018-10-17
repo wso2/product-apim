@@ -125,6 +125,7 @@ public class TestUtil {
 
         DCRClientInfo dcrClientInfo = new DCRClientInfo();
         dcrClientInfo.setClientName("apim-integration-test");
+        dcrClientInfo.setClientName("apim-integration-test");
         dcrClientInfo.setGrantTypes(Arrays.asList(new String[]{"password", "client_credentials"}));
         try {
             Response response = getDcrmServiceStub(username, password).registerApplication(dcrClientInfo);

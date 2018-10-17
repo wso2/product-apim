@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Comment
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class Comment {
   @JsonProperty("commentId")
   private String commentId = null;
@@ -57,7 +58,7 @@ public class Comment {
    * Get commentId
    * @return commentId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getCommentId() {
     return commentId;
   }
@@ -75,7 +76,7 @@ public class Comment {
    * Get apiId
    * @return apiId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApiId() {
     return apiId;
   }
@@ -93,7 +94,7 @@ public class Comment {
    * If username is not given user invoking the API will be taken as the username. 
    * @return username
   **/
-  @ApiModelProperty(example = "null", required = true, value = "If username is not given user invoking the API will be taken as the username. ")
+  @ApiModelProperty(required = true, value = "If username is not given user invoking the API will be taken as the username. ")
   public String getUsername() {
     return username;
   }
@@ -111,7 +112,7 @@ public class Comment {
    * Get commentText
    * @return commentText
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getCommentText() {
     return commentText;
   }
@@ -147,7 +148,7 @@ public class Comment {
    * Get createdBy
    * @return createdBy
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getCreatedBy() {
     return createdBy;
   }
@@ -183,7 +184,7 @@ public class Comment {
    * Get lastUpdatedBy
    * @return lastUpdatedBy
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getLastUpdatedBy() {
     return lastUpdatedBy;
   }

@@ -21,6 +21,8 @@ package org.wso2.carbon.apimgt.rest.integration.tests.util;
 import com.google.gson.Gson;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.RestAPIException;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.io.IOException;
  * Error Decoder for Feign API Client to handle Errors
  */
 public class RestAPIErrorDecoder implements ErrorDecoder {
+    private static Logger logger = LoggerFactory.getLogger(RestAPIErrorDecoder.class);
     @Override
     public Exception decode(String s, Response response) {
         Error error = null;
@@ -36,7 +39,7 @@ public class RestAPIErrorDecoder implements ErrorDecoder {
             try {
                 error = new Gson().fromJson(response.body().asReader(), Error.class);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             return new RestAPIException(response.status(), response.reason(), error);
         }
@@ -44,7 +47,7 @@ public class RestAPIErrorDecoder implements ErrorDecoder {
             try {
                 error = new Gson().fromJson(response.body().asReader(), Error.class);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             return new RestAPIException(response.status(), response.reason(), error);
 
