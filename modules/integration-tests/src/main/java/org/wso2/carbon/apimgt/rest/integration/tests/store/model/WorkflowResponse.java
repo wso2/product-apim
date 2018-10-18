@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * WorkflowResponse
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class WorkflowResponse {
   /**
    * This attribute declares whether this workflow task is approved or rejected. 
@@ -40,6 +41,11 @@ public class WorkflowResponse {
 
     WorkflowStatusEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -91,7 +97,7 @@ public class WorkflowResponse {
    * Attributes that returned after the workflow execution 
    * @return jsonPayload
   **/
-  @ApiModelProperty(example = "null", value = "Attributes that returned after the workflow execution ")
+  @ApiModelProperty(value = "Attributes that returned after the workflow execution ")
   public String getJsonPayload() {
     return jsonPayload;
   }

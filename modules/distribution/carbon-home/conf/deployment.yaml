@@ -453,6 +453,8 @@ wso2.carbon.auth:
   keyManagerConfigs:
       # Access token default validity period
     defaultTokenValidityPeriod: 3600
+      # KeyStore Location
+    keyStoreLocation : ${sys:carbon.home}/resources/security/wso2carbon.jks
 
 wso2.carbon.auth.user.store:
   connectorType: JDBC

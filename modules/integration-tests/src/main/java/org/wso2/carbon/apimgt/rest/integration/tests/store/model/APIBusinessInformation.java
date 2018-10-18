@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * APIBusinessInformation
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class APIBusinessInformation {
   @JsonProperty("businessOwner")
   private String businessOwner = null;
@@ -45,7 +46,7 @@ public class APIBusinessInformation {
    * Get businessOwner
    * @return businessOwner
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getBusinessOwner() {
     return businessOwner;
   }
@@ -63,7 +64,7 @@ public class APIBusinessInformation {
    * Get businessOwnerEmail
    * @return businessOwnerEmail
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getBusinessOwnerEmail() {
     return businessOwnerEmail;
   }
@@ -81,7 +82,7 @@ public class APIBusinessInformation {
    * Get technicalOwner
    * @return technicalOwner
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getTechnicalOwner() {
     return technicalOwner;
   }
@@ -99,7 +100,7 @@ public class APIBusinessInformation {
    * Get technicalOwnerEmail
    * @return technicalOwnerEmail
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getTechnicalOwnerEmail() {
     return technicalOwnerEmail;
   }

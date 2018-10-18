@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Rating;
 /**
  * RatingList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class RatingList {
   @JsonProperty("avgRating")
   private String avgRating = null;
@@ -43,7 +44,7 @@ public class RatingList {
   private String previous = null;
 
   @JsonProperty("list")
-  private List<Rating> list = new ArrayList<Rating>();
+  private List<Rating> list = null;
 
   public RatingList avgRating(String avgRating) {
     this.avgRating = avgRating;
@@ -54,7 +55,7 @@ public class RatingList {
    * Average Rating of the API 
    * @return avgRating
   **/
-  @ApiModelProperty(example = "null", value = "Average Rating of the API ")
+  @ApiModelProperty(value = "Average Rating of the API ")
   public String getAvgRating() {
     return avgRating;
   }
@@ -72,7 +73,7 @@ public class RatingList {
    * Rating given by the user 
    * @return userRating
   **/
-  @ApiModelProperty(example = "null", value = "Rating given by the user ")
+  @ApiModelProperty(value = "Rating given by the user ")
   public String getUserRating() {
     return userRating;
   }
@@ -90,7 +91,7 @@ public class RatingList {
    * Number of Subscriber Ratings returned. 
    * @return count
   **/
-  @ApiModelProperty(example = "null", value = "Number of Subscriber Ratings returned. ")
+  @ApiModelProperty(value = "Number of Subscriber Ratings returned. ")
   public Integer getCount() {
     return count;
   }
@@ -108,7 +109,7 @@ public class RatingList {
    * Link to the next subset of resources qualified. Empty if no more resources are to be returned. 
    * @return next
   **/
-  @ApiModelProperty(example = "null", value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
+  @ApiModelProperty(value = "Link to the next subset of resources qualified. Empty if no more resources are to be returned. ")
   public String getNext() {
     return next;
   }
@@ -126,7 +127,7 @@ public class RatingList {
    * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. 
    * @return previous
   **/
-  @ApiModelProperty(example = "null", value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
+  @ApiModelProperty(value = "Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. ")
   public String getPrevious() {
     return previous;
   }
@@ -141,6 +142,9 @@ public class RatingList {
   }
 
   public RatingList addListItem(Rating listItem) {
+    if (this.list == null) {
+      this.list = new ArrayList<Rating>();
+    }
     this.list.add(listItem);
     return this;
   }
@@ -149,7 +153,7 @@ public class RatingList {
    * Get list
    * @return list
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<Rating> getList() {
     return list;
   }

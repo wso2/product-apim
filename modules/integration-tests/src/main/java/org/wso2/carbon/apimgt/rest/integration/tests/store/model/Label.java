@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.List;
 /**
  * Label
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class Label {
   @JsonProperty("labelId")
   private String labelId = null;
@@ -44,7 +45,7 @@ public class Label {
    * Get labelId
    * @return labelId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getLabelId() {
     return labelId;
   }
@@ -62,7 +63,7 @@ public class Label {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getName() {
     return name;
   }
@@ -85,7 +86,7 @@ public class Label {
    * Get accessUrls
    * @return accessUrls
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public List<String> getAccessUrls() {
     return accessUrls;
   }

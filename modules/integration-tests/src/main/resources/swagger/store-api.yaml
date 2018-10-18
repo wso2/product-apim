@@ -156,7 +156,7 @@ paths:
       parameters:
         - $ref: '#/parameters/apiId'
         - $ref: '#/parameters/If-None-Match'
-        - $ref: '#/parameters/If-Modified-Since' 
+        - $ref: '#/parameters/If-Modified-Since'
       tags:
         - API (Individual)
         - Retrieve
@@ -3350,7 +3350,11 @@ definitions:
           description: |
             Supported transports for the API (http and/or https).
           type: string
-      labels:
+      gatewayLabels:
+        type: array
+        items:
+          type: string
+      storeLabels:
         type: array
         items:
           type: string
@@ -3638,7 +3642,7 @@ definitions:
         type: string
         description: media-type of the file
         example: "image/jpeg"
-        
+
 #-----------------------------------------------------
 # The Subscription List resource
 #-----------------------------------------------------
@@ -3938,6 +3942,19 @@ definitions:
         enum:
           - PRODUCTION
           - SANDBOX
+      tokenType:
+        type: string
+        enum:
+          - OAUTH
+          - JWT
+        description: |
+          Type of the access token generated for this application.
+
+          **OAUTH:** A UUID based access token which is issued by default.
+          **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments.
+        default: OAUTH
+        example: OAUTH
+
 
 #-----------------------------------------------------
 # The Application Keys List resource
@@ -3976,6 +3993,19 @@ definitions:
       callbackUrl:
         type: string
         description: Callback URL
+      tokenType:
+        type: string
+        enum:
+          - OAUTH
+          - JWT
+        description: |
+          Type of the access token generated for this application.
+
+          **OAUTH:** A UUID based access token which is issued by default.
+          **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments.
+        default: OAUTH
+        example: OAUTH
+
 
 
 #-----------------------------------------------------
@@ -4128,7 +4158,7 @@ definitions:
           This attribute declares whether an API should have a dedicated Gateway or not.
         type: boolean
         example: true
-       
+
 #-----------------------------------------------------
 # END-OF-FILE
 #-----------------------------------------------------

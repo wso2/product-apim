@@ -1,7 +1,9 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
-
+import feign.Headers;
+import feign.Param;
+import feign.QueryMap;
+import feign.RequestLine;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyGenerateRequest;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyMappingRequest;
@@ -9,17 +11,14 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeys
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeysList;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationToken;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationTokenGenerateRequest;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Error;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
+
 import java.io.File;
-import org.wso2.carbon.apimgt.rest.integration.tests.store.model.WorkflowResponse;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import feign.*;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public interface ApplicationIndividualApi extends ApiClient.Api {
 
 
@@ -191,6 +190,39 @@ public interface ApplicationIndividualApi extends ApiClient.Api {
     "Accept: application/zip",
   })
   File exportApplicationsGet(@Param("appId") String appId);
+
+  /**
+   * Export details related to an Application.
+   * This operation can be used to export details related to a perticular application. 
+   * Note, this is equivalent to the other <code>exportApplicationsGet</code> method,
+   * but with the query parameters collected into a single Map parameter. This
+   * is convenient for services with optional query parameters, especially when
+   * used with the {@link ExportApplicationsGetQueryParams} class that allows for
+   * building up this map in a fluent style.
+   * @param queryParams Map of query parameters as name-value pairs
+   *   <p>The following elements may be specified in the query map:</p>
+   *   <ul>
+   *   <li>appId - Application Search Query  (required)</li>
+   *   </ul>
+   * @return File
+   */
+  @RequestLine("GET /export/applications?appId={appId}")
+  @Headers({
+  "Content-Type: application/json",
+  "Accept: application/zip",
+  })
+  File exportApplicationsGet(@QueryMap(encoded=true) Map<String, Object> queryParams);
+
+  /**
+   * A convenience class for generating query parameters for the
+   * <code>exportApplicationsGet</code> method in a fluent style.
+   */
+  public static class ExportApplicationsGetQueryParams extends HashMap<String, Object> {
+    public ExportApplicationsGetQueryParams appId(final String value) {
+      put("appId", EncodingUtils.encode(value));
+      return this;
+    }
+  }
 
   /**
    * Imports an Application.

@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.Map;
 /**
  * Tier
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class Tier {
   @JsonProperty("name")
   private String name = null;
@@ -49,6 +50,11 @@ public class Tier {
       this.value = value;
     }
 
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -69,7 +75,7 @@ public class Tier {
   private TierLevelEnum tierLevel = null;
 
   @JsonProperty("attributes")
-  private Map<String, String> attributes = new HashMap<String, String>();
+  private Map<String, String> attributes = null;
 
   @JsonProperty("requestCount")
   private Long requestCount = null;
@@ -89,6 +95,11 @@ public class Tier {
 
     TierPlanEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -122,7 +133,7 @@ public class Tier {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getName() {
     return name;
   }
@@ -140,7 +151,7 @@ public class Tier {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getDescription() {
     return description;
   }
@@ -158,7 +169,7 @@ public class Tier {
    * Get tierLevel
    * @return tierLevel
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public TierLevelEnum getTierLevel() {
     return tierLevel;
   }
@@ -173,6 +184,9 @@ public class Tier {
   }
 
   public Tier putAttributesItem(String key, String attributesItem) {
+    if (this.attributes == null) {
+      this.attributes = new HashMap<String, String>();
+    }
     this.attributes.put(key, attributesItem);
     return this;
   }
@@ -181,7 +195,7 @@ public class Tier {
    * Custom attributes added to the policy policy 
    * @return attributes
   **/
-  @ApiModelProperty(example = "null", value = "Custom attributes added to the policy policy ")
+  @ApiModelProperty(value = "Custom attributes added to the policy policy ")
   public Map<String, String> getAttributes() {
     return attributes;
   }
@@ -199,7 +213,7 @@ public class Tier {
    * Maximum number of requests which can be sent within a provided unit time 
    * @return requestCount
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Maximum number of requests which can be sent within a provided unit time ")
+  @ApiModelProperty(required = true, value = "Maximum number of requests which can be sent within a provided unit time ")
   public Long getRequestCount() {
     return requestCount;
   }
@@ -217,7 +231,7 @@ public class Tier {
    * Get unitTime
    * @return unitTime
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public Long getUnitTime() {
     return unitTime;
   }
@@ -235,7 +249,7 @@ public class Tier {
    * This attribute declares whether this policy is available under commercial or free 
    * @return tierPlan
   **/
-  @ApiModelProperty(example = "null", required = true, value = "This attribute declares whether this policy is available under commercial or free ")
+  @ApiModelProperty(required = true, value = "This attribute declares whether this policy is available under commercial or free ")
   public TierPlanEnum getTierPlan() {
     return tierPlan;
   }
@@ -253,7 +267,7 @@ public class Tier {
    * If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time 
    * @return stopOnQuotaReach
   **/
-  @ApiModelProperty(example = "null", required = true, value = "If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
+  @ApiModelProperty(required = true, value = "If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
   public Boolean getStopOnQuotaReach() {
     return stopOnQuotaReach;
   }

@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -25,13 +26,13 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeys
 /**
  * ApplicationKeysList
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationKeysList {
   @JsonProperty("count")
   private Integer count = null;
 
   @JsonProperty("list")
-  private List<ApplicationKeys> list = new ArrayList<ApplicationKeys>();
+  private List<ApplicationKeys> list = null;
 
   public ApplicationKeysList count(Integer count) {
     this.count = count;
@@ -42,7 +43,7 @@ public class ApplicationKeysList {
    * Number of applications keys returned. 
    * @return count
   **/
-  @ApiModelProperty(example = "null", value = "Number of applications keys returned. ")
+  @ApiModelProperty(value = "Number of applications keys returned. ")
   public Integer getCount() {
     return count;
   }
@@ -57,6 +58,9 @@ public class ApplicationKeysList {
   }
 
   public ApplicationKeysList addListItem(ApplicationKeys listItem) {
+    if (this.list == null) {
+      this.list = new ArrayList<ApplicationKeys>();
+    }
     this.list.add(listItem);
     return this;
   }
@@ -65,7 +69,7 @@ public class ApplicationKeysList {
    * Get list
    * @return list
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<ApplicationKeys> getList() {
     return list;
   }

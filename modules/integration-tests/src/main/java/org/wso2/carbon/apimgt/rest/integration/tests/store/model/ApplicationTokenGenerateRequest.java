@@ -13,16 +13,15 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
 
 /**
  * ApplicationTokenGenerateRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationTokenGenerateRequest {
   @JsonProperty("consumerKey")
   private String consumerKey = null;
@@ -48,7 +47,7 @@ public class ApplicationTokenGenerateRequest {
    * Consumer key of the application
    * @return consumerKey
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Consumer key of the application")
+  @ApiModelProperty(required = true, value = "Consumer key of the application")
   public String getConsumerKey() {
     return consumerKey;
   }
@@ -66,7 +65,7 @@ public class ApplicationTokenGenerateRequest {
    * Consumer secret of the application
    * @return consumerSecret
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Consumer secret of the application")
+  @ApiModelProperty(required = true, value = "Consumer secret of the application")
   public String getConsumerSecret() {
     return consumerSecret;
   }
@@ -84,7 +83,7 @@ public class ApplicationTokenGenerateRequest {
    * Token validity period
    * @return validityPeriod
   **/
-  @ApiModelProperty(example = "null", value = "Token validity period")
+  @ApiModelProperty(value = "Token validity period")
   public Integer getValidityPeriod() {
     return validityPeriod;
   }
@@ -102,7 +101,7 @@ public class ApplicationTokenGenerateRequest {
    * Allowed scopes (space seperated) for the access token
    * @return scopes
   **/
-  @ApiModelProperty(example = "null", value = "Allowed scopes (space seperated) for the access token")
+  @ApiModelProperty(value = "Allowed scopes (space seperated) for the access token")
   public String getScopes() {
     return scopes;
   }
@@ -120,7 +119,7 @@ public class ApplicationTokenGenerateRequest {
    * Token to be revoked, if any.
    * @return revokeToken
   **/
-  @ApiModelProperty(example = "null", value = "Token to be revoked, if any.")
+  @ApiModelProperty(value = "Token to be revoked, if any.")
   public String getRevokeToken() {
     return revokeToken;
   }

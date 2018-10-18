@@ -16,13 +16,14 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Rating
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class Rating {
   @JsonProperty("ratingId")
   private String ratingId = null;
@@ -45,7 +46,7 @@ public class Rating {
    * Get ratingId
    * @return ratingId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getRatingId() {
     return ratingId;
   }
@@ -63,7 +64,7 @@ public class Rating {
    * Get apiId
    * @return apiId
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getApiId() {
     return apiId;
   }
@@ -81,7 +82,7 @@ public class Rating {
    * If username is not given user invoking the API will be taken as the username. 
    * @return username
   **/
-  @ApiModelProperty(example = "null", required = true, value = "If username is not given user invoking the API will be taken as the username. ")
+  @ApiModelProperty(required = true, value = "If username is not given user invoking the API will be taken as the username. ")
   public String getUsername() {
     return username;
   }
@@ -99,7 +100,7 @@ public class Rating {
    * Get rating
    * @return rating
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public Integer getRating() {
     return rating;
   }

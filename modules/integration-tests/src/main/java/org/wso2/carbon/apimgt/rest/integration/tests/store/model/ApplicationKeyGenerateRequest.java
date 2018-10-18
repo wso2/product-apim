@@ -16,6 +16,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.store.model;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.List;
 /**
  * ApplicationKeyGenerateRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")
+
 public class ApplicationKeyGenerateRequest {
   /**
    * Gets or Sets keyType
@@ -38,6 +39,11 @@ public class ApplicationKeyGenerateRequest {
 
     KeyTypeEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -65,6 +71,44 @@ public class ApplicationKeyGenerateRequest {
   @JsonProperty("callbackUrl")
   private String callbackUrl = null;
 
+  /**
+   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. 
+   */
+  public enum TokenTypeEnum {
+    OAUTH("OAUTH"),
+    
+    JWT("JWT");
+
+    private String value;
+
+    TokenTypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static TokenTypeEnum fromValue(String text) {
+      for (TokenTypeEnum b : TokenTypeEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+  }
+
+  @JsonProperty("tokenType")
+  private TokenTypeEnum tokenType = TokenTypeEnum.OAUTH;
+
   public ApplicationKeyGenerateRequest keyType(KeyTypeEnum keyType) {
     this.keyType = keyType;
     return this;
@@ -74,7 +118,7 @@ public class ApplicationKeyGenerateRequest {
    * Get keyType
    * @return keyType
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public KeyTypeEnum getKeyType() {
     return keyType;
   }
@@ -97,7 +141,7 @@ public class ApplicationKeyGenerateRequest {
    * Grant types that should be supported by the application
    * @return grantTypesToBeSupported
   **/
-  @ApiModelProperty(example = "null", required = true, value = "Grant types that should be supported by the application")
+  @ApiModelProperty(required = true, value = "Grant types that should be supported by the application")
   public List<String> getGrantTypesToBeSupported() {
     return grantTypesToBeSupported;
   }
@@ -115,13 +159,31 @@ public class ApplicationKeyGenerateRequest {
    * Callback URL
    * @return callbackUrl
   **/
-  @ApiModelProperty(example = "null", value = "Callback URL")
+  @ApiModelProperty(value = "Callback URL")
   public String getCallbackUrl() {
     return callbackUrl;
   }
 
   public void setCallbackUrl(String callbackUrl) {
     this.callbackUrl = callbackUrl;
+  }
+
+  public ApplicationKeyGenerateRequest tokenType(TokenTypeEnum tokenType) {
+    this.tokenType = tokenType;
+    return this;
+  }
+
+   /**
+   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. 
+   * @return tokenType
+  **/
+  @ApiModelProperty(example = "OAUTH", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. ")
+  public TokenTypeEnum getTokenType() {
+    return tokenType;
+  }
+
+  public void setTokenType(TokenTypeEnum tokenType) {
+    this.tokenType = tokenType;
   }
 
 
@@ -136,12 +198,13 @@ public class ApplicationKeyGenerateRequest {
     ApplicationKeyGenerateRequest applicationKeyGenerateRequest = (ApplicationKeyGenerateRequest) o;
     return Objects.equals(this.keyType, applicationKeyGenerateRequest.keyType) &&
         Objects.equals(this.grantTypesToBeSupported, applicationKeyGenerateRequest.grantTypesToBeSupported) &&
-        Objects.equals(this.callbackUrl, applicationKeyGenerateRequest.callbackUrl);
+        Objects.equals(this.callbackUrl, applicationKeyGenerateRequest.callbackUrl) &&
+        Objects.equals(this.tokenType, applicationKeyGenerateRequest.tokenType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyType, grantTypesToBeSupported, callbackUrl);
+    return Objects.hash(keyType, grantTypesToBeSupported, callbackUrl, tokenType);
   }
 
 
@@ -153,6 +216,7 @@ public class ApplicationKeyGenerateRequest {
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
     sb.append("    grantTypesToBeSupported: ").append(toIndentedString(grantTypesToBeSupported)).append("\n");
     sb.append("    callbackUrl: ").append(toIndentedString(callbackUrl)).append("\n");
+    sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -18,13 +18,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * BaseAPIInfo
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = APIInfo.class, name = "APIInfo"),
   @JsonSubTypes.Type(value = CompositeAPIInfo.class, name = "CompositeAPIInfo"),
@@ -66,6 +67,11 @@ public class BaseAPIInfo {
       this.value = value;
     }
 
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
     @Override
     public String toString() {
       return String.valueOf(value);
@@ -94,7 +100,7 @@ public class BaseAPIInfo {
    * Get id
    * @return id
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getId() {
     return id;
   }
@@ -112,7 +118,7 @@ public class BaseAPIInfo {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getName() {
     return name;
   }
@@ -130,7 +136,7 @@ public class BaseAPIInfo {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getDescription() {
     return description;
   }
@@ -148,7 +154,7 @@ public class BaseAPIInfo {
    * Get context
    * @return context
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getContext() {
     return context;
   }
@@ -166,7 +172,7 @@ public class BaseAPIInfo {
    * Get version
    * @return version
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getVersion() {
     return version;
   }
@@ -184,7 +190,7 @@ public class BaseAPIInfo {
    * Get hasOwnGateway
    * @return hasOwnGateway
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public Boolean getHasOwnGateway() {
     return hasOwnGateway;
   }
@@ -202,7 +208,7 @@ public class BaseAPIInfo {
    * If the provider value is not given, the user invoking the API will be used as the provider. 
    * @return provider
   **/
-  @ApiModelProperty(example = "null", required = true, value = "If the provider value is not given, the user invoking the API will be used as the provider. ")
+  @ApiModelProperty(required = true, value = "If the provider value is not given, the user invoking the API will be used as the provider. ")
   public String getProvider() {
     return provider;
   }
@@ -220,7 +226,7 @@ public class BaseAPIInfo {
    * Get type
    * @return type
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public TypeEnum getType() {
     return type;
   }

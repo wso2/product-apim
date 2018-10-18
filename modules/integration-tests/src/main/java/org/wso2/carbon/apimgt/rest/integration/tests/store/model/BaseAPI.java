@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.List;
 /**
  * BaseAPI
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-16T14:42:47.879+05:30")@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = CompositeAPI.class, name = "CompositeAPI"),
   @JsonSubTypes.Type(value = API.class, name = "API"),
@@ -55,10 +56,13 @@ public class BaseAPI {
   private String apiDefinition = null;
 
   @JsonProperty("transport")
-  private List<String> transport = new ArrayList<String>();
+  private List<String> transport = null;
 
-  @JsonProperty("labels")
-  private List<String> labels = new ArrayList<String>();
+  @JsonProperty("gatewayLabels")
+  private List<String> gatewayLabels = null;
+
+  @JsonProperty("storeLabels")
+  private List<String> storeLabels = null;
 
   @JsonProperty("hasOwnGateway")
   private Boolean hasOwnGateway = null;
@@ -75,6 +79,11 @@ public class BaseAPI {
 
     TypeEnum(String value) {
       this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
     }
 
     @Override
@@ -105,7 +114,7 @@ public class BaseAPI {
    * UUID of the api registry artifact 
    * @return id
   **/
-  @ApiModelProperty(example = "null", value = "UUID of the api registry artifact ")
+  @ApiModelProperty(value = "UUID of the api registry artifact ")
   public String getId() {
     return id;
   }
@@ -123,7 +132,7 @@ public class BaseAPI {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getName() {
     return name;
   }
@@ -141,7 +150,7 @@ public class BaseAPI {
    * Get description
    * @return description
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public String getDescription() {
     return description;
   }
@@ -159,7 +168,7 @@ public class BaseAPI {
    * Get context
    * @return context
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getContext() {
     return context;
   }
@@ -177,7 +186,7 @@ public class BaseAPI {
    * Get version
    * @return version
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public String getVersion() {
     return version;
   }
@@ -195,7 +204,7 @@ public class BaseAPI {
    * If the provider value is not given user invoking the api will be used as the provider. 
    * @return provider
   **/
-  @ApiModelProperty(example = "null", required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
+  @ApiModelProperty(required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
   public String getProvider() {
     return provider;
   }
@@ -213,7 +222,7 @@ public class BaseAPI {
    * Swagger definition of the API which contains details about URI templates and scopes 
    * @return apiDefinition
   **/
-  @ApiModelProperty(example = "null", value = "Swagger definition of the API which contains details about URI templates and scopes ")
+  @ApiModelProperty(value = "Swagger definition of the API which contains details about URI templates and scopes ")
   public String getApiDefinition() {
     return apiDefinition;
   }
@@ -228,6 +237,9 @@ public class BaseAPI {
   }
 
   public BaseAPI addTransportItem(String transportItem) {
+    if (this.transport == null) {
+      this.transport = new ArrayList<String>();
+    }
     this.transport.add(transportItem);
     return this;
   }
@@ -236,7 +248,7 @@ public class BaseAPI {
    * Get transport
    * @return transport
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public List<String> getTransport() {
     return transport;
   }
@@ -245,27 +257,56 @@ public class BaseAPI {
     this.transport = transport;
   }
 
-  public BaseAPI labels(List<String> labels) {
-    this.labels = labels;
+  public BaseAPI gatewayLabels(List<String> gatewayLabels) {
+    this.gatewayLabels = gatewayLabels;
     return this;
   }
 
-  public BaseAPI addLabelsItem(String labelsItem) {
-    this.labels.add(labelsItem);
+  public BaseAPI addGatewayLabelsItem(String gatewayLabelsItem) {
+    if (this.gatewayLabels == null) {
+      this.gatewayLabels = new ArrayList<String>();
+    }
+    this.gatewayLabels.add(gatewayLabelsItem);
     return this;
   }
 
    /**
-   * Get labels
-   * @return labels
+   * Get gatewayLabels
+   * @return gatewayLabels
   **/
-  @ApiModelProperty(example = "null", value = "")
-  public List<String> getLabels() {
-    return labels;
+  @ApiModelProperty(value = "")
+  public List<String> getGatewayLabels() {
+    return gatewayLabels;
   }
 
-  public void setLabels(List<String> labels) {
-    this.labels = labels;
+  public void setGatewayLabels(List<String> gatewayLabels) {
+    this.gatewayLabels = gatewayLabels;
+  }
+
+  public BaseAPI storeLabels(List<String> storeLabels) {
+    this.storeLabels = storeLabels;
+    return this;
+  }
+
+  public BaseAPI addStoreLabelsItem(String storeLabelsItem) {
+    if (this.storeLabels == null) {
+      this.storeLabels = new ArrayList<String>();
+    }
+    this.storeLabels.add(storeLabelsItem);
+    return this;
+  }
+
+   /**
+   * Get storeLabels
+   * @return storeLabels
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getStoreLabels() {
+    return storeLabels;
+  }
+
+  public void setStoreLabels(List<String> storeLabels) {
+    this.storeLabels = storeLabels;
   }
 
   public BaseAPI hasOwnGateway(Boolean hasOwnGateway) {
@@ -277,7 +318,7 @@ public class BaseAPI {
    * Get hasOwnGateway
    * @return hasOwnGateway
   **/
-  @ApiModelProperty(example = "null", value = "")
+  @ApiModelProperty(value = "")
   public Boolean getHasOwnGateway() {
     return hasOwnGateway;
   }
@@ -295,7 +336,7 @@ public class BaseAPI {
    * Get type
    * @return type
   **/
-  @ApiModelProperty(example = "null", required = true, value = "")
+  @ApiModelProperty(required = true, value = "")
   public TypeEnum getType() {
     return type;
   }
@@ -322,14 +363,15 @@ public class BaseAPI {
         Objects.equals(this.provider, baseAPI.provider) &&
         Objects.equals(this.apiDefinition, baseAPI.apiDefinition) &&
         Objects.equals(this.transport, baseAPI.transport) &&
-        Objects.equals(this.labels, baseAPI.labels) &&
+        Objects.equals(this.gatewayLabels, baseAPI.gatewayLabels) &&
+        Objects.equals(this.storeLabels, baseAPI.storeLabels) &&
         Objects.equals(this.hasOwnGateway, baseAPI.hasOwnGateway) &&
         Objects.equals(this.type, baseAPI.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, transport, labels, hasOwnGateway, type);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, transport, gatewayLabels, storeLabels, hasOwnGateway, type);
   }
 
 
@@ -346,7 +388,8 @@ public class BaseAPI {
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
-    sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
+    sb.append("    gatewayLabels: ").append(toIndentedString(gatewayLabels)).append("\n");
+    sb.append("    storeLabels: ").append(toIndentedString(storeLabels)).append("\n");
     sb.append("    hasOwnGateway: ").append(toIndentedString(hasOwnGateway)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("}");

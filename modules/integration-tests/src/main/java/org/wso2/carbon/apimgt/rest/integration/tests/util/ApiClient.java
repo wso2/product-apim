@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import feign.Client;
 import feign.Feign;
+import feign.Logger;
 import feign.auth.BasicAuthRequestInterceptor;
 import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
@@ -37,22 +38,34 @@ import org.wso2.carbon.apimgt.rest.integration.tests.util.auth.OAuth;
  * APIClient Builder for build Feign Clients With Given Feign Interface.
  */
 public class ApiClient {
+
     public interface Api {
+
     }
 
     protected ObjectMapper objectMapper;
     private String basePath;
     private Feign.Builder feignBuilder;
     public static final String KEY_MANAGER_CERT_ALIAS = "wso2carbon";
+    public static Logger.Level logLevel = Logger.Level.NONE;
+
+    static {
+        String level = System.getenv("debug");
+        if ("true".equals(level)) {
+            logLevel = Logger.Level.FULL;
+        }
+    }
 
     public ApiClient(String basePath, String username, String password, String scopes) throws
             AMIntegrationTestException {
+
         this.basePath = basePath;
         objectMapper = createObjectMapper();
         feignBuilder = Feign.builder()
                 .encoder(new FormEncoder(new JacksonEncoder(objectMapper)))
                 .decoder(new JacksonDecoder(objectMapper))
                 .errorDecoder(new RestAPIErrorDecoder())
+                .logLevel(logLevel)
                 .logger(new Slf4jLogger()).requestInterceptor(new OAuth(username, password, scopes))
                 .client(new Client.Default(AMIntegrationSSLSocketFactory.getSSLSocketFactory(KEY_MANAGER_CERT_ALIAS),
                         (hostname, sslSession) -> true));
@@ -60,12 +73,14 @@ public class ApiClient {
     }
 
     public ApiClient(String basePath, String username, String password) throws AMIntegrationTestException {
+
         this.basePath = basePath;
         objectMapper = createObjectMapper();
         feignBuilder = Feign.builder()
                 .encoder(new FormEncoder(new JacksonEncoder(objectMapper)))
                 .decoder(new JacksonDecoder(objectMapper))
                 .errorDecoder(new RestAPIErrorDecoder())
+                .logLevel(logLevel)
                 .logger(new Slf4jLogger()).requestInterceptor(new BasicAuthRequestInterceptor(username, password))
                 .client(new Client.Default(AMIntegrationSSLSocketFactory.getSSLSocketFactory(KEY_MANAGER_CERT_ALIAS),
                         (hostname, sslSession) -> true));
@@ -79,13 +94,14 @@ public class ApiClient {
                 .encoder(new FormEncoder(new JacksonEncoder(objectMapper)))
                 .decoder(new JacksonDecoder(objectMapper))
                 .errorDecoder(new RestAPIErrorDecoder())
+                .logLevel(logLevel)
                 .logger(new Slf4jLogger())
                 .client(new Client.Default(AMIntegrationSSLSocketFactory.getSSLSocketFactory(KEY_MANAGER_CERT_ALIAS),
                         (hostname, sslSession) -> true));
     }
 
-
     private ObjectMapper createObjectMapper() {
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
         objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
@@ -112,6 +128,7 @@ public class ApiClient {
      * @return The Client
      */
     public <T extends Api> T buildClient(Class<T> clientClass) {
+
         return feignBuilder.target(clientClass, basePath);
     }
 
