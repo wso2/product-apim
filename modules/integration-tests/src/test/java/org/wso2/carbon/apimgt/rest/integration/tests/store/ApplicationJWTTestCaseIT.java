@@ -74,6 +74,7 @@ public class ApplicationJWTTestCaseIT {
         ReadOnlyJWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
         Assert.assertTrue(jwtClaimsSet.getExpirationTime().after(jwtClaimsSet.getIssueTime()));
         Assert.assertEquals(jwtClaimsSet.getIssuer(), "https://localhost:9443/oauth2/token");
+        Assert.assertEquals(jwtClaimsSet.getAudience(), Arrays.asList("http://org.wso2.apimgt/gateway"));
         ApplicationKeys retrievedApplicationKeys = applicationIndividualApi.applicationsApplicationIdKeysKeyTypeGet
                 (application.getApplicationId(), ApplicationKeyGenerateRequest.KeyTypeEnum.PRODUCTION.getValue());
         Assert.assertEquals(retrievedApplicationKeys.getConsumerKey(), applicationKeys.getConsumerKey());
