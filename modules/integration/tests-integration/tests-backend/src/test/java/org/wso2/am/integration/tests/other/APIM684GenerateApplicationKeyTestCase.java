@@ -126,7 +126,7 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         resourceBeanList.add(new APIResourceBean("POST", "Application & Application User", resTier, uriPost));
         String endpoint = "/services/customers/customerservice";
 
-        endpointUrl = gatewayUrlsWrk.getWebAppURLHttp() + webApp + endpoint;
+        endpointUrl = backEndServerUrl.getWebAppURLHttp() + webApp + endpoint;
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 
     }

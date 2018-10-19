@@ -65,7 +65,7 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIManagerLifecycl
         String APIName = "APIMANAGER2611testAPI";
         String APIContext = "/testEndpointValid";
         //Service which does not support HTTP HEAD
-        String endPointToValidate = getGatewayURLHttp() + "oauth2/token";
+        String endPointToValidate = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1";
         String providerName = user.getUserName();
         String APIVersion = "1.0.0";
         apiIdentifier = new APIIdentifier(providerName, APIName, APIVersion);

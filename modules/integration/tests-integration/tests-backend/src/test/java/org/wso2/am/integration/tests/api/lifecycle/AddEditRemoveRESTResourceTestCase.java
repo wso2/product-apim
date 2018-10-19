@@ -71,7 +71,7 @@ public class
                                     RemoteException, MalformedURLException {
         super.init();
         postEndPointURL = getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_POST_ENDPOINT_METHOD;
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         String publisherURLHttp = getPublisherURLHttp();
         String storeURLHttp = getStoreURLHttp();

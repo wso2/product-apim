@@ -75,7 +75,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Creating CarbonSuper context
         super.init();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
 
