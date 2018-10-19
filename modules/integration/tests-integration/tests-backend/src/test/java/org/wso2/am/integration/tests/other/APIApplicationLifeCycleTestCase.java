@@ -82,7 +82,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         //Add all option methods
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
@@ -333,7 +333,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersionOld);
@@ -417,7 +417,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
@@ -477,7 +477,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersionOld);
@@ -571,7 +571,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         String providerName = "admin";
         String APIVersion = "1.0.0";
         //add all option methods
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
@@ -593,7 +593,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         String providerName = "admin";
         String APIVersion = "1.0.0";
         //add all option methods
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
@@ -616,7 +616,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         String providerName = "admin";
         String APIVersion = "1.0.0";
         //add all option methods
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(gatewayUrlsWrk.getWebAppURLHttp() + url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndServerUrl.getWebAppURLHttp() + url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);

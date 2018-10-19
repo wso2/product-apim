@@ -88,7 +88,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     public void initialize() throws Exception {
         //Creating CarbonSuper context
         super.init();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
