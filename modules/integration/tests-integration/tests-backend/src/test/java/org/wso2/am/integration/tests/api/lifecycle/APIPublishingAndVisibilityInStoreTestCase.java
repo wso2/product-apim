@@ -48,7 +48,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     private final String API_NAME = "APIPublishingAndVisibilityInStoreTest";
     private final String API_CONTEXT = "APIPublishingAndVisibilityInStore";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_DESCRIPTION = "Descriptiön öf temporäl api";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
@@ -136,7 +136,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),
                 "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifier));
-
+        assertTrue(apiStoreClientUser1.getAPI().getData().contains(API_DESCRIPTION));
     }
 
 
