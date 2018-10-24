@@ -94,7 +94,7 @@
                 <artifactId>swagger-codegen-maven-plugin</artifactId>
                 <version>${swagger.codegen.version}</version>
                 <configuration>
-                    <inputSpec>${project.basedir}/src/main/resources/swagger/scim-api.yaml</inputSpec>
+                    <inputSpec>${project.basedir}/src/main/resources/swagger/store-api.yaml</inputSpec>
                     <language>java</language>
                     <configOptions>
                         <sourceFolder>src/main/java</sourceFolder>
@@ -102,8 +102,8 @@
                     </configOptions>
                     <library>feign</library>
                     <invokerPackage>org.wso2.carbon.apimgt.rest.integration.tests.util</invokerPackage>
-                    <apiPackage>org.wso2.carbon.apimgt.rest.integration.tests.scim.api</apiPackage>
-                    <modelPackage>org.wso2.carbon.apimgt.rest.integration.tests.scim.model</modelPackage>
+                    <apiPackage>org.wso2.carbon.apimgt.rest.integration.tests.store.api</apiPackage>
+                    <modelPackage>org.wso2.carbon.apimgt.rest.integration.tests.store.model</modelPackage>
                     <generateSupportingFiles>false</generateSupportingFiles>
                     <generateApiTests>false</generateApiTests>
                     <output>.</output>

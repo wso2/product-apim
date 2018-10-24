@@ -21,11 +21,16 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.core.models.APIStatus;
+import org.wso2.carbon.apimgt.core.util.APIUtils;
 import org.wso2.carbon.apimgt.rest.integration.tests.AMIntegrationTestConstants;
 import org.wso2.carbon.apimgt.rest.integration.tests.exceptions.AMIntegrationTestException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.CommentCollectionApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.CommentIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Comment;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.CommentList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.FileInfo;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.APIInfo;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.APIList;
@@ -33,10 +38,13 @@ import org.wso2.carbon.apimgt.rest.integration.tests.util.SampleTestObjectCreato
 import org.wso2.carbon.apimgt.rest.integration.tests.util.TestUtil;
 
 import java.io.File;
+import java.time.Instant;
+import java.util.UUID;
 
 public class APILifeCycleTestCaseIT {
 
     private API api;
+    private Comment comment;
 
     @Test
     public void testCreateApi() throws AMIntegrationTestException {
@@ -159,6 +167,64 @@ public class APILifeCycleTestCaseIT {
         Assert.assertTrue(apiList.getCount() == 1);
         API api = (API) apiList.getList().get(0);
         Assert.assertTrue(api.getTransport().contains("http"));  // This is only available in the expanded api object.
+    }
+    @Test(dependsOnMethods = "testCreateApi")
+    public void testApisApiIdCommentsPost() throws AMIntegrationTestException {
+        CommentIndividualApi commentIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentIndividualApi.class);
+        String apiId = api.getId();
+        Instant time = APIUtils.getCurrentUTCTime();
+        comment = new Comment();
+        comment.setApiId(apiId);
+        comment.setCommentText("this is a sample comment");
+        comment.setCategory("sample category");
+        comment.setParentCommentId(UUID.randomUUID().toString());
+        comment.setEntryPoint("APIPublisher");
+        comment.setUsername("admin");
+        comment.setCreatedBy("admin");
+        comment.setLastUpdatedBy("admin");
+        comment.setCreatedTime(time.toString());
+        comment.setLastUpdatedTime(time.toString());
+        comment = commentIndividualApi.apisApiIdCommentsPost(apiId, comment);
+        Assert.assertNotNull(comment.getCommentId());
+    }
+
+    @Test(dependsOnMethods = "testApisApiIdCommentsPost")
+    public void testApisApiIdCommentsCommentIdPut() throws AMIntegrationTestException {
+        CommentIndividualApi commentIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentIndividualApi.class);
+        String apiId = api.getId();
+        comment.setCategory("Updated Category");
+        comment.setCommentText("Updated comment");
+        comment = commentIndividualApi.apisApiIdCommentsCommentIdPut(comment.getCommentId(), apiId, comment, "", "");
+        Assert.assertNotNull(comment);
+    }
+
+    @Test(dependsOnMethods = "testApisApiIdCommentsCommentIdPut")
+    public void testApisApiIdCommentsCommentIdGet() throws AMIntegrationTestException {
+        CommentIndividualApi commentIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentIndividualApi.class);
+        Comment resultComment = commentIndividualApi.apisApiIdCommentsCommentIdGet(comment.getCommentId(), api.getId(),null,null);
+        Assert.assertEquals(comment.getCommentId(),resultComment.getCommentId());
+    }
+
+    @Test(dependsOnMethods = "testApisApiIdCommentsCommentIdPut")
+    public void testApisApiIdCommentsGet() throws AMIntegrationTestException {
+        CommentCollectionApi commentCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentCollectionApi.class);
+        CommentList commentList = commentCollectionApi.apisApiIdCommentsGet(api.getId(),25,0);
+        Assert.assertNotEquals(commentList.getCount(),0);
+    }
+
+    @Test(dependsOnMethods = "testApisApiIdCommentsCommentIdGet")
+    public void testApisApiIdCommentsCommentIdDelete() throws AMIntegrationTestException {
+        CommentIndividualApi commentIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentIndividualApi.class);
+        commentIndividualApi.apisApiIdCommentsCommentIdDelete(comment.getCommentId(), api.getId(),"","");
+        CommentCollectionApi commentCollectionApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
+                AMIntegrationTestConstants.DEFAULT_SCOPES).buildClient(CommentCollectionApi.class);
+        CommentList commentList = commentCollectionApi.apisApiIdCommentsGet(api.getId(),25,0);
+        Assert.assertEquals(commentList.getCount().toString(),"0");
     }
 
     @AfterClass

@@ -33,6 +33,7 @@
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.oauth.RefreshGrantTestCaseIT"/>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.oauth.JWTTokenGrantTestCaseIT"/>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.store.ApplicationJWTTestCaseIT"/>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.store.APICommentsTestCaseIT"/>
         </classes>
 
     </test>

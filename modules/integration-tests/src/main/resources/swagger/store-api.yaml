@@ -700,26 +700,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-######################################################
-# The "Comments Collection" resource API
-######################################################
+  ######################################################
+  # The "Comments Collection" resource API
+  ######################################################
   '/apis/{apiId}/comments':
-#-----------------------------------------------------
-# Retrieve a list of all comments of a certain API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieve a list of all comments of a certain API
+    #-----------------------------------------------------
     get:
       summary: Retrieve API comments
       security:
-        - OAuth2Security:
+      - OAuth2Security:
       description: |
         Get a list of Comments that are already added to APIs
       parameters:
-        - $ref: '#/parameters/apiId'
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/apiId'
+      - $ref: '#/parameters/limit'
+      - $ref: '#/parameters/offset'
       tags:
-        - Comment (Collection)
-        - Retrieve
+      - Comment (Collection)
+      - Retrieve
       responses:
         200:
           description: |
@@ -733,28 +733,28 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Add a new Comment
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Add a new Comment
+    #-----------------------------------------------------
     post:
       summary: Add an API comment
       security:
-        - OAuth2Security:
-          - apim:subscribe
+      - OAuth2Security:
+        - apim:subscribe
       x-scope: apim:subscribe
       parameters:
-        - $ref: '#/parameters/apiId'
-        - in: body
-          name: body
-          description: |
-            Comment object that should to be added
-          required: true
-          schema:
-            $ref: '#/definitions/Comment'
+      - $ref: '#/parameters/apiId'
+      - in: body
+        name: body
+        description: |
+          Comment object that should to be added
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
       tags:
-        - Comment (Individual)
-        - API (Individual)
-        - Create
+      - Comment (Individual)
+      - API (Individual)
+      - Create
       responses:
         201:
           description: |
@@ -787,29 +787,29 @@ paths:
 
 
 
-#########################################################
-# "Individual API comment" resource APIs
-#########################################################
+  #########################################################
+  # "Individual API comment" resource APIs
+  #########################################################
   '/apis/{apiId}/comments/{commentId}':
 
-#-----------------------------------------------------------------------
-# Retrieve an individual Comment for a certain API
-#-----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
+    # Retrieve an individual Comment for a certain API
+    #-----------------------------------------------------------------------
     get:
       summary: Get details of an API comment
       security:
-        - OAuth2Security:
+      - OAuth2Security:
       description: |
         Get the individual comment given by a username for a certain API.
       parameters:
-        - $ref: '#/parameters/commentId'
-        - $ref: '#/parameters/apiId'
-        - $ref: '#/parameters/If-None-Match'
-        - $ref: '#/parameters/If-Modified-Since'
+      - $ref: '#/parameters/commentId'
+      - $ref: '#/parameters/apiId'
+      - $ref: '#/parameters/If-None-Match'
+      - $ref: '#/parameters/If-Modified-Since'
       tags:
-        - Comment (Individual)
-        - API (Individual)
-        - Retrieve
+      - Comment (Individual)
+      - API (Individual)
+      - Retrieve
       responses:
         200:
           description: |
@@ -845,26 +845,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Delete a particular Comment
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Delete a particular Comment
+    #-----------------------------------------------------
     delete:
       summary: Delete an API comment
       security:
-        - OAuth2Security:
-          - apim:subscribe
+      - OAuth2Security:
+        - apim:subscribe
       x-scope: apim:subscribe
       description: |
         Remove a Comment
       parameters:
-        - $ref: '#/parameters/commentId'
-        - $ref: '#/parameters/apiId'
-        - $ref: '#/parameters/If-Match'
-        - $ref: '#/parameters/If-Unmodified-Since'
+      - $ref: '#/parameters/commentId'
+      - $ref: '#/parameters/apiId'
+      - $ref: '#/parameters/If-Match'
+      - $ref: '#/parameters/If-Unmodified-Since'
       tags:
-        - Comment (Individual)
-        - API (Individual)
-        - Delete
+      - Comment (Individual)
+      - API (Individual)
+      - Delete
       responses:
         200:
           description: |
@@ -877,33 +877,33 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Update a particular Comment
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Update a particular Comment
+    #-----------------------------------------------------
     put:
       summary: Update an API comment
       security:
-        - OAuth2Security:
-          - apim:subscribe
+      - OAuth2Security:
+        - apim:subscribe
       x-scope: apim:subscribe
       description: |
         Update a certain Comment
       parameters:
-        - $ref: '#/parameters/commentId'
-        - $ref: '#/parameters/apiId'
-        - in: body
-          name: body
-          description: |
-            Comment object that needs to be updated
-          required: true
-          schema:
-            $ref: '#/definitions/Comment'
-        - $ref: '#/parameters/If-Match'
-        - $ref: '#/parameters/If-Unmodified-Since'
+      - $ref: '#/parameters/commentId'
+      - $ref: '#/parameters/apiId'
+      - in: body
+        name: body
+        description: |
+          Comment object that needs to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
+      - $ref: '#/parameters/If-Match'
+      - $ref: '#/parameters/If-Unmodified-Since'
       tags:
-        - Comment (Individual)
-        - API (Individual)
-        - Update
+      - Comment (Individual)
+      - API (Individual)
+      - Update
       responses:
         200:
           description: |
@@ -943,7 +943,6 @@ paths:
             The request has not been performed because one of the preconditions is not met.
           schema:
             $ref: '#/definitions/Error'
-
 
 ######################################################
 # The "Composite API Collection" resource APIs
@@ -3795,20 +3794,26 @@ definitions:
         items:
           $ref: '#/definitions/Rating'
 
-#-----------------------------------------------------
-# The Comment resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The Comment resource
+  #-----------------------------------------------------
   Comment:
     title: Comment
     required:
-      - commentId
-      - apiId
-      - username
-      - commentText
+    - commentId
+    - apiId
+    - username
+    - commentText
     properties:
       commentId:
         type: string
       apiId:
+        type: string
+      category:
+        type: string
+      parentCommentId:
+        type: string
+      entryPoint:
         type: string
       username:
         type: string
@@ -3827,26 +3832,26 @@ definitions:
       lastUpdatedBy:
         type: string
 
-#-----------------------------------------------------
-# The Comments List resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The Comments List resource
+  #-----------------------------------------------------
   CommentList:
     title: Comments List
     properties:
       count:
         type: integer
         description: |
-           Number of Comments returned.
+          Number of Comments returned.
       next:
         type: string
         description: |
-           Link to the next subset of resources qualified.
-           Empty if no more resources are to be returned.
+          Link to the next subset of resources qualified.
+          Empty if no more resources are to be returned.
       previous:
         type: string
         description: |
-           Link to the previous subset of resources qualified.
-           Empty if current subset is the first subset returned.
+          Link to the previous subset of resources qualified.
+          Empty if current subset is the first subset returned.
       list:
         type: array
         items:
