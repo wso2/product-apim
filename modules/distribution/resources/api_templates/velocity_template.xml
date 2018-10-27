@@ -165,7 +165,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #else
 #set( $filterRegex = "PRODUCTION" )
 #end
-#if($apiStatus != 'PROTOTYPED')
+#if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -174,7 +174,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_config )
         #end
-        #if($apiStatus != 'PROTOTYPED')
+        #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
     </then>
     <else>
         #if($environmentType !='hybrid')

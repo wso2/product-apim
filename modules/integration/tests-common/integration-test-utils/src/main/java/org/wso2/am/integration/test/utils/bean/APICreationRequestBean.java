@@ -46,6 +46,39 @@ public class APICreationRequestBean extends AbstractRequest {
     private String endpointAuthType = "basicAuth";
     private String httpChecked = "http";
     private String httpsChecked = "https";
+    private String mutualSSLChecked = "";
+
+    /**
+     * To check whether mutual ssl option is enabled.
+     *
+     * @return "mutualssl" if it is enabled, otherwise empty string.
+     */
+    private String getMutualSSLChecked() {
+        return mutualSSLChecked;
+    }
+
+    /**
+     * To set mutual ssl.
+     *
+     * @param mutualSSLChecked Parameter to specify whether mutual ssl enabled.
+     */
+    public void setMutualSSLChecked(String mutualSSLChecked) {
+        this.mutualSSLChecked = mutualSSLChecked;
+    }
+
+    /**
+     * To get details on whether OAuth2 checked.
+     * @return "oauth2" if it enab
+     */
+    private String getOauth2Checked() {
+        return oauth2Checked;
+    }
+
+    public void setOauth2Checked(String oauth2Checked) {
+        this.oauth2Checked = oauth2Checked;
+    }
+
+    private String oauth2Checked = "";
     private String tags = "tags";
     private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
@@ -471,6 +504,8 @@ public class APICreationRequestBean extends AbstractRequest {
         }
         addParameter("http_checked", getHttpChecked());
         addParameter("https_checked", getHttpsChecked());
+        addParameter("oauth2_checked", getOauth2Checked());
+        addParameter("mutualssl_checked", getMutualSSLChecked());
         addParameter("tags", getTags());
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());

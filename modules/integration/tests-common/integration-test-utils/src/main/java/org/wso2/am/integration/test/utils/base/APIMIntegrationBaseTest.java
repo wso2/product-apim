@@ -368,6 +368,19 @@ public class APIMIntegrationBaseTest {
         return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext + "/" + version;
     }
 
+    /**
+     * To get the API invocation in https with context and version.
+     *
+     * @param apiContext Relevant context of the API.
+     * @param version    Version of the API.
+     * @return Https url related with api context and version.
+     * @throws XPathExpressionException XPath Express Exception.
+     */
+    protected String getAPIInvocationURLHttps(String apiContext, String version) throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getSecureServiceUrl().replace("/services", "") + "/" + apiContext
+                + "/" + version;
+    }
+
     protected String getWebSocketAPIInvocationURL(String apiContext, String version)
             throws XPathExpressionException {
         String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").

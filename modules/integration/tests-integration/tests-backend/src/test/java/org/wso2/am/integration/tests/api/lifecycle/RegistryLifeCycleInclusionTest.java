@@ -51,7 +51,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
