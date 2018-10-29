@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/store/v0.11//applications",
+                    "url": "/api/am/store/v0.14//applications",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer",
@@ -18,7 +18,7 @@
                             \"applicationId\": \"9fade8f8-89b4-48a5-b1c2-12640d08df44\",\n   \"status\": \"APPROVED\",\n
                             \"description\": \"This is to test.\",\n   \"throttlingTier\": \"Unlimited\",\n
                             \"callbackUrl\": \"testURL\",\n   \"subscriber\": \"admin\",\n
-                            \"groupId\": \"testGroup1Y\"
+                            \"groupId\": \"testGroup1\"
                         \n}",
                     "response-headers": "",
                     "response-payload": ""
