@@ -29,6 +29,17 @@ API Manager 2.6.0 deployment required. No additional artifact or data to be adde
 ## Testing and Acceptance Criteria
 Once user followed above mentioned steps he should be able to see 2 versions of APIs at the same time. Then after deprecating version 1.0.0 it should appear as deprecated API in publisher UI and in store users should not allowed to subscribe to same API. After moving version 1.0.0 to retired state it will not appear on API store and users will not be able to use that. When API publisher create new version, if he selected require re subscription then existing users will not be able to use it without new
 
+Below are the screenshots that shows the OLD and New API’s with there lifecycle states.
+
+Old API version(1.0.0.) in deprecated mode while new API(version 2.0.0) in published mode.
+![](images/image_0.png)
+
+Old API in DEPRICATED state
+![](images/image_1.png)
+
+Old API in PUBLISHED state
+![](images/image_2.png)
+
 ## API Reference
 Users can create a new API version of API via publisher user interface or REST API. Following is the base URL of API copy resource. Users can invoke this API and create copy of existing API with different version.
 ```
