@@ -12,7 +12,7 @@ API Creator - API creator responsible for create and modify APIs according chang
 When it comes to API versining there can be muliple users associated with that story. If we take this particular example API publisher will perform all API creating, versioning, create new version, manage lifecycles of existing APIs. Then API subscriber will be able see those actions perform by API publisher. For an example if publisher created new version (1.1.0) of exsting API version (1.0.0) then subscriber will see this new version and should be able to test it and subscribe. And with subscriber notification feature API publisher can notify all users of existing version 1.0.0. 
 
 ### [1.1 Use API versioning to rollout API updates and changes.](https://github.com/wso2/product-apim/tree/product-scenarios/product-scenarios/1-api-updates-using-new-versions/1.1-manage-api-versions)
-### 1.2 Create new API version from exsiting API and let users to invoke it without version(Default API)
+### [1.2 Create new API version from exsiting API and let users to invoke it without version(Default API)](https://github.com/wso2/product-apim/tree/product-scenarios/product-scenarios/1-api-updates-using-new-versions/1.2-create-api-and-make-it-default-api)
 ### 1.3 Usage of default API when we run multiple versions of same API.
 
 
