@@ -1,7 +1,10 @@
-# 1.2.1 Create new version of API and make it default version
+# 1.1.2 Create new API version from exsiting API and let users to invoke it without version(Default API)
 
 ## When to use this approach
 When user have already running multiple versions of API and need to do expose one API as default version. Which means users can invoke API without any version.
+
+## Scenario
+In API Manager users can invoke APIs without having any version. This version is called default version. When user running multiple API versions at same time he can mark one API as default API. So all APIs without version will direct to this default version. When users use API versioning to rollout API updates and changes they can create new version of existing API. 
 
 ## Prerequisites
 User can use API publisher web application to test entire flow.
