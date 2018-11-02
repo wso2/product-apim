@@ -14,7 +14,7 @@ rem  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 rem  See the License for the specific language governing permissions and
 rem  limitations under the License.
 
-set usertLocation=%cd%
+set userLocation=%cd%
 set pathToApiManagerXML=..\repository\conf\api-manager.xml
 set pathToAxis2XML=..\repository\conf\axis2\axis2.xml
 set pathToRegistry=..\repository\conf\registry.xml
@@ -22,6 +22,10 @@ set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\defau
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
+set pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
+set pathToRegistryTM='../repository/conf/registry_TM.xml'
+set pathToAxis2XMLBackup='../repository/conf/axis2/axis2backup.xml'
+set pathToRegistryBackup='../repository/conf/registryBackup.xml'
 cd /d %~dp0
 
 rem ----- Process the input commands (two args only)-------------------------------------------
@@ -32,7 +36,7 @@ if ""%1""==""-Dprofile"" (
 	if ""%2""==""traffic-manager"" 	goto trafficManager
 	if ""%2""==""gateway-worker"" 	goto gatewayWorker
 )
-echo Profile is not specifed properly, please try again
+echo Profile is not specified properly, please try again
 goto end
 
 :keyManager
@@ -133,6 +137,8 @@ goto finishOptimization
 
 :trafficManager
 echo Starting to optimize API Manager for the Traffic Manager profile
+call :replaceAxis2File
+call :replaceRegistryXMLFile
 call :disableTransportSenderWS
 call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
@@ -280,6 +286,28 @@ for /f %%i in ('dir "%pathToSynapseConfigs%" /A:-D /b ^| find /v "synapse.xml"')
 )
 EXIT /B 0
 
+:replaceAxis2File
+if exist %pathToAxis2XML% ( if exist %pathToAxis2TMXml% (
+    ren %pathToAxis2XML% %pathToAxis2XMLBackup%
+    call :Timestamp value
+	echo %value% INFO - Rename the existing axis2.xml file as axis2backup.xml
+ 	ren %pathToAxis2TMXml% %pathToAxis2XML%
+ 	call :Timestamp value
+    echo %value% INFO - Rename the axis2TM.xml file as axis2.xml
+))
+EXIT /B 0
+
+:replaceRegistryXMLFile
+if exist %pathToRegistry% ( if exist %pathToRegistryTM% (
+    ren %pathToRegistry% %pathToRegistryBackup%
+    call :Timestamp value
+	echo %value% INFO - Rename the existing registry.xml file as registryBackup.xml
+ 	ren pathToRegistryTM pathToRegistry
+ 	call :Timestamp value
+    echo %value% INFO - Rename the registry_TM.xml file as registry.xml
+))
+EXIT /B 0
+
 :Timestamp
 set "%~1=[%date:~10,14%-%date:~4,2%-%date:~7,2% %time%]"
 EXIT /B 0
@@ -289,4 +317,4 @@ echo Finished the optimizations
 goto end
 
 :end
-cd /d %usertLocation%
+cd /d %userLocation%

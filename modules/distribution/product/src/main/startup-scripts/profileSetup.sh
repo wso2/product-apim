@@ -14,7 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-usertLocation=`pwd`
+userLocation=`pwd`
 pathToApiManagerXML='../repository/conf/api-manager.xml'
 pathToAxis2XML='../repository/conf/axis2/axis2.xml'
 pathToRegistry='../repository/conf/registry.xml'
@@ -22,6 +22,10 @@ pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/
 pathToWebapps='../repository/deployment/server/webapps'
 pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
+pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
+pathToRegistryTM='../repository/conf/registry_TM.xml'
+pathToAxis2XMLBackup='../repository/conf/axis2/axis2backup.xml'
+pathToRegistryBackup='../repository/conf/registryBackup.xml'
 timestamp=""
 cd `dirname "$0"`
 
@@ -131,6 +135,30 @@ removeSynapseConfigs(){
 	done
 }
 
+replaceAxis2File(){
+    if [ -e $pathToAxis2XML ] && [ -e $pathToAxis2TMXml ]
+	then
+        mv $pathToAxis2XML $pathToAxis2XMLBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing axis2.xml file as axis2backup.xml"
+		mv $pathToAxis2TMXml $pathToAxis2XML
+        timeStamp
+		echo "[${timestamp}] INFO - Rename the axis2TM.xml file as axis2.xml"
+	fi
+}
+
+replaceRegistryXMLFile(){
+    if [ -e $pathToRegistry ] && [ -e $pathToRegistryTM ]
+	then
+        mv $pathToRegistry $pathToRegistryBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing registry.xml file as registryBackup.xml"
+		mv $pathToRegistryTM $pathToRegistry
+        timeStamp
+		echo "[${timestamp}] INFO - Rename the registry_TM.xml file as registry.xml"
+	fi
+}
+
 #main
 case $1 in
 	-Dprofile=api-key-manager)
@@ -228,6 +256,8 @@ case $1 in
         ;;
 	-Dprofile=traffic-manager)
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
+		replaceAxis2File
+		replaceRegistryXMLFile
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableIndexingConfiguration
@@ -283,10 +313,10 @@ case $1 in
 		done
 		;;
 	*)
-		echo "Profile is not specifed properly, please try again"
-		cd $usertLocation
+		echo "Profile is not specified properly, please try again"
+		cd $userLocation
 		exit
 esac
 
 echo Finished the optimizations
-cd $usertLocation
+cd $userLocation
