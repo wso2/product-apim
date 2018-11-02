@@ -54,6 +54,7 @@
         <module>modules/distribution</module>
         <module>modules/api-import-export</module>
         <module>modules/integration</module>
+        <module>product-scenarios/1-api-updates-using-new-versions</module>
     </modules>
 
     <scm>
