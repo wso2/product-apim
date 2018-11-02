@@ -99,8 +99,8 @@ public class NewVersioningTestCase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //apiPublisher.deleteAPI(apiName, APIVersion, "admin");
-        //apiPublisher.deleteAPI(apiName, APIVersionNew, "admin");
+        apiPublisher.deleteAPI(apiName, APIVersion, "admin");
+        apiPublisher.deleteAPI(apiName, APIVersionNew, "admin");
     }
 
     private String getServerURL() {
