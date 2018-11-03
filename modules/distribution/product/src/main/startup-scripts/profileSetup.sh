@@ -143,7 +143,7 @@ replaceAxis2File(){
 		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2XML file as axis2backup.xml"
 		mv $pathToAxis2TMXml $pathToAxis2XML
         timeStamp
-		echo "[${timestamp}] INFO - Rename the $pathToAxis2TMXml file as axis2.xml"
+		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2TMXml file as axis2.xml"
 	fi
 }
 
@@ -152,10 +152,10 @@ replaceRegistryXMLFile(){
 	then
         mv $pathToRegistry $pathToRegistryBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing registry.xml file as registryBackup.xml"
+		echo "[${timestamp}] INFO - Rename the existing $pathToRegistry file as registryBackup.xml"
 		mv $pathToRegistryTM $pathToRegistry
         timeStamp
-		echo "[${timestamp}] INFO - Rename the registry_TM.xml file as registry.xml"
+		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTM file as registry.xml"
 	fi
 }
 
