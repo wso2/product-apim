@@ -140,10 +140,10 @@ replaceAxis2File(){
 	then
         mv $pathToAxis2XML $pathToAxis2XMLBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing axis2.xml file as axis2backup.xml"
+		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2XML file as axis2backup.xml"
 		mv $pathToAxis2TMXml $pathToAxis2XML
         timeStamp
-		echo "[${timestamp}] INFO - Rename the axis2TM.xml file as axis2.xml"
+		echo "[${timestamp}] INFO - Rename the $pathToAxis2TMXml file as axis2.xml"
 	fi
 }
 

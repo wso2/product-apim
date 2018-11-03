@@ -22,10 +22,12 @@ set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\defau
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
-set pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
-set pathToRegistryTM='../repository/conf/registry_TM.xml'
-set pathToAxis2XMLBackup='../repository/conf/axis2/axis2backup.xml'
-set pathToRegistryBackup='../repository/conf/registryBackup.xml'
+set pathToAxis2TMXml=..\repository\conf\axis2\axis2_TM.xml
+set pathToRegistryTM=..\repository\conf\registry_TM.xml
+set axis2XMLBackup=axis2backup.xml
+set registryBackup=registryBackup.xml
+set axis2XML=axis2.xml
+set registryXML=registry.xml
 cd /d %~dp0
 
 rem ----- Process the input commands (two args only)-------------------------------------------
@@ -287,25 +289,29 @@ for /f %%i in ('dir "%pathToSynapseConfigs%" /A:-D /b ^| find /v "synapse.xml"')
 EXIT /B 0
 
 :replaceAxis2File
-if exist %pathToAxis2XML% ( if exist %pathToAxis2TMXml% (
-    ren %pathToAxis2XML% %pathToAxis2XMLBackup%
-    call :Timestamp value
-	echo %value% INFO - Rename the existing axis2.xml file as axis2backup.xml
- 	ren %pathToAxis2TMXml% %pathToAxis2XML%
- 	call :Timestamp value
-    echo %value% INFO - Rename the axis2TM.xml file as axis2.xml
-))
+if exist %pathToAxis2XML% (
+	if exist %pathToAxis2TMXml% (
+		ren %pathToAxis2XML% %axis2XMLBackup%
+		call :Timestamp value
+		echo %value% INFO - Rename the existing %pathToAxis2XML% file as %axis2XMLBackup%
+		ren %pathToAxis2TMXml% %axis2XML%
+		call :Timestamp value
+		echo %value% INFO - Rename the existing %pathToAxis2TMXml% file as %axis2XML%
+	)
+)
 EXIT /B 0
 
 :replaceRegistryXMLFile
-if exist %pathToRegistry% ( if exist %pathToRegistryTM% (
-    ren %pathToRegistry% %pathToRegistryBackup%
-    call :Timestamp value
-	echo %value% INFO - Rename the existing registry.xml file as registryBackup.xml
- 	ren pathToRegistryTM pathToRegistry
- 	call :Timestamp value
-    echo %value% INFO - Rename the registry_TM.xml file as registry.xml
-))
+if exist %pathToRegistry% (
+	if exist %pathToRegistryTM% (
+        ren %pathToRegistry% %registryBackup%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToRegistry% file as %registryBackup%
+        ren  %pathToRegistryTM% %registryXML%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToRegistryTM% file as %registryXML%
+	)
+)
 EXIT /B 0
 
 :Timestamp
