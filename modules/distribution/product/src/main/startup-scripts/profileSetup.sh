@@ -258,9 +258,6 @@ case $1 in
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
 		replaceAxis2File
 		replaceRegistryXMLFile
-		disableTransportSenderWS
-		disableTransportSenderWSS
-		disableIndexingConfiguration
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs

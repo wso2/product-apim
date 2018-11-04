@@ -141,11 +141,8 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Traffic Manager profile
 call :replaceAxis2File
 call :replaceRegistryXMLFile
-call :disableTransportSenderWS
-call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
-call :disableIndexingConfiguration
 call :removeSynapseConfigs
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /A:-D /b') do (
