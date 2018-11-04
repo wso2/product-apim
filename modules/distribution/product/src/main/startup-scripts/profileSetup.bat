@@ -143,6 +143,7 @@ call :replaceAxis2File
 call :replaceRegistryXMLFile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
+call :disableIndexingConfiguration
 call :removeSynapseConfigs
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /A:-D /b') do (
