@@ -25,8 +25,8 @@ under the License.
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Based on product backend Test Module</name>
-    <artifactId>org.wso2.carbon.am.integration.backend.test2</artifactId>
+    <name>WSO2 API Manager - Create New API Version</name>
+    <artifactId>create-api-version</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -35,7 +35,8 @@ under the License.
 
     <profiles>
         <profile>
-            <!--The profile below will activate the profile by default or when the system property "integration" is specified with any value-->
+            <!--The profile below will activate the profile by default or when the system property
+            "integration" is specified with any value-->
             <!--mvn clean install -->
             <!--mvn clean install -DintegrationTests -->
             <id>integration</id>
@@ -449,12 +450,12 @@ under the License.
             <scope>test</scope>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.wso2.carbon.analytics</groupId>-->
-            <!--<artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>-->
+        <!--<groupId>org.wso2.carbon.analytics</groupId>-->
+        <!--<artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>-->
-            <!--<artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>-->
+        <!--<groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>-->
+        <!--<artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>-->
         <!--</dependency>-->
 
         <!--Jetty dependencies-->

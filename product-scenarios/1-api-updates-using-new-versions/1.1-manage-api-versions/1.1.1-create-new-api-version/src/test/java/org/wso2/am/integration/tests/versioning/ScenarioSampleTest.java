@@ -16,15 +16,12 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
 
-public class NewVersioningTestCase {
-    private final Log log = LogFactory.getLog(NewVersioningTestCase.class);
+public class ScenarioSampleTest extends ScenarioTestBase {
+    private final Log log = LogFactory.getLog(ScenarioSampleTest.class);
     private APIPublisherRestClient apiPublisher;
     private String publisherURLHttp;
     private APIRequest apiRequest;
@@ -37,6 +34,7 @@ public class NewVersioningTestCase {
     private String APIVersion = "1.0.0";
     private String APIVersionNew = "2.0.0";
     private String providerName = "admin";
+    private Properties infraProperties;
     String resourceLocation = System.getProperty("framework.resource.location");
     int timeout = 10;
     RequestConfig config = RequestConfig.custom()
@@ -46,9 +44,15 @@ public class NewVersioningTestCase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-
-        publisherURLHttp = "http://" + getServerURL() + ":9763/";
-        endpointUrl = "http://" + getServerURL() + ":9763/am/sample/calculator/v1/api/add";
+        infraProperties = getDeploymentProperties();
+        String authority = infraProperties.getProperty(CARBON_SERVER_URL);
+        if (authority != null && authority.contains("/")) {
+            authority = authority.split("/")[2];
+        } else if (authority == null) {
+            authority = "localhost";
+        }
+        publisherURLHttp = "http://" + authority + ":9763/";
+        endpointUrl = "http://" + authority + ":9763/am/sample/calculator/v1/api/add";
 
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
@@ -74,16 +78,14 @@ public class NewVersioningTestCase {
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
 
-
         //copy test api
         serviceResponse = apiPublisher
-                .copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersionNew, null);
+                .copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersionNew,
+                        null);
         verifyResponse(serviceResponse);
-        
 
         //test the copied api
         serviceResponse = apiPublisher.getAPI(apiRequest.getName(), apiRequest.getProvider(), APIVersionNew);
-
 
         JSONObject response = new JSONObject(serviceResponse.getData());
         String version = response.getJSONObject("api").get("version").toString();
@@ -103,30 +105,6 @@ public class NewVersioningTestCase {
         apiPublisher.deleteAPI(apiName, APIVersionNew, "admin");
     }
 
-    private String getServerURL() {
-        String bucketLocation = System.getenv("DATA_BUCKET_LOCATION");
-        String authority = null;
-        log.info("Data Bucket location is set : " + bucketLocation);
-
-        Properties prop = new Properties();
-        //InputStream input = null;
-        try (InputStream input = new FileInputStream(bucketLocation + "/infrastructure.properties")) {
-            prop.load(input);
-            authority = prop.getProperty("PublisherUrl");
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        if ( authority!= null && authority.contains("/")) {
-            authority = authority.split("/")[2];
-        } else if (authority == null){
-            authority = "localhost";
-        }
-
-        return authority;
-    }
-
     private void setKeyStoreProperties() {
         System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystores/wso2carbon.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
@@ -139,6 +117,7 @@ public class NewVersioningTestCase {
         log.info("Response Message : " + httpResponse.getData());
         Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
         JSONObject responseData = new JSONObject(httpResponse.getData());
-        Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR), "Error message received " + httpResponse.getData());
+        Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
+                "Error message received " + httpResponse.getData());
     }
 }

@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -119,7 +119,7 @@ public class APIPublisherRestClient {
     public HttpResponse addAPI(APIRequest apiRequest) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(
+            return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                     apiRequest.generateRequestParameters(),
                     requestHeaders);
@@ -145,7 +145,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(
+            return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/overview/ajax/overview.jag"),
                     "action=createNewAPI&provider=" + provider + "&apiName=" + apiName + "&version="
                     + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion,
@@ -189,7 +189,7 @@ public class APIPublisherRestClient {
         try {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
-            return HTTPSClientUtils.doPost(
+            return HttpClient.doPost(
                     new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag"),
                     updateRequest.generateRequestParameters(),
                     requestHeaders);
@@ -236,7 +236,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(
+            return HttpClient.doPost(
                     new URL(backendURL + "publisher/site/blocks/item-add/ajax/remove.jag"),
                     "action=removeAPI&name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
@@ -380,7 +380,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(
+            return HttpClient.doPost(
                     new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "",
                     requestHeaders);
