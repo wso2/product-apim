@@ -95,10 +95,10 @@ public class APINewVersionTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.2", enabled = true)
-    public void testAPINewVersionWithInvalidVersion() throws Exception{
+    public void testAPINewVersionWithExistingVersion() throws Exception{
 
         //copy initial api with invalid version
-        HttpResponse serviceResponse = apiPublisher.copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersion,
+        HttpResponse serviceResponse = apiPublisher.copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersionNew,
                 null);
 
         Assert.assertTrue(serviceResponse.getData().contains(InvalidVersionResponse));

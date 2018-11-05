@@ -17,10 +17,9 @@
   -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="ApiManager-scenario-test-suite">
-    <test name="apim-scenario-versioning" preserve-order="true" verbose="2" parallel="false">
+<suite name="ApiManager-scenario-tests-suite">
+    <test name="apim-scenario-tests-versioning" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.integration.tests.versioning.ScenarioSampleTest"/>-->
             <class name="org.wso2.am.integration.tests.versioning.APINewVersionTestCase"/>
         </classes>
     </test>
