@@ -20,14 +20,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <parent>
-        <artifactId>integration</artifactId>
-        <groupId>org.wso2.am</groupId>
-        <version>2.6.1-SNAPSHOT</version>
-        <relativePath>pom.xml</relativePath>
-    </parent>
-
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.wso2.am</groupId>
+    <version>2.6.0</version>
     <name>WSO2 API Manager - API Update Using New Versions</name>
     <artifactId>manage-update-api-versions</artifactId>
     <packaging>pom</packaging>
@@ -64,11 +59,6 @@
                 <jdk>1.4</jdk>
             </activation>
             <dependencies>
-                <dependency>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk13</artifactId>
-                    <version>${bcprov.jdk13.version}</version>
-                </dependency>
             </dependencies>
         </profile>
 
@@ -78,13 +68,6 @@
                 <activeByDefault>true</activeByDefault>
                 <jdk>1.5</jdk>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                    <version>${bcprov.jdk15.version}</version>
-                </dependency>
-            </dependencies>
         </profile>
 
         <profile>
