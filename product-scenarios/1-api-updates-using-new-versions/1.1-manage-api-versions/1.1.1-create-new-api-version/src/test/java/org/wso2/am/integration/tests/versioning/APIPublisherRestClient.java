@@ -77,7 +77,7 @@ public class APIPublisherRestClient {
         urlParameters.add(new BasicNameValuePair("password", password));
 
         try {
-            response = HTTPSClientUtils.doPost(
+            response = HttpClient.doPost(
                     backendURL + URL_SUFFIX + "/user/login/ajax/login.jag", requestHeaders, urlParameters);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to login to the publisher app ", e);

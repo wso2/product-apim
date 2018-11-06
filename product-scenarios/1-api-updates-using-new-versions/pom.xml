@@ -52,51 +52,6 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <profiles>
-        <profile>
-            <id>jdk14</id>
-            <activation>
-                <jdk>1.4</jdk>
-            </activation>
-            <dependencies>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>jdk15</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <jdk>1.5</jdk>
-            </activation>
-        </profile>
-
-        <profile>
-            <id>signed-build</id>
-            <activation>
-                <property>
-                    <name>sign</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -236,11 +191,6 @@
                 <version>${carbon.apimgt.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.commons</groupId>
-                <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
-                <version>${carbon.commons.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.utils</artifactId>
                 <version>${carbon.kernel.version}</version>
@@ -249,16 +199,6 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
                 <version>${carbon.kernel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.identity.framework</groupId>
-                <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
-                <version>${carbon.identity.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.multitenancy</groupId>
-                <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
-                <version>${carbon.multitenancy.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
@@ -407,11 +347,6 @@
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity.framework</groupId>
-                <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
-                <version>${carbon.identity.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
                 <artifactId>org.wso2.carbon.ndatasource.stub</artifactId>
                 <version>${carbon.commons.version}</version>
@@ -421,51 +356,15 @@
                 <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
                 <version>${carbon.kernel.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.wso2.carbon.identity.framework</groupId>
-                <artifactId>org.wso2.carbon.identity.application.mgt.stub</artifactId>
-                <version>${carbon.identity.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
                 <artifactId>org.wso2.carbon.application.mgt.stub</artifactId>
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity.framework</groupId>
-                <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
-                <version>${carbon.identity.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.rest.api</artifactId>
                 <version>${carbon.rest.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.identity.user.ws</groupId>
-                <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
-                <version>${carbon.identity-user-ws.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.rampart</groupId>
-                <artifactId>rampart-core</artifactId>
-                <version>${rampart.wso2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${org.slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.ws.security.wso2</groupId>
-                <artifactId>wss4j</artifactId>
-                <version>${ws.seccurity.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
@@ -483,12 +382,6 @@
                 <version>${jacoco.agent.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${google.guava.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
                 <version>${apimserver.version}</version>
@@ -499,19 +392,6 @@
                 <artifactId>cxf-bundle</artifactId>
                 <version>${cxf-bundle.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${javax.ws.rs-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.dblock.waffle.wso2</groupId>
-                <artifactId>waffle-jna</artifactId>
-                <version>${waffle-jna.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
@@ -567,11 +447,6 @@
                 <groupId>org.wso2.carbon.utils</groupId>
                 <artifactId>org.wso2.carbon.database.utils</artifactId>
                 <version>${carbon.database.utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${version.snake.yaml}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.orbit.org.apache.httpcomponents</groupId>
@@ -692,7 +567,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.35</carbon.kernel.version>
-        <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
+        <apimserver.version>2.6.0</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
         <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
@@ -733,7 +608,14 @@
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.0.18</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
-    </properties>
 
+        <carbon.automation.version>4.4.3</carbon.automation.version>
+        <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
+        <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
+        <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
+        <synapse.version>2.1.7-wso2v80</synapse.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
 </project>
