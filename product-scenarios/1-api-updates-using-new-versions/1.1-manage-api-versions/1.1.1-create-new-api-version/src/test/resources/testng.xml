@@ -20,7 +20,7 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="apim-scenario-tests-versioning" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.versioning.APINewVersionTestCase"/>
+            <class name="org.wso2.am.integration.tests.versioning.ScenarioSampleTest"/>
         </classes>
     </test>
 </suite>
