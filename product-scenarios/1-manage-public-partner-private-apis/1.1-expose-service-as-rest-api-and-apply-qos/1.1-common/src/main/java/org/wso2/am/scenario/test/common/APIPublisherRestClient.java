@@ -26,7 +26,6 @@ import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -124,6 +123,26 @@ public class APIPublisherRestClient {
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to add API. Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Facilitate design API into publisher node
+     *
+     * @param apiRequest - Constructed API request object
+     * @return http response object
+     * @throws APIManagerIntegrationTestException - Throws if API addition fails
+     */
+    public HttpResponse designAPI(APIRequest apiRequest) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
+                    apiRequest.generateRequestParameters(),
+                    requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to design API. Error: " + e.getMessage(), e);
         }
     }
 

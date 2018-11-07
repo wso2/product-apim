@@ -16,8 +16,14 @@ package org.wso2.am.scenario.test.common;/*
  *under the License.
  */
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +39,7 @@ public class ScenarioTestBase {
     private static final String INFRASTRUCTURE_PROPERTIES = "infrastructure.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     public static final String CARBON_SERVER_URL = "PublisherUrl";
+    String resourceLocation = System.getProperty("framework.resource.location");
 
     /**
      * This is a utility method to load the deployment details.
@@ -63,6 +70,22 @@ public class ScenarioTestBase {
         } catch (IOException ex) {
             log.warn(ex.getMessage(), ex);
         }
+    }
+
+    public void setKeyStoreProperties() {
+        System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystores/wso2carbon.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+        System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+    }
+
+    public void verifyResponse(HttpResponse httpResponse) throws JSONException {
+        Assert.assertNotNull(httpResponse, "Response object is null");
+        log.info("Response Code : " + httpResponse.getResponseCode());
+        log.info("Response Message : " + httpResponse.getData());
+        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        JSONObject responseData = new JSONObject(httpResponse.getData());
+        Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
+                "Error message received " + httpResponse.getData());
     }
 
 }
