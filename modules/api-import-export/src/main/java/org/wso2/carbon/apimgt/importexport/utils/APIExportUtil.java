@@ -19,6 +19,7 @@
 package org.wso2.carbon.apimgt.importexport.utils;
 
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
+import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 
 import com.google.gson.Gson;
@@ -51,6 +52,9 @@ import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.service.RegistryService;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -194,7 +198,7 @@ public class APIExportUtil {
         //export documents
         List<Documentation> docList;
         try {
-            docList = provider.getAllDocumentation(apiID);
+            docList = provider.getAllDocumentation(apiID, userName);
         } catch (APIManagementException e) {
             String errorMessage = "Unable to retrieve API Documentation";
             log.error(errorMessage, e);
@@ -810,6 +814,57 @@ public class APIExportUtil {
             IOUtils.closeQuietly(writer);
         }
 
+    }
+
+    /**
+     * Checks whether the request is violating cross tenant permission policies. Cross tenant resource access is allowed
+     * only for the super tenant admin user, only if the server is started with 'migrationEnabled=true' system property set.
+     *
+     * @param apiDomain Tenant domain of the API's provider
+     * @param username  Logged in user name
+     * @return Whether cross tenant access policies violated
+     * @throws APIExportException
+     */
+    public static Boolean isCrossTenantAccessPermissionsViolated(String apiDomain, String username) throws APIExportException {
+        String resourceRquesterDomain = MultitenantUtils.getTenantDomain(username);
+
+        boolean isCrossTenantAccess = !resourceRquesterDomain.equals(apiDomain);
+        if (!isCrossTenantAccess) {
+            return false;
+        }
+        boolean migrationEnabled = Boolean.getBoolean(APIImportExportConstants.MIGRATION_ENABLED);
+        String superAdminRole = null;
+        try {
+            superAdminRole = ServiceReferenceHolder.getInstance().getRealmService().
+                    getTenantUserRealm(MultitenantConstants.SUPER_TENANT_ID).getRealmConfiguration().getAdminRoleName();
+        } catch (UserStoreException e) {
+            String errorMsg = "Error in getting super admin role name";
+            throw new APIExportException(errorMsg, e);
+        }
+
+        //check whether logged in user is a super tenant user
+        String superTenantDomain = null;
+        try {
+            superTenantDomain = ServiceReferenceHolder.getInstance().getRealmService().getTenantManager().getSuperTenantDomain();
+        } catch (UserStoreException e) {
+            String errorMsg = "Error in getting the super tenant domain";
+            throw new APIExportException(errorMsg, e);
+        }
+        boolean isSuperTenantUser = resourceRquesterDomain.equals(superTenantDomain);
+
+        //check whether the user has super tenant admin role
+        boolean isSuperAdminRoleNameExist;
+        try {
+            isSuperAdminRoleNameExist = APIUtil.isRoleNameExist(username, superAdminRole);
+        } catch (APIManagementException e) {
+            String errorMsg = "Error in checking whether the user" + username + " has admin role";
+            throw new APIExportException(errorMsg, e);
+        }
+
+        boolean isSuperTenantAdmin = isSuperTenantUser && isSuperAdminRoleNameExist;
+        boolean hasMigrationSpecificPermissions = migrationEnabled && isSuperTenantAdmin;
+
+        return !hasMigrationSpecificPermissions;
     }
 
 }

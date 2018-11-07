@@ -95,14 +95,14 @@ public class APIService {
             String userName = authenticationContext.getUsername();
             //provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
-            String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
-            //Allows to export APIs created only in current tenant domain
-            if (!apiDomain.equals(apiRequesterDomain)) {
-                //not authorized to export requested API
-                log.error("Not authorized to " +
-                        "export API :" + name + "-" + version + "-" + providerName);
-                return Response.status(Response.Status.FORBIDDEN).entity("Not authorized to export API :" +
-                        name + "-" + version + "-" + providerName).type(MediaType.APPLICATION_JSON).build();
+
+            if (APIExportUtil.isCrossTenantAccessPermissionsViolated(apiDomain, userName)) {
+                String error = "Not authorized to export API :\"" + name + "-" + version + "-" + providerName;
+                String backEndError = error + ". Reason: Cross Tenant API access is not allowed. Both the facts; setting " +
+                        "'migrationEnabled=true' system property set at APIM Server startup and the requester being a super " +
+                        "tenant admin, should be satisfied for this to be allowed";
+                log.error(backEndError);
+                return Response.status(Response.Status.FORBIDDEN).entity(error).type(MediaType.APPLICATION_JSON).build();
             }
 
             apiIdentifier = new APIIdentifier(APIUtil.replaceEmailDomain(providerName), name, version);
@@ -118,10 +118,9 @@ public class APIService {
             APIExportUtil.setArchiveBasePath(archiveBasePath);
 
             //Start tenant flow for the entire export process
-            if (apiRequesterDomain != null &&
-                !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiDomain)) {
                 PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiRequesterDomain, true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiDomain, true);
                 isTenantFlowStarted = true;
             }
 
@@ -152,7 +151,6 @@ public class APIService {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
-
     }
 
     /**

@@ -92,4 +92,6 @@ public final class APIImportExportConstants {
     public static final String CHARSET = "UTF-8";
 
     public static final String AUTHENTICATION_ADMIN_SERVICE_ENDPOINT = "AuthenticationAdmin";
+
+    public static final String MIGRATION_ENABLED = "migrationEnabled";
 }
