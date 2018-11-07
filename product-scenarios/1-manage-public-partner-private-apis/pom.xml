@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
     <version>2.6.0</version>
-    <name>WSO2 API Manager - Manage Public, Partner and Private APIs</name>
+    <name>[APIM][SCENARIO_1] - Manage Public, Partner and Private APIs</name>
     <artifactId>1-manage-public-partner-private-apis</artifactId>
     <packaging>pom</packaging>
     <url>http://wso2.org</url>

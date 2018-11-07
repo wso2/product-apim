@@ -8,6 +8,7 @@
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_1] - Create REST API from Scratch</name>
 
     <artifactId>1.1.1-create-rest-api-from-scratch</artifactId>
 
@@ -15,6 +16,10 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>1.1-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>

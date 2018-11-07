@@ -18,6 +18,7 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.scenario.test.common.ScenarioTestBase;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
 
@@ -28,7 +29,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.1", enabled = true)
     public void testRESTAPICreation() throws Exception {
-
 
 
     }

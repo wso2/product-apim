@@ -1,4 +1,4 @@
-/*
+package org.wso2.am.scenario.test.common;/*
  *Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *WSO2 Inc. licenses this file to you under the Apache License,
@@ -15,8 +15,6 @@
  *specific language governing permissions and limitations
  *under the License.
  */
-
-package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
