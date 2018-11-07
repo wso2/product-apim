@@ -138,11 +138,11 @@ removeSynapseConfigs(){
 replaceAxis2File(){
     if [ -e $pathToAxis2XML ] && [ -e $pathToAxis2TMXml ]
 	then
-        mv $pathToAxis2XML $pathToAxis2XMLBackup
+	    mv $pathToAxis2XML $pathToAxis2XMLBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2XML file as axis2backup.xml"
 		mv $pathToAxis2TMXml $pathToAxis2XML
-        timeStamp
+		timeStamp
 		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2TMXml file as axis2.xml"
 	fi
 }
@@ -150,11 +150,11 @@ replaceAxis2File(){
 replaceRegistryXMLFile(){
     if [ -e $pathToRegistry ] && [ -e $pathToRegistryTM ]
 	then
-        mv $pathToRegistry $pathToRegistryBackup
+	    mv $pathToRegistry $pathToRegistryBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Rename the existing $pathToRegistry file as registryBackup.xml"
 		mv $pathToRegistryTM $pathToRegistry
-        timeStamp
+		timeStamp
 		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTM file as registry.xml"
 	fi
 }
