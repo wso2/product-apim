@@ -33,7 +33,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
     private Properties infraProperties;
 
-
     private String apiName = "PhoneVerification";
     private String apiContext = "/phoneverify";
     private String apiVersion = "1.0.0";
