@@ -150,7 +150,7 @@ replaceAxis2File(){
 replaceRegistryXMLFile(){
     if [ -e $pathToRegistry ] && [ -e $pathToRegistryTM ]
 	then
-	    mv $pathToRegistry $pathToRegistryBackup
+        mv $pathToRegistry $pathToRegistryBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Rename the existing $pathToRegistry file as registryBackup.xml"
 		mv $pathToRegistryTM $pathToRegistry
