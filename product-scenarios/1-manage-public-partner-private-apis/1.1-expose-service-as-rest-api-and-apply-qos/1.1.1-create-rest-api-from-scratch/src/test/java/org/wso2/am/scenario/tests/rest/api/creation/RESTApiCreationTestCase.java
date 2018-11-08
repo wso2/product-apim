@@ -15,13 +15,16 @@
 */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.Properties;
@@ -34,16 +37,14 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private Properties infraProperties;
 
     private String apiName = "PhoneVerification";
-    private String apiNameUnderscore = "Phone_verification_api";
-    private String apiNameNumeric = "123567890";
-    private String apiNameNonEnglish = "电话验证";
     private String apiContext = "/phoneverify";
     private String apiVersion = "1.0.0";
-    private String apiVisibility = "public";
     private String apiResource = "/find";
+    private String apiVisibility = "public";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
+
         infraProperties = getDeploymentProperties();
         String authority = infraProperties.getProperty(CARBON_SERVER_URL);
         if (authority != null && authority.contains("/")) {
@@ -61,17 +62,19 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     @Test(description = "1.1.1.1")
     public void testRESTAPICreationWithMandatoryValues() throws Exception {
 
+
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
-
     }
 
     @Test(description = "1.1.1.2")
     public void testRESTAPICreationWithNumericName() throws Exception{
-        apiRequest = new APIRequest(apiNameNumeric, apiContext, apiVisibility, apiVersion, apiResource);
+        apiName = "123567890";
+
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
         //Try to design API with numeric characters in api name
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
@@ -81,7 +84,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.3")
     public void testRESTAPICreationWithNonEnglishName() throws Exception{
-        apiRequest = new APIRequest(apiNameNonEnglish, apiContext, apiVisibility, apiVersion, apiResource);
+        apiName = "电话验证";
+
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
         //Try to design API with chinese api name
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
@@ -91,7 +96,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.4")
     public void testRESTAPICreationWithUnderscoreName() throws Exception{
-        apiRequest = new APIRequest(apiNameUnderscore, apiContext, apiVisibility, apiVersion, apiResource);
+        apiName = "Phone_verification_api";
+
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
         //Try to design API with including underscore characters in api name
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
@@ -99,15 +106,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
         verifyResponse(serviceResponse);
-        HttpResponse serviceResponse2 = apiPublisher.deleteAPI(apiNameNumeric, apiVersion, "admin");
-        verifyResponse(serviceResponse2);
-        HttpResponse serviceResponse3 = apiPublisher.deleteAPI(apiNameNonEnglish, apiVersion, "admin");
-        verifyResponse(serviceResponse3);
-        HttpResponse serviceResponse4 = apiPublisher.deleteAPI(apiNameUnderscore, apiVersion, "admin");
-        verifyResponse(serviceResponse4);
     }
 }

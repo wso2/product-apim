@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -33,7 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class ScenarioTestBase {
+public class ScenarioTestBase{
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "infrastructure.properties";
