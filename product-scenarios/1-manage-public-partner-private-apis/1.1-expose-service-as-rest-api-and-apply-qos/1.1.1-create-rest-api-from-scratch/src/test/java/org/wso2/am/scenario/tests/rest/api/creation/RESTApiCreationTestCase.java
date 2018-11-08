@@ -34,6 +34,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private Properties infraProperties;
 
     private String apiName = "PhoneVerification";
+    private String apiNameUnderscore = "Phone_verification_api";
+    private String apiNameNumeric = "123567890";
+    private String apiNameNonEnglish = "电话验证";
     private String apiContext = "/phoneverify";
     private String apiVersion = "1.0.0";
     private String apiVisibility = "public";
@@ -56,18 +59,55 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.1")
-    public void testRESTAPICreation() throws Exception {
+    public void testRESTAPICreationWithMandatoryValues() throws Exception {
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
-        //Design API with name,context.version,visibility and apiResource
+        //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
+
+    }
+
+    @Test(description = "1.1.1.2")
+    public void testRESTAPICreationWithNumericName() throws Exception{
+        apiRequest = new APIRequest(apiNameNumeric, apiContext, apiVisibility, apiVersion, apiResource);
+
+        //Try to design API with numeric characters in api name
+        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
+    }
+
+    @Test(description = "1.1.1.3")
+    public void testRESTAPICreationWithNonEnglishName() throws Exception{
+        apiRequest = new APIRequest(apiNameNonEnglish, apiContext, apiVisibility, apiVersion, apiResource);
+
+        //Try to design API with chinese api name
+        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
+    }
+
+    @Test(description = "1.1.1.4")
+    public void testRESTAPICreationWithUnderscoreName() throws Exception{
+        apiRequest = new APIRequest(apiNameUnderscore, apiContext, apiVisibility, apiVersion, apiResource);
+
+        //Try to design API with including underscore characters in api name
+        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
         verifyResponse(serviceResponse);
+        HttpResponse serviceResponse2 = apiPublisher.deleteAPI(apiNameNumeric, apiVersion, "admin");
+        verifyResponse(serviceResponse2);
+        HttpResponse serviceResponse3 = apiPublisher.deleteAPI(apiNameNonEnglish, apiVersion, "admin");
+        verifyResponse(serviceResponse3);
+        HttpResponse serviceResponse4 = apiPublisher.deleteAPI(apiNameUnderscore, apiVersion, "admin");
+        verifyResponse(serviceResponse4);
     }
 }
