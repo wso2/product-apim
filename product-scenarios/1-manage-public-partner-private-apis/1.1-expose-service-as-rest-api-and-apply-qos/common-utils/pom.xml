@@ -12,24 +12,6 @@
     <name>[APIM][SCENARIO_1][SUBSCENARIO_1][COMMON] - Common Util Classes</name>
     <artifactId>common-utils</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>framework.resource.location</name>
-                            <value>
-                                ${basedir}/../common-utils/src/main/resources/
-                            </value>
-                        </property>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>

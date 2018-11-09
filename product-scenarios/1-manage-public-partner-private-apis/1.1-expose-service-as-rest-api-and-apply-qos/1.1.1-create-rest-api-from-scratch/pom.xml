@@ -31,7 +31,7 @@
                         <property>
                             <name>framework.resource.location</name>
                             <value>
-                                ${basedir}/src/test/resources/
+                                ${basedir}/../common-utils/src/main/resources/
                             </value>
                         </property>
                     </systemProperties>
