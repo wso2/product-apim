@@ -15,7 +15,10 @@
 */
 package org.wso2.am.scenario.test.common;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.bean.AbstractRequest;
+import java.net.URL;
 
 public class APIRequest extends AbstractRequest {
 
@@ -25,6 +28,9 @@ public class APIRequest extends AbstractRequest {
     private String version;
     private String resource;
     private String swagger;
+    private String tiersCollection;
+    private JSONObject endpoint;
+
 
     public APIRequest(String name, String context, String visibility, String version, String resource) {
         this.name = name;
@@ -34,6 +40,23 @@ public class APIRequest extends AbstractRequest {
         this.resource = resource;
         constructSwagger();
     }
+
+    public APIRequest(String name, String context, String visibility, String version, String resource, String tiersCollection, URL endpointUrl) {
+        this.name = name;
+        this.context = context;
+        this.visibility = visibility;
+        this.version = version;
+        this.resource = resource;
+        this.tiersCollection = tiersCollection;
+        try{
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                            + "http" + "\"}");
+        }catch (JSONException e){}
+        constructSwagger();
+    }
+
 
     public void setSwagger(String swagger) {
         this.swagger = swagger;
@@ -49,6 +72,14 @@ public class APIRequest extends AbstractRequest {
         this.addParameter("visibility", this.visibility);
         this.addParameter("version", this.version);
         this.addParameter("swagger", this.swagger);
+        if(tiersCollection != null)
+        {
+            this.addParameter("tiersCollection", this.tiersCollection);
+        }
+        if (endpoint != null)
+        {
+            this.addParameter("endpoint_config", endpoint.toString());
+        }
     }
 
     public void constructSwagger() {
