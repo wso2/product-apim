@@ -40,6 +40,8 @@ import java.util.Map;
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
     private String backendURL;
+    private static final String ADD_API_ACTION = "addAPI";
+    private static final String DESIGN_API_ACTION = "design";
     private static final String URL_SUFFIX = "publisher/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
@@ -118,7 +120,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                    apiRequest.generateRequestParameters(),
+                    apiRequest.generateRequestParameters(ADD_API_ACTION),
                     requestHeaders);
 
         } catch (Exception e) {
@@ -138,7 +140,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
-                    apiRequest.generateRequestParameters(),
+                    apiRequest.generateRequestParameters(DESIGN_API_ACTION),
                     requestHeaders);
 
         } catch (Exception e) {

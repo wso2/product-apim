@@ -40,9 +40,7 @@ public class APIRequest extends AbstractRequest {
     }
 
     @Override
-    public void setAction() {
-        this.setAction("design");
-    }
+    public void setAction() {}
 
     @Override
     public void init() {
