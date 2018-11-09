@@ -14,7 +14,7 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>1.1-common</module>
+        <module>common-utils</module>
         <module>1.1.1-create-rest-api-from-scratch</module>
     </modules>
 
@@ -22,7 +22,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wso2.am</groupId>
-                <artifactId>1.1-common</artifactId>
+                <artifactId>common-utils</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
         </dependencies>
