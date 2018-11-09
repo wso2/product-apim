@@ -1,7 +1,5 @@
 package org.wso2.am.scenario.tests.rest.api.creation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -71,7 +69,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse));
     }
 
-    @Test(description = "1.1.1.7")
+    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
     public void testRESTAPICreationWithExistingContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
