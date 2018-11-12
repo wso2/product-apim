@@ -65,13 +65,8 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
 
         //Try to add API with same api name
-        HttpResponse serviceResponse1 = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse1.getData().contains(InvalidNameResponse));
-
-        //Try to add API with same api name to check case sensitivity
-        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
-        HttpResponse serviceResponse2 = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse2.getData().contains(InvalidNameResponse));
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse));
     }
 
     @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
@@ -82,6 +77,16 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         //Try to add API with same api context
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(InvalidContextResponse));
+    }
+
+    @Test(description = "1.1.1.15", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception{
+
+        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
+
+        //Try to add API with same api name
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse));
     }
 
     @AfterClass(alwaysRun = true)
