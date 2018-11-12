@@ -65,8 +65,13 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
 
         //Try to add API with same api name
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse));
+        HttpResponse serviceResponse1 = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse1.getData().contains(InvalidNameResponse));
+
+        //Try to add API with same api name to check case sensitivity
+        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
+        HttpResponse serviceResponse2 = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse2.getData().contains(InvalidNameResponse));
     }
 
     @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
