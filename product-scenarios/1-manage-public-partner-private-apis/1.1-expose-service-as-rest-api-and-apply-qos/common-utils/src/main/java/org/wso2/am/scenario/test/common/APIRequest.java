@@ -15,12 +15,16 @@
 */
 package org.wso2.am.scenario.test.common;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.bean.AbstractRequest;
+
 import java.net.URL;
 
 public class APIRequest extends AbstractRequest {
+    private static final Log log = LogFactory.getLog(APIRequest.class);
 
     private String name;
     private String context;
@@ -48,12 +52,14 @@ public class APIRequest extends AbstractRequest {
         this.version = version;
         this.resource = resource;
         this.tiersCollection = tiersCollection;
-        try{
+        try {
             this.endpoint =
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
                             + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                             + "http" + "\"}");
-        }catch (JSONException e){}
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+        }
         constructSwagger();
     }
 
@@ -63,7 +69,8 @@ public class APIRequest extends AbstractRequest {
     }
 
     @Override
-    public void setAction() {}
+    public void setAction() {
+    }
 
     @Override
     public void init() {
@@ -72,12 +79,10 @@ public class APIRequest extends AbstractRequest {
         this.addParameter("visibility", this.visibility);
         this.addParameter("version", this.version);
         this.addParameter("swagger", this.swagger);
-        if(tiersCollection != null)
-        {
+        if (tiersCollection != null) {
             this.addParameter("tiersCollection", this.tiersCollection);
         }
-        if (endpoint != null)
-        {
+        if (endpoint != null) {
             this.addParameter("endpoint_config", endpoint.toString());
         }
     }
