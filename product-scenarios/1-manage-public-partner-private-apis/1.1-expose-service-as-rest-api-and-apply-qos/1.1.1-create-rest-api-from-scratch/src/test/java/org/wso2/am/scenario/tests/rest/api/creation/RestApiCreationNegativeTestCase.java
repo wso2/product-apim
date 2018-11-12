@@ -79,6 +79,16 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(InvalidContextResponse));
     }
 
+    @Test(description = "1.1.1.15", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception{
+
+        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
+
+        //Try to add API with same api name
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse));
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
