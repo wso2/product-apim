@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.wso2.am.scenario.test.common;
 
 import org.apache.commons.logging.Log;
@@ -34,8 +34,6 @@ public class APIRequest extends AbstractRequest {
     private String swagger;
     private String tiersCollection;
     private JSONObject endpoint;
-    private String tierAvailability;
-    private String apiTier;
     private String bizOwner;
     private String bizOwnerMail;
     private String techOwner;
@@ -54,7 +52,6 @@ public class APIRequest extends AbstractRequest {
     private String outSequence;
     private String description;
     private String tag;
-
 
     public APIRequest(String name, String context, String visibility, String version, String resource) {
         this.name = name;
@@ -83,7 +80,12 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String version, String resource,String description, String tag,String tierAvailability, String tiersCollection, String apiTier, String backend, String bizOwner, String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType, String endpointAuthType, String epUsername, String epPassword, String default_version_checked, String responseCache, String cacheTimeout, String subscriptions,String http_checked,String https_checked, String inSequence, String outSequence) {
+    public APIRequest(String name, String context, String visibility, String version, String resource,
+                      String description, String tag, String tiersCollection, String backend, String bizOwner,
+                      String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType,
+                      String endpointAuthType, String epUsername, String epPassword, String default_version_checked,
+                      String responseCache, String cacheTimeout, String subscriptions, String http_checked,
+                      String https_checked, String inSequence, String outSequence) {
         this.name = name;
         this.context = context;
         this.visibility = visibility;
@@ -91,9 +93,7 @@ public class APIRequest extends AbstractRequest {
         this.resource = resource;
         this.description = description;
         this.tag = tag;
-        this.tierAvailability = tierAvailability;
         this.tiersCollection = tiersCollection;
-        this.apiTier = apiTier;
         this.endpoint =
                 new JSONObject("{\"production_endpoints\":{\"url\":\""
                         + backend + "\",\"config\":null},\"endpoint_type\":\""
@@ -117,7 +117,6 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-
     public void setSwagger(String swagger) {
         this.swagger = swagger;
     }
@@ -139,64 +138,59 @@ public class APIRequest extends AbstractRequest {
         if (endpoint != null) {
             this.addParameter("endpoint_config", endpoint.toString());
         }
-        if(this.tierAvailability != null){
-            this.addParameter("tier", this.tierAvailability);
-        }
-        if (this.apiTier != null){
-            this.addParameter("apiTier", this.apiTier);
-        }
 
         //Optional parameters
-        if(this.description != null){
+        if (this.description != null) {
             this.addParameter("description", this.description);
         }
-        if(this.tag != null){
+        if (this.tag != null) {
             this.addParameter("tags", this.tag);
         }
-        if (this.bizOwner != null){
+        if (this.bizOwner != null) {
             this.addParameter("bizOwner", this.bizOwner);
         }
-        if(this.bizOwnerMail != null){
+        if (this.bizOwnerMail != null) {
             this.addParameter("bizOwnerMail", this.bizOwnerMail);
         }
-        if(this.techOwner != null){
+        if (this.techOwner != null) {
             this.addParameter("techOwner", techOwner);
         }
-        if(this.techOwnerMail != null){
+        if (this.techOwnerMail != null) {
             this.addParameter("techOwnerMail", techOwnerMail);
         }
-        if(this.endpointType != null){
+        if (this.endpointType != null) {
             this.addParameter("endpointType", endpointType);
         }
-        if(this.endpointAuthType != null){
+        if (this.endpointAuthType != null) {
             this.addParameter("endpointAuthType", endpointAuthType);
         }
-        if(this.epUsername != null){
+        if (this.epUsername != null) {
             this.addParameter("epUsername", epUsername);
         }
-        if(this.epPassword != null){
+        if (this.epPassword != null) {
             this.addParameter("epPassword", epPassword);
         }
-        if (this.default_version_checked != null){
-            this.addParameter ("default_version_checked", default_version_checked);
+        if (this.default_version_checked != null) {
+            this.addParameter("default_version_checked", default_version_checked);
         }
-        if (this.responseCache != null){
-            this.addParameter ("responseCache", responseCache);
+        if (this.responseCache != null) {
+            this.addParameter("responseCache", responseCache);
         }
-        if (this.cacheTimeout != null){
-            this.addParameter ("cacheTimeout", cacheTimeout);
+        if (this.cacheTimeout != null) {
+            this.addParameter("cacheTimeout", cacheTimeout);
         }
-        if (this.subscriptions != null){
+        if (this.subscriptions != null) {
             this.addParameter("subscriptions", subscriptions);
         }
-        if (this.http_checked != null && this.https_checked !=null){
+        if (this.http_checked != null && this.https_checked != null) {
             this.addParameter("http_checked", http_checked);
             this.addParameter("https_checked", https_checked);
         }
-        if (this.inSequence != null && this.outSequence != null){
+        if (this.inSequence != null && this.outSequence != null) {
             this.addParameter("inSequence", inSequence);
-            this.addParameter("outSequence", outSequence );
+            this.addParameter("outSequence", outSequence);
         }
+
     }
 
     public void constructSwagger() {

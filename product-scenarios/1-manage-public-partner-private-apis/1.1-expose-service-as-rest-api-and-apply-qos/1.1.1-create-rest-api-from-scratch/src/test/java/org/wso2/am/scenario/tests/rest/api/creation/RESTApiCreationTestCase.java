@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.apache.commons.logging.Log;
@@ -27,6 +27,7 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
 import org.testng.Assert;
+
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
@@ -45,9 +46,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     private String description = "This is a API creation description";
     private String tag = "APICreationTag";
-    private String tierAvailability= "Silver";
     private String tierCollection = "Silver";
-    private String apiTier="Silver";
     private String bizOwner = "wso2Test";
     private String bizOwnerMail = "wso2test@gmail.com";
     private String techOwner = "wso2";
@@ -61,11 +60,12 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String cacheTimeout = "300";
     private String subscriptions = "all_tenants";
     private String http_checked = "http";
-    private String https_checked="";
+    private String https_checked = "";
     private String inSequence = "debug_in_flow";
     private String outSequence = "debug_out_flow";
 
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
@@ -96,7 +96,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.2")
-    public void testRESTAPICreationWithNumericName() throws Exception{
+    public void testRESTAPICreationWithNumericName() throws Exception {
         apiName = "123567890";
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
@@ -108,7 +108,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.3")
-    public void testRESTAPICreationWithNonEnglishName() throws Exception{
+    public void testRESTAPICreationWithNonEnglishName() throws Exception {
         apiName = "电话验证";
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
@@ -120,7 +120,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.4")
-    public void testRESTAPICreationWithUnderscoreName() throws Exception{
+    public void testRESTAPICreationWithUnderscoreName() throws Exception {
         apiName = "Phone_verification_api";
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
@@ -131,12 +131,15 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     }
 
-        @Test(description = "1.1.1.5")
+    @Test(description = "1.1.1.5")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
         apiName = "PhoneVerificationOptional";
         apiContext = "/phoneverifyOptional";
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, description, tag, tierAvailability, tierCollection,apiTier, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType, endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout, subscriptions, http_checked, https_checked, inSequence, outSequence );
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, description, tag,
+                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
+                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
+                subscriptions, http_checked, https_checked, inSequence, outSequence);
 
         //Design API with name,context,version,visibility,apiResource and with optional values (description and tags)
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
@@ -151,7 +154,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    public void validateOptionalFiled () throws APIManagerIntegrationTestException {
+    public void validateOptionalFiled() throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
         log.info("API Infor : " + getApi.getData());
