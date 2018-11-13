@@ -34,6 +34,26 @@ public class APIRequest extends AbstractRequest {
     private String swagger;
     private String tiersCollection;
     private JSONObject endpoint;
+    private String tierAvailability;
+    private String apiTier;
+    private String bizOwner;
+    private String bizOwnerMail;
+    private String techOwner;
+    private String techOwnerMail;
+    private String endpointType;
+    private String endpointAuthType;
+    private String epUsername;
+    private String epPassword;
+    private String default_version_checked;
+    private String responseCache;
+    private String cacheTimeout;
+    private String subscriptions;
+    private String http_checked;
+    private String https_checked;
+    private String inSequence;
+    private String outSequence;
+    private String description;
+    private String tag;
 
 
     public APIRequest(String name, String context, String visibility, String version, String resource) {
@@ -63,6 +83,40 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
+    public APIRequest(String name, String context, String visibility, String version, String resource,String description, String tag,String tierAvailability, String tiersCollection, String apiTier, String backend, String bizOwner, String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType, String endpointAuthType, String epUsername, String epPassword, String default_version_checked, String responseCache, String cacheTimeout, String subscriptions,String http_checked,String https_checked, String inSequence, String outSequence) {
+        this.name = name;
+        this.context = context;
+        this.visibility = visibility;
+        this.version = version;
+        this.resource = resource;
+        this.description = description;
+        this.tag = tag;
+        this.tierAvailability = tierAvailability;
+        this.tiersCollection = tiersCollection;
+        this.apiTier = apiTier;
+        this.endpoint =
+                new JSONObject("{\"production_endpoints\":{\"url\":\""
+                        + backend + "\",\"config\":null},\"endpoint_type\":\""
+                        + "http" + "\"}");
+        this.bizOwner = bizOwner;
+        this.bizOwnerMail = bizOwnerMail;
+        this.techOwner = techOwner;
+        this.techOwnerMail = techOwnerMail;
+        this.endpointType = endpointType;
+        this.endpointAuthType = endpointAuthType;
+        this.epUsername = epUsername;
+        this.epPassword = epPassword;
+        this.default_version_checked = default_version_checked;
+        this.responseCache = responseCache;
+        this.cacheTimeout = cacheTimeout;
+        this.subscriptions = subscriptions;
+        this.http_checked = http_checked;
+        this.https_checked = https_checked;
+        this.inSequence = inSequence;
+        this.outSequence = outSequence;
+        constructSwagger();
+    }
+
 
     public void setSwagger(String swagger) {
         this.swagger = swagger;
@@ -84,6 +138,64 @@ public class APIRequest extends AbstractRequest {
         }
         if (endpoint != null) {
             this.addParameter("endpoint_config", endpoint.toString());
+        }
+        if(this.tierAvailability != null){
+            this.addParameter("tier", this.tierAvailability);
+        }
+        if (this.apiTier != null){
+            this.addParameter("apiTier", this.apiTier);
+        }
+
+        //Optional parameters
+        if(this.description != null){
+            this.addParameter("description", this.description);
+        }
+        if(this.tag != null){
+            this.addParameter("tags", this.tag);
+        }
+        if (this.bizOwner != null){
+            this.addParameter("bizOwner", this.bizOwner);
+        }
+        if(this.bizOwnerMail != null){
+            this.addParameter("bizOwnerMail", this.bizOwnerMail);
+        }
+        if(this.techOwner != null){
+            this.addParameter("techOwner", techOwner);
+        }
+        if(this.techOwnerMail != null){
+            this.addParameter("techOwnerMail", techOwnerMail);
+        }
+        if(this.endpointType != null){
+            this.addParameter("endpointType", endpointType);
+        }
+        if(this.endpointAuthType != null){
+            this.addParameter("endpointAuthType", endpointAuthType);
+        }
+        if(this.epUsername != null){
+            this.addParameter("epUsername", epUsername);
+        }
+        if(this.epPassword != null){
+            this.addParameter("epPassword", epPassword);
+        }
+        if (this.default_version_checked != null){
+            this.addParameter ("default_version_checked", default_version_checked);
+        }
+        if (this.responseCache != null){
+            this.addParameter ("responseCache", responseCache);
+        }
+        if (this.cacheTimeout != null){
+            this.addParameter ("cacheTimeout", cacheTimeout);
+        }
+        if (this.subscriptions != null){
+            this.addParameter("subscriptions", subscriptions);
+        }
+        if (this.http_checked != null && this.https_checked !=null){
+            this.addParameter("http_checked", http_checked);
+            this.addParameter("https_checked", https_checked);
+        }
+        if (this.inSequence != null && this.outSequence != null){
+            this.addParameter("inSequence", inSequence);
+            this.addParameter("outSequence", outSequence );
         }
     }
 
