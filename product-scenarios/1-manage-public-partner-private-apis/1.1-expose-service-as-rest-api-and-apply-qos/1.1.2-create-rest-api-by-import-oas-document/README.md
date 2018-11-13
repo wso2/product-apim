@@ -1,4 +1,4 @@
-# 1.1.1 Create REST API from scratch
+# 1.1.2 Create REST API by importing an OAS document
 
 ## When to use this approach
 
