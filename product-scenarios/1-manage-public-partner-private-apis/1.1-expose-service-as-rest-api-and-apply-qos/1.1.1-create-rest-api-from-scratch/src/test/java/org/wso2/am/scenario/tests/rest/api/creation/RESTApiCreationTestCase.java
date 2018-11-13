@@ -92,12 +92,12 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "1.1.1.4")
-    public void testRESTAPICreationWithUnderscoreName() throws Exception{
-        apiName = "Phone_verification_api";
+    public void testRESTAPICreationWithAllowedSpecialCharactersName() throws Exception{
+        apiName = "Pho_ne-verify?api.";
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
-        //Try to design API with including underscore characters in api name
+        //Try to design API with including allowed special characters in api name
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
 
