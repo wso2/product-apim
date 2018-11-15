@@ -1,9 +1,8 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.store.api;
 
-import feign.Headers;
-import feign.Param;
-import feign.QueryMap;
-import feign.RequestLine;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
+
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Application;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyGenerateRequest;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeyMappingRequest;
@@ -11,12 +10,15 @@ import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeys
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationKeysList;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationToken;
 import org.wso2.carbon.apimgt.rest.integration.tests.store.model.ApplicationTokenGenerateRequest;
-import org.wso2.carbon.apimgt.rest.integration.tests.util.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.util.EncodingUtils;
-
+import org.wso2.carbon.apimgt.rest.integration.tests.store.model.Error;
 import java.io.File;
+import org.wso2.carbon.apimgt.rest.integration.tests.store.model.WorkflowResponse;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import feign.*;
 
 
 public interface ApplicationIndividualApi extends ApiClient.Api {
