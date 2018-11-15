@@ -27,9 +27,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.wso2.am.scenario.test.common.ScenarioDataProvider;
-import org.testng.annotations.*;
-
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
@@ -136,7 +133,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    public void validateOptionalFiled() throws APIManagerIntegrationTestException {
+    private void validateOptionalFiled() throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
         log.info("API Infor : " + getApi.getData());
@@ -160,7 +157,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     }
 
-    public void verifyAPIName(String apiName) throws APIManagerIntegrationTestException {
+    private void verifyAPIName(String apiName) throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
         log.info("API Infor : " + getApi.getData());
