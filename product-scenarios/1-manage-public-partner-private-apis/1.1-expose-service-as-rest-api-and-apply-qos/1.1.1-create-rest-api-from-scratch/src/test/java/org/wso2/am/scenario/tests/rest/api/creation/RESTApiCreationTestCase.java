@@ -27,7 +27,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
 import org.testng.Assert;
-
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
@@ -66,7 +65,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
-
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
 
@@ -84,54 +82,21 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
-    @Test(description = "1.1.1.1")
-    public void testRESTAPICreationWithMandatoryValues() throws Exception {
+    @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = org.wso2.am.scenario.test.common.ScenarioDataProvider.class)
+    public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
+        this.apiName = apiName;
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
+        verifyAPIName(apiName);
+
     }
 
     @Test(description = "1.1.1.2")
-    public void testRESTAPICreationWithNumericName() throws Exception {
-        apiName = "123567890";
-
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
-
-        //Try to design API with numeric characters in api name
-        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
-        verifyResponse(serviceResponse);
-
-    }
-
-    @Test(description = "1.1.1.3")
-    public void testRESTAPICreationWithNonEnglishName() throws Exception {
-        apiName = "电话验证";
-
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
-
-        //Try to design API with chinese api name
-        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
-        verifyResponse(serviceResponse);
-
-    }
-
-    @Test(description = "1.1.1.4")
-    public void testRESTAPICreationWithAllowedSpecialCharactersName() throws Exception{
-        apiName = "Pho_ne-verify?api.";
-      
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
-
-        //Try to design API with including allowed special characters in api name
-        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
-        verifyResponse(serviceResponse);
-
-    }
-
-    @Test(description = "1.1.1.5")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
         apiName = "PhoneVerificationOptional";
         apiContext = "/phoneverifyOptional";
@@ -148,13 +113,27 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     }
 
+    @Test(description = "1.1.1.3")
+    public void testRESTAPICreationWithwildCardResource() throws Exception {
+
+        apiResource = "******";
+
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+
+        //Design API with name,context,version,visibility and apiResource
+        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
+        verifyResponse(serviceResponse);
+        verifyAPIName(apiName);
+
+    }
+
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
         verifyResponse(serviceResponse);
     }
 
-    public void validateOptionalFiled() throws APIManagerIntegrationTestException {
+    private void validateOptionalFiled() throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
         log.info("API Infor : " + getApi.getData());
@@ -175,5 +154,14 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         Assert.assertEquals(response.getJSONObject("api").get("transport_https").toString(), "", "Expected https_checked value not match");
         Assert.assertEquals(response.getJSONObject("api").get("inSequence").toString(), inSequence, "Expected inSequence: value not match");
         Assert.assertEquals(response.getJSONObject("api").get("outSequence").toString(), outSequence, "Expected outSequence value not match");
+
+    }
+
+    private void verifyAPIName(String apiName) throws APIManagerIntegrationTestException {
+        HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
+        JSONObject response = new JSONObject(getApi.getData());
+        log.info("API Infor : " + getApi.getData());
+        Assert.assertEquals(response.getJSONObject("api").get("name").toString(), apiName, "Expected API name value not match");
+
     }
 }
