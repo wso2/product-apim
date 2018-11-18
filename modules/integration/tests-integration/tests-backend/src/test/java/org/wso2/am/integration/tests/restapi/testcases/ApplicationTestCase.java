@@ -69,6 +69,24 @@ public class ApplicationTestCase extends APIMIntegrationBaseTest {
         assertTrue(testSuccessStatus);
     }
 
+    // NOTE: Uncomment this test after upgrading the carbon-apimgt version. Test will pass after the upgrade.
+    // Because currently the product build fails if the carbon-version is upgraded due to dependency issues caused by
+    // (Removing Open Tracing dependencies) b839e5c7583f1546a05ba3023418eb168a2eff78
+    // @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Add application passing groupId and check " +
+    //        "whether the it is honored")
+    public void testAddApplicationWithGroupId() {
+
+        String gatewayURL = getGatewayURLNhttp();
+        String keyManagerURL = getKeyManagerURLHttp();
+
+        //file name of the JSON data file related to : Application handling test case
+        String dataFileName = "AddApplicationWithGroupIDTestCase.txt";
+        String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
+                RESTAPITestConstants.PATH_SUBSTRING + dataFileName;
+        boolean testSuccessStatus = new RESTAPITestUtil().testRestAPI(dataFilePath, gatewayURL, keyManagerURL);
+        assertTrue(testSuccessStatus);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();

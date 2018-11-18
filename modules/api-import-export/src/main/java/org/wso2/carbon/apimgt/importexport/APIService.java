@@ -96,11 +96,20 @@ public class APIService {
             //provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
             String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
-            //Allows to export APIs created only in current tenant domain
-            if (!apiDomain.equals(apiRequesterDomain)) {
+
+            boolean migrationMode = Boolean.getBoolean(APIImportExportConstants.MIGRATION_MODE);
+            if (migrationMode) {
+                if (APIExportUtil.isCrossTenantAccessPermissionsViolated(apiDomain, userName)) {
+                    String error = "Not authorized to export API :\"" + name + "-" + version + "-" + providerName;
+                    String backEndError = error + ". Reason: Cross Tenant API access is not allowed. Both the facts; setting " +
+                            "'migrationMode=true' system property set at APIM Server startup and the requester being a super " +
+                            "tenant admin, should be satisfied for this to be allowed";
+                    log.error(backEndError);
+                    return Response.status(Response.Status.FORBIDDEN).entity(error).type(MediaType.APPLICATION_JSON).build();
+                }
+            } else if (!apiDomain.equals(apiRequesterDomain)) {
                 //not authorized to export requested API
-                log.error("Not authorized to " +
-                        "export API :" + name + "-" + version + "-" + providerName);
+                log.error("Not authorized to export API :" + name + "-" + version + "-" + providerName);
                 return Response.status(Response.Status.FORBIDDEN).entity("Not authorized to export API :" +
                         name + "-" + version + "-" + providerName).type(MediaType.APPLICATION_JSON).build();
             }
@@ -118,7 +127,13 @@ public class APIService {
             APIExportUtil.setArchiveBasePath(archiveBasePath);
 
             //Start tenant flow for the entire export process
-            if (apiRequesterDomain != null &&
+            if (migrationMode) {
+                if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiDomain)) {
+                    PrivilegedCarbonContext.startTenantFlow();
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiDomain, true);
+                    isTenantFlowStarted = true;
+                }
+            } else if (apiRequesterDomain != null &&
                 !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiRequesterDomain, true);
@@ -152,7 +167,6 @@ public class APIService {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
-
     }
 
     /**

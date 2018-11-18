@@ -75,7 +75,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void initialize() throws Exception {
         //Creating CarbonSuper context
         super.init(TestUserMode.SUPER_TENANT_ADMIN);
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
         apiPublisherClientCarbonSuperAdmin = new APIPublisherRestClient(getPublisherURLHttp());

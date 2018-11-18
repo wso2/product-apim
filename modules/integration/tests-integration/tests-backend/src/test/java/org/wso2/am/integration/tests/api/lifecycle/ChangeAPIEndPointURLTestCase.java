@@ -101,7 +101,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL() throws APIManagerIntegrationTestException, MalformedURLException {
         //Create the API Request with new context
-        api2EndPointUrl = getGatewayURLHttp() + API2_END_POINT_POSTFIX_URL;
+        api2EndPointUrl = backEndServerUrl.getWebAppURLHttp() + API2_END_POINT_POSTFIX_URL;
         APICreationRequestBean apiCreationRequestBeanUpdate = new APICreationRequestBean(
                 API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api2EndPointUrl));
         apiCreationRequestBeanUpdate.setTags(API_TAGS);

@@ -35,6 +35,8 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
@@ -59,6 +61,7 @@ import static org.testng.Assert.assertEquals;
 /**
  * This class tests the behaviour of API when there is choice of selection between oauth2 and mutual ssl in API Manager.
  */
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE})
 public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
     private final String API_CONTEXT = "mutualsslAPI";

@@ -79,7 +79,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     }
 
     private void initialize() throws Exception {
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         String publisherURLHttp = getPublisherURLHttp();
         String storeURLHttp = getStoreURLHttp();
