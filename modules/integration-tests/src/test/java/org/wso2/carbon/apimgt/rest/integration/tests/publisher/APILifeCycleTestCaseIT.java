@@ -44,7 +44,7 @@ import java.util.UUID;
 public class APILifeCycleTestCaseIT {
 
     private API api;
-    private Comment comment;
+    private Comment comment, commentReply;
 
     @Test
     public void testCreateApi() throws AMIntegrationTestException {
@@ -168,6 +168,7 @@ public class APILifeCycleTestCaseIT {
         API api = (API) apiList.getList().get(0);
         Assert.assertTrue(api.getTransport().contains("http"));  // This is only available in the expanded api object.
     }
+
     @Test(dependsOnMethods = "testCreateApi")
     public void testApisApiIdCommentsPost() throws AMIntegrationTestException {
         CommentIndividualApi commentIndividualApi = TestUtil.getPublisherApiClient("user1", TestUtil.getUser("user1"),
@@ -178,7 +179,7 @@ public class APILifeCycleTestCaseIT {
         comment.setApiId(apiId);
         comment.setCommentText("this is a sample comment");
         comment.setCategory("sample category");
-        comment.setParentCommentId(UUID.randomUUID().toString());
+        comment.setParentCommentId(null);
         comment.setEntryPoint("APIPublisher");
         comment.setUsername("admin");
         comment.setCreatedBy("admin");
@@ -187,6 +188,20 @@ public class APILifeCycleTestCaseIT {
         comment.setLastUpdatedTime(time.toString());
         comment = commentIndividualApi.apisApiIdCommentsPost(apiId, comment);
         Assert.assertNotNull(comment.getCommentId());
+
+        commentReply = new Comment();
+        commentReply.setApiId(apiId);
+        commentReply.setCommentText("reply to the first comment");
+        commentReply.setCategory("sample category");
+        commentReply.setParentCommentId(comment.getCommentId());
+        commentReply.setEntryPoint("APIPublisher");
+        commentReply.setUsername("admin");
+        commentReply.setCreatedBy("admin");
+        commentReply.setLastUpdatedBy("admin");
+        commentReply.setCreatedTime(time.toString());
+        commentReply.setLastUpdatedTime(time.toString());
+        commentReply = commentIndividualApi.apisApiIdCommentsPost(apiId, commentReply);
+        Assert.assertNotNull(commentReply.getCommentId());
     }
 
     @Test(dependsOnMethods = "testApisApiIdCommentsPost")

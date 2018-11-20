@@ -37,8 +37,8 @@ import java.util.UUID;
 
 public class APICommentsTestCaseIT {
 
-    private Comment comment;
     private API api;
+    private Comment comment, commentReply;
 
     @Test
     public void testApisApiIdCommentsPost() throws AMIntegrationTestException {
@@ -51,7 +51,7 @@ public class APICommentsTestCaseIT {
         comment.setApiId(apiId);
         comment.setCommentText("this is a sample comment");
         comment.setCategory("sample category");
-        comment.setParentCommentId(UUID.randomUUID().toString());
+        comment.setParentCommentId(null);
         comment.setEntryPoint("APIStore");
         comment.setUsername("admin");
         comment.setCreatedBy("admin");
@@ -60,6 +60,20 @@ public class APICommentsTestCaseIT {
         comment.setLastUpdatedTime(time.toString());
         comment = commentIndividualApi.apisApiIdCommentsPost(apiId, comment);
         Assert.assertNotNull(comment.getCommentId());
+
+        commentReply = new Comment();
+        commentReply.setApiId(apiId);
+        commentReply.setCommentText("reply to the first comment");
+        commentReply.setCategory("sample category");
+        commentReply.setParentCommentId(comment.getCommentId());
+        commentReply.setEntryPoint("APIStore");
+        commentReply.setUsername("admin");
+        commentReply.setCreatedBy("admin");
+        commentReply.setLastUpdatedBy("admin");
+        commentReply.setCreatedTime(time.toString());
+        commentReply.setLastUpdatedTime(time.toString());
+        commentReply = commentIndividualApi.apisApiIdCommentsPost(apiId, commentReply);
+        Assert.assertNotNull(commentReply.getCommentId());
     }
 
     @Test(dependsOnMethods = "testApisApiIdCommentsPost")
