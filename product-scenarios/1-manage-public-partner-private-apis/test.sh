@@ -6,6 +6,10 @@ TEST_DIR='product-scenarios'
 DIR=$2
 export DATA_BUCKET_LOCATION=$DIR
 
+echo "Building scenarios-common"
+mvn clean install -f ../scenarios-common/pom.xml
+echo "Building scenarios-common completed"
+
 mvn clean install
 
 echo "Copying surefire-reports to data bucket"
