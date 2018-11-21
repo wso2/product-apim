@@ -14,7 +14,6 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>common-utils</module>
         <module>1.1.1-create-rest-api-from-scratch</module>
         <module>1.1.2-create-rest-api-by-import-oas-document</module>
     </modules>
@@ -23,7 +22,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wso2.am</groupId>
-                <artifactId>common-utils</artifactId>
+                <artifactId>scenarios-common</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
         </dependencies>

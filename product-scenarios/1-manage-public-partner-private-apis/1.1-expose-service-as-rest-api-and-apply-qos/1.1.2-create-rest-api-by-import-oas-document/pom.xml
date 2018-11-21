@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_2] - Create REST API By Import OAS Document</name>
 
-    <artifactId>1.1.2-create-rest-api-by-import-aos-documant</artifactId>
+    <artifactId>1.1.2-create-rest-api-by-import-oas-documant</artifactId>
 
     <build>
         <plugins>
@@ -31,7 +31,7 @@
                         <property>
                             <name>framework.resource.location</name>
                             <value>
-                                ${basedir}/../common-utils/src/main/resources/
+                                ${project.parent.parent.basedir}/../scenarios-common/src/main/resources/
                             </value>
                         </property>
                     </systemProperties>
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>common-utils</artifactId>
+            <artifactId>scenarios-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
@@ -96,7 +96,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>common-utils</artifactId>
+            <artifactId>scenarios-common</artifactId>
             <scope>test</scope>
         </dependency>
 
