@@ -10,5 +10,5 @@ mvn clean install
 
 echo "Copying surefire-reports to data bucket"
 
-cp -r 1.1-expose-service-as-rest-api-and-apply-qos/1.1.1-create-rest-api-from-scratch/target/surefire-reports ${DIR}/1.1.1-create-rest-api-from-scratch
+cp -r 1.1-expose-service-as-rest-api/1.1.1-create-rest-api-from-scratch/target/surefire-reports ${DIR}/1.1.1-create-rest-api-from-scratch
 ls ${DIR}

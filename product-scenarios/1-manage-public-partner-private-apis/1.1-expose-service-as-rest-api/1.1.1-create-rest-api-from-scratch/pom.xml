@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>1.1-expose-service-as-rest-api-and-apply-qos</artifactId>
+        <artifactId>1.1-expose-service-as-rest-api</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_2] - Create REST API By Import OAS Document</name>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_1] - Create REST API from Scratch</name>
 
-    <artifactId>1.1.2-create-rest-api-by-import-oas-documant</artifactId>
+    <artifactId>1.1.1-create-rest-api-from-scratch</artifactId>
 
     <build>
         <plugins>
@@ -48,6 +48,7 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>scenarios-common</artifactId>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
@@ -92,11 +93,6 @@
         <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>scenarios-common</artifactId>
             <scope>test</scope>
         </dependency>
 
