@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>1.1-expose-service-as-rest-api-and-apply-qos</artifactId>
+        <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>[APIM][SCENARIO_1][SUBSCENARIO_1][COMMON] - Common Util Classes</name>
-    <artifactId>common-utils</artifactId>
+    <name>[APIM][SCENARIOS_COMMON]</name>
+    <artifactId>scenarios-common</artifactId>
 
 
     <dependencies>
@@ -63,6 +63,5 @@
             <artifactId>greenmail</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>
