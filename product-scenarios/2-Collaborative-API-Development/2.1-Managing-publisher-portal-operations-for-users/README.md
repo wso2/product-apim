@@ -1,4 +1,4 @@
-#  2.1-Managing-publisher-portal-operations-for-users
+#  2.1 Managing publisher portal operations for users
 
 ## Usecases
 
