@@ -13,21 +13,21 @@ public class ScenarioDataProvider {
         };
     }
 
-    @DataProvider(name = "OASDocsWithJSON")
+    @DataProvider(name = "OASDocsWithJSONFiles")
     public static Object[][] OASDocJsonFilesProvide() {
         return new Object[][]{
                 {"swaggerFiles/OAS2Document.json"}, {"swaggerFiles/OAS3Document.json"}
         };
     }
 
-    @DataProvider(name = "OASDocsWithYAML")
+    @DataProvider(name = "OASDocsWithYAMLFiles")
     public static Object[][] OASDocYamlFilesProvide() {
         return new Object[][]{
                 {"swaggerFiles/OAS2Document.yaml"}, {"swaggerFiles/OAS3Document.yaml"}
         };
     }
 
-    @DataProvider(name = "OASDocsJsonFromURL")
+    @DataProvider(name = "OASDocsWithJsonURL")
     public static Object[][] OASDocJsonURLProvide() {
         return new Object[][]{
                 {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api-and-apply-qos/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS2Document.json"},
@@ -35,10 +35,11 @@ public class ScenarioDataProvider {
         };
     }
 
-    @DataProvider(name = "OASDocsYamlFromURL")
+    @DataProvider(name = "OASDocsWithYamlURL")
     public static Object[][] OASDocYamlURLProvide() {
         return new Object[][]{
-                {""}, {""}
+                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api-and-apply-qos/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS2Document.yaml"},
+                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api-and-apply-qos/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS3Document.yaml"}
         };
     }
 }
