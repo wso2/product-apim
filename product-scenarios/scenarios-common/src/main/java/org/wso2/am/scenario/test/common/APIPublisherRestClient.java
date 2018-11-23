@@ -41,6 +41,7 @@ public class APIPublisherRestClient {
     private String backendURL;
     private static final String ADD_API_ACTION = "addAPI";
     private static final String DESIGN_API_ACTION = "design";
+    private static final String START_API_ACTION = "start";
     private static final String URL_SUFFIX = "publisher/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
@@ -144,6 +145,18 @@ public class APIPublisherRestClient {
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to design API. Error: " + e.getMessage(), e);
+        }
+    }
+
+    public HttpResponse designAPIWithOAS(APIRequest apiRequest) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
+                    apiRequest.generateRequestParameters(START_API_ACTION), requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("" + e.getMessage(), e);
         }
     }
 

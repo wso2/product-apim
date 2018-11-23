@@ -53,6 +53,11 @@ public class APIRequest extends AbstractRequest {
     private String description;
     private String tag;
 
+    private String import_definition;
+    private String swagger_filename;
+    private String swagger_url;
+    private String type;
+
     public APIRequest(String name, String context, String visibility, String version, String resource) {
         this.name = name;
         this.context = context;
@@ -115,6 +120,19 @@ public class APIRequest extends AbstractRequest {
         this.inSequence = inSequence;
         this.outSequence = outSequence;
         constructSwagger();
+    }
+
+    public APIRequest(String definition, String filename, String url, String type) {
+        this.import_definition = definition;
+        this.swagger_filename = filename;
+        this.swagger_url = url;
+        this.type = type;
+    }
+
+    public APIRequest(String name, String context, String version) {
+        this.name = name;
+        this.context = context;
+        this.version = version;
     }
 
     public void setSwagger(String swagger) {
