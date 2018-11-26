@@ -32,7 +32,7 @@ import java.util.Properties;
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
-    private static final String INFRASTRUCTURE_PROPERTIES = "infrastructure.properties";
+    private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     public static final String CARBON_SERVER_URL = "PublisherUrl";
 
