@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>10-manage-security-resiliancy-other-aspects-of-service-endpoints</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>10.4-expose-service-with-mock-backend</artifactId>
+    <name>[APIM][SCENARIO_10][SUBSCENARIO_4] - Exposing an API with an early implementation of the API for the purpose of early promotion and testing</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>10.4.1-create-api-with-endpoint-mock-backend</module>
+        <module>10.4.2-edit-api-with-endpoint-mock-backend</module>
+        <module>10.4.3-create-api-with-inline-script-mock-backend</module>
+        <module>10.4.4-edit-api-with-inline-script-mock-backend</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>scenarios-common</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
