@@ -1,0 +1,95 @@
+swagger: "2.0"
+info:
+  description: This is a sample for swagger OAS2 document.
+  version: 1.0.0
+  title: Swagger2SampleApiFromYaml
+host: petstore.swagger.io
+basePath: /contextYamlV2
+schemes:
+  - https
+  - http
+paths:
+  "/pet/{petId}":
+    get:
+      tags:
+        - pet
+      summary: Find pet by ID
+      description: Returns a single pet
+      operationId: getPetById
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: petId
+          in: path
+          description: ID of pet to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Pet"
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Pet not found
+      security:
+        - api_key: []
+securityDefinitions:
+  petstore_auth:
+    type: oauth2
+    authorizationUrl: "https://petstore.swagger.io/oauth/dialog"
+    flow: implicit
+    scopes:
+      "write:pets": modify pets in your account
+      "read:pets": read your pets
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  Category:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+    xml:
+      name: Category
+  Pet:
+    type: object
+    required:
+      - name
+      - photoUrls
+    properties:
+      id:
+        type: integer
+        format: int64
+      category:
+        $ref: "#/definitions/Category"
+      name:
+        type: string
+        example: doggie
+      photoUrls:
+        type: array
+        xml:
+          name: photoUrl
+          wrapped: true
+        items:
+          type: string
+      status:
+        type: string
+        description: pet status in the store
+        enum:
+          - available
+          - pending
+          - sold
+    xml:
+      name: Pet
+externalDocs:
+  description: Find out more about Swagger
+  url: "http://swagger.io"

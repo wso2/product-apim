@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_2] - Create REST API By Import OAS Document</name>
 
-    <artifactId>1.1.2-create-rest-api-by-import-oas-documant</artifactId>
+    <artifactId>1.1.2-create-rest-api-by-import-oas-document</artifactId>
 
     <build>
         <plugins>
@@ -32,6 +32,12 @@
                             <name>framework.resource.location</name>
                             <value>
                                 ${project.parent.parent.basedir}/../scenarios-common/src/main/resources/
+                            </value>
+                        </property>
+                        <property>
+                            <name>test.resource.location</name>
+                            <value>
+                                ${project.basedir}/src/test/resources/
                             </value>
                         </property>
                     </systemProperties>
