@@ -1,4 +1,4 @@
-# 8.5.1 View API Usage by Applications.
+# 8.3.2 View Most Frequently Accessed API Resources
 
 
 ## When to use this approach

@@ -1,4 +1,4 @@
-# 8.5.1 View API Usage by Applications.
+# 8.2.3 View newly created application count during a time period and how many of them have active subscriptions to an API
 
 
 ## When to use this approach
