@@ -43,7 +43,7 @@ import java.util.Map;
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
     private String backendURL;
-    private static final String URL_SUFFIX = "publisher/site/blocks";
+    private static final String URL_SUFFIX = "/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
     /**
