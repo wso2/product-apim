@@ -35,7 +35,6 @@
         <module>scenarios-common</module>
         <module>1-api-updates-using-new-versions</module>
         <module>1-manage-public-partner-private-apis</module>
-        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>
     </modules>
 
     <build>
