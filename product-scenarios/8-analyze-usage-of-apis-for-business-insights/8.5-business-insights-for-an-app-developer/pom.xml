@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>8.5-business-insights-for-an-app-developer</artifactId>
+    <name>[APIM][SCENARIO_8][SUBSCENARIO_5] - Business Insights for an App Developer</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>8.5.1-view-api-usage-by-applications</module>
+        <module>8.5.2-view-which-user-makes-the-most-number-of-api-invocations</module>
+        <module>8.5.3-view-api-resource-usage-through-a-particular-application</module>
+        <module>8.5.4-view-faulty-invovation-count-through-a-particular-application</module>
+    </modules>
+
+</project>

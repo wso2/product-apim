@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>8.3-business-insights-for-an-api-develeoper-based-on-api-usage</artifactId>
+    <name>[APIM][SCENARIO_8][SUBSCENARIO_3] - Business Insights for an API Developer based on API Usage</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>8.3.1-view-api-last-access-time-and-corresponding-user</module>
+        <module>8.3.2-view-most-frequently-accessed-api-resources</module>
+        <module>8.3.3-view-most-frequently-accessed-apis</module>
+        <module>8.3.4-view-from-what-type-of-devices-an-api-get-the-highest-number-of-requests</module>
+    </modules>
+
+</project>
