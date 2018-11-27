@@ -91,12 +91,6 @@ public class ScenarioSampleTest extends ScenarioTestBase {
         String version = response.getJSONObject("api").get("version").toString();
         Assert.assertEquals(version, APIVersionNew);
 
-        //publish the api
-        updateRequest = new APILifeCycleStateRequest(apiName, "admin",
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-
-        Assert.assertTrue(serviceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
     }
 
     @AfterClass(alwaysRun = true)
