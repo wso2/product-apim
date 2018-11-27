@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied. See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <artifactId>product-scenarios</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.wso2.am</groupId>
+    <version>2.6.0</version>
+    <name>[APIM][SCENARIO_4] - Application development using APIs</name>
+    <artifactId>4-application-development-using-apis</artifactId>
+    <packaging>pom</packaging>
+    <url>http://wso2.org</url>
+
+    <modules>
+        <module>4.1-application-developers-should-be-able-to-use-apis-in-their-applications</module>
+        <module>4.2-develop-a-non-secured-application</module>
+        <module>4.3-develop-an-application-secured-with-an-external-idp</module>
+        <module>4.4-developing-an-application-secured-with-a-local-idp</module>
+        <module>4.5-application-developers-should-be-able-to-easily-integrate-apis-to-their-applications</module>
+        <module>4.6-application-developers-should-be-able-to-try-out-apis</module>
+        <module>4.7-application-developers-should-be-facilitated-with-collaborative-application-development</module>
+        <module>4.8-on-boarding-application-developers</module>
+        <module>4.10-external-users-should-be-able-to-use-exposed-apis-through-applications</module>
+        <module>4.11-localization-in-developer-portal</module>
+        <module>4.12-developer-portal-theming</module>
+    </modules>
+
+</project>
