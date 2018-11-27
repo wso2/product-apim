@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>8.2-business-insights-for-an-api-develeoper-based-on-api-popularity</artifactId>
+    <name>[APIM][SCENARIO_8][SUBSCENARIO_2] - Business Insights for an API Developer based on API Popularity</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>8.2.1-view-sucscription-count-breakdown-of-an-api-based-on-version</module>
+        <module>8.2.2-view-api-user-analysis-based-on-geographical-location</module>
+        <module>8.2.3-view-newly-created-application-count-during-a-time-period-and-how-many-of-them-have-active-subscriptions-to-an-api</module>
+        <module>8.2.4-view-the-userbase-breakdown-for-an-api-based-on-api-versions</module>
+    </modules>
+
+</project>

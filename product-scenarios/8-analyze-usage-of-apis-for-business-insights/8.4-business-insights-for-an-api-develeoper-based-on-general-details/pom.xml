@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>8.4-business-insights-for-an-api-develeoper-based-on-general-details</artifactId>
+    <name>[APIM][SCENARIO_8][SUBSCENARIO_4] - Business insights for an API Developer based on general details</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>8.4.1-view-published-apis-count-during-a-selected-time-period</module>
+    </modules>
+
+</project>
