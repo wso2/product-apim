@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>10.3-handling-endpoint-resiliency</artifactId>
-    <name>[APIM][SCENARIO_10][SUBSCENARIO_3] - Handling endpoint resiliency</name>
+    <artifactId>10.3-handle-service-endpoint-resiliency</artifactId>
+    <name>[APIM][SCENARIO_10][SUBSCENARIO_3] - Handle service endpoint resiliency</name>
 
     <packaging>pom</packaging>
     <modules>
