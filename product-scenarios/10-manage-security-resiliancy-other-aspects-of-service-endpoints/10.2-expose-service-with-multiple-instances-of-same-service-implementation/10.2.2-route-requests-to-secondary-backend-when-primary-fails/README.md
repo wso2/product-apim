@@ -1,4 +1,4 @@
-# 10.2.1 Make sure the request is routed to secondary backend when primary backend fails
+# 10.2.2 Make sure the request is routed to secondary backend when primary backend fails
 
 ## When to use this approach
 When an API Developer want to make sure the request is routed to secondary backend when primary backend fails.

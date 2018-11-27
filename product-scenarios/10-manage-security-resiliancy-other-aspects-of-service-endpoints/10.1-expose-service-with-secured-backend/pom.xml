@@ -22,14 +22,4 @@
         <module>10.1.6-support-mutual-ssl-between-gateway-and-backend</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>scenarios-common</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>

@@ -20,14 +20,4 @@
         <module>10.4.4-edit-api-with-inline-script-mock-backend</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>scenarios-common</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>

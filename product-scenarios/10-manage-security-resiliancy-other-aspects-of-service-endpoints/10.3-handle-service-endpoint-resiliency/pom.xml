@@ -9,23 +9,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>10.3-handling-endpoint-resiliency</artifactId>
-    <name>[APIM][SCENARIO_10][SUBSCENARIO_3] - Handling endpoint resiliency</name>
+    <artifactId>10.3-handle-service-endpoint-resiliency</artifactId>
+    <name>[APIM][SCENARIO_10][SUBSCENARIO_3] - Handle service endpoint resiliency</name>
 
     <packaging>pom</packaging>
     <modules>
         <module>10.3.1-handle-request-when-backend-not-responding</module>
         <module>10.3.2-handle-request-when-backend-connection-takes-long-time</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>scenarios-common</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>
