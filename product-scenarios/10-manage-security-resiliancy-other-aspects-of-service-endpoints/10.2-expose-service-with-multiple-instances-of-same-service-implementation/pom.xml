@@ -18,14 +18,4 @@
         <module>10.2.2-route-requests-to-secondary-backend-when-primary-fails</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>scenarios-common</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>
