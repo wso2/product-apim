@@ -30,7 +30,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
     <version>2.6.0</version>
-    <name>[APIM][SCENARIO_4][SUBSCENARIO_2] - 4.2 Develop a non-secured application</name>
+    <name>[APIM][SCENARIO_4][SUBSCENARIO_2] - Develop a non-secured application</name>
     <artifactId>4.2-develop-a-non-secured-application</artifactId>
     <packaging>pom</packaging>
     <url>http://wso2.org</url>
