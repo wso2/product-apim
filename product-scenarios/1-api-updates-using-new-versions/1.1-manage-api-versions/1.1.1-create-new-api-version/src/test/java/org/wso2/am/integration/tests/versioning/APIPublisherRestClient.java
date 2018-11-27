@@ -190,7 +190,7 @@ public class APIPublisherRestClient {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/life-cycles/ajax/life-cycles.jag"),
                     updateRequest.generateRequestParameters(),
                     requestHeaders);
 
@@ -237,7 +237,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "publisher/site/blocks/item-add/ajax/remove.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/item-add/ajax/remove.jag"),
                     "action=removeAPI&name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
@@ -381,7 +381,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
+                    new URL(backendURL + URL_SUFFIX +"/blocks/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "",
                     requestHeaders);
         } catch (Exception e) {
