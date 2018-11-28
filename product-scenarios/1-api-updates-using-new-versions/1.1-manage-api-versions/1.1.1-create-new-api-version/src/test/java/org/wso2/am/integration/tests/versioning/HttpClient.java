@@ -56,7 +56,7 @@ public class HttpClient {
 
     public HttpClient() {
     }
-
+    private static String resourceLocation = System.getProperty("framework.resource.location");
     public static HttpResponse doGet(String url, Map<String, String> headers) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
         org.apache.http.HttpResponse response = sendGetRequest(httpClient, url, headers);
@@ -64,8 +64,8 @@ public class HttpClient {
     }
 
     public static HttpResponse doPost(String url, Map<String, String> headers, List<NameValuePair> urlParameters)
-            throws IOException {
-        CloseableHttpClient httpClient = getHttpsClient();
+            throws IOException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        CloseableHttpClient httpClient = getMutualSSLHttpsClient("/home/krish/Documents/TestGridAPIM/Product-apim-new/product-apim/product-scenarios/1-api-updates-using-new-versions/1.1-manage-api-versions/1.1.1-create-new-api-version/src/test/resources/keystore/wso2carbon.jks");
         org.apache.http.HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
     }
@@ -95,7 +95,7 @@ public class HttpClient {
         return constructResponse(response);
     }
 
-    public static HttpResponse doPost(URL url, String urlParams, Map<String, String> headers) throws IOException {
+    public static HttpResponse doPost(URL url, String urlParams, Map<String, String> headers) throws IOException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         List<NameValuePair> urlParameters = new ArrayList();
         if (urlParams != null && urlParams.contains("=")) {
             String[] paramList = urlParams.split("&");
@@ -138,7 +138,7 @@ public class HttpClient {
             Throwable var5 = null;
 
             try {
-                trustStore.load(is, "password".toCharArray());
+                trustStore.load(is, "wso2carbon".toCharArray());
             } catch (Throwable var15) {
                 var5 = var15;
                 throw var15;
@@ -161,7 +161,7 @@ public class HttpClient {
         }
 
         SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(trustStore,
-                new TrustSelfSignedStrategy()).loadKeyMaterial(trustStore, "password".toCharArray()).build();
+                new TrustSelfSignedStrategy()).loadKeyMaterial(trustStore, "wso2carbon".toCharArray()).build();
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new String[]{"TLSv1"},
                 (String[]) null, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
         return HttpClients.custom().setSSLSocketFactory(sslsf).disableRedirectHandling().

@@ -46,13 +46,8 @@ public class ScenarioSampleTest extends ScenarioTestBase {
     public void init() throws Exception {
         infraProperties = getDeploymentProperties();
         String authority = infraProperties.getProperty(CARBON_SERVER_URL);
-        if (authority != null && authority.contains("/")) {
-            authority = authority.split("/")[2];
-        } else if (authority == null) {
-            authority = "localhost";
-        }
-        publisherURLHttp = "http://" + authority + ":9763/";
-        endpointUrl = "http://" + authority + ":9763/am/sample/calculator/v1/api/add";
+        publisherURLHttp = "https://localhost:9443/publisher";
+        endpointUrl = "http://" + "localhost" + ":9763/am/sample/calculator/v1/api/add";
 
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
@@ -83,13 +78,6 @@ public class ScenarioSampleTest extends ScenarioTestBase {
                 .copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersionNew,
                         null);
         verifyResponse(serviceResponse);
-
-        //test the copied api
-        serviceResponse = apiPublisher.getAPI(apiRequest.getName(), apiRequest.getProvider(), APIVersionNew);
-
-        JSONObject response = new JSONObject(serviceResponse.getData());
-        String version = response.getJSONObject("api").get("version").toString();
-        Assert.assertEquals(version, APIVersionNew);
 
     }
 
