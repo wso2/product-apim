@@ -95,33 +95,33 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-// TODO: issue observed for SSL cert for giturl
-//    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
-//    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
-//        swagger_url = url;
-//
-//        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
-//
-//        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-//        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-//
-//        String payload = readFromUrl(swagger_url);
-//        JSONObject json = new JSONObject(payload);
-//        String apiName = json.getJSONObject("info").get("title").toString();
-//        String context = json.get("basePath").toString();
-//        String version = json.getJSONObject("info").get("version").toString();
-//
-//        apiRequest = new APIRequest(apiName, context, version);
-//        apiRequest.setSwagger(payload);
-//
-//        serviceResponse = apiPublisher.designAPI(apiRequest);
-//        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-//        Assert.assertEquals(name, apiName);
-//
-//        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-//        verifyResponse(serviceResponse);
-//
-//    }
+
+    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
+    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
+        swagger_url = url;
+
+        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+
+        String payload = readFromUrl(swagger_url);
+        JSONObject json = new JSONObject(payload);
+        String apiName = json.getJSONObject("info").get("title").toString();
+        String context = json.get("basePath").toString();
+        String version = json.getJSONObject("info").get("version").toString();
+
+        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest.setSwagger(payload);
+
+        serviceResponse = apiPublisher.designAPI(apiRequest);
+        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
+        Assert.assertEquals(name, apiName);
+
+        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
+        verifyResponse(serviceResponse);
+
+    }
 
 
     @Test(description = "1.1.2.3", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class)
@@ -154,36 +154,36 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-// TODO: issue observed with SSL cert for git url
-//    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
-//    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
-//        swagger_url = url;
-//
-//        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
-//
-//        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-//        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-//
-//        String payload = readFromUrl(swagger_url);
-//
-//        Yaml yaml = new Yaml();
-//        Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
-//        JSONObject json = new JSONObject(map);
-//        String apiName = json.getJSONObject("info").get("title").toString();
-//        String context = json.get("basePath").toString();
-//        String version = json.getJSONObject("info").get("version").toString();
-//        String payloadJson = json.toString();
-//
-//        apiRequest = new APIRequest(apiName, context, version);
-//        apiRequest.setSwagger(payloadJson);
-//
-//        serviceResponse = apiPublisher.designAPI(apiRequest);
-//        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-//        Assert.assertEquals(name, apiName);
-//
-//        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-//        verifyResponse(serviceResponse);
-//    }
+
+    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
+    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
+        swagger_url = url;
+
+        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+
+        String payload = readFromUrl(swagger_url);
+
+        Yaml yaml = new Yaml();
+        Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
+        JSONObject json = new JSONObject(map);
+        String apiName = json.getJSONObject("info").get("title").toString();
+        String context = json.get("basePath").toString();
+        String version = json.getJSONObject("info").get("version").toString();
+        String payloadJson = json.toString();
+
+        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest.setSwagger(payloadJson);
+
+        serviceResponse = apiPublisher.designAPI(apiRequest);
+        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
+        Assert.assertEquals(name, apiName);
+
+        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
+        verifyResponse(serviceResponse);
+    }
 
 
     public static String readFromUrl(String url) throws IOException {
