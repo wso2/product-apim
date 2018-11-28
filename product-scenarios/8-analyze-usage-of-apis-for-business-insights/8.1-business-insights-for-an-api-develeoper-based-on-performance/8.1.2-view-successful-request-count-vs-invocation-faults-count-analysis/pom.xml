@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied. See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -6,68 +24,15 @@
         <artifactId>8.1-business-insights-for-an-api-develeoper-based-on-performance</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.wso2.am</groupId>
+    <version>2.6.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_1][USECASE_2] - View Successful Request Count vs Invocation Faults Count Analysis</name>
-
     <artifactId>8.1.2-view-successful-request-count-vs-invocation-faults-count-analysis</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>scenarios-common</artifactId>
-            <version>2.6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automationutils</groupId>
-            <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sf.saxon</groupId>
-                    <artifactId>Saxon-HE</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>org.jacoco.agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.icegreen</groupId>
-            <artifactId>greenmail</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
+    <packaging>pom</packaging>
+    <url>http://wso2.org</url>
 
 </project>

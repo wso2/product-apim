@@ -43,43 +43,4 @@
         <module>8.5-business-insights-for-an-app-developer</module>
     </modules>
 
-    <repositories>
-        <repository>
-            <id>wso2-nexus</id>
-            <name>WSO2 internal Repository</name>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>wso2-maven2-repository</id>
-            <url>http://dist.wso2.org/maven2</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <organization>
-        <name>WSO2 Inc</name>
-        <url>http://wso2.com</url>
-    </organization>
-
-    <mailingLists>
-        <mailingList>
-            <name>WSO2 API Manager Users' list</name>
-            <post>http://stackoverflow.com/questions/tagged/wso2</post>
-        </mailingList>
-        <mailingList>
-            <name>WSO2 API Manager Developers' List</name>
-            <post>mailto:dev@wso2.org</post>
-            <archive>http://mail.wso2.org/mailarchive/dev/</archive>
-            <subscribe>mailto:dev-request@wso2.org?subject=subscribe</subscribe>
-            <unsubscribe>mailto:dev-request@wso2.org?subject=unsubscribe</unsubscribe>
-        </mailingList>
-    </mailingLists>
-
 </project>
