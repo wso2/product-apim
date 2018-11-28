@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>1-manage-public-partner-private-apis</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>2.6.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>1.1-expose-service-as-rest-api</artifactId>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_1] - Expose Service as REST API and Apply QoS</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>1.1.1-create-rest-api-from-scratch</module>
+        <module>1.1.2-create-rest-api-by-import-oas-document</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>scenarios-common</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
