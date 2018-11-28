@@ -38,7 +38,7 @@ public class ScenarioTestBase{
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
-    public static final String CARBON_SERVER_URL = "PublisherUrl";
+    public static final String PUBLISHER_URL = "PublisherUrl";
     String resourceLocation = System.getProperty("framework.resource.location");
 
     /**
@@ -73,7 +73,7 @@ public class ScenarioTestBase{
     }
 
     public void setKeyStoreProperties() {
-        System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystores/wso2carbon.jks");
+        System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystore/wso2carbon.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
     }
