@@ -33,7 +33,7 @@
 
     <modules>
         <module>scenarios-common</module>
-        <module>1-api-updates-using-new-versions</module>
+        <!--<module>1-api-updates-using-new-versions</module>-->
         <module>1-manage-public-partner-private-apis</module>
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>

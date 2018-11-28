@@ -27,6 +27,7 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
 import org.testng.Assert;
+
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
@@ -69,7 +70,11 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     public void init() throws APIManagerIntegrationTestException {
 
         infraProperties = getDeploymentProperties();
-        publisherURL  = infraProperties.getProperty(PUBLISHER_URL);
+        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
+
+        if (publisherURL == null) {
+            publisherURL = "https://localhost:9443/publisher";
+        }
 
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
