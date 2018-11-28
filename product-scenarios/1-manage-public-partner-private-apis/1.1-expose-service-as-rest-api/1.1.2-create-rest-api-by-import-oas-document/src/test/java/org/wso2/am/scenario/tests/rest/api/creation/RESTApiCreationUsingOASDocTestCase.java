@@ -58,7 +58,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
 
-        if(publisherURL == null){
+        if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
         }
 
