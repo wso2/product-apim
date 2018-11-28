@@ -41,7 +41,7 @@ import java.util.Properties;
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURLHttp;
+    private String publisherURL;
     private APIRequest apiRequest;
     private Properties infraProperties;
     private String import_definition_url = "swagger-url";
@@ -56,15 +56,13 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     public void init() throws APIManagerIntegrationTestException {
 
         infraProperties = getDeploymentProperties();
-        String authority = infraProperties.getProperty(CARBON_SERVER_URL);
-        if (authority != null && authority.contains("/")) {
-            authority = authority.split("/")[2];
-        } else if (authority == null) {
-            authority = "localhost";
-        }
-        publisherURLHttp = "http://" + authority + ":9763/";
+        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
 
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        if(publisherURL == null){
+            publisherURL = "https://localhost:9443/publisher";
+        }
+
+        apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
 
