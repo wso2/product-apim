@@ -62,6 +62,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
             publisherURL = "https://localhost:9443/publisher";
         }
 
+        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
