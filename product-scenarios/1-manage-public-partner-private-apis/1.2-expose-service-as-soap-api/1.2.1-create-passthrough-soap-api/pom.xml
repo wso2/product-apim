@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>1.1-expose-service-as-rest-api</artifactId>
+        <artifactId>1.2-expose-service-as-soap-api</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>[APIM][SCENARIO_1][SUBSCENARIO_1][USECASE_1] - Create REST API from Scratch</name>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_2][USECASE_1] - Create Passthrough SOAP API using WSDL</name>
 
-    <artifactId>1.1.1-create-rest-api-from-scratch</artifactId>
+    <artifactId>1.2.1-create-passthrough-soap-api</artifactId>
 
     <build>
         <plugins>

@@ -33,7 +33,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(APIRequest.class);
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURLHttp;
+    private String publisherURL;
     private APIRequest apiRequest;
     private Properties infraProperties;
 
@@ -69,16 +69,10 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     public void init() throws APIManagerIntegrationTestException {
 
         infraProperties = getDeploymentProperties();
-        String authority = infraProperties.getProperty(CARBON_SERVER_URL);
-        if (authority != null && authority.contains("/")) {
-            authority = authority.split("/")[2];
-        } else if (authority == null) {
-            authority = "localhost";
-        }
-        publisherURLHttp = "http://" + authority + ":9763/";
+        publisherURL  = infraProperties.getProperty(PUBLISHER_URL);
 
         setKeyStoreProperties();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
 
@@ -136,7 +130,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private void validateOptionalFiled() throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
-        log.info("API Infor : " + getApi.getData());
         String version = response.getJSONObject("api").get("name").toString();
         Assert.assertEquals(response.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
         Assert.assertEquals(response.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
@@ -160,7 +153,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private void verifyAPIName(String apiName) throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
-        log.info("API Infor : " + getApi.getData());
         Assert.assertEquals(response.getJSONObject("api").get("name").toString(), apiName, "Expected API name value not match");
 
     }

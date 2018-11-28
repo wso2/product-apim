@@ -9,13 +9,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>1.1-expose-service-as-rest-api</artifactId>
-    <name>[APIM][SCENARIO_1][SUBSCENARIO_1] - Expose Service as REST API and Apply QoS</name>
+    <artifactId>1.2-expose-service-as-soap-api</artifactId>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_2] - Expose Service as SOAP API</name>
 
     <packaging>pom</packaging>
     <modules>
-        <module>1.1.1-create-rest-api-from-scratch</module>
-        <module>1.1.2-create-rest-api-by-import-oas-document</module>
+        <module>1.2.1-create-passthrough-soap-api</module>
     </modules>
 
     <dependencyManagement>

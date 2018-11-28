@@ -15,7 +15,7 @@ import java.net.URL;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIPublisherRestClient apiPublisher;
-    private String publisherURLHttp;
+    private String publisherURL;
     private APIRequest apiRequest;
     private Properties infraProperties;
 
@@ -42,16 +42,11 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         infraProperties = getDeploymentProperties();
-        String authority = infraProperties.getProperty(CARBON_SERVER_URL);
-        if (authority != null && authority.contains("/")) {
-            authority = authority.split("/")[2];
-        } else if (authority == null) {
-            authority = "localhost";
-        }
-        publisherURLHttp = "http://" + authority + ":9763/";
+        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
+
 
         setKeyStoreProperties();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
 

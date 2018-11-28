@@ -18,10 +18,9 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false">
+    <test name="1.2.1-create-passthrough-soap-api" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationTestCase"/>-->
-            <!--<class name="org.wso2.am.scenario.tests.rest.api.creation.RestApiCreationNegativeTestCase"/>-->
+            <!--<class name="org.wso2.am.scenario.tests.soap.api.creation.PassthroughSOAPApiCreationTestCase"/>-->
         </classes>
     </test>
 </suite>
