@@ -38,8 +38,8 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerification";
-    private String apiContext = "/phoneverify";
+    private String apiName = "PhoneVerificationAdd";
+    private String apiContext = "/phoneverifyadd";
     private String apiVersion = "1.0.0";
     private String apiResource = "/find";
     private String apiVisibility = "public";
@@ -81,12 +81,13 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
-    @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = org.wso2.am.scenario.test.common.ScenarioDataProvider.class)
+    @Test(description = "1.1.1.1")
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
-        this.apiName = apiName;
+        //this.apiName = apiName;
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+        apiRequest = new APIRequest("PhoneVerificationAdd", "/phoneverifyadd", apiVisibility,
+                apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
@@ -97,8 +98,8 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.2")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
-        apiName = "PhoneVerificationOptional";
-        apiContext = "/phoneverifyOptional";
+        apiName = "PhoneVerificationOptionalAdd";
+        apiContext = "/phoneverifyOptionaladd";
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, description, tag,
                 tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
@@ -117,7 +118,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
         apiResource = "******";
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+        apiRequest = new APIRequest("APIWildCard", "apiwildcard", apiVisibility, apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
@@ -128,8 +129,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
-        verifyResponse(serviceResponse);
+        apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, "admin");
+        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
+        apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
     }
 
     private void validateOptionalFiled() throws APIManagerIntegrationTestException {
