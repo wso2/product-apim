@@ -38,8 +38,9 @@
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
         <module>8-analyze-usage-of-apis-for-business-insights</module>
-        <module>14-receive-alerts-on-different-events-for-decision-making</module>
         <module>9-developer-community-building</module>
+        <module>14-receive-alerts-on-different-events-for-decision-making</module>
+
     </modules>
 
     <build>
