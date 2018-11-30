@@ -91,18 +91,18 @@ import static org.testng.Assert.assertTrue;
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        String swagger = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"Plus\","
+        String swagger = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\","
                 + "\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
-                + "\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":{\"x-auth-type\":"
-                + "\"Application \",\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\","
+                + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":{\"x-auth-type\":"
+                + "\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\","
                 + "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":"
                 + "\"TokenTestAPI\",\"description\":\"This is test API create by API manager integration test\","
                 + "\"contact\":{\"email\":null,\"name\":null},\"version\":\"1.0.0\"}}";
 
         String resourceOrder = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\""
-                + ":\"Plus\",\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
-                + "\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
-                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}}}";
+                + ":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
+                + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
+                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}}";
 
         apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, swagger);
         //get swagger doc.

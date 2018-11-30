@@ -75,6 +75,9 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         //login to API publisher as first tenant admin to create the API
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(apiProvider, firstTenantAdminPassword);
+        //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
+        //login, if not api creation fails since Unlimited resource tier is not available in database.
+        waitForAPIDeployment();
         //prepare API to create and publish
         String apiContext = "testContext";
         String url = "https://localhost:9443/test";

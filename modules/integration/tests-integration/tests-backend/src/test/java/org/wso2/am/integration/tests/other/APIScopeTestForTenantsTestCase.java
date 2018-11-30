@@ -182,6 +182,9 @@ public class APIScopeTestForTenantsTestCase extends APIMIntegrationBaseTest {
         String description = "This is a test API created by API manager integration test";
 
         apiPublisher.login(adminUser, adminPassword);
+        //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
+        //login, if not api creation fails since Unlimited resource tier is not available in database.
+        waitForAPIDeployment();
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(url));
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);

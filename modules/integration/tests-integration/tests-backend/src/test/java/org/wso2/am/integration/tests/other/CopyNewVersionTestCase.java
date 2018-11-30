@@ -61,7 +61,7 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
     private String description="Test Description";
     private static final String WEB_APP_FILE_NAME="jaxrs_basic";
     private String tier= APIMIntegrationConstants.API_TIER.GOLD;
-    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType="http";
 
     @Factory(dataProvider = "userModeDataProvider")

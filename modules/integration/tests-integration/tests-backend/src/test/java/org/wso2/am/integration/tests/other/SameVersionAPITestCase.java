@@ -58,7 +58,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
     private String visibility="public";
     private String description="Test Description";
     private String tier= APIMIntegrationConstants.API_TIER.GOLD;
-    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType="http";
 
     @Factory(dataProvider = "userModeDataProvider")

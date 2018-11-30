@@ -102,9 +102,9 @@ public class APIMIntegrationConstants {
 
     public static class RESOURCE_TIER {
         public static final String UNLIMITED = "Unlimited";
-        public static final String ULTIMATE = "Ultimate";
+        public static final String TENK_PER_MIN = "10KPerMin";
         public static final String TWENTYK_PER_MIN = "20KPerMin";
-        public static final String BASIC = "Basic";
+        public static final String FIFTYK_PER_MIN = "50KPerMin";
 
         public static final int ULTIMATE_LIMIT = 20;
         public static final int PLUS_LIMIT = 5;
