@@ -184,22 +184,22 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         APIResourceBean res2 = new APIResourceBean("GET",
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/get");
+                APIMIntegrationConstants.RESOURCE_TIER.FIFTYK_PER_MIN, "/get");
         APIResourceBean res3 = new APIResourceBean("PUT",
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE, "/put");
+                APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN, "/put");
         APIResourceBean res4 = new APIResourceBean("DELETE",
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/delete");
         APIResourceBean res5 = new APIResourceBean("PATCH",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/patch");
+                APIMIntegrationConstants.RESOURCE_TIER.FIFTYK_PER_MIN, "/patch");
         APIResourceBean res6 = new APIResourceBean("HEAD",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/head");
+                APIMIntegrationConstants.RESOURCE_TIER.FIFTYK_PER_MIN, "/head");
         APIResourceBean res7 = new APIResourceBean("OPTIONS",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/options");
+                APIMIntegrationConstants.RESOURCE_TIER.FIFTYK_PER_MIN, "/options");
         resList.add(res1);
         resList.add(res2);
         resList.add(res3);

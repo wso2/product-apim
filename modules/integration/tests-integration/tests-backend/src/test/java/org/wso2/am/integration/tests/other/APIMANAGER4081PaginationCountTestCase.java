@@ -114,7 +114,9 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 apiPublisher.login
                         (publisherContext.getContextTenant().getTenantAdmin().getUserName() + "@" + tenantDomain,
                          publisherContext.getContextTenant().getTenantAdmin().getPassword());
-
+                //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
+                //login, if not api creation fails since Unlimited resource tier is not available in database.
+                waitForAPIDeployment();
                 APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
                 apiRequest.setTags(tags);
                 apiRequest.setDescription(description);

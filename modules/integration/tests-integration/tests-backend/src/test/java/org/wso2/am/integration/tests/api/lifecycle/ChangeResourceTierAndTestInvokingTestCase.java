@@ -233,7 +233,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                "\"" + APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE
+                "\"" + "Ultimate"
                 + "\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
                 ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
                 "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
@@ -242,7 +242,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
 
         apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE, executionMode);
+                "Ultimate", executionMode);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 

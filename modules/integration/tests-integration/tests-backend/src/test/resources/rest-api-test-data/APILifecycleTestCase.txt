@@ -48,18 +48,18 @@
                         \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
                         \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
                         \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"CustomTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
                         \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":
                         \\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"200\\\":{}}},
-                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"CustomTier\\\",
+                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",
                         \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"Request Body\\\",
                         \\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
                         \\\"responses\\\":{\\\"200\\\":{}}},\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"CustomTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
                         \\\"delete\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"CustomTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
                         \\\"patch\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"CustomTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
                         \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
                         \\\"responses\\\":{\\\"200\\\":{}}}}},\\\"swagger\\\":\\\"2.0\\\",
                         \\\"info\\\":{\\\"title\\\":\\\"api1\\\",\\\"version\\\":\\\"1\\\"}}\",\r\n
