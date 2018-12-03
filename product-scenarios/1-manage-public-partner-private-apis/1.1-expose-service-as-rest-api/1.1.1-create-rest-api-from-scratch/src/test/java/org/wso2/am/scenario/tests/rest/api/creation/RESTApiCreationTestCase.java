@@ -17,6 +17,7 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -82,17 +83,16 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
-    @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.1.1")
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
-        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+        apiRequest = new APIRequest("PhoneVerification", "/PhoneVerificationContext", apiVisibility,
                 apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
         verifyAPIName(apiName);
-        cleanup(apiName);
     }
 
     @Test(description = "1.1.1.2")
@@ -109,7 +109,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(serviceResponse);
         validateOptionalFiled();
-        cleanup(apiName);
     }
 
     @Test(description = "1.1.1.3")
@@ -124,13 +123,14 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
         verifyAPIName(apiName);
-        cleanup(apiName);
     }
 
 
-    private void cleanup(String apiName) throws APIManagerIntegrationTestException {
-        apiPublisher.deleteAPI(apiName, apiVersion, "admin");
-
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        apiPublisher.deleteAPI("PhoneVerification", apiVersion, "admin");
+        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
+        apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
     }
 
     private void validateOptionalFiled() throws APIManagerIntegrationTestException {
