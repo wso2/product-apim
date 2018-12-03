@@ -132,7 +132,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.deleteAPI("123567890", apiVersion, "admin");
         apiPublisher.deleteAPI("eñe", apiVersion, "admin");
         apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, "admin");
-        apiPublisher.deleteAPI("PHONEVERIFICATION", apiVersion, "admin");
         apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
         apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
     }
