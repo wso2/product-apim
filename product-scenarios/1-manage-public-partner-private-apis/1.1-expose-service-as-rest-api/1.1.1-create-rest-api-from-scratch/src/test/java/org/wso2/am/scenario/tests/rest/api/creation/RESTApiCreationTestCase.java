@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
@@ -38,8 +39,8 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerificationAdd";
-    private String apiContext = "/phoneverifyadd";
+    private String apiName;
+    private String apiContext;
     private String apiVersion = "1.0.0";
     private String apiResource = "/find";
     private String apiVisibility = "public";
@@ -81,19 +82,17 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
-    @Test(description = "1.1.1.1")
+    @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
-        //this.apiName = apiName;
-
-        apiRequest = new APIRequest("PhoneVerificationAdd", "/phoneverifyadd", apiVisibility,
+        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
                 apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
         verifyAPIName(apiName);
-
+        cleanup(apiName);
     }
 
     @Test(description = "1.1.1.2")
@@ -106,38 +105,37 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
                 endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
                 subscriptions, http_checked, https_checked, inSequence, outSequence);
 
-        //Design API with name,context,version,visibility,apiResource and with optional values (description and tags)
+        //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(serviceResponse);
         validateOptionalFiled();
-
+        cleanup(apiName);
     }
 
     @Test(description = "1.1.1.3")
     public void testRESTAPICreationWithwildCardResource() throws Exception {
+        apiName = "APIWildCard";
+        apiContext = "apiwildcard";
+        apiResource = "/*";
 
-        apiResource = "******";
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
-        apiRequest = new APIRequest("APIWildCard", "apiwildcard", apiVisibility, apiVersion, apiResource);
-
-        //Design API with name,context,version,visibility and apiResource
+        //Design API with name,context,version,visibility and wildcard apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
         verifyAPIName(apiName);
-
+        cleanup(apiName);
     }
 
-    @AfterTest(alwaysRun = true)
-    public void destroy() throws Exception {
-        apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, "admin");
-        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
-        apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
+
+    private void cleanup(String apiName) throws APIManagerIntegrationTestException {
+        apiPublisher.deleteAPI(apiName, apiVersion, "admin");
+
     }
 
     private void validateOptionalFiled() throws APIManagerIntegrationTestException {
         HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
         JSONObject response = new JSONObject(getApi.getData());
-        String version = response.getJSONObject("api").get("name").toString();
         Assert.assertEquals(response.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
         Assert.assertEquals(response.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
         Assert.assertEquals(response.getJSONObject("api").get("techOwner").toString(), techOwner, "Expected techOwner value not match");

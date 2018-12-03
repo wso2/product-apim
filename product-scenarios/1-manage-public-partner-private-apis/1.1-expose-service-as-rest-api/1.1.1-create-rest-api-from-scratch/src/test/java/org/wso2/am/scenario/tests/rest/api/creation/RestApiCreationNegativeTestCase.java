@@ -19,8 +19,8 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerification";
-    private String newApiName = "PhoneVerificationNew";
+    private String apiName = "PhoneVerificationNeg";
+    private String newApiName = "PhoneVerificationNegNew";
     private String apiName255 = "REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API1234567890";
     private String apiNameSpecial = "Phone@$#Verify#";
     private String apiNameSpaces = "Phone Verify Api";
@@ -98,11 +98,11 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
 
     @Test(description = "1.1.1.9")
-    public void testRESTAPICreationWithSpecialCharactersName() throws Exception {
+    public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiNameSpecial, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
 
-        //Try to add API with api name with special characters
+        //Try to add API with api name with not allowed special characters
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiNameSpecial + "-" + apiVersion));
     }
@@ -122,11 +122,11 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     /*
      //TODO: this test should be enabled once context validation in jaggery call fixed..
     @Test(description = "1.1.1.11")
-    public void testRESTAPICreationWithSpecialCharactersContext() throws Exception{
+    public void testRESTAPICreationWithNotAllowedCharactersContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpecial, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
 
-        //Try to add API with api context in special characters
+        //Try to add API with api context in not allowed special characters
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         //Assert.assertTrue(serviceResponse.getData().contains(InvalidSpecialNameResponse + apiNameSpecial + "-" + apiVersion));
     }
