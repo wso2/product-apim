@@ -349,7 +349,6 @@ public class APIStoreRestClient {
     public HttpResponse getPublishedAPIsByApplicationId(String applicationName, int applicationId)
             throws APIManagerIntegrationTestException {
         try {
-
             checkAuthentication();
             return HTTPSClientUtils.doGet(
                     backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
@@ -360,7 +359,6 @@ public class APIStoreRestClient {
             throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
                     + ". Error: " + e.getMessage(), e);
         }
-
     }
 
     /**
