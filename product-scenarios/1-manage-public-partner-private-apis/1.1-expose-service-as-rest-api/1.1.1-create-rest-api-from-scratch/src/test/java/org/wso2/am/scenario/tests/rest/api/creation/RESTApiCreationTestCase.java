@@ -83,10 +83,10 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
-    @Test(description = "1.1.1.1")
+    @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
-        apiRequest = new APIRequest("PhoneVerification", "/PhoneVerificationContext", apiVisibility,
+        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
                 apiVersion, apiResource);
 
         //Design API with name,context,version,visibility and apiResource
@@ -129,6 +129,10 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiPublisher.deleteAPI("PhoneVerification", apiVersion, "admin");
+        apiPublisher.deleteAPI("123567890", apiVersion, "admin");
+        apiPublisher.deleteAPI("eñe", apiVersion, "admin");
+        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, "admin");
+        apiPublisher.deleteAPI("PHONEVERIFICATION", apiVersion, "admin");
         apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
         apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
     }
