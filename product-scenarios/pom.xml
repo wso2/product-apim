@@ -39,6 +39,8 @@
         <module>5-managing-api-lifecycle</module>
         <module>8-analyze-usage-of-apis-for-business-insights</module>
         <module>9-developer-community-building</module>
+        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>
+        <module>11-segregate-api-traffic</module>
         <module>14-receive-alerts-on-different-events-for-decision-making</module>
 
     </modules>
