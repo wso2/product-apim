@@ -54,7 +54,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "Base Test case")
-    public void testRESTAPICreationWithMandatoryValues() throws Exception {
+    public void testRESTAPICreationWithMandatoryValuesNeg() throws Exception {
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
@@ -64,7 +64,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.6", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.6", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -75,7 +75,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -199,7 +199,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.17", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.17", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception {
 
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
