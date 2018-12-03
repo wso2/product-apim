@@ -88,6 +88,10 @@ public class SubscriptionRequest extends AbstractRequest {
         setAction("addAPISubscription");
     }
 
+    public void setAction(String action) {
+        super.setAction(action);
+    }
+
     @Override
     public void init() {
         addParameter("name", name);
@@ -95,6 +99,7 @@ public class SubscriptionRequest extends AbstractRequest {
         addParameter("version", version);
         addParameter("applicationName", applicationName);
         addParameter("tier", tier);
+        addParameter("appId", Integer.toString(applicationId));
     }
 
     public String getName() {
@@ -127,5 +132,13 @@ public class SubscriptionRequest extends AbstractRequest {
 
     public void setTier(String tier) {
         this.tier = tier;
+    }
+
+    public int getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(int applicationId) {
+        this.applicationId = applicationId;
     }
 }

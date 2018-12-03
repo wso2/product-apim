@@ -59,7 +59,7 @@ public abstract class AbstractRequest {
      */
     public String generateRequestParameters(String actionName) {
         parameterMap.clear();
-        setAction();
+        setAction(actionName);
         init();
         String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
         StringBuilder bufferAppender = new StringBuilder();
