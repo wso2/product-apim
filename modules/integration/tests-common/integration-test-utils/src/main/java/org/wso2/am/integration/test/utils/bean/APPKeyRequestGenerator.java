@@ -42,6 +42,10 @@ public class APPKeyRequestGenerator extends AbstractRequest {
         setAction("generateApplicationKey");
     }
 
+    public void setAction(String action) {
+        super.setAction(action);
+    }
+
     @Override
     public void init() {
         addParameter("application", application);

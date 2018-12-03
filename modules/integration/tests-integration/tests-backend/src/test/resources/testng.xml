@@ -192,6 +192,7 @@
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <class name="org.wso2.am.integration.tests.other.StoreChangePasswordTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
@@ -256,6 +257,13 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <!--class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
+            <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
         </classes>
     </test>
 </suite>
