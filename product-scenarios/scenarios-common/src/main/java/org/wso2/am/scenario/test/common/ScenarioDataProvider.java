@@ -12,7 +12,7 @@ public class ScenarioDataProvider {
                 {"PhoneVerification"}, {"123567890"}, {"eñe"}, {"Pho_ne-verify?api."}
         };
     }
-    
+
     @DataProvider(name = "OASDocsWithJSONFiles")
     public static Object[][] OASDocJsonFilesProvide() {
         return new Object[][]{
