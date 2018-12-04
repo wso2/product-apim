@@ -19,8 +19,8 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerification";
-    private String newApiName = "PhoneVerificationNew";
+    private String apiName = "PhoneVerificationNeg";
+    private String newApiName = "PhoneVerificationNegNew";
     private String apiName255 = "REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API1234567890";
     private String apiNameSpecial = "Phone@$#Verify#";
     private String apiNameSpaces = "Phone Verify Api";
@@ -54,7 +54,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "Base Test case")
-    public void testRESTAPICreationWithMandatoryValues() throws Exception {
+    public void testRESTAPICreationWithMandatoryValuesNeg() throws Exception {
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
@@ -64,7 +64,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.6", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.4", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -75,7 +75,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.5", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -86,7 +86,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.8")
+    @Test(description = "1.1.1.6")
     public void testRESTAPICreationWith255CharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiName255, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -97,19 +97,19 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.9")
-    public void testRESTAPICreationWithSpecialCharactersName() throws Exception {
+    @Test(description = "1.1.1.7")
+    public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiNameSpecial, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
 
-        //Try to add API with api name with special characters
+        //Try to add API with api name with not allowed special characters
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiNameSpecial + "-" + apiVersion));
     }
 
     //TODO: Remove the comment once considered environment fix for create context with 255characters
 
-//    @Test(description = "1.1.1.10")
+//    @Test(description = "1.1.1.8")
 //    public void testRESTAPICreationWith255CharactersContext() throws Exception {
 //
 //        apiRequest = new APIRequest(newApiName, apiContext255, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -121,18 +121,18 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     /*
      //TODO: this test should be enabled once context validation in jaggery call fixed..
-    @Test(description = "1.1.1.11")
-    public void testRESTAPICreationWithSpecialCharactersContext() throws Exception{
+    @Test(description = "1.1.1.9")
+    public void testRESTAPICreationWithNotAllowedCharactersContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpecial, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
 
-        //Try to add API with api context in special characters
+        //Try to add API with api context in not allowed special characters
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         //Assert.assertTrue(serviceResponse.getData().contains(InvalidSpecialNameResponse + apiNameSpecial + "-" + apiVersion));
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.12")
+    @Test(description = "1.1.1.10")
     public void testRESTAPICreationWithSpacesContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpaces, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -143,7 +143,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.13")
+    @Test(description = "1.1.1.11")
     public void testRESTAPICreationWithSpacesApiname() throws Exception{
 
         apiRequest = new APIRequest(apiNameSpaces, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -154,7 +154,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 */
 
-    @Test(description = "1.1.1.14")
+    @Test(description = "1.1.1.12")
     public void testRESTAPICreationWithoutApiname() throws Exception {
 
         apiRequest = new APIRequest("", newContext, apiVisibility, apiVersion, apiResource);
@@ -169,7 +169,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.15")
+    @Test(description = "1.1.1.13")
     public void testRESTAPICreationWithoutContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, "", apiVisibility, apiVersion, apiResource);
@@ -184,7 +184,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.16")
+    @Test(description = "1.1.1.14")
     public void testRESTAPICreationWithoutVersion() throws Exception {
 
         apiRequest = new APIRequest(newApiName, newContext, apiVisibility, "", apiResource);
@@ -199,7 +199,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.17", dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
+    @Test(description = "1.1.1.15", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception {
 
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
