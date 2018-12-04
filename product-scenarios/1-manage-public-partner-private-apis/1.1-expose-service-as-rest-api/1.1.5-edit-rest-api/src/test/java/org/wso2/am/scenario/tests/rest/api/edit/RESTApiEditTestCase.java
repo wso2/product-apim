@@ -26,6 +26,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.Properties;
+import java.util.UUID;
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
@@ -37,8 +38,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private String publisherURL;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerification";
-    private String apiContext = "/phoneverify";
+    private String apiName = UUID.randomUUID().toString();
+    private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
     private String admin = "admin";
     private String description = "This is a API creation description";
