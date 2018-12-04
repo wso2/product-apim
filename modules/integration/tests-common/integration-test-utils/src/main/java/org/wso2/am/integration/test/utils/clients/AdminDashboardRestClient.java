@@ -140,6 +140,56 @@ public class AdminDashboardRestClient {
             throw new APIManagerIntegrationTestException("Get all tiers failed", e);
         }        
     }
+
+    /**
+     * Get all applications within a specific tenant domain
+     * @return http response
+     * @throws APIManagerIntegrationTestException
+     * @param search
+     * @param start
+     * @param draw
+     * @param offset
+     * @param columnId
+     * @param sortOrder
+     */
+    public HttpResponse getapplicationsByTenantId(String search, String start, String draw, String offset,
+                                                  String columnId, String sortOrder)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/application-owner/get-applications/ajax/get-applications.jag"),
+                            "action=getApplicationsByTenantIdWithPagination&start=" + start + "&length=" + offset
+                            + "&search[value]=" + search + "&draw=" + draw + "&order[0][column]=" + columnId
+                            + "&order[0][dir]=" + sortOrder, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Get all applications with pagination failed", e);
+        }
+    }
+
+    /**
+     * Update application owner
+     * @return http response
+     * @throws APIManagerIntegrationTestException
+     * @param newOwner
+     * @param oldOwner
+     * @param uuid
+     * @param appName
+     */
+    public HttpResponse updateApplicationOwner(String newOwner, String oldOwner, String uuid, String appName)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/application-owner/change-owner/ajax/change-owner.jag"),
+                            "action=changeOwner&newOwner=" + newOwner + "&oldOwner=" + oldOwner
+                            + "&applicationUuid=" + uuid + "&applicationName=" + appName, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Updating application owner failed", e);
+        }
+    }
     
     private String getSession(Map<String, String> responseHeaders) {
         return responseHeaders.get("Set-Cookie");
