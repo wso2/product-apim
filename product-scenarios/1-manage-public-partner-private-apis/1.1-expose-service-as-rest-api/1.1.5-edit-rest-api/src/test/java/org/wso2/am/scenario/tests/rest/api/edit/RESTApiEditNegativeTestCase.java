@@ -38,8 +38,8 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     private String publisherURL;
     private Properties infraProperties;
 
-    private String apiName = "PhoneVerification";
-    private String apiContext = "/phoneverify";
+    private String apiName = "PhoneVerificationNegative";
+    private String apiContext = "/phoneverifyn";
     private String apiVersion = "1.0.0";
     private String admin = "admin";
     private String description = "This is a API creation description";
@@ -52,7 +52,7 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     private String techOwnerMail = "wso2@gmail.com";
     private String default_version_checked = "default_version";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private String updateErrorResponse = "Error while updating the API- PhoneVerification-1.0.0";
+    private String updateErrorResponse = "Error while updating the API- PhoneVerificationNegative-1.0.0";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
