@@ -65,7 +65,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     public void testCreateApiUsingValidOASDocumentFromJsonFile(String file_path) throws Exception {
         swagger_file = new File(resourceLocation + File.separator + file_path);
 
-        //Import api definition form swagger file
+        //Import api definition from swagger file
         apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
 
         HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
@@ -98,6 +98,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
+    //TODO: Commented due to the SSL certification issue for read from url still occurs
 
 //    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
 //    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
@@ -131,7 +132,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     public void testCreateApiUsingValidOASDocumentFromYamlFile(String file_path) throws Exception {
         swagger_file = new File(resourceLocation + File.separator + file_path);
 
-        //Import api definition form swagger file
+        //Import api definition from swagger file
         apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
 
         HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
@@ -168,6 +169,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
+    //TODO: Commented due to the SSL certification issue for read from url still occurs
 
 //    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
 //    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
@@ -228,13 +230,6 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         }
         String payloadText = sb.toString();
         return payloadText;
-    }
-
-    public static String getFileExtension(String fileName) {
-//        String fileName = file.getName();
-        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-            return fileName.substring(fileName.lastIndexOf(".") + 1);
-        else return "";
     }
 
 }
