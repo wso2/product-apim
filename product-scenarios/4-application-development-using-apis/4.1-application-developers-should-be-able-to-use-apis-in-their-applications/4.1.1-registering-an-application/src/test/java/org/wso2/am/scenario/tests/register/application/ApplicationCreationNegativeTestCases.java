@@ -47,7 +47,6 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private static final String APPLICATION_DUPLICATE_NAME = "Application";
     private static final String APPLICATION_DESCRIPTION = "Application description";
 
-
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         String storeURL;

@@ -60,7 +60,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String APPLICATION_KEY_GENERATION = "Application - key generation";
     private static final String APPLICATION_DESCRIPTION = "Application description";
 
-
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         String storeURL;
@@ -158,7 +157,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "4.1.1.3", dependsOnMethods = {"createApplicationForKeyGeneration"})
+    @Test(description = "4.1.1.3", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
     public void testGenerateProductionKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
         String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
@@ -171,7 +170,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
                 .get(KEY_TYPE), PRODUCTION, ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
     }
 
-    @Test(description = "4.1.1.4", dependsOnMethods = {"createApplicationForKeyGeneration"})
+    @Test(description = "4.1.1.4", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
     public void testGenerateSandboxKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
         appKeyRequestGenerator.setKeyType(SANDBOX);
@@ -186,7 +185,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     }
 
     @Test
-    private void createApplicationForKeyGeneration() throws Exception {
+    private void testCreateApplicationForKeyGeneration() throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(URLEncoder.encode(APPLICATION_KEY_GENERATION, UTF_8),
                         URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
