@@ -1566,12 +1566,15 @@ public class APIMTestCaseUtils {
 
     public static boolean isJwtSignatureValid(String jwtAssertion, byte[] jwtSignature, String jsonHeader) throws UnsupportedEncodingException {
         KeyStore keyStore = null;
-        String thumbPrint = null;
+        byte[] thumbPrint = null;
         String signatureAlgorithm = null;
         JSONObject jsonHeaderObject = null;
         try {
             jsonHeaderObject = new JSONObject(jsonHeader);
-            thumbPrint = new String(Base64.decodeBase64((String) jsonHeaderObject.get("x5t")));
+            String x5tHeader = (String) jsonHeaderObject.get("x5t");
+            if(x5tHeader!=null) {
+               thumbPrint = java.util.Base64.getUrlDecoder().decode(x5tHeader.getBytes("UTF-8"));
+            }
             signatureAlgorithm = (String) jsonHeaderObject.get("alg");
         } catch (JSONException e) {
             log.error("Error while parsing json" + e);
@@ -1594,7 +1597,7 @@ public class APIMTestCaseUtils {
                 String trustStorePassword = TestConfigurationProvider.getTrustStorePassword();
                 keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
                 keyStore.load(new FileInputStream(trustStore), trustStorePassword.toCharArray());
-                String alias = getAliasForX509CertThumb(thumbPrint.getBytes(), keyStore);
+                String alias = getAliasForX509CertThumb(thumbPrint, keyStore);
                 Certificate certificate = keyStore.getCertificate(alias);
                 Signature signature = Signature.getInstance(signatureAlgorithm);
                 signature.initVerify(certificate);
@@ -1756,7 +1759,8 @@ public class APIMTestCaseUtils {
                 }
                 sha.update(cert.getEncoded());
                 byte[] data = sha.digest();
-                if (new String(thumb).equals(hexify(data))) {
+                String certThumbprint = new String(Base64.encodeBase64(data));
+                if (certThumbprint.equals(new String(Base64.encodeBase64(thumb)))) {
                     return alias;
                 }
             }
@@ -1766,13 +1770,4 @@ public class APIMTestCaseUtils {
         return null;
     }
 
-    private static String hexify(byte bytes[]) {
-        char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-        StringBuilder buf = new StringBuilder(bytes.length * 2);
-        for (byte aByte : bytes) {
-            buf.append(hexDigits[(aByte & 0xf0) >> 4]);
-            buf.append(hexDigits[aByte & 0x0f]);
-        }
-        return buf.toString();
-    }
 }
