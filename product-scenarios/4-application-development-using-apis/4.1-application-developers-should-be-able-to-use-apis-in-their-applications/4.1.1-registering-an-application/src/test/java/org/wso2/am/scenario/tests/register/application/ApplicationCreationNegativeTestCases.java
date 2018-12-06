@@ -44,6 +44,8 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private static final String APPLICATION_DUPLICATE_NAME_CHECK = "Application";
     private static final String APPLICATION_NAME_LONGER_THAN_70_CHARS =
             "ApplicationNameLongerThan70CharactersApplicationNameLongerThan70Characters";
+    private static final String APPLICATION_DUPLICATE_NAME = "Application";
+    private static final String APPLICATION_DESCRIPTION = "Application description";
 
 
     @BeforeClass(alwaysRun = true)
@@ -62,9 +64,12 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 
-    @Test(description = "4.1.1.5", dataProvider = "DuplicateApplicationNameDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testDuplicateApplicationName(String applicationName, String tier, String description)
+    @Test(description = "4.1.1.5"
+//            , dataProvider = "DuplicateApplicationNameDataProvider",
+//            dataProviderClass = ScenarioDataProvider.class
+    )
+    public void testDuplicateApplicationName()
+//    public void testDuplicateApplicationName(String applicationName, String tier, String description)
             throws Exception {
 //        create application
         HttpResponse addApplicationResponse = apiStore
@@ -80,22 +85,41 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
                 ERROR_APP_CREATION_FAILED + APPLICATION_DUPLICATE_NAME_CHECK);
         applicationsList.add(APPLICATION_DUPLICATE_NAME_CHECK);
-//        add duplicate application
+//        add duplicate application - case sensitive
         addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(applicationName, UTF_8), URLEncoder.encode(tier, UTF_8),
-                        "", URLEncoder.encode(description, UTF_8));
+                .addApplication(URLEncoder.encode(APPLICATION_DUPLICATE_NAME, UTF_8),
+                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
+                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
         addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
 //        if application added due to test failure add it to application list so that it could be removed later
         if (!addApplicationJsonObject.getBoolean(ERROR)
                 && addApplicationJsonObject.get(STATUS).equals(STATUS_APPROVED)) {
-            applicationsList.add(applicationName);
+            applicationsList.add(APPLICATION_DUPLICATE_NAME);
         }
 //        validate application wasn't created
         assertTrue(addApplicationJsonObject.getBoolean(ERROR),
-                ERROR_DUPLICATE_APPLICATION_CREATION + applicationName);
+                ERROR_DUPLICATE_APPLICATION_CREATION + APPLICATION_DUPLICATE_NAME);
         assertEquals(addApplicationJsonObject.get(MESSAGE).toString().trim(),
-                ERROR_DUPLICATE_APPLICATION_EXIST + applicationName,
-                ERROR_DUPLICATE_APPLICATION_CREATION + applicationName);
+                ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_DUPLICATE_NAME,
+                ERROR_DUPLICATE_APPLICATION_CREATION + APPLICATION_DUPLICATE_NAME);
+//        todo uncomment if duplicate name check should be case insensitive
+////        add duplicate application - case insensitive
+//        addApplicationResponse = apiStore
+//                .addApplication(URLEncoder.encode(APPLICATION_DUPLICATE_NAME.toLowerCase(), UTF_8),
+//                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
+//                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
+//        addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
+////        if application added due to test failure add it to application list so that it could be removed later
+//        if (!addApplicationJsonObject.getBoolean(ERROR)
+//                && addApplicationJsonObject.get(STATUS).equals(STATUS_APPROVED)) {
+//            applicationsList.add(APPLICATION_DUPLICATE_NAME);
+//        }
+////        validate application wasn't created
+//        assertTrue(addApplicationJsonObject.getBoolean(ERROR),
+//                ERROR_DUPLICATE_APPLICATION_CREATION + APPLICATION_DUPLICATE_NAME);
+//        assertEquals(addApplicationJsonObject.get(MESSAGE).toString().trim(),
+//                ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_DUPLICATE_NAME,
+//                ERROR_DUPLICATE_APPLICATION_CREATION + APPLICATION_DUPLICATE_NAME);
     }
 
 //    todo uncomment once jappery api validation is fixed

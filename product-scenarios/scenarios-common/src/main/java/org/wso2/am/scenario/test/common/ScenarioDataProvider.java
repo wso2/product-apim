@@ -47,10 +47,9 @@ public class ScenarioDataProvider {
     @DataProvider(name = "ValidMandatoryApplicationValuesDataProvider")
     public static Object[][] validMandatoryApplicationValuesDataProvider() {
         return new Object[][]{
-                {"App_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description "},
-                {"APP UPPER CASE", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " New app description 123"},
-                {"app lower case", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " "},
-                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
+                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description "},
+                {"Application_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " New app description 123"},
+                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " "},
                 {"Mix App-1234_.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New app description 123 !@#$%"}
         };
     }
@@ -77,38 +76,6 @@ public class ScenarioDataProvider {
                         "New App Description", "DEFAULT"},
                 {"App - Token 3", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         "", "OAuth"}
-        };
-    }
-
-    @DataProvider(name = "InitDuplicateApplicationNameDataProvider")
-    public static Object[][] initDuplicateApplicationNameDataProvider() {
-        return new Object[][]{
-                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"}
-        };
-    }
-
-    @DataProvider(name = "DuplicateApplicationNameDataProvider")
-    public static Object[][] duplicateApplicationNameDataProvider() {
-        return new Object[][]{
-                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"},
-                //    todo uncomment once jappery api validation is fixed
-//                {"application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"}
-        };
-    }
-
-    @DataProvider(name = "ApplicationProductionKeyGenerationDataProvider")
-    public static Object[][] applicationProductionKeyGenerationDataProvider() {
-        return new Object[][]{
-                {"Application - production key generation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "New App Description"}
-        };
-    }
-
-    @DataProvider(name = "ApplicationSandboxKeyGenerationDataProvider")
-    public static Object[][] applicationSandboxKeyGenerationDataProvider() {
-        return new Object[][]{
-                {"Application - sandbox key generation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "New App Description"}
         };
     }
 }

@@ -2,10 +2,11 @@ package org.wso2.am.scenario.tests.register.application;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -56,6 +57,8 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String KEY_TYPE = "key_type";
     private static final String PRODUCTION = "PRODUCTION";
     private static final String SANDBOX = "SANDBOX";
+    private static final String APPLICATION_KEY_GENERATION = "Application - key generation";
+    private static final String APPLICATION_DESCRIPTION = "Application description";
 
 
     @BeforeClass(alwaysRun = true)
@@ -89,6 +92,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+        destroy();
     }
 
     private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
@@ -128,6 +132,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+        destroy();
     }
 
     public void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
@@ -153,59 +158,54 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "4.1.1.3", dataProvider = "ApplicationProductionKeyGenerationDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testGenerateProductionKeysForApplication(String applicationName, String tier, String description)
-            throws Exception {
-        createApplicationForKeyGeneration(applicationName, tier, description);
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
+    @Test(description = "4.1.1.3", dependsOnMethods = {"createApplicationForKeyGeneration"})
+    public void testGenerateProductionKeysForApplication() throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
         String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
         JSONObject responseStringJson = new JSONObject(responseString);
         assertFalse(responseStringJson.getBoolean(ERROR),
-                ERROR_GENERATING_PRODUCTION_KEY + applicationName);
+                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
         assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                ERROR_GENERATING_PRODUCTION_KEY + applicationName);
+                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
         assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), PRODUCTION, ERROR_GENERATING_PRODUCTION_KEY + applicationName);
+                .get(KEY_TYPE), PRODUCTION, ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
     }
 
-    @Test(description = "4.1.1.4", dataProvider = "ApplicationSandboxKeyGenerationDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testGenerateSandboxKeysForApplication(String applicationName, String tier, String description)
-            throws Exception {
-        createApplicationForKeyGeneration(applicationName, tier, description);
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
+    @Test(description = "4.1.1.4", dependsOnMethods = {"createApplicationForKeyGeneration"})
+    public void testGenerateSandboxKeysForApplication() throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
         appKeyRequestGenerator.setKeyType(SANDBOX);
         String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
         JSONObject responseStringJson = new JSONObject(responseString);
         assertFalse(responseStringJson.getBoolean(ERROR),
-                ERROR_GENERATING_PRODUCTION_KEY + applicationName);
+                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
         assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                ERROR_GENERATING_SANDBOX_KEY + applicationName);
+                ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
         assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), SANDBOX, ERROR_GENERATING_SANDBOX_KEY + applicationName);
+                .get(KEY_TYPE), SANDBOX, ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
     }
 
-    private void createApplicationForKeyGeneration(String applicationName, String tier, String description)
-            throws Exception {
+    @Test
+    private void createApplicationForKeyGeneration() throws Exception {
         HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(applicationName, UTF_8),
-                        URLEncoder.encode(tier, UTF_8),
-                        "", URLEncoder.encode(description, UTF_8));
-        applicationsList.add(applicationName);
+                .addApplication(URLEncoder.encode(APPLICATION_KEY_GENERATION, UTF_8),
+                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
+                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
+        applicationsList.add(APPLICATION_KEY_GENERATION);
         assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                ERROR_APPLICATION_CREATION_FAILED + applicationName);
+                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
         JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
         assertFalse(addApplicationJsonObject.getBoolean(ERROR),
-                ERROR_APPLICATION_CREATION_FAILED + applicationName);
+                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_FAILED + applicationName);
+                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         for (String name : applicationsList) {
             apiStore.removeApplication(URLEncoder.encode(name, UTF_8));
         }
+        applicationsList.clear();
     }
 }
