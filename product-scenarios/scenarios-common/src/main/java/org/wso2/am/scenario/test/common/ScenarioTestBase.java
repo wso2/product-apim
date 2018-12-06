@@ -39,7 +39,9 @@ public class ScenarioTestBase {
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     public static final String PUBLISHER_URL = "PublisherUrl";
+    public static final String STORE_URL = "StoreUrl";
     String resourceLocation = System.getProperty("framework.resource.location");
+
 
     /**
      * This is a utility method to load the deployment details.

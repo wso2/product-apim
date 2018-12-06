@@ -1,6 +1,7 @@
 package org.wso2.am.scenario.test.common;
 
 import org.testng.annotations.DataProvider;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 
 public class ScenarioDataProvider {
 
@@ -40,6 +41,74 @@ public class ScenarioDataProvider {
         return new Object[][]{
                 {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS2Document.yaml"},
                 {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS3Document.yaml"}
+        };
+    }
+
+    @DataProvider(name = "ValidMandatoryApplicationValuesDataProvider")
+    public static Object[][] validMandatoryApplicationValuesDataProvider() {
+        return new Object[][]{
+                {"App_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description "},
+                {"APP UPPER CASE", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " New app description 123"},
+                {"app lower case", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " "},
+                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
+                {"Mix App-1234_.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New app description 123 !@#$%"}
+        };
+    }
+
+    @DataProvider(name = "InvalidMandatoryApplicationValuesDataProvider")
+    public static Object[][] invalidMandatoryApplicationValuesDataProvider() {
+        return new Object[][]{
+                {" App 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"},
+                {"App 2 ", "", "New App Description"},
+                {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
+                {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
+                {"App", "", ""},
+                {"", "TierAbc", ""},
+                {"", "", ""}
+        };
+    }
+
+    @DataProvider(name = "MandatoryAndOptionalApplicationValuesDataProvider")
+    public static Object[][] mandatoryAndOptionalApplicationValuesDataProvider() {
+        return new Object[][]{
+                {"App - Token 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        "New App Description", "JWT"},
+                {"App - Token 2", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        "New App Description", "DEFAULT"},
+                {"App - Token 3", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        "", "OAuth"}
+        };
+    }
+
+    @DataProvider(name = "InitDuplicateApplicationNameDataProvider")
+    public static Object[][] initDuplicateApplicationNameDataProvider() {
+        return new Object[][]{
+                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"}
+        };
+    }
+
+    @DataProvider(name = "DuplicateApplicationNameDataProvider")
+    public static Object[][] duplicateApplicationNameDataProvider() {
+        return new Object[][]{
+                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"},
+                //    todo uncomment once jappery api validation is fixed
+//                {"application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"}
+        };
+    }
+
+    @DataProvider(name = "ApplicationProductionKeyGenerationDataProvider")
+    public static Object[][] applicationProductionKeyGenerationDataProvider() {
+        return new Object[][]{
+                {"Application - production key generation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        "New App Description"}
+        };
+    }
+
+    @DataProvider(name = "ApplicationSandboxKeyGenerationDataProvider")
+    public static Object[][] applicationSandboxKeyGenerationDataProvider() {
+        return new Object[][]{
+                {"Application - sandbox key generation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        "New App Description"}
         };
     }
 }

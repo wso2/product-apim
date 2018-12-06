@@ -36,6 +36,17 @@
     <url>http://wso2.org</url>
 
     <modules>
+        <module>4.1.1-registering-an-application</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>scenarios-common</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
