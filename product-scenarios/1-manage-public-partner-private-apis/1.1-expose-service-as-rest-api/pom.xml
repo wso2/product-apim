@@ -16,7 +16,7 @@
     <modules>
         <module>1.1.1-create-rest-api-from-scratch</module>
         <module>1.1.5-edit-rest-api</module>
-        <!--<module>1.1.2-create-rest-api-by-import-oas-document</module>-->
+        <module>1.1.2-create-rest-api-by-import-oas-document</module>
     </modules>
 
     <dependencyManagement>
