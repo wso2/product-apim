@@ -1,4 +1,3 @@
-package org.wso2.am.scenario.test.common;
 /*
  *Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -16,6 +15,7 @@ package org.wso2.am.scenario.test.common;
  *specific language governing permissions and limitations
  *under the License.
  */
+package org.wso2.am.scenario.test.common;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;

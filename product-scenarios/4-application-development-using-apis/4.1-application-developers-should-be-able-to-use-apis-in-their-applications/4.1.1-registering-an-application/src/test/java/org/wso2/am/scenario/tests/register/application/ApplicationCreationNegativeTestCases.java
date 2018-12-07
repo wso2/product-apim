@@ -1,3 +1,21 @@
+/*
+ *Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *WSO2 Inc. licenses this file to you under the Apache License,
+ *Version 2.0 (the "License"); you may not use this file except
+ *in compliance with the License.
+ *You may obtain a copy of the License at
+ *
+ *http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *Unless required by applicable law or agreed to in writing,
+ *software distributed under the License is distributed on an
+ *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *KIND, either express or implied.  See the License for the
+ *specific language governing permissions and limitations
+ *under the License.
+ */
+
 package org.wso2.am.scenario.tests.register.application;
 
 import org.json.JSONObject;
@@ -63,13 +81,8 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 
-    @Test(description = "4.1.1.5"
-//            , dataProvider = "DuplicateApplicationNameDataProvider",
-//            dataProviderClass = ScenarioDataProvider.class
-    )
-    public void testDuplicateApplicationName()
-//    public void testDuplicateApplicationName(String applicationName, String tier, String description)
-            throws Exception {
+    @Test(description = "4.1.1.5")
+    public void testDuplicateApplicationName() throws Exception {
 //        create application
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(URLEncoder.encode(APPLICATION_DUPLICATE_NAME_CHECK, UTF_8),
