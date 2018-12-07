@@ -109,7 +109,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithValidMandatoryValues(applicationName, tier, description);
-        destroy();
     }
 
     private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
@@ -149,7 +148,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-        destroy();
     }
 
     public void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
