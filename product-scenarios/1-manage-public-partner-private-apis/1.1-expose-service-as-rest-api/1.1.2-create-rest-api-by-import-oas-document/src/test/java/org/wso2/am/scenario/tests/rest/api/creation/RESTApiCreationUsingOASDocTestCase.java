@@ -283,10 +283,10 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void RemoveAPI() throws APIManagerIntegrationTestException {
         //clean the data
-        apiPublisher.deleteAPI("Oas2SampleApiFromJSON_2new", apiVersion, "admin");
-        apiPublisher.deleteAPI("Oas2SampleApiFromYAML2new", apiVersion, "admin");
-        apiPublisher.deleteAPI("Oas3SampleApiFromJSON_3new", apiVersion, "admin");
-        apiPublisher.deleteAPI("Oas3SampleApiFromYAML3new", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS2_JSON", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS2_YAML", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS3_JSON", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS3_YAML", apiVersion, "admin");
     }
 
     public static String readFromFile(String file_name) throws IOException {

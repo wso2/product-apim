@@ -2,7 +2,7 @@ swagger: 2.0
 info:
   description: This is a sample for swagger OAS2 document.
   version: 1.0.0
-  title: Oas2SampleApiFromYAML2new
+  title: PetApiSample_OAS2_YAML
 host: petstore.swagger.io
 basePath: /contextYamlV2
 schemes:
