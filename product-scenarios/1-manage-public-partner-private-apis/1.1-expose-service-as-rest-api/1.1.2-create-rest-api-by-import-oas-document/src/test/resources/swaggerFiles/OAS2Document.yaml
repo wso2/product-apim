@@ -1,8 +1,8 @@
-swagger: "2.0"
+swagger: 2.0
 info:
   description: This is a sample for swagger OAS2 document.
   version: 1.0.0
-  title: Swagger2SampleApiFromYaml
+  title: Oas2SampleApiFromYAML2new
 host: petstore.swagger.io
 basePath: /contextYamlV2
 schemes:

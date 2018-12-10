@@ -3,7 +3,7 @@
   "info": {
     "description": "This is a sample for swagger OAS2 document.",
     "version": "1.0.0",
-    "title": "Swagger2SampleApiFromJson"
+    "title": "Oas2SampleApiFromJSON_2new"
   },
   "host": "petstore.swagger.io",
   "basePath": "/contextJsonV2",

@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Swagger3SampleAPI
+  title: Oas3SampleApiFromYAML3new
 servers:
   - url: "http://petstore.swagger.io/v1"
 basePath: /contextYamlV3
 paths:
-  /pets:
+  "/pets":
     post:
       summary: Create a pet
       operationId: createPets
