@@ -87,8 +87,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         //Verify the API created with correct name, version and resources
         String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
         String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
-        Assert.assertEquals(name, apiName);
-        Assert.assertEquals(version, apiVersion);
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
@@ -120,8 +120,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         //Verify the API created with correct name, version and resources
         String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
         String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
-        Assert.assertEquals(name, apiName);
-        Assert.assertEquals(version, apiVersion);
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
@@ -157,8 +157,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         //Verify the API created with correct name, version and resources
         String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
         String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
-        Assert.assertEquals(name, apiName);
-        Assert.assertEquals(version, apiVersion);
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
@@ -194,8 +194,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         //Verify the API created with correct name, version and resources
         String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
         String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
-        Assert.assertEquals(name, apiName);
-        Assert.assertEquals(version, apiVersion);
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();

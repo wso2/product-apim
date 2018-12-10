@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Oas3SampleApiFromYAML3new
+  title: PetApiSample_OAS3_YAML
 servers:
   - url: "http://petstore.swagger.io/v1"
 basePath: /contextYamlV3
