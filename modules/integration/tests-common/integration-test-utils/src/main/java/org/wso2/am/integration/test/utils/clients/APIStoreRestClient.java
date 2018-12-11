@@ -1271,6 +1271,27 @@ public class APIStoreRestClient {
             throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
         }
     }
+    /**
+     * API Store sign up
+     *
+     * @param userName - store user name
+     * @param password -store password
+     * @param claims   - tenants claims
+     * @return
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse signUpforTenant(String userName, String password, String claims) throws
+            APIManagerIntegrationTestException {
+        try {
+            Map<String, String> requestHeaders = new HashMap<String, String>();
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+            return HttpRequestUtil.doPost(new URL(backendURL + "/store/site/blocks/user/sign-up/ajax/user-add.jag?tenant=wso2.com"),
+                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
+                            claims, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * API Store sign up with organization

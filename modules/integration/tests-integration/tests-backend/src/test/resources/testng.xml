@@ -119,6 +119,7 @@
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.TenantClaimsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
