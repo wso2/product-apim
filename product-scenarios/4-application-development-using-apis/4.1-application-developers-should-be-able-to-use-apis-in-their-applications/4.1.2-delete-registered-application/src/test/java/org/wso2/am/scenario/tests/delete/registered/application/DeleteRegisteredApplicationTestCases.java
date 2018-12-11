@@ -181,7 +181,7 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
         verifyResponse(apiInfo);
     }
 
-    public void createAndPublishAPI(String apiName) throws Exception {
+    private void createAndPublishAPI(String apiName) throws Exception {
         createAPI(apiName);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(apiName, ADMIN_LOGIN_USERNAME, APILifeCycleState.PUBLISHED);
