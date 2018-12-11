@@ -154,125 +154,125 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithDefaultTokenType() throws Exception {
-        String applicationName = "App - Token 1";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "DEFAULT";
-
-        HttpResponse addApplicationResponse = apiStore
-                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
-                        URLEncoder.encode(tier, UTF_8), "",
-                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithJWTTokenType() throws Exception {
-        String applicationName = "App - Token 2";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "JWT";
-
-        HttpResponse addApplicationResponse = apiStore
-                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
-                        URLEncoder.encode(tier, UTF_8), "",
-                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithOAuthTokenType() throws Exception {
-        String applicationName = "App - Token 3";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "OAuth";
-
-        HttpResponse addApplicationResponse = apiStore
-                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
-                        URLEncoder.encode(tier, UTF_8), "",
-                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
-    public void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
-                                                                 String description, String tokenType)
-            throws Exception {
-        HttpResponse getAllAppResponse = apiStore.getAllApplications();
-        assertEquals(getAllAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                ERROR_GET_ALL_APPS);
-        applicationsList.add(applicationName);
-        JSONObject getAllAppJsonObject = new JSONObject(getAllAppResponse.getData());
-        assertFalse(getAllAppJsonObject.getBoolean(ERROR), ERROR_GET_ALL_APPS);
-        JSONArray getAllAppJsonArray = getAllAppJsonObject.getJSONArray(APPLICATIONS);
-
-        for (int i = 0; i < getAllAppJsonArray.length(); i++) {
-            if (applicationName.equals(getAllAppJsonArray.getJSONObject(i).getString(NAME))) {
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TIER), tier,
-                        ERROR_APPLICATION_TIER_MISMATCH + applicationName);
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(DESCRIPTION), description,
-                        ERROR_APPLICATION_DESCRIPTION_MISMATCH + applicationName);
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TOKEN_TYPE), tokenType,
-                        ERROR_APPLICATION_TOKEN_TYPE_MISMATCH + applicationName);
-            }
-        }
-    }
-
-    @Test(description = "4.1.1.3", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
-    public void testGenerateProductionKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
-        String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
-        JSONObject responseStringJson = new JSONObject(responseString);
-        assertFalse(responseStringJson.getBoolean(ERROR),
-                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
-        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
-        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), PRODUCTION, ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
-    }
-
-    @Test(description = "4.1.1.4", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
-    public void testGenerateSandboxKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
-        appKeyRequestGenerator.setKeyType(SANDBOX);
-        String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
-        JSONObject responseStringJson = new JSONObject(responseString);
-        assertFalse(responseStringJson.getBoolean(ERROR),
-                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
-        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
-        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), SANDBOX, ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
-    }
-
-    @Test
-    private void testCreateApplicationForKeyGeneration() throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(APPLICATION_KEY_GENERATION, UTF_8),
-                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
-        applicationsList.add(APPLICATION_KEY_GENERATION);
-        assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
-        JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
-        assertFalse(addApplicationJsonObject.getBoolean(ERROR),
-                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
-        assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
-    }
+//    @Test(description = "4.1.1.2")
+//    public void testApplicationCreationWithDefaultTokenType() throws Exception {
+//        String applicationName = "App - Token 1";
+//        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+//        String description = "";
+//        String tokenType = "DEFAULT";
+//
+//        HttpResponse addApplicationResponse = apiStore
+//                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
+//                        URLEncoder.encode(tier, UTF_8), "",
+//                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
+//        applicationsList.add(applicationName);
+//        verifyResponse(addApplicationResponse);
+//        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+//                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+//        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+//    }
+//
+//    @Test(description = "4.1.1.2")
+//    public void testApplicationCreationWithJWTTokenType() throws Exception {
+//        String applicationName = "App - Token 2";
+//        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+//        String description = "";
+//        String tokenType = "JWT";
+//
+//        HttpResponse addApplicationResponse = apiStore
+//                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
+//                        URLEncoder.encode(tier, UTF_8), "",
+//                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
+//        applicationsList.add(applicationName);
+//        verifyResponse(addApplicationResponse);
+//        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+//                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+//        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+//    }
+//
+//    @Test(description = "4.1.1.2")
+//    public void testApplicationCreationWithOAuthTokenType() throws Exception {
+//        String applicationName = "App - Token 3";
+//        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+//        String description = "";
+//        String tokenType = "OAuth";
+//
+//        HttpResponse addApplicationResponse = apiStore
+//                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
+//                        URLEncoder.encode(tier, UTF_8), "",
+//                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
+//        applicationsList.add(applicationName);
+//        verifyResponse(addApplicationResponse);
+//        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+//                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+//        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+//    }
+//
+//    public void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
+//                                                                 String description, String tokenType)
+//            throws Exception {
+//        HttpResponse getAllAppResponse = apiStore.getAllApplications();
+//        assertEquals(getAllAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                ERROR_GET_ALL_APPS);
+//        applicationsList.add(applicationName);
+//        JSONObject getAllAppJsonObject = new JSONObject(getAllAppResponse.getData());
+//        assertFalse(getAllAppJsonObject.getBoolean(ERROR), ERROR_GET_ALL_APPS);
+//        JSONArray getAllAppJsonArray = getAllAppJsonObject.getJSONArray(APPLICATIONS);
+//
+//        for (int i = 0; i < getAllAppJsonArray.length(); i++) {
+//            if (applicationName.equals(getAllAppJsonArray.getJSONObject(i).getString(NAME))) {
+//                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TIER), tier,
+//                        ERROR_APPLICATION_TIER_MISMATCH + applicationName);
+//                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(DESCRIPTION), description,
+//                        ERROR_APPLICATION_DESCRIPTION_MISMATCH + applicationName);
+//                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TOKEN_TYPE), tokenType,
+//                        ERROR_APPLICATION_TOKEN_TYPE_MISMATCH + applicationName);
+//            }
+//        }
+//    }
+//
+//    @Test(description = "4.1.1.3", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
+//    public void testGenerateProductionKeysForApplication() throws Exception {
+//        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
+//        String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
+//        JSONObject responseStringJson = new JSONObject(responseString);
+//        assertFalse(responseStringJson.getBoolean(ERROR),
+//                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
+//        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
+//                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
+//        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
+//                .get(KEY_TYPE), PRODUCTION, ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
+//    }
+//
+//    @Test(description = "4.1.1.4", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
+//    public void testGenerateSandboxKeysForApplication() throws Exception {
+//        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
+//        appKeyRequestGenerator.setKeyType(SANDBOX);
+//        String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
+//        JSONObject responseStringJson = new JSONObject(responseString);
+//        assertFalse(responseStringJson.getBoolean(ERROR),
+//                ERROR_GENERATING_PRODUCTION_KEY + APPLICATION_KEY_GENERATION);
+//        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
+//                ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
+//        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
+//                .get(KEY_TYPE), SANDBOX, ERROR_GENERATING_SANDBOX_KEY + APPLICATION_KEY_GENERATION);
+//    }
+//
+//    @Test
+//    private void testCreateApplicationForKeyGeneration() throws Exception {
+//        HttpResponse addApplicationResponse = apiStore
+//                .addApplication(URLEncoder.encode(APPLICATION_KEY_GENERATION, UTF_8),
+//                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
+//                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
+//        applicationsList.add(APPLICATION_KEY_GENERATION);
+//        assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
+//        JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
+//        assertFalse(addApplicationJsonObject.getBoolean(ERROR),
+//                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
+//        assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
+//                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
+//    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
