@@ -492,6 +492,26 @@ public class APIStoreRestClient {
     }
 
     /**
+     * Add application
+     *
+     * @param url - url to do add application request
+     * @return - http response of add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
+     */
+    public HttpResponse addApplication(String url)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(url), "", requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to add application. Error: " + e.getMessage(), e);
+
+        }
+    }
+
+    /**
      * Add application with token type
      *
      * @param application - application  name

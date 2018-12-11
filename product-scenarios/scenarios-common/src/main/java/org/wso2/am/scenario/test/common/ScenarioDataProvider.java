@@ -57,13 +57,16 @@ public class ScenarioDataProvider {
     @DataProvider(name = "InvalidMandatoryApplicationValuesDataProvider")
     public static Object[][] invalidMandatoryApplicationValuesDataProvider() {
         return new Object[][]{
-                {" App 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description"},
-                {"App 2 ", "", "New App Description"},
-                {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
-                {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ""},
-                {"App", "", ""},
-                {"", "TierAbc", ""},
-                {"", "", ""}
+                {" App 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
+                        "Application name cannot contain leading or trailing white spaces"},
+                {"App 2 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
+                        "Application name cannot contain leading or trailing white spaces"},
+//                todo fix the error message when the fix to remove x["application"] is working
+                {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                        "Invalid inputs [\"application\"]"},
+                {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Application Name is empty."},
+                {"App 3", "", "New App Description", "Specified application tier does not exist."},
+                {"App 4", "TierAbc", "New App Description", "Specified application tier does not exist."},
         };
     }
 
@@ -76,6 +79,21 @@ public class ScenarioDataProvider {
                         "New App Description", "DEFAULT"},
                 {"App - Token 3", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         "", "OAuth"}
+        };
+    }
+
+    @DataProvider(name = "MissingMandatoryApplicationValuesDataProvider")
+    public static Object[][] missingMandatoryApplicationValuesDataProvider() {
+        String urlPrefix = "{{backendURL}}store/site/blocks/application/application-add/ajax/application-add.jag?" +
+                "action=addApplication";
+        return new Object[][]{
+                {"", urlPrefix + "&tier=" + APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED +
+                        "&callbackUrl=&description=description", "Missing parameters."},
+                {"application-missingMandatory1", urlPrefix + "&tier="
+                        + APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED +
+                        "&callbackUrl=&application=application-missingMandatory1", "Missing parameters."},
+                {"application-missingMandatory2", urlPrefix + "&callbackUrl=&description=description" +
+                        "&application=application-missingMandatory2", "Specified application tier does not exist."}
         };
     }
 }
