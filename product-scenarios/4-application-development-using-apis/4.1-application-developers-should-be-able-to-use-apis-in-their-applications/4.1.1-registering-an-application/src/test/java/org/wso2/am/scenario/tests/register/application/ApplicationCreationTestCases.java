@@ -27,7 +27,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -50,9 +49,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String ERROR_APPLICATION_CREATION_FAILED = "Application creation failed for application: ";
     private static final String ERROR_APPLICATION_CREATION_WITH_VALID_INPUT = "Application creation with valid " +
             "input failed for application: ";
-    private static final String ERROR_GET_ALL_APPS = "Error when retrieving all apps";
-    private static final String ERROR_APPLICATION_CREATION_RESPONSE_CODE = "Response Code is mismatched " +
-            "in add application: ";
+    private static final String ERROR_GET_ALL_APPS = "Error when retrieving all apps"; 
     private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
     private static final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
             " for application: ";
@@ -93,20 +90,47 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 
-    @Test(description = "4.1.1.1", dataProvider = "ValidMandatoryApplicationValuesDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testApplicationCreationWithValidMandatoryValues(String applicationName, String tier, String description)
-            throws Exception {
+    @Test(description = "4.1.1.1")
+    public void testApplicationCreationWithMixCaseAlphabetName() throws Exception {
+        String applicationName = "Application";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "New App Description ";
+
         HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(applicationName, UTF_8), URLEncoder.encode(tier, UTF_8),
-                        "", URLEncoder.encode(description, UTF_8));
+                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
         applicationsList.add(applicationName);
-        assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                ERROR_APPLICATION_CREATION_RESPONSE_CODE + applicationName);
-        JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
-        assertFalse(addApplicationJsonObject.getBoolean(ERROR),
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
+        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+    }
+
+    @Test(description = "4.1.1.1")
+    public void testApplicationCreationWithSpecialCharacterName() throws Exception {
+        String applicationName = "Application_-.";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "New App Description 123!@#$%";
+
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
+        applicationsList.add(applicationName);
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+    }
+
+    @Test(description = "4.1.1.1")
+    public void testApplicationCreationWithNumericName() throws Exception {
+        String applicationName = "1234";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "";
+
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
+        applicationsList.add(applicationName);
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithValidMandatoryValues(applicationName, tier, description);
     }
@@ -130,22 +154,56 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "4.1.1.2", dataProvider = "MandatoryAndOptionalApplicationValuesDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testApplicationCreationWithMandatoryAndOptionalValues(String applicationName, String tier,
-                                                                      String description, String tokenType)
-            throws Exception {
+    @Test(description = "4.1.1.2")
+    public void testApplicationCreationWithDefaultTokenType() throws Exception {
+        String applicationName = "App - Token 1";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "";
+        String tokenType = "DEFAULT";
+
         HttpResponse addApplicationResponse = apiStore
                 .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
                         URLEncoder.encode(tier, UTF_8), "",
                         URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
         applicationsList.add(applicationName);
-        assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                ERROR_APPLICATION_CREATION_RESPONSE_CODE + applicationName);
-        JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
-        assertFalse(addApplicationJsonObject.getBoolean(ERROR),
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        assertEquals(addApplicationJsonObject.get(STATUS), STATUS_APPROVED,
+        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+    }
+
+    @Test(description = "4.1.1.2")
+    public void testApplicationCreationWithJWTTokenType() throws Exception {
+        String applicationName = "App - Token 2";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "";
+        String tokenType = "JWT";
+
+        HttpResponse addApplicationResponse = apiStore
+                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
+                        URLEncoder.encode(tier, UTF_8), "",
+                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
+        applicationsList.add(applicationName);
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
+    }
+
+    @Test(description = "4.1.1.2")
+    public void testApplicationCreationWithOAuthTokenType() throws Exception {
+        String applicationName = "App - Token 3";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "";
+        String tokenType = "OAuth";
+
+        HttpResponse addApplicationResponse = apiStore
+                .addApplicationWithTokenType(URLEncoder.encode(applicationName, UTF_8),
+                        URLEncoder.encode(tier, UTF_8), "",
+                        URLEncoder.encode(description, UTF_8), URLEncoder.encode(tokenType, UTF_8));
+        applicationsList.add(applicationName);
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
                 ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
         validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
     }
