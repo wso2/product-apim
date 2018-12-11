@@ -1,4 +1,4 @@
-package org.wso2.am.scenario.test.common;/*
+/*
  *Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *WSO2 Inc. licenses this file to you under the Apache License,
@@ -15,6 +15,7 @@ package org.wso2.am.scenario.test.common;/*
  *specific language governing permissions and limitations
  *under the License.
  */
+package org.wso2.am.scenario.test.common;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
@@ -39,7 +40,9 @@ public class ScenarioTestBase {
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     public static final String PUBLISHER_URL = "PublisherUrl";
+    public static final String STORE_URL = "StoreUrl";
     String resourceLocation = System.getProperty("framework.resource.location");
+
 
     /**
      * This is a utility method to load the deployment details.
