@@ -105,20 +105,20 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         validateApplicationWithValidMandatoryValues(applicationName, tier, description);
     }
 
-//    @Test(description = "4.1.1.1")
-//    public void testApplicationCreationWithSpecialCharacterName() throws Exception {
-//        String applicationName = "Application_-.";
-//        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-//        String description = "NewAppDescription123!@#$%";
-//
-//        HttpResponse addApplicationResponse = apiStore
-//                .addApplication(applicationName, tier, "", description);
-//        applicationsList.add(applicationName);
-//        verifyResponse(addApplicationResponse);
-//        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-//                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-//        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
-//    }
+    @Test(description = "4.1.1.1")
+    public void testApplicationCreationWithSpecialCharacterName() throws Exception {
+        String applicationName = "Application_-.";
+        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+        String description = "NewAppDescription";
+
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(applicationName, tier, "", description);
+        applicationsList.add(applicationName);
+        verifyResponse(addApplicationResponse);
+        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
+        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+    }
 
     @Test(description = "4.1.1.1")
     public void testApplicationCreationWithNumericName() throws Exception {
