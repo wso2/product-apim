@@ -80,7 +80,7 @@ public class APIStoreRestClient {
 
         try {
             response = HttpClient.doPost(
-                    backendURL + "store/site/blocks/user/login/ajax/login.jag", requestHeaders, urlParameters);
+                    backendURL + "/site/blocks/user/login/ajax/login.jag", requestHeaders, urlParameters);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to login to the store app ", e);
         }
@@ -107,7 +107,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
+                    new URL(backendURL + "/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
                     subscriptionRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Subscription to api fails. Error: " + e.getMessage(), e);
@@ -130,7 +130,7 @@ public class APIStoreRestClient {
             generateAppKeyRequest.setAppId(appId);
 
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
+                    new URL(backendURL + "/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
                     generateAppKeyRequest.generateRequestParameters(), requestHeaders);
 
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"),
+                    new URL(backendURL + "/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"),
                     "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve API information. " +
@@ -226,7 +226,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs",
+                    backendURL + "/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs",
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get retrieve all published APIs. " +
@@ -244,7 +244,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/application/application-list/ajax/" +
+                    backendURL + "/site/blocks/application/application-list/ajax/" +
                     "application-list.jag?action=getApplications",
                     requestHeaders);
         } catch (Exception e) {
@@ -266,7 +266,7 @@ public class APIStoreRestClient {
 
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
+                    backendURL + "/site/blocks/subscription/subscription-list/ajax/" +
                     "subscription-list.jag?action=getSubscriptionByApplication&app=" +
                     applicationName, requestHeaders);
 
@@ -292,7 +292,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    backendURL + "/site/blocks/api/api-info/ajax/api-info.jag?" +
                     "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
                     provider + "&rating=" + rating, requestHeaders);
         } catch (Exception e) {
@@ -316,7 +316,7 @@ public class APIStoreRestClient {
 
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    backendURL + "/site/blocks/api/api-info/ajax/api-info.jag?" +
                     "action=removeRating&name=" + apiName + "&version=" + version +
                     "&provider=" + provider, requestHeaders);
 
@@ -336,7 +336,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    backendURL + "/site/blocks/api/api-info/ajax/api-info.jag?" +
                     "action=isRatingActivated", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Rating status cannot be retrieved."
@@ -358,7 +358,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+                    backendURL + "/site/blocks/api/listing/ajax/list.jag?" +
                     "action=getAllDocumentationOfApi&name=" + apiName +
                     "&version=" + version + "&provider=" + provider, requestHeaders);
 
@@ -377,7 +377,7 @@ public class APIStoreRestClient {
         try{
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL+ "store/site/blocks/api/api-info/ajax/api-info.jag?"+
+                    backendURL+ "/site/blocks/api/api-info/ajax/api-info.jag?"+
                             "action=getAPIEndpointURLs&name=" + apiName+
                             "&version=" + version + "&provider=" + provider, requestHeaders);
 
@@ -408,7 +408,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpClient.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+            return HttpClient.doGet(backendURL + "/site/blocks/api/listing/ajax/list.jag?" +
                                          "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
                                          "&start=" + start + "&end=" + end, requestHeaders);
         } catch (Exception e) {
@@ -431,7 +431,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
 
-            return HttpClient.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+            return HttpClient.doGet(backendURL + "/site/blocks/api/listing/ajax/list.jag?" +
                     "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
                     "&start=" + start + "&end=" + end, requestHeaders);
         } catch (Exception e) {
@@ -453,7 +453,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
+                    new URL(backendURL + "/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
                             tenant), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve published APIs for tenant - " + tenant
@@ -479,7 +479,7 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL +
-                            "store/site/blocks/application/application-add" +
+                            "/site/blocks/application/application-add" +
                             "/ajax/application-add.jag?action=addApplication&tier=" +
                             tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
                             "&application=" + application), "", requestHeaders);
@@ -529,7 +529,7 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL +
-                            "store/site/blocks/application/application-add" +
+                            "/site/blocks/application/application-add" +
                             "/ajax/application-add.jag?action=addApplication&tier=" +
                             tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
                             "&application=" + application + "&tokenType=" + tokenType), "", requestHeaders);
@@ -551,7 +551,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/application/application-list/ajax/" +
+                    new URL(backendURL + "/site/blocks/application/application-list/ajax/" +
                             "application-list.jag?action=getApplications"), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get applications. Error: " + e.getMessage(), e);
@@ -571,7 +571,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/application/application-remove/ajax/application-remove.jag?" +
+                    new URL(backendURL + "/site/blocks/application/application-remove/ajax/application-remove.jag?" +
                             "action=removeApplication&application=" + application), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to remove application - " + application
@@ -597,7 +597,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
+                    new URL(backendURL + "/site/blocks/application/application-update/ajax/application-update.jag?" +
                             "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew=" +
                             applicationNew + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
                             descriptionNew + "&tier=" + tier), "", requestHeaders);
@@ -670,7 +670,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptions"), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get all subscriptions."
@@ -690,7 +690,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptionsOfApplication"), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get all subscriptions. " +
@@ -711,7 +711,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptionsOfApplication&selectedApp=" + selectedApplication), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
@@ -731,7 +731,7 @@ public class APIStoreRestClient {
 
 
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-list/" +
                             "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
                             + applicationName), "", requestHeaders);
         } catch (Exception e) {
@@ -756,7 +756,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-list/" +
                             "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
                             + applicationName + "&tenant="+domain), "", requestHeaders);
         } catch (Exception e) {
@@ -784,7 +784,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
                             "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
                             "&applicationId=" + applicationId), "", requestHeaders);
         } catch (Exception e) {
@@ -811,7 +811,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+                    new URL(backendURL + "/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
                             "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
                             "&applicationName=" + applicationName), "", requestHeaders);
         } catch (Exception e) {
@@ -862,7 +862,7 @@ public class APIStoreRestClient {
             checkAuthentication();
 
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"),
+                    new URL(backendURL + "/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"),
                     "", requestHeaders);
 
         } catch (Exception e) {
@@ -887,7 +887,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                    new URL(backendURL + "/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
                             "action=addComment&name=" + apiName + "&version=" + version + "&provider=" +
                             provider + "&comment=" + comment), "", requestHeaders);
         } catch (Exception e) {
@@ -906,7 +906,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doGet(
-                    backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                    backendURL + "/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
                     "action=isCommentActivated", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Failed to get comment activation status"
@@ -927,7 +927,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(
-                    new URL(backendURL + "store/site/blocks/api/" +
+                    new URL(backendURL + "/site/blocks/api/" +
                             "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant=" +
                             tenant + "&limit=" + limit), "", requestHeaders);
         } catch (Exception e) {
@@ -1012,7 +1012,7 @@ public class APIStoreRestClient {
 //    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
 //        try {
 //            return HttpRequestUtil.doGet(
-//                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+//                    backendURL + "/?tenant=" + storeTenantDomain, requestHeaders);
 //        } catch (Exception ioE) {
 //            throw new APIManagerIntegrationTestException(
 //                    "Exception when retrieve the API store page as anonymous user", ioE);
@@ -1022,7 +1022,7 @@ public class APIStoreRestClient {
     public HttpResponse getAPIListFromStoreAsAnonymousUser(String tenantDomain)
             throws APIManagerIntegrationTestException {
         try {
-            HttpResponse httpResponse = HttpClient.doGet(backendURL + "store/site/blocks/api/recently-added/ajax/list.jag"
+            HttpResponse httpResponse = HttpClient.doGet(backendURL + "/site/blocks/api/recently-added/ajax/list.jag"
                     + "?action=getRecentlyAddedAPIs&tenant=" + tenantDomain, new HashMap<String, String>());
 
             if (new JSONObject(httpResponse.getData()).getBoolean("error")) {
@@ -1048,7 +1048,7 @@ public class APIStoreRestClient {
     public HttpResponse logout() throws APIManagerIntegrationTestException{
         try{
             checkAuthentication();
-            return HttpClient.doPost(new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
+            return HttpClient.doPost(new URL(backendURL + "/site/blocks/user/login/ajax/login.jag"),
                     "action=logout", requestHeaders);
         }catch (Exception e) {
             throw new APIManagerIntegrationTestException("Error in store app logout. Error: " + e.getMessage(), e);
@@ -1069,7 +1069,7 @@ public class APIStoreRestClient {
     public HttpResponse signUp(String userName, String password, String firstName, String lastName, String email) throws
             APIManagerIntegrationTestException {
         try {
-            return HttpClient.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
+            return HttpClient.doPost(new URL(backendURL + "/site/blocks/user/sign-up/ajax/user-add.jag"),
                     "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
                             "|" + lastName + "|" + email, requestHeaders);
         } catch (Exception e) {
@@ -1087,7 +1087,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
 
-            return HttpClient.doGet(backendURL + "store/site/pages/list-prototyped-apis.jag?"
+            return HttpClient.doGet(backendURL + "/site/pages/list-prototyped-apis.jag?"
                     + "tenant=" +tenant , requestHeaders);
 
         } catch (Exception e) {
@@ -1136,7 +1136,7 @@ public class APIStoreRestClient {
 //        try {
 //            checkAuthentication();
 //            return HttpClient.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+//                    new URL(backendURL + "/site/blocks/subscription/subscription-list/" +
 //                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
 //                            + applicationName + "&tenant=carbon.super"), "", requestHeaders);
 //        } catch (Exception e) {
@@ -1228,7 +1228,7 @@ public class APIStoreRestClient {
         if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
             try {
                 checkAuthentication();
-                response = HttpClient.doGet(backendURL + "store/api-docs/" + userName + "/" +
+                response = HttpClient.doGet(backendURL + "/api-docs/" + userName + "/" +
                                                           apiName + "/" + apiVersion, null);
             } catch (IOException ex) {
                 throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
@@ -1277,7 +1277,7 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             SimpleHttpClient httpClient = new SimpleHttpClient();
-            String restURL = backendURL + "store/site/blocks/sdk/ajax/sdk-create.jag?" +
+            String restURL = backendURL + "/site/blocks/sdk/ajax/sdk-create.jag?" +
                     "action=generateSDK&apiName=" + apiName + "&apiVersion=" + apiVersion + "&apiProvider=" +
                     apiProvider + "&language=java";
             //response is org.apache.http.HttpResponse, because we need to write it to a file
@@ -1302,7 +1302,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             return HttpClient.doPost(new URL(
-                    backendURL + "store/site/blocks/user/user-info/ajax/user-info.jag?action=changePassword" +
+                    backendURL + "/site/blocks/user/user-info/ajax/user-info.jag?action=changePassword" +
                             "&username=" + username + "&currentPassword=" +
                             currentPassword + "&newPassword=" + newPassword), "", requestHeaders);
 
@@ -1330,7 +1330,7 @@ public class APIStoreRestClient {
             String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
             return HttpClient.doPost(
                     new URL(backendURL +
-                            "store/site/blocks/application/application-add" +
+                            "/site/blocks/application/application-add" +
                             "/ajax/application-add.jag?action=addApplication&tier=" +
                             tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
                             "&application=" + application + "&applicationAttributes=" +
