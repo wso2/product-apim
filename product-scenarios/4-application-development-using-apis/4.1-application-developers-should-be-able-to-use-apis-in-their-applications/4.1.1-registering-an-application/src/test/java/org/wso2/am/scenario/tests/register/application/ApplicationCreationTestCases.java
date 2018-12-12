@@ -94,10 +94,10 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     public void testApplicationCreationWithMixCaseAlphabetName() throws Exception {
         String applicationName = "Application";
         String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "New App Description ";
+        String description = "NewAppDescription";
 
         HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
+                .addApplication(applicationName, tier, "", description);
         applicationsList.add(applicationName);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
@@ -109,10 +109,10 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     public void testApplicationCreationWithSpecialCharacterName() throws Exception {
         String applicationName = "Application_-.";
         String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "New App Description 123!@#$%";
+        String description = "NewAppDescription";
 
         HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
+                .addApplication(applicationName, tier, "", description);
         applicationsList.add(applicationName);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
@@ -127,7 +127,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         String description = "";
 
         HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationName, tier, "", URLEncoder.encode(description, UTF_8));
+                .addApplication(applicationName, tier, "", description);
         applicationsList.add(applicationName);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
@@ -277,7 +277,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         for (String name : applicationsList) {
-            apiStore.removeApplication(URLEncoder.encode(name, UTF_8));
+            apiStore.removeApplication(name);
         }
         applicationsList.clear();
     }
