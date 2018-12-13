@@ -68,7 +68,7 @@ public class ScenarioDataProvider {
     @DataProvider(name = "OptionalApplicationValuesDataProvider")
     public static Object[][] optionalApplicationValuesDataProvider() {
         return new Object[][]{
-//                {"JWT"},
+                {"JWT"},
                 {"DEFAULT"},
                 {"OAuth"}
         };
