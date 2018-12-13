@@ -44,22 +44,19 @@ public class ScenarioDataProvider {
         };
     }
 
-    @DataProvider(name = "ValidMandatoryApplicationValuesDataProvider")
-    public static Object[][] validMandatoryApplicationValuesDataProvider() {
+    @DataProvider(name = "ValidApplicationNameAndTierDataProvider")
+    public static Object[][] validApplicationNameAndTiersDataProvider() {
         return new Object[][]{
-                {"Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description "},
-                {"Application_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " New app description 123"},
-                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, " "},
-                {"Mix App-1234_.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New app description 123 !@#$%"}
+                {"App", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
+                {"Application_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
+                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
         };
     }
 
     @DataProvider(name = "InvalidMandatoryApplicationValuesDataProvider")
     public static Object[][] invalidMandatoryApplicationValuesDataProvider() {
         return new Object[][]{
-                {" App 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
-                        "Application name cannot contain leading or trailing white spaces"},
-                {"App 2 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
+                {" App 1 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
                         "Application name cannot contain leading or trailing white spaces"},
 //                todo fix the error message when the fix to remove x["application"] is working
                 {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
@@ -70,15 +67,12 @@ public class ScenarioDataProvider {
         };
     }
 
-    @DataProvider(name = "MandatoryAndOptionalApplicationValuesDataProvider")
-    public static Object[][] mandatoryAndOptionalApplicationValuesDataProvider() {
+    @DataProvider(name = "OptionalApplicationValuesDataProvider")
+    public static Object[][] optionalApplicationValuesDataProvider() {
         return new Object[][]{
-                {"App - Token 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "New App Description", "JWT"},
-                {"App - Token 2", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "New App Description", "DEFAULT"},
-                {"App - Token 3", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "", "OAuth"}
+//                {"JWT"},
+                {"DEFAULT"},
+                {"OAuth"}
         };
     }
 

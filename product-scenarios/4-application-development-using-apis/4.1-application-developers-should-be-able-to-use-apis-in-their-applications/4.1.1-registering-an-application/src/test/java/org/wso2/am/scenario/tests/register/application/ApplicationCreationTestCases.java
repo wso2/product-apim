@@ -27,6 +27,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -43,10 +44,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
     private static final String DEFAULT_STORE_URL = "https://localhost:9443/store";
-    private static final String UTF_8 = "UTF-8";
-    private static final String ERROR_APPLICATION_CREATION_FAILED = "Application creation failed for application: ";
-    private static final String ERROR_APPLICATION_CREATION_WITH_VALID_INPUT = "Application creation with valid " +
-            "input failed for application: ";
     private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
     private static final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
             " for application: ";
@@ -68,7 +65,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String KEY_TYPE = "key_type";
     private static final String PRODUCTION = "PRODUCTION";
     private static final String SANDBOX = "SANDBOX";
-    private static final String APPLICATION_KEY_GENERATION = "ApplicationKeyGeneration";
+    private static final String APPLICATION_NAME = "Application";
     private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
     @BeforeClass(alwaysRun = true)
@@ -87,48 +84,57 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "4.1.1.1")
-    public void testApplicationCreationWithMixCaseAlphabetName() throws Exception {
-        String applicationName = "Application";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "NewAppDescription";
-
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier,
-                "", description);
-        applicationsList.add(applicationName);
+    public void testApplicationCreationWithMandatoryValues() throws Exception {
+        HttpResponse addApplicationResponse = apiStore.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", APPLICATION_DESCRIPTION);
+        applicationsList.add(APPLICATION_NAME);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+                "Error in application creation with mandatory values. Application  : " + APPLICATION_NAME);
+        validateApplicationWithValidMandatoryValues(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, APPLICATION_DESCRIPTION);
     }
 
-    @Test(description = "4.1.1.1")
-    public void testApplicationCreationWithSpecialCharacterName() throws Exception {
-        String applicationName = "Application_-.";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "NewAppDescription";
+    @Test(description = "4.1.1.2", dataProvider = "OptionalApplicationValuesDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testApplicationCreationWithMandatoryAndOptionalValues(String tokenType) throws Exception {
+        String applicationName = "AppToken";
 
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier,
-                "", description);
-        applicationsList.add(applicationName);
+        HttpResponse addApplicationResponse = apiStore.addApplicationWithTokenType(
+                applicationName + tokenType, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                "", APPLICATION_DESCRIPTION, tokenType);
+        applicationsList.add(applicationName + tokenType);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+                "Error in application creation with mandatory and optional values. Application  : "
+                        + applicationName + tokenType);
+        validateApplicationWithMandatoryAndOptionsValues(applicationName + tokenType,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, APPLICATION_DESCRIPTION, tokenType);
     }
 
-    @Test(description = "4.1.1.1")
-    public void testApplicationCreationWithNumericName() throws Exception {
-        String applicationName = "1234";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-
+    @Test(description = "4.1.1.3", dataProvider = "ValidApplicationNameAndTierDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testApplicationCreationWithValidNameAndTier(String applicationName, String tier) throws Exception {
         HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier,
-                "", description);
+                "", APPLICATION_DESCRIPTION);
         applicationsList.add(applicationName);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithValidMandatoryValues(applicationName, tier, description);
+                "Error in application creation with valid name and tier. Application: " + applicationName);
+        validateApplicationWithValidMandatoryValues(applicationName, tier, APPLICATION_DESCRIPTION);
+    }
+
+    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    public void testGenerateProductionKeysForApplication() throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
+        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), PRODUCTION);
+    }
+
+    @Test(description = "4.1.1.5", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    public void testGenerateSandboxKeysForApplication() throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
+        appKeyRequestGenerator.setKeyType(SANDBOX);
+        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), SANDBOX);
     }
 
     private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
@@ -147,56 +153,8 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithDefaultTokenType() throws Exception {
-        String applicationName = "AppToken1";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "DEFAULT";
-
-        HttpResponse addApplicationResponse = apiStore.addApplicationWithTokenType(applicationName, tier,
-                "", description,tokenType);
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithJWTTokenType() throws Exception {
-        String applicationName = "AppToken2";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "JWT";
-
-        HttpResponse addApplicationResponse = apiStore.addApplicationWithTokenType(applicationName,
-                tier, "", description, tokenType);
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
-    @Test(description = "4.1.1.2")
-    public void testApplicationCreationWithOAuthTokenType() throws Exception {
-        String applicationName = "AppToken3";
-        String tier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
-        String description = "";
-        String tokenType = "OAuth";
-
-        HttpResponse addApplicationResponse = apiStore
-                .addApplicationWithTokenType(applicationName, tier, "",description, tokenType);
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_WITH_VALID_INPUT + applicationName);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName, tier, description, tokenType);
-    }
-
     private void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
-                                                                 String description, String tokenType)
+                                                                  String description, String tokenType)
             throws Exception {
         HttpResponse getAllAppResponse = apiStore.getAllApplications();
         verifyResponse(getAllAppResponse);
@@ -214,38 +172,14 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    @Test
-    private void testCreateApplicationForKeyGeneration() throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(APPLICATION_KEY_GENERATION,APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "", APPLICATION_DESCRIPTION);
-        applicationsList.add(APPLICATION_KEY_GENERATION);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APPLICATION_CREATION_FAILED + APPLICATION_KEY_GENERATION);
-    }
-
-    @Test(description = "4.1.1.3", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
-    public void testGenerateProductionKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), PRODUCTION);
-    }
-
-    @Test(description = "4.1.1.4", dependsOnMethods = {"testCreateApplicationForKeyGeneration"})
-    public void testGenerateSandboxKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_KEY_GENERATION);
-        appKeyRequestGenerator.setKeyType(SANDBOX);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), SANDBOX);
-    }
-
     private void verifyKeyGeneration(String responseString, String keyType) {
         JSONObject responseStringJson = new JSONObject(responseString);
         assertFalse(responseStringJson.getBoolean(ERROR),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_KEY_GENERATION);
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
         assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                keyType + ERROR_GENERATING_KEY + APPLICATION_KEY_GENERATION);
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
         assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_KEY_GENERATION);
+                .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
     }
 
     @AfterClass(alwaysRun = true)
