@@ -43,7 +43,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private String storeURL;
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String DEFAULT_STORE_URL = "https://localhost:9443/";
+    private static final String DEFAULT_STORE_URL = "https://localhost:9443/store";
     private static final String UTF_8 = "UTF-8";
     private static final String ERROR_APP_CREATION_FAILED = "Application creation failed for application: ";
     private static final String ERROR_APP_CREATION_NEGATIVE_TEST = "Error in application creation" +
@@ -77,46 +77,22 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 
-    @Test(description = "4.1.1.5")
-    public void testApplicationCreationWithMissingMandatoryValues() throws Exception {
-        String urlPrefix = "{{backendURL}}store/site/blocks/application/application-add/ajax/application-add.jag?" +
-                "action=addApplication";
-        String[][] appDetails = {{"", urlPrefix + "&tier=" + APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED +
-                "&callbackUrl=&description=description", "Missing parameters."},
-                {"application-missingMandatory1", urlPrefix + "&tier="
-                        + APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED +
-                        "&callbackUrl=&application=application-missingMandatory1", "Missing parameters."},
-                {"application-missingMandatory2", urlPrefix + "&callbackUrl=&description=description" +
-                        "&application=application-missingMandatory2", "Specified application tier does not exist."}};
-
-        for(String[] appDetail : appDetails) {
-            HttpResponse addApplicationResponse = apiStore.addApplication(
-                    appDetail[1].replace("{{backendURL}}", storeURL));
-            verifyApplicationNotCreated(addApplicationResponse, appDetail[2], appDetail[0]);
-        }
+    @Test(description = "4.1.1.5", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testApplicationCreationWithMissingMandatoryValues(String applicationName,
+                                                                  String url, String errorMessage) throws Exception {
+        HttpResponse addApplicationResponse = apiStore.addApplication(url.replace("{{backendURL}}", storeURL));
+        verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
-    @Test(description = "4.1.1.6")
-    public void testApplicationCreationWithInvalidMandatoryValues() throws Exception {
-        String[][] appDetails = {
-            {" App 1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
-                    "Application name cannot contain leading or trailing white spaces"},
-            {"App 2 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
-                    "Application name cannot contain leading or trailing white spaces"},
-//                todo fix the error message when the fix to remove ["application"] is working
-            {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                    "Invalid inputs [\"application\"]"},
-            {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Application Name is empty."},
-            {"App 3", "", "New App Description", "Specified application tier does not exist."},
-            {"App 4", "TierAbc", "New App Description", "Specified application tier does not exist."},
-        };
-
-        for(String[] appDetail:appDetails) {
-            HttpResponse addApplicationResponse = apiStore
-                    .addApplication(URLEncoder.encode(appDetail[0], UTF_8), URLEncoder.encode(appDetail[1], UTF_8)
-                            , "", URLEncoder.encode(appDetail[2], UTF_8));
-            verifyApplicationNotCreated(addApplicationResponse, appDetail[3], appDetail[0]);
-        }
+    @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
+                                                                  String errorMessage) throws Exception {
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(URLEncoder.encode(applicationName, UTF_8), URLEncoder.encode(tier, UTF_8)
+                        , "", "");
+        verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
     @Test(description = "4.1.1.7")
@@ -176,7 +152,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
 //        validate application wasn't created
         assertTrue(responseJsonObject.getBoolean(ERROR),
                 ERROR_APP_CREATION_NEGATIVE_TEST + applicationName);
-        assertEquals(responseJsonObject.getString(MESSAGE).trim(), errorMessage,
+        assertTrue(responseJsonObject.getString(MESSAGE).trim().contains(errorMessage),
                 ERROR_APP_CREATION_NEGATIVE_TEST + applicationName);
     }
 

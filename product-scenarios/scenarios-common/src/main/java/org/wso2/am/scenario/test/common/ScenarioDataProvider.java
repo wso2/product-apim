@@ -56,14 +56,12 @@ public class ScenarioDataProvider {
     @DataProvider(name = "InvalidMandatoryApplicationValuesDataProvider")
     public static Object[][] invalidMandatoryApplicationValuesDataProvider() {
         return new Object[][]{
-                {" App 1 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "New App Description",
+                {" App 1 ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         "Application name cannot contain leading or trailing white spaces"},
-//                todo fix the error message when the fix to remove x["application"] is working
-                {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                        "Invalid inputs [\"application\"]"},
-                {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Application Name is empty."},
-                {"App 3", "", "New App Description", "Specified application tier does not exist."},
-                {"App 4", "TierAbc", "New App Description", "Specified application tier does not exist."},
+                {"App !@#$%^", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "Invalid inputs"},
+                {" ", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "Application Name is empty."},
+                {"App 3", "", "Specified application tier does not exist."},
+                {"App 4", "TierAbc", "Specified application tier does not exist."},
         };
     }
 
@@ -78,7 +76,7 @@ public class ScenarioDataProvider {
 
     @DataProvider(name = "MissingMandatoryApplicationValuesDataProvider")
     public static Object[][] missingMandatoryApplicationValuesDataProvider() {
-        String urlPrefix = "{{backendURL}}store/site/blocks/application/application-add/ajax/application-add.jag?" +
+        String urlPrefix = "{{backendURL}}/site/blocks/application/application-add/ajax/application-add.jag?" +
                 "action=addApplication";
         return new Object[][]{
                 {"", urlPrefix + "&tier=" + APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED +
