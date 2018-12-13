@@ -77,7 +77,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 
-    @Test(description = "4.1.1.5", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
+    @Test(description = "4.1.1.6", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithMissingMandatoryValues(String applicationName,
                                                                   String url, String errorMessage) throws Exception {
@@ -85,7 +85,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
-    @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
+    @Test(description = "4.1.1.7", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
                                                                   String errorMessage) throws Exception {
@@ -95,7 +95,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
-    @Test(description = "4.1.1.7")
+    @Test(description = "4.1.1.8")
     public void testDuplicateApplicationName() throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(URLEncoder.encode(APPLICATION_DUPLICATE_NAME_CHECK, UTF_8),
@@ -125,7 +125,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     }
 
 //    todo uncomment once jappery api validation is fixed
-//    @Test(description = "4.1.1.8")
+//    @Test(description = "4.1.1.9")
 //    public void testApplicationNameLongerThan70CharactersDataProvider() throws Exception {
 //        HttpResponse addApplicationResponse = apiStore
 //                .addApplication(URLEncoder.encode(APPLICATION_NAME_LONGER_THAN_70_CHARS, UTF_8),
