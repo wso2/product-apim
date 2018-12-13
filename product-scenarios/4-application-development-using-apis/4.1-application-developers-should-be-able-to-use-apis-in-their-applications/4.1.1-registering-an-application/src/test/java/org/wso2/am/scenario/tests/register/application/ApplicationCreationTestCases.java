@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 
 public class ApplicationCreationTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
@@ -63,6 +64,9 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String KEY_STATE = "keyState";
     private static final String APP_DETAILS = "appDetails";
     private static final String KEY_TYPE = "key_type";
+    private static final String CONSUMER_KEY = "consumerKey";
+    private static final String CONSUMER_SECRET = "consumerSecret";
+    private static final String ACCESS_TOKEN = "accessToken";
     private static final String PRODUCTION = "PRODUCTION";
     private static final String SANDBOX = "SANDBOX";
     private static final String APPLICATION_NAME = "Application";
@@ -180,6 +184,12 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
                 keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
         assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
                 .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
     }
 
     @AfterClass(alwaysRun = true)
