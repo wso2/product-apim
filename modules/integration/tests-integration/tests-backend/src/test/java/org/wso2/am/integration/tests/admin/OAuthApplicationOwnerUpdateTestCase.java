@@ -165,11 +165,13 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         //Update application owner for carbon super
         adminDashboardRestClient.login(user.getUserName(), user.getPassword());
         updateOwner(MARY_APPLICATION,USER_JOHN,USER_MARY);
-        assertFalse(ownerJsonObject.getBoolean("error"), "Successfully update owner");
+        assertFalse(ownerJsonObject.getBoolean("error"), "Successfully update owner of the application "
+                + MARY_APPLICATION + ".");
         //Update application Owner for tenant domain
         adminDashboardRestClient.login(ADMIN_TENANT_DOMAIN, ADMIN_TENANT_PWD);
         updateOwner(USER2_TENANT_APP,USER1_TENANT_DOMAIN,USER2_TENANT_DOMAIN);
-        assertFalse(ownerJsonObject.getBoolean("error"),  "Successfully update owner");
+        assertFalse(ownerJsonObject.getBoolean("error"), "Successfully update owner of the application "
+                + USER2_TENANT_APP + ".");
     }
 
     /**
