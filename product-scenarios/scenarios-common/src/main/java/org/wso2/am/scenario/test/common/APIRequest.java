@@ -42,6 +42,7 @@ public class APIRequest extends AbstractRequest {
     private String endpointAuthType;
     private String epUsername;
     private String epPassword;
+    private String roles;
     private String default_version_checked;
     private String responseCache;
     private String cacheTimeout;
@@ -74,6 +75,30 @@ public class APIRequest extends AbstractRequest {
         this.version = version;
         this.resource = resource;
         this.tiersCollection = tiersCollection;
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                            + "http" + "\"}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+        }
+        constructSwagger();
+    }
+
+    public APIRequest(String name, String context, String visibility, String roles, String version, String resource, String tiersCollection, URL endpointUrl) {
+
+        this.name = name;
+        this.context = context;
+        this.version = version;
+        this.resource = resource;
+        this.visibility = visibility;
+        this.tiersCollection = tiersCollection;
+
+        if (this.visibility == "restricted"){
+            this.roles = roles;
+        }
+
         try {
             this.endpoint =
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
@@ -161,6 +186,9 @@ public class APIRequest extends AbstractRequest {
         if (this.description != null) {
             this.addParameter("description", this.description);
         }
+        if (this.roles != null) {
+            this.addParameter("roles", this.roles);
+        }
         if (this.tag != null) {
             this.addParameter("tags", this.tag);
         }
@@ -214,6 +242,7 @@ public class APIRequest extends AbstractRequest {
     public void constructSwagger() {
         setSwagger("{\"swagger\":\"2.0\",\"paths\":{" + "\"" + resource + "\""
                 + ":{\"post\":{\"parameters\":[{\"name\":\"Payload\",\"description\":\"Request Body\",\"required\":false,\"in\":\"body\",\"schema\":{\"type\":\"object\",\"properties\":{\"payload\":{\"type\":\"string\"}}}}],\"responses\":{\"200\":{\"description\":\"\"}}}}},\"info\":{\"title\": "
-                + "\"" + name + "\"" + ",\"version\":" + "\"" + version + "\"" + "}}");
+                + "\"" + name + "\"" + ",\"version\":" + "\"" + version + "\"" + ",\"roles\":" + "\"" + roles + "\"" + ",\"visibility\":" + "\"" +
+                visibility +  "\"" + "}}");
     }
 }
