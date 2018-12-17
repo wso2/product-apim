@@ -18,10 +18,10 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="1.1.5-create-edit-rest-api" preserve-order="true" verbose="2" parallel="false">
+    <test name="1.5.2-expose-api-to-subset-of-app-developer-restricted-by-roles" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.rest.api.publicVisibility.PublicRestApiVisibilityTestCase"/>
-            <!--<class name="PublicRestApiVisibilityNegativeTestCase"/>-->
+            <class name="org.wso2.am.scenario.tests.rest.api.restrictedVisibility.RESTApiVisibilityRestrictedByRolesNegativeTestCase"/>
+            <class name="org.wso2.am.scenario.tests.rest.api.restrictedVisibility.RestApiVisibilityRestrictedByRolesTestCase"/>
         </classes>
     </test>
 </suite>
