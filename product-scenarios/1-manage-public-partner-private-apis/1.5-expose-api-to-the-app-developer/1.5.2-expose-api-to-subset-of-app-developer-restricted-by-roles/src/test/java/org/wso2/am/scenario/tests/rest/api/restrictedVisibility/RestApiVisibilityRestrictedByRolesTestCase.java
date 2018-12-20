@@ -42,6 +42,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private APIPublisherRestClient apiPublisher;
     private String publisherURL;
     private String storeURL;
+    private String keyManagerURL;
     private Properties infraProperties;
 
     private String apiName;
@@ -70,9 +71,18 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         storeURL = infraProperties.getProperty(STORE_URL);
+        keyManagerURL = infraProperties.getProperty(SERVICE_URL);
 
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
+        }
+
+        if (storeURL == null) {
+            storeURL = "https://localhost:9443/store";
+        }
+
+        if (keyManagerURL == null) {
+            keyManagerURL = "https://localhost:9443/services/";
         }
 
         setKeyStoreProperties();
@@ -84,7 +94,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     public void testVisibilityOfAPISRestrictedByRoles() throws Exception {
 
         userManagementClient1 = new UserManagementClient(
-                "https://localhost:9443/services/", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         subscribeRole = "Health-Subscriber";
         userName = "SubscriberUser";
@@ -124,7 +134,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     public void testVisibilityOfAPISRestrictedByMultipleRoles() throws Exception {
 
         userManagementClient2 = new UserManagementClient(
-                "https://localhost:9443/services/", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         subscribeRole = "NewRole1";
         creatorRole = "NewRole2";
@@ -165,13 +175,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     }
 
     private void loginToStore(String userName, String password) throws Exception {
-
-        Properties infraProperties;
-        infraProperties = getDeploymentProperties();
-        storeURL = infraProperties.getProperty(STORE_URL);
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(userName, password);

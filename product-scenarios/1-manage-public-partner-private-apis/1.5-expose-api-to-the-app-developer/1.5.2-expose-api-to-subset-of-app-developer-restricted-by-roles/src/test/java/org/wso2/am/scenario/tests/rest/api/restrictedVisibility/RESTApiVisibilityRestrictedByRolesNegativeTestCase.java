@@ -43,6 +43,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private APIPublisherRestClient apiPublisher;
     private String publisherURL;
     private String storeURL;
+    private String keyManagerURL;
     private Properties infraProperties;
 
     private String apiName = UUID.randomUUID().toString();
@@ -70,9 +71,17 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         storeURL = infraProperties.getProperty(STORE_URL);
+        keyManagerURL = infraProperties.getProperty(SERVICE_URL);
 
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
+        }
+        if (storeURL == null) {
+            storeURL = "https://localhost:9443/store";
+        }
+
+        if (keyManagerURL == null) {
+            keyManagerURL = "https://localhost:9443/services/";
         }
 
         setKeyStoreProperties();
@@ -85,7 +94,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
 
         // create new user in tenant with only subscriber role and login to the Store
         userManagementClient = new UserManagementClient(
-                "https://localhost:9443/services/", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         //Check availability of the API in publisher
         userManagementClient.addRole(HEALTH_API_PUBLISHER,
@@ -130,9 +139,6 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
 
         //Check availability of the API in store
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD);
