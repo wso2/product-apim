@@ -131,7 +131,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
 
         //Check availability of the API in store
         if (storeURL == null) {
-            storeURL = "https://localhost:9443/";
+            storeURL = "https://localhost:9443/store";
         }
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);

@@ -172,7 +172,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         infraProperties = getDeploymentProperties();
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
-            storeURL = "https://localhost:9443/";
+            storeURL = "https://localhost:9443/store";
         }
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
