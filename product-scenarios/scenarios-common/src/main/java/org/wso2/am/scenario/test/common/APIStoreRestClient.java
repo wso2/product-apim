@@ -1240,6 +1240,28 @@ public class APIStoreRestClient {
     }
 
     /**
+     * This method will return swagger document of given api name and version
+     *
+     * @param userName      - User who request the swagger document
+     * @param apiName       - Name of the API
+     * @param apiVersion    - Version of the API
+     * @return - HTTP Response of the GET swagger document request
+     * @throws APIManagerIntegrationTestException - Throws if swagger document GET request fails
+     */
+    public HttpResponse getSwaggerDocumentWithoutLogin(String userName, String apiName, String apiVersion)
+            throws APIManagerIntegrationTestException {
+        HttpResponse response = null;
+            try {
+                response = HttpClient.doGet(backendURL + "/api-docs/" + userName + "/" +
+                        apiName + "/" + apiVersion, null);
+            } catch (IOException ex) {
+                throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+                        + ". Error: " + ex.getMessage(), ex);
+            }
+        return response;
+    }
+
+    /**
      * Get application page
      *
      * @return - http response of get application
