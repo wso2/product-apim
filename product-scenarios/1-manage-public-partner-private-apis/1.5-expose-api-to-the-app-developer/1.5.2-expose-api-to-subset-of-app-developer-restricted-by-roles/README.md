@@ -1,4 +1,4 @@
-# 1.5.2 Expose api to app developer restricted by roles
+# 1.5.2 Expose A
 
 ## When to use this approach
 
@@ -11,6 +11,7 @@
 
 
 ## Development
+
 
 ## Sample Configuration
 No additional configuration or data to be added to servers.

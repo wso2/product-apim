@@ -118,7 +118,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         //Check availability of the API in store
         checkAPIInStore(apiName);
-
     }
 
     @Test(description = "1.5.2.2")
@@ -163,7 +162,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         //Check availability of the API in store
         checkAPIInStore(apiName);
-
     }
 
     private void loginToStore(String userName, String password) throws Exception {
@@ -194,14 +192,13 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
                         "/permission/admin/manage/api/subscribe"});
     }
 
-    private void createUser(UserManagementClient userManagementClient, String userName, String password, String role) throws Exception {
+    private void createUser(UserManagementClient userManagementClient, String userName, String password, String role)
+            throws Exception {
 
         if (userManagementClient.userNameExists(role, userName)) {
             userManagementClient.deleteUser(userName);
         }
-        userManagementClient.addUser(userName, password,
-                new String[]{role}, "");
-
+        userManagementClient.addUser(userName, password, new String[]{role}, "");
     }
 
     private void validateRoles(String roles) throws APIManagerIntegrationTestException {

@@ -148,7 +148,6 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         HttpResponse checkValidationRole = apiPublisher.validateRoles(CREATOR);
         assertFalse(checkValidationRole.getData().contains("true"));
         verifyResponse(checkValidationRole);
-
     }
 
     @AfterTest(alwaysRun = true)

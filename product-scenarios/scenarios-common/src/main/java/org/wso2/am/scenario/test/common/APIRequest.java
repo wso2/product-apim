@@ -86,7 +86,8 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String roles, String version, String resource, String tiersCollection, URL endpointUrl) {
+    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
+                      String tiersCollection, URL endpointUrl) {
 
         this.name = name;
         this.context = context;
@@ -95,7 +96,7 @@ public class APIRequest extends AbstractRequest {
         this.visibility = visibility;
         this.tiersCollection = tiersCollection;
 
-        if (this.visibility == "restricted"){
+        if (this.visibility == "restricted") {
             this.roles = roles;
         }
 
