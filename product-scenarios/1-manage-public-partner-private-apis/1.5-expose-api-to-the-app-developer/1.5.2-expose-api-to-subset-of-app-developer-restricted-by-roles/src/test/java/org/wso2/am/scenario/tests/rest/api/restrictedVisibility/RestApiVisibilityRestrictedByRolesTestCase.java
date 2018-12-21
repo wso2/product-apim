@@ -106,21 +106,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiContext = "/phoneVerifyAdd";
 
         createRole(userManagementClient, subscribeRole);
-
         createUser(userManagementClient, userName, password, subscribeRole);
 
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
-
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource,
+                tierCollection, new URL(backendEndPoint));
         apiPublisher.validateRoles(subscribeRole);
 
         createAPI(apiRequest, subscribeRole);
-
         getAPI();
-
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
-
         loginToStore(userName, password);
-
         checkAPIInStore(apiName);
     }
 
@@ -136,23 +131,17 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         createRole(userManagementClient, subscribeRole);
         createRole(userManagementClient, creatorRole);
-
         createUser(userManagementClient, userName, password, subscribeRole);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
-
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, apiVersion, apiResource,
+                tierCollection, new URL(backendEndPoint));
 
         validateRoles(multipleRoles);
-
         createAPI(apiRequest, multipleRoles);
-
         getAPI();
-
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
-
         loginToStore(userName, password);
-
         checkAPIInStore(apiName);
     }
 
@@ -197,9 +186,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private void createAPI(APIRequest apiCreationRequest, String apiName) throws APIManagerIntegrationTestException {
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequest);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-
         verifyResponse(apiCreationResponse);
     }
 

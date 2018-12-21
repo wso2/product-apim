@@ -86,17 +86,16 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
 
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
+        apiStoreClient = new APIStoreRestClient(storeURL);
         apiPublisher.login("admin", "admin");
     }
 
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
 
-        // create new user in tenant with only subscriber role and login to the Store
         userManagementClient = new UserManagementClient(
                 keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
-        //Check availability of the API in publisher
         userManagementClient.addRole(HEALTH_API_PUBLISHER,
                 new String[]{},
                 new String[]{"/permission/admin/login",
@@ -117,35 +116,26 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
 
-        //Create an API request
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
         verifyResponse(apiCreationResponse);
 
-        //Check availability of the API in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
-        //change APILifeCycleStatus to published
         APILifeCycleStateRequest updateLifeCycle =
                 new APILifeCycleStateRequest(apiName, ADMIN_LOGIN_USERNAME, APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
         verifyResponse(apiPublishStatusResponse);
         assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
 
-        //Check availability of the API in store
-        setKeyStoreProperties();
-        apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD);
-
         HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
-        assertFalse(apiResponseStore.getData().contains(apiName));
         verifyResponse(apiResponseStore);
+        assertFalse(apiResponseStore.getData().contains(apiName));
     }
 
     @Test(description = "1.5.2.2")
