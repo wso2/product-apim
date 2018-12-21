@@ -1,4 +1,4 @@
-# 1.5.2 Expose A
+# 1.5.2 Expose api to the app developer restricted by roles
 
 ## When to use this approach
 

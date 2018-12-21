@@ -15,6 +15,7 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
+import org.apache.axis2.AxisFault;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -65,13 +66,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws APIManagerIntegrationTestException, AxisFault {
 
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         storeURL = infraProperties.getProperty(STORE_URL);
         keyManagerURL = infraProperties.getProperty(SERVICE_URL);
-        userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
@@ -86,9 +86,9 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         }
 
         setKeyStoreProperties();
-
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "1.5.2.1")
@@ -100,31 +100,22 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiName = "PhoneVerificationAdd";
         apiContext = "/phoneVerifyAdd";
 
-        //create Role
         createRole(userManagementClient, subscribeRole);
 
-        //create User
         createUser(userManagementClient, userName, password, subscribeRole);
 
-        //Create an API request
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
 
-        //validate Roles
         apiPublisher.validateRoles(subscribeRole);
 
-        //create API
         createAPI(apiRequest, subscribeRole);
 
-        //Check availability of the API in publisher
         getAPI();
 
-        //change APILifeCycleStatus to published
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
 
-        //Login to store by created user
         loginToStore(userName, password);
 
-        //Check availability of the API in store
         checkAPIInStore(apiName);
     }
 
@@ -138,38 +129,30 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiName = "APIWildCardApi";
         apiContext = "/AddApiWildCardApi";
 
-        //create Roles
         createRole(userManagementClient, subscribeRole);
         createRole(userManagementClient, creatorRole);
 
-        //create User
         createUser(userManagementClient, userName, password, subscribeRole);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
 
-        //Create an API request
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
 
-        //Validate Roles
         validateRoles(multipleRoles);
 
-        //Create API
         createAPI(apiRequest, multipleRoles);
 
-        //Check availability of the API in publisher
         getAPI();
 
-        //change APILifeCycleStatus to published
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
 
-        //Login to store by created user
         loginToStore(userName, password);
 
-        //Check availability of the API in store
         checkAPIInStore(apiName);
     }
 
     private void loginToStore(String userName, String password) throws Exception {
+
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(userName, password);
@@ -239,7 +222,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         userManagementClient.deleteUser("SubscriberUser");
         userManagementClient.deleteRole("Health-Subscriber");
-
         userManagementClient.deleteUser("MultipleRoleUser");
         userManagementClient.deleteRole("NewRole1");
         userManagementClient.deleteRole("NewRole2");

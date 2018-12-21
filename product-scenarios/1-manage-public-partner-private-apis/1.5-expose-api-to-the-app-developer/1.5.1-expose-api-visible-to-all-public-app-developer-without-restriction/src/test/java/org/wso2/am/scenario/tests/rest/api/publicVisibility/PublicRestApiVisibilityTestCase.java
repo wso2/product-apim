@@ -89,13 +89,11 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
                 new URL(backendEndPoint));
 
-        //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
         verifyResponse(apiCreationResponse);
 
-        //Check availability of the API in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
@@ -147,13 +145,11 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
 
-        //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
         verifyResponse(apiCreationResponse);
 
-        //Check availability of the API in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
