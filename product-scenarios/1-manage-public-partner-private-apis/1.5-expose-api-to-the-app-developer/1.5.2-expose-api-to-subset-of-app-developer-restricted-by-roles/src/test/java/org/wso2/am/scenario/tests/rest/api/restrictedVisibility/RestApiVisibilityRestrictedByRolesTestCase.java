@@ -66,7 +66,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, AxisFault {
+    public void init() throws APIManagerIntegrationTestException {
 
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
@@ -88,7 +88,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+
+        try {
+            userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        } catch (AxisFault e) {
+            throw new APIManagerIntegrationTestException("Unable to create UserManagement client", e);
+        }
     }
 
     @Test(description = "1.5.2.1")
