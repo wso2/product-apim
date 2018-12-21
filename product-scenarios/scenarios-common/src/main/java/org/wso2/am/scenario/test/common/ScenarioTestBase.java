@@ -41,8 +41,8 @@ public class ScenarioTestBase {
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
+    public static final String SERVICE_URL = "keyManagerUrl";
     String resourceLocation = System.getProperty("framework.resource.location");
-
 
     /**
      * This is a utility method to load the deployment details.
@@ -90,5 +90,4 @@ public class ScenarioTestBase {
         Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
                 "Error message received " + httpResponse.getData());
     }
-
 }
