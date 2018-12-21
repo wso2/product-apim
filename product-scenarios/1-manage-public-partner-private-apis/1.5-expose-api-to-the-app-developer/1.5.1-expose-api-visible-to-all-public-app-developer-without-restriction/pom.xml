@@ -8,7 +8,7 @@
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>[APIM][SCENARIO_1][SUBSCENARIO_5][USECASE_1] - Expose api to the app developer restricted by roles</name>
+    <name>[APIM][SCENARIO_1][SUBSCENARIO_5][USECASE_1] - Expose api to all the public app developer</name>
 
     <artifactId>1.5.1-expose-api-visible-to-all-public-app-developer-without-restriction</artifactId>
 

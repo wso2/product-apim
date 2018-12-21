@@ -61,8 +61,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
 
-    private UserManagementClient userManagementClient1;
-    private UserManagementClient userManagementClient2;
+    private UserManagementClient userManagementClient;
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
@@ -72,6 +71,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         storeURL = infraProperties.getProperty(STORE_URL);
         keyManagerURL = infraProperties.getProperty(SERVICE_URL);
+        userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
@@ -86,15 +86,13 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         }
 
         setKeyStoreProperties();
+
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISRestrictedByRoles() throws Exception {
-
-        userManagementClient1 = new UserManagementClient(
-                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         subscribeRole = "Health-Subscriber";
         userName = "SubscriberUser";
@@ -103,10 +101,10 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiContext = "/phoneVerifyAdd";
 
         //create Role
-        createRole(userManagementClient1, subscribeRole);
+        createRole(userManagementClient, subscribeRole);
 
         //create User
-        createUser(userManagementClient1, userName, password, subscribeRole);
+        createUser(userManagementClient, userName, password, subscribeRole);
 
         //Create an API request
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
@@ -133,9 +131,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     @Test(description = "1.5.2.2")
     public void testVisibilityOfAPISRestrictedByMultipleRoles() throws Exception {
 
-        userManagementClient2 = new UserManagementClient(
-                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-
         subscribeRole = "NewRole1";
         creatorRole = "NewRole2";
         userName = "MultipleRoleUser";
@@ -144,11 +139,11 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiContext = "/AddApiWildCardApi";
 
         //create Roles
-        createRole(userManagementClient2, subscribeRole);
-        createRole(userManagementClient2, creatorRole);
+        createRole(userManagementClient, subscribeRole);
+        createRole(userManagementClient, creatorRole);
 
         //create User
-        createUser(userManagementClient2, userName, password, subscribeRole);
+        createUser(userManagementClient, userName, password, subscribeRole);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
 
@@ -242,12 +237,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, ADMIN_LOGIN_USERNAME);
         apiPublisher.deleteAPI("APIWildCardApi", apiVersion, ADMIN_LOGIN_USERNAME);
 
-        userManagementClient1.deleteUser("SubscriberUser");
-        userManagementClient1.deleteRole("Health-Subscriber");
+        userManagementClient.deleteUser("SubscriberUser");
+        userManagementClient.deleteRole("Health-Subscriber");
 
-        userManagementClient2.deleteUser("MultipleRoleUser");
-        userManagementClient2.deleteRole("NewRole1");
-        userManagementClient2.deleteRole("NewRole2");
+        userManagementClient.deleteUser("MultipleRoleUser");
+        userManagementClient.deleteRole("NewRole1");
+        userManagementClient.deleteRole("NewRole2");
     }
 }
 
