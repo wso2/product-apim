@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="7.1.1-define-and-assign-subscription-tiers" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.define.subscription.tiers.SubscribeToAssignedTiersTestCase"/>
-            <class name="org.wso2.am.scenario.tests.define.subscription.tiers.SubscribeToAssignedTiersNegativeTestCase"/>
+            <!--<class name="org.wso2.am.scenario.tests.define.subscription.tiers.SubscribeToAssignedTiersTestCase"/>-->
+            <!--<class name="org.wso2.am.scenario.tests.define.subscription.tiers.SubscribeToAssignedTiersNegativeTestCase"/>-->
         </classes>
     </test>
 </suite>
