@@ -92,7 +92,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         try {
             userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         } catch (AxisFault e) {
-            throw new APIManagerIntegrationTestException("Unable to create UserManagement client", e);
+            throw new APIManagerIntegrationTestException("Unable to create UserManagementClient", e);
         }
     }
 
