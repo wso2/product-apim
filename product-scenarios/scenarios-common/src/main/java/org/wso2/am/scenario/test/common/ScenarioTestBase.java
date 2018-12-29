@@ -58,9 +58,11 @@ public class ScenarioTestBase {
     protected static String publisherURL;
     protected static String storeURL;
     protected static String keyManagerURL;
+    protected static String adminURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
+    public static final String ADMIN_URL = "AdminUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
 
@@ -82,6 +84,10 @@ public class ScenarioTestBase {
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
             storeURL = "https://localhost:9443/store";
+        }
+        adminURL = infraProperties.getProperty(ADMIN_URL);
+        if (adminURL == null) {
+            adminURL = "https://localhost:9443/admin";
         }
         setKeyStoreProperties();
     }

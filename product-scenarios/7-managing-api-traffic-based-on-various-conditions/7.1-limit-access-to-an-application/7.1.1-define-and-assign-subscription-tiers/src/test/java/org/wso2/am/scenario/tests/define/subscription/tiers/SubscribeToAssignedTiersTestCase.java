@@ -32,7 +32,9 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.AdminDashboardRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.SubscriptionThrottlePolicyRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -43,14 +45,17 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private final Log log = LogFactory.getLog(SubscribeToAssignedTiersTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private AdminDashboardRestClient adminDashboard;
     private APIRequest apiRequest;
 
     private String apiNameSingleTier = "Single_Tier_API";
     private String apiNameMultipleTier = "Multi_Tier_API";
     private String apiRepublishedWithDiffTier = "Republish_Diff_Tier_API";
+    private String apiNameCustomTier = "Custom_Tier_API";
     private String apiContextSingleTier = "/singleTierApi";
     private String apiContextMultipleTier = "/multiTierApi";
     private String apiContextRepublishedWithDiffTier = "/republishDiffTier";
+    private String apiContextCustomTier = "/customTierApi";
     private String endpointUrl = "http://test";
     private String singleTier = "Gold";
     private String goldTier = "Gold";
@@ -62,9 +67,11 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private String apiResource = "/groups";
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_PASSWORD = "admin";
+    private String customTier = "CustomTier";
 
     private String applicationNameSingleTier = "SingleTierApplication";
     private String applicationNameMultipleTier = "MultipleTierApplication";
+    private String applicationNameCustomTier = "CustomTierApplication";
     private String applicationDescription = "Application_Description";
     private String applicationNameBeforeAPIRepublish = "BeforeRepublishApplication";
     private String applicationNameAfterAPIRepublish = "AfterRepublishApplication";
@@ -73,8 +80,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     public void init() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStore = new APIStoreRestClient(storeURL);
+        adminDashboard = new AdminDashboardRestClient(adminURL);
         apiPublisher.login(ADMIN_USERNAME, ADMIN_PASSWORD);
         apiStore.login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        adminDashboard.login(ADMIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "7.1.1.1")
@@ -102,6 +111,35 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     }
 
     @Test(description = "7.1.1.2")
+    public void testSingleCustomTierSubscriptionAvailability() throws Exception {
+        SubscriptionThrottlePolicyRequest policyRequest = new SubscriptionThrottlePolicyRequest(customTier, null, "5",
+                "1", "min");
+        HttpResponse addSubscriptionPolicyResponse = adminDashboard.addSubscriptionPolicy(policyRequest);
+        verifyResponse(addSubscriptionPolicyResponse);
+
+        apiRequest = new APIRequest(apiNameCustomTier, apiContextCustomTier, apiVisibility, apiVersion, apiResource,
+                customTier, new URL(endpointUrl));
+        //Create API with custom tier
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(serviceResponse);
+        //Publish API
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNameCustomTier, providerName,
+                APILifeCycleState.PUBLISHED);
+        HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        //Create Application for custom tier
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(applicationNameCustomTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                        applicationDescription);
+        verifyResponse(addApplicationResponse);
+        //Subscribe to the API with custom tier
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiNameCustomTier, apiVersion, providerName,
+                applicationNameCustomTier, customTier);
+        HttpResponse subscriptionResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(subscriptionResponse);
+    }
+
+    @Test(description = "7.1.1.3")
     public void testMultipleTierSubscriptionAvailability() throws Exception {
         apiRequest = new APIRequest(apiNameMultipleTier, apiContextMultipleTier, apiVisibility, apiVersion, apiResource,
                 multiTier, new URL(endpointUrl));
@@ -134,7 +172,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         verifyResponse(subscriptionResponseSilver);
     }
 
-    @Test(description = "7.1.1.3")
+    @Test(description = "7.1.1.4")
     public void testRepublishWithDifferentTier() throws Exception {
         apiRequest = new APIRequest(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, apiVisibility,
                 apiVersion, apiResource, goldTier, new URL(endpointUrl));
@@ -162,8 +200,8 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         HttpResponse updateAPIResponse = apiPublisher.updateAPI(requestUpdated);
         verifyResponse(updateAPIResponse);
         //Republish API
-        APILifeCycleStateRequest republishRequest = new APILifeCycleStateRequest(apiRepublishedWithDiffTier, providerName,
-                APILifeCycleState.PUBLISHED);
+        APILifeCycleStateRequest republishRequest = new APILifeCycleStateRequest(apiRepublishedWithDiffTier,
+                providerName, APILifeCycleState.PUBLISHED);
         HttpResponse rePublishServiceResponse = apiPublisher.changeAPILifeCycleStatus(republishRequest);
         Assert.assertTrue(rePublishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
         //Create new application to subscribe to updated API
@@ -199,5 +237,9 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         apiStore.removeApplication(applicationNameBeforeAPIRepublish);
         apiStore.removeApplication(applicationNameAfterAPIRepublish);
         apiPublisher.deleteAPI(apiRepublishedWithDiffTier, apiVersion, providerName);
+        //Remove custom tier artifacts
+        apiStore.removeApplication(applicationNameCustomTier);
+        apiPublisher.deleteAPI(apiNameCustomTier, apiVersion, providerName);
+        adminDashboard.deleteSubscriptionPolicy(customTier);
     }
 }
