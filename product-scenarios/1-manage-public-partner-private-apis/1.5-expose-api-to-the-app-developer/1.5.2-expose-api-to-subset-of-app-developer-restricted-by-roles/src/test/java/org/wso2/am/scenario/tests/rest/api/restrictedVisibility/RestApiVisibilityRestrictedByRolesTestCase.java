@@ -71,7 +71,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         storeURL = infraProperties.getProperty(STORE_URL);
-        keyManagerURL = infraProperties.getProperty(SERVICE_URL);
+        keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
 
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
