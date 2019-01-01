@@ -82,5 +82,9 @@
             <artifactId>greenmail</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.admin.clients</artifactId>
+        </dependency>
     </dependencies>
 </project>
