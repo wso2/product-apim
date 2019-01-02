@@ -56,17 +56,26 @@ public class ScenarioTestBase {
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     protected static String publisherURL;
+    protected static String keyManagerURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "keyManagerUrl";
-    String resourceLocation = System.getProperty("framework.resource.location");
+    protected static String resourceLocation = System.getProperty("framework.resource.location");
 
     public ScenarioTestBase() {
+        setup();
+    }
+
+    protected static void setup() {
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
         if (publisherURL == null) {
             publisherURL = "https://localhost:9443/publisher";
+        }
+        keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
+        if (StringUtils.isEmpty(keyManagerURL)) {
+            keyManagerURL = "https://localhost:9443/services/";
         }
         setKeyStoreProperties();
     }
@@ -120,10 +129,7 @@ public class ScenarioTestBase {
     }
 
     public static TenantManagementServiceClient getTenantManagementServiceClient() throws APIManagementException {
-        String keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-        if (StringUtils.isEmpty(keyManagerURL)) {
-            keyManagerURL = "https://localhost:9443/services/";
-        }
+
         AuthenticatorClient authenticatorClient = null;
         try {
             authenticatorClient = new AuthenticatorClient(keyManagerURL);
@@ -140,16 +146,12 @@ public class ScenarioTestBase {
 
     public static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
             throws AxisFault {
-        String keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-        if (StringUtils.isEmpty(keyManagerURL)) {
-            keyManagerURL = "https://localhost:9443/services/";
-        }
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
         return userManagementClient;
     }
 
-    public void setKeyStoreProperties() {
+    public static void setKeyStoreProperties() {
         System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystore/wso2carbon.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
