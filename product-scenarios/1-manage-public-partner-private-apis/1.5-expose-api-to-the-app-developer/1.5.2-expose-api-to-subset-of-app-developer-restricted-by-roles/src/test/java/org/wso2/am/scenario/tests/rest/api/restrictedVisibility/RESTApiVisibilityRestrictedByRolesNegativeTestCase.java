@@ -16,6 +16,7 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
+import org.apache.axis2.AxisFault;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -66,7 +67,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws Exception {
 
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
@@ -88,13 +89,14 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiPublisher.login("admin", "admin");
+
+        userManagementClient = new UserManagementClient(
+                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
 
-        userManagementClient = new UserManagementClient(
-                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         userManagementClient.addRole(HEALTH_API_PUBLISHER,
                 new String[]{},
