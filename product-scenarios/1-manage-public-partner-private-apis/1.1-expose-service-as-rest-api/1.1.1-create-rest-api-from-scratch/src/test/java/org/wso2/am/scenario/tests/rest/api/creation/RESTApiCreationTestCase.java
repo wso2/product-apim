@@ -20,25 +20,34 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
+import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.rmi.RemoteException;
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(APIRequest.class);
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
 
     private String apiName;
     private String apiContext;
@@ -66,21 +75,26 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String inSequence = "debug_in_flow";
     private String outSequence = "debug_out_flow";
 
+    private String username;
+    private String password;
+    private String adminUsername;
+    private String adminPassword;
+
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
+    // All tests in this class will run with a super tenant API creator and a tenant API creator.
+    @Factory(dataProvider = "userModeDataProvider") public RESTApiCreationTestCase(String username, String password,
+            String adminUsername, String adminPassword) {
+        this.username = username;
+        this.password = password;
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
+    }
+
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        setKeyStoreProperties();
+    public void init() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login("admin", "admin");
+        apiPublisher.login(username, password);
     }
 
     @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
@@ -92,7 +106,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         //Design API with name,context,version,visibility and apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
-        verifyAPIName(apiName);
+        verifyAPIName(apiName, username);
     }
 
     @Test(description = "1.1.1.2")
@@ -108,7 +122,8 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(serviceResponse);
-        validateOptionalFiled();
+        HttpResponse serviceResponseGetApi = apiPublisher.getAPI(apiName, username);
+        validateOptionalFiled(serviceResponseGetApi);
     }
 
     @Test(description = "1.1.1.3")
@@ -122,46 +137,73 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         //Design API with name,context,version,visibility and wildcard apiResource
         HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
         verifyResponse(serviceResponse);
-        verifyAPIName(apiName);
+        verifyAPIName(apiName, username);
     }
 
+    private void validateOptionalFiled(HttpResponse response) throws APIManagerIntegrationTestException {
+        JSONObject responseJson = new JSONObject(response.getData());
+        Assert.assertEquals(responseJson.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("techOwner").toString(), techOwner, "Expected techOwner value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("techOwnerMail").toString(), techOwnerMail, "Expected techOwnerMail value not match with the actual value");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("endpointTypeSecured").toString(), "true", "Expected endpointType value not match with the actual value");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("endpointAuthTypeDigest").toString(), "false", "Expected endpointAuthType value not match with the actual value");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("epUsername").toString(), epUsername, "Expected epUsername value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("epPassword").toString(), epPassword, "Expected epPassword value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("isDefaultVersion").toString(), "true", "Expected default_version_checked value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("responseCache").toString(), "Enabled", "Expected responseCache: value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("subscriptionAvailability").toString(), subscriptions, "Expected subscriptions value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("transport_http").toString(), "checked", "Expected http_checked value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("transport_https").toString(), "", "Expected https_checked value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("inSequence").toString(), inSequence, "Expected inSequence: value not match");
+        Assert.assertEquals(responseJson.getJSONObject("api").get("outSequence").toString(), outSequence, "Expected outSequence value not match");
+
+    }
+
+    private void verifyAPIName(String apiName, String provider) throws APIManagerIntegrationTestException {
+        HttpResponse getApi = apiPublisher.getAPI(apiName, provider);
+        JSONObject response = new JSONObject(getApi.getData());
+        Assert.assertEquals(response.getJSONObject("api").get("name").toString(), apiName,
+                "Expected API name value not match");
+
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI("PhoneVerification", apiVersion, "admin");
-        apiPublisher.deleteAPI("123567890", apiVersion, "admin");
-        apiPublisher.deleteAPI("eñe", apiVersion, "admin");
-        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, "admin");
-        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, "admin");
-        apiPublisher.deleteAPI("APIWildCard", apiVersion, "admin");
+        apiPublisher.deleteAPI("PhoneVerification", apiVersion, username);
+        apiPublisher.deleteAPI("123567890", apiVersion, username);
+        apiPublisher.deleteAPI("eñe", apiVersion, username);
+        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, username);
+        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, username);
+        apiPublisher.deleteAPI("APIWildCard", apiVersion, username);
+
+        deleteUser(MultitenantUtils.getTenantAwareUsername(username), adminUsername, adminPassword  );
     }
 
-    private void validateOptionalFiled() throws APIManagerIntegrationTestException {
-        HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
-        JSONObject response = new JSONObject(getApi.getData());
-        Assert.assertEquals(response.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("techOwner").toString(), techOwner, "Expected techOwner value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("techOwnerMail").toString(), techOwnerMail, "Expected techOwnerMail value not match with the actual value");
-        Assert.assertEquals(response.getJSONObject("api").get("endpointTypeSecured").toString(), "true", "Expected endpointType value not match with the actual value");
-        Assert.assertEquals(response.getJSONObject("api").get("endpointAuthTypeDigest").toString(), "false", "Expected endpointAuthType value not match with the actual value");
-        Assert.assertEquals(response.getJSONObject("api").get("epUsername").toString(), epUsername, "Expected epUsername value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("epPassword").toString(), epPassword, "Expected epPassword value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("isDefaultVersion").toString(), "true", "Expected default_version_checked value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("responseCache").toString(), "Enabled", "Expected responseCache: value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("subscriptionAvailability").toString(), subscriptions, "Expected subscriptions value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("transport_http").toString(), "checked", "Expected http_checked value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("transport_https").toString(), "", "Expected https_checked value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("inSequence").toString(), inSequence, "Expected inSequence: value not match");
-        Assert.assertEquals(response.getJSONObject("api").get("outSequence").toString(), outSequence, "Expected outSequence value not match");
+    // This method runs prior to the @BeforeClass method.
+    // Create users and tenants needed or the tests in here. Try to reuse the TENANT_WSO2 as much as possible to avoid the number of tenants growing.
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        // create userManagementClients for super tenant and wso2.com tenant
+        UserManagementClient userManagementClientSuperTenant = getRemoteUserManagerClient("admin@carbon.super",
+                "admin");
+        UserManagementClient userManagementClientTenant = getRemoteUserManagerClient(
+                "admin@" + ScenarioTestConstants.TENANT_WSO2, "admin");
 
-    }
+        //Add and activate wso2.com tenant
+        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
 
-    private void verifyAPIName(String apiName) throws APIManagerIntegrationTestException {
-        HttpResponse getApi = apiPublisher.getAPI(apiName, "admin");
-        JSONObject response = new JSONObject(getApi.getData());
-        Assert.assertEquals(response.getJSONObject("api").get("name").toString(), apiName, "Expected API name value not match");
+        // create user in super tenant
+        createUserWithCreatorRole("micheal", "Micheal#123", "admin", "admin");
 
+        // create user in wso2.com tenant
+        createUserWithCreatorRole("andrew", "Andrew#123", "admin@wso2.com", "admin");
+
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][] { { "micheal", "Micheal#123", "admin", "admin"},
+                { "andrew@" + ScenarioTestConstants.TENANT_WSO2, "Andrew#123", "admin@wso2.com", "admin" } };
     }
 }
