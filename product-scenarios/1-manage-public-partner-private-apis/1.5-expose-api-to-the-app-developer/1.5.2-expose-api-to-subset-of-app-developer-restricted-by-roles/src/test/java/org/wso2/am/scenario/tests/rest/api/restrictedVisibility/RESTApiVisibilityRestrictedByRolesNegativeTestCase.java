@@ -55,7 +55,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
     private final String TENANT_SUBSCRIBER_PASSWORD = "password@123";
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
-    private final String CREATOR= "Creator";
+    private final String CREATOR = "Creator";
     private final String SUBSCRIBER = "Subscriber";
     private final String HEALTH_API_PUBLISHER = "Health-Publisher";
     private APIStoreRestClient apiStoreClient;
