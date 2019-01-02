@@ -120,7 +120,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     }
 
     @Test(description = "1.5.2.2")
-    public void testCreateAPIWithInvalidRole() throws Exception {
+    public void testCreateAPIWithInvalidRoleInStoreVisibility() throws Exception {
 
         HttpResponse checkValidationRole = apiPublisher.validateRoles(CREATOR);
         assertFalse(checkValidationRole.getData().contains("true"));
