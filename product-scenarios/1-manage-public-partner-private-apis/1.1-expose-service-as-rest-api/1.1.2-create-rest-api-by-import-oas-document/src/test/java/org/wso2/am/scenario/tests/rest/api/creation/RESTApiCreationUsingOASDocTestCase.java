@@ -17,9 +17,7 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
@@ -28,13 +26,8 @@ import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -49,6 +42,9 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     private File swagger_file;
     private String swagger_url;
     private String type = "rest";
+    private String apiName;
+    private String apiVersion;
+    private String apiContext;
 
     String resourceLocation = System.getProperty("test.resource.location");
 
@@ -67,141 +63,230 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         apiPublisher.login("admin", "admin");
     }
 
+    @Test(description = "1.1.2.1")
+    public void createApiWithValidOAS2DocumentAsJSONFile() throws Exception {
+        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS2Document.json");
 
-    @Test(description = "1.1.2.1", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class)
-    public void testCreateApiUsingValidOASDocumentFromJsonFile(String file_path) throws Exception {
+        //Import api definition from swagger file
+        apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
+        HttpResponse designResponse1 = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(designResponse1.getData().contains("imported"));
 
-        swagger_file = new File(resourceLocation + File.separator + file_path);
+        //Save the API with imported values
+        String payload = readFromFile(swagger_file.getAbsolutePath());
+        JSONObject json = new JSONObject(payload);
+        apiName = json.getJSONObject("info").get("title").toString();
+        apiContext = json.get("basePath").toString();
+        apiVersion = json.getJSONObject("info").get("version").toString();
 
+        apiRequest = new APIRequest(apiName, apiContext, apiVersion);
+        apiRequest.setSwagger(payload);
+        HttpResponse designResponse2 = apiPublisher.designAPI(apiRequest);
+        verifyResponse(designResponse2);
+
+        //Verify the API created with correct name, version and resources
+        String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
+        String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
+
+        HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
+        String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
+        Assert.assertTrue(resource != "null", "API resource was not imported correctly");
+    }
+
+    @Test(description = "1.1.2.2", dependsOnMethods = "createApiWithValidOAS2DocumentAsJSONFile")
+    public void createApiWithValidOAS3DocumentAsJSONFile() throws Exception {
+        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS3Document.json");
+
+        //Import api definition from swagger file
         apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
 
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+        HttpResponse designResponse1 = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(designResponse1.getData().contains("imported"));
 
+        //Save the API with imported values
         String payload = readFromFile(swagger_file.getAbsolutePath());
         JSONObject json = new JSONObject(payload);
         String apiName = json.getJSONObject("info").get("title").toString();
-        String context = json.get("basePath").toString();
-        String version = json.getJSONObject("info").get("version").toString();
+        String apiContext = json.get("basePath").toString();
+        String apiVersion = json.getJSONObject("info").get("version").toString();
 
-        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest = new APIRequest(apiName, apiContext, apiVersion);
         apiRequest.setSwagger(payload);
+        HttpResponse designResponse2 = apiPublisher.designAPI(apiRequest);
+        verifyResponse(designResponse2);
 
-        serviceResponse = apiPublisher.designAPI(apiRequest);
-        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-        Assert.assertEquals(name, apiName);
+        //Verify the API created with correct name, version and resources
+        String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
+        String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
-        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-        verifyResponse(serviceResponse);
+        HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
+        String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
+        Assert.assertTrue(resource != "null", "API resource was not imported correctly");
     }
 
+    @Test(description = "1.1.2.3", dependsOnMethods = "createApiWithValidOAS3DocumentAsJSONFile")
+    public void createApiWithValidOAS2DocumentAsYAMLFile() throws Exception {
+        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS2Document.yaml");
 
-    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
-    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
-        swagger_url = url;
-
-        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
-
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-
-        String payload = readFromUrl(swagger_url);
-        JSONObject json = new JSONObject(payload);
-        String apiName = json.getJSONObject("info").get("title").toString();
-        String context = json.get("basePath").toString();
-        String version = json.getJSONObject("info").get("version").toString();
-
-        apiRequest = new APIRequest(apiName, context, version);
-        apiRequest.setSwagger(payload);
-
-        serviceResponse = apiPublisher.designAPI(apiRequest);
-        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-        Assert.assertEquals(name, apiName);
-
-        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-        verifyResponse(serviceResponse);
-
-    }
-
-
-    @Test(description = "1.1.2.3", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class)
-    public void testCreateApiUsingValidOASDocumentFromYamlFile(String file_path) throws Exception {
-        swagger_file = new File(resourceLocation + File.separator + file_path);
-
+        //Import api definition from swagger file
         apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
 
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+        HttpResponse designResponse1 = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(designResponse1.getData().contains("imported"));
 
+        //Save the API with imported values
         String payload = readFromFile(swagger_file.getAbsolutePath());
 
         Yaml yaml = new Yaml();
         Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
         JSONObject json = new JSONObject(map);
         String apiName = json.getJSONObject("info").get("title").toString();
-        String context = json.get("basePath").toString();
-        String version = json.getJSONObject("info").get("version").toString();
+        String apiContext = json.get("basePath").toString();
+        String apiVersion = json.getJSONObject("info").get("version").toString();
         String payloadJson = json.toString();
 
-        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest = new APIRequest(apiName, apiContext, apiVersion);
         apiRequest.setSwagger(payloadJson);
+        HttpResponse designResponse2 = apiPublisher.designAPI(apiRequest);
+        verifyResponse(designResponse2);
 
-        serviceResponse = apiPublisher.designAPI(apiRequest);
-        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-        Assert.assertEquals(name, apiName);
+        //Verify the API created with correct name, version and resources
+        String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
+        String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
-        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-        verifyResponse(serviceResponse);
+        HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
+        String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
+        Assert.assertTrue(resource != "null", "API resource was not imported correctly");
     }
 
+    @Test(description = "1.1.2.4", dependsOnMethods = "createApiWithValidOAS2DocumentAsYAMLFile")
+    public void createApiWithValidOAS3DocumentAsYAMLFile() throws Exception {
+        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS3Document.yaml");
 
-    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
-    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
-        swagger_url = url;
+        //Import api definition from swagger file
+        apiRequest = new APIRequest(import_definition_file, swagger_file.getAbsolutePath(), "", type);
 
-        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+        HttpResponse designResponse1 = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(designResponse1.getData().contains("imported"));
 
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-
-        String payload = readFromUrl(swagger_url);
+        //Save the API with imported values
+        String payload = readFromFile(swagger_file.getAbsolutePath());
 
         Yaml yaml = new Yaml();
         Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
         JSONObject json = new JSONObject(map);
         String apiName = json.getJSONObject("info").get("title").toString();
-        String context = json.get("basePath").toString();
-        String version = json.getJSONObject("info").get("version").toString();
+        String apiContext = json.get("basePath").toString();
+        String apiVersion = json.getJSONObject("info").get("version").toString();
         String payloadJson = json.toString();
 
-        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest = new APIRequest(apiName, apiContext, apiVersion);
         apiRequest.setSwagger(payloadJson);
+        HttpResponse designResponse2 = apiPublisher.designAPI(apiRequest);
+        verifyResponse(designResponse2);
 
-        serviceResponse = apiPublisher.designAPI(apiRequest);
-        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-        Assert.assertEquals(name, apiName);
+        //Verify the API created with correct name, version and resources
+        String name = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("apiName").toString();
+        String version = (new JSONObject(designResponse2.getData())).getJSONObject("data").get("version").toString();
+        Assert.assertEquals(name, apiName, "Api name was not imported correctly");
+        Assert.assertEquals(version, apiVersion, "Api version was not imported correctly");
 
-        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-        verifyResponse(serviceResponse);
+        HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
+        String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
+        Assert.assertTrue(resource != "null", "API resource was not imported correctly");
     }
 
+    //TODO: Commented due to the SSL certification issue for read from url still occurs
+//    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
+//    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
+//        swagger_url = url;
+//
+//        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+//
+//        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+//        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+//
+//        String payload = readFromUrl(swagger_url);
+//        JSONObject json = new JSONObject(payload);
+//        String apiName = json.getJSONObject("info").get("title").toString();
+//        String context = json.get("basePath").toString();
+//        String version = json.getJSONObject("info").get("version").toString();
+//
+//        apiRequest = new APIRequest(apiName, context, version);
+//        apiRequest.setSwagger(payload);
+//
+//        serviceResponse = apiPublisher.designAPI(apiRequest);
+//        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
+//        Assert.assertEquals(name, apiName);
+//
+//        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
+//        verifyResponse(serviceResponse);
+//
+//    }
 
-    public static String readFromUrl(String url) throws IOException {
-        URL myUrl = new URL(url);
-        HttpsURLConnection conn = (HttpsURLConnection) myUrl.openConnection();
-        InputStream is = conn.getInputStream();
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            StringBuilder sb = new StringBuilder();
-            int x;
-            while ((x = br.read()) != -1) {
-                sb.append((char) x);
-            }
-            String payloadText = sb.toString();
-            return payloadText;
-        } finally {
-            is.close();
-        }
+    //TODO: Commented due to the SSL certification issue for read from url still occurs
+
+//    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
+//    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
+//        swagger_url = url;
+//
+//        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+//
+//        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+//        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+//
+//        String payload = readFromUrl(swagger_url);
+//
+//        Yaml yaml = new Yaml();
+//        Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
+//        JSONObject json = new JSONObject(map);
+//        String apiName = json.getJSONObject("info").get("title").toString();
+//        String context = json.get("basePath").toString();
+//        String version = json.getJSONObject("info").get("version").toString();
+//        String payloadJson = json.toString();
+//
+//        apiRequest = new APIRequest(apiName, context, version);
+//        apiRequest.setSwagger(payloadJson);
+//
+//        serviceResponse = apiPublisher.designAPI(apiRequest);
+//        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
+//        Assert.assertEquals(name, apiName);
+//
+//        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
+//        verifyResponse(serviceResponse);
+//    }
+//
+//    public static String readFromUrl(String url) throws IOException {
+//        URL myUrl = new URL(url);
+//        HttpsURLConnection conn = (HttpsURLConnection) myUrl.openConnection();
+//        InputStream is = conn.getInputStream();
+//        try {
+//            BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+//            StringBuilder sb = new StringBuilder();
+//            int x;
+//            while ((x = br.read()) != -1) {
+//                sb.append((char) x);
+//            }
+//            String payloadText = sb.toString();
+//            return payloadText;
+//        } finally {
+//            is.close();
+//        }
+//    }
+
+    @AfterClass(alwaysRun = true)
+    public void RemoveAPI() throws APIManagerIntegrationTestException {
+        //clean the data
+        apiPublisher.deleteAPI("PetApiSample_OAS2_JSON", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS2_YAML", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS3_JSON", apiVersion, "admin");
+        apiPublisher.deleteAPI("PetApiSample_OAS3_YAML", apiVersion, "admin");
     }
 
     public static String readFromFile(String file_name) throws IOException {
@@ -215,5 +300,5 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         String payloadText = sb.toString();
         return payloadText;
     }
-
 }
+

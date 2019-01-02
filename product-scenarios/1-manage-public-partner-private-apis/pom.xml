@@ -37,6 +37,7 @@
 
     <modules>
         <module>1.1-expose-service-as-rest-api</module>
+        <module>1.5-expose-api-to-the-app-developer</module>
     </modules>
 
     <repositories>

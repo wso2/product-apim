@@ -37,6 +37,7 @@
         <module>1-manage-public-partner-private-apis</module>
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
+        <module>7-managing-api-traffic-based-on-various-conditions</module>
         <module>8-analyze-usage-of-apis-for-business-insights</module>
         <module>9-developer-community-building</module>
         <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>
