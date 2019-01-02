@@ -20,7 +20,7 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.5.2-expose-api-to-subset-of-app-developer-restricted-by-roles" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.scenario.tests.rest.api.restrictedVisibility.RESTApiVisibilityRestrictedByRolesNegativeTestCase"/>-->
+            <class name="org.wso2.am.scenario.tests.rest.api.restrictedVisibility.RESTApiVisibilityRestrictedByRolesNegativeTestCase"/>
             <class name="org.wso2.am.scenario.tests.rest.api.restrictedVisibility.RestApiVisibilityRestrictedByRolesTestCase"/>
         </classes>
     </test>

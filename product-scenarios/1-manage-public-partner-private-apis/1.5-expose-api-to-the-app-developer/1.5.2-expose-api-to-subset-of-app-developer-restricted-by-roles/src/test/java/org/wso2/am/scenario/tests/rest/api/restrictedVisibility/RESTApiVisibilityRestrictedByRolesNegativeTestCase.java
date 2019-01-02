@@ -16,11 +16,9 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
-import org.apache.axis2.AxisFault;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
@@ -28,14 +26,11 @@ import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.net.URL;
 import java.util.Properties;
 import java.util.UUID;
-import javax.ws.rs.core.Response;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 
@@ -60,10 +55,9 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
     private final String TENANT_SUBSCRIBER_PASSWORD = "password@123";
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
-    private final String CREATOR = "Creator";
+    private final String CREATOR= "Creator";
     private final String SUBSCRIBER = "Subscriber";
     private final String HEALTH_API_PUBLISHER = "Health-Publisher";
-    private UserManagementClient userManagementClient;
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
@@ -89,31 +83,16 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiPublisher.login("admin", "admin");
-
-        userManagementClient = new UserManagementClient(
-                keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
 
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, HEALTH_API_PUBLISHER);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER);
 
-        userManagementClient.addRole(HEALTH_API_PUBLISHER,
-                new String[]{},
-                new String[]{"/permission/admin/login",
-                        "/permission/admin/manage/api/subscribe"});
-
-        userManagementClient.addRole(SUBSCRIBER,
-                new String[]{},
-                new String[]{"/permission/admin/login",
-                        "/permission/admin/manage/api/subscribe"});
-
-        if (userManagementClient.userNameExists(INTERNAL_ROLE_SUBSCRIBER, TENANT_SUBSCRIBER_USERNAME)) {
-            userManagementClient.deleteUser(TENANT_SUBSCRIBER_USERNAME);
-        }
-
-        userManagementClient.addUser(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD,
-                new String[]{HEALTH_API_PUBLISHER}, "");
+        createUser(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD, new String[]{HEALTH_API_PUBLISHER},
+                ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
@@ -148,13 +127,12 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         verifyResponse(checkValidationRole);
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiPublisher.deleteAPI(apiName, apiVersion, ADMIN_LOGIN_USERNAME);
-        userManagementClient.deleteUser(TENANT_SUBSCRIBER_USERNAME);
-        userManagementClient.deleteRole(HEALTH_API_PUBLISHER);
-        userManagementClient.deleteRole(SUBSCRIBER);
-        userManagementClient.deleteRole(CREATOR);
+        deleteUser(TENANT_SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteRole(HEALTH_API_PUBLISHER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteRole(SUBSCRIBER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 }
 

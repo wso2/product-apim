@@ -17,7 +17,7 @@ package org.wso2.am.scenario.tests.rest.api.publicVisibility;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -185,7 +185,7 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         }
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         apiPublisher.deleteAPI("PhoneVerification1", apiVersion, admin);
