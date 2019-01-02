@@ -185,12 +185,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     // Create users and tenants needed or the tests in here. Try to reuse the TENANT_WSO2 as much as possible to avoid the number of tenants growing.
     @DataProvider
     public static Object[][] userModeDataProvider() throws Exception {
-        // create userManagementClients for super tenant and wso2.com tenant
-        UserManagementClient userManagementClientSuperTenant = getRemoteUserManagerClient("admin@carbon.super",
-                "admin");
-        UserManagementClient userManagementClientTenant = getRemoteUserManagerClient(
-                "admin@" + ScenarioTestConstants.TENANT_WSO2, "admin");
-
         //Add and activate wso2.com tenant
         addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
 
