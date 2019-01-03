@@ -144,7 +144,7 @@ public class ScenarioTestBase {
         }
     }
 
-    public static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
+    private static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
             throws AxisFault {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
@@ -191,7 +191,6 @@ public class ScenarioTestBase {
         }
 
     }
-
     public void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
@@ -216,13 +215,40 @@ public class ScenarioTestBase {
         }
     }
 
+    public void createRole(String adminUsername, String adminPassword, String role) throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addRole(role,
+                    new String[]{},
+                    new String[]{"/permission/admin/login",
+                            "/permission/admin/manage/api/subscribe"});
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to create role :" + role, e);
+        }
+
+    }
+
     public void deleteUser(String username, String adminUsername, String adminPassword) throws APIManagementException {
+
         UserManagementClient userManagementClient;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.deleteUser(username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete user :" + username, e);
+        }
+    }
+
+    public void deleteRole(String role, String adminUsername, String adminPassword) throws APIManagementException {
+
+        UserManagementClient userManagementClient;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.deleteRole(role);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to delete role :" + role, e);
         }
     }
 
