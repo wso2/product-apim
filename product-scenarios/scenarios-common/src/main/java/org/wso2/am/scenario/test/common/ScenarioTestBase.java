@@ -191,20 +191,6 @@ public class ScenarioTestBase {
         }
 
     }
-
-    public void createUserWithRole(String username, String password, String adminUsername,
-                                            String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
-        try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient
-                    .addUser(username, password, new String[] { ScenarioTestConstants.PUBLISHER_ROLE }, username);
-        } catch (Exception e) {
-            throw new APIManagementException("Unable to create user with publisher role " + username, e);
-        }
-
-    }
-
     public void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
