@@ -56,6 +56,7 @@ public class ScenarioTestBase {
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     protected static String publisherURL;
+    protected static String storeURL;
     protected static String keyManagerURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
@@ -76,6 +77,10 @@ public class ScenarioTestBase {
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
+        }
+        storeURL = infraProperties.getProperty(STORE_URL);
+        if (storeURL == null) {
+            storeURL = "https://localhost:9443/store";
         }
         setKeyStoreProperties();
     }

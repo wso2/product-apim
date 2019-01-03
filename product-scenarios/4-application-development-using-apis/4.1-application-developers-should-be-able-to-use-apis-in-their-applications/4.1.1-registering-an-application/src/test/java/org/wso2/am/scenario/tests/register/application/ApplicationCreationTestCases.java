@@ -44,7 +44,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private List<String> applicationsList = new ArrayList<>();
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String DEFAULT_STORE_URL = "https://localhost:9443/store";
     private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
     private static final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
             " for application: ";
@@ -74,15 +73,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-        String storeURL;
-        Properties infraProperties;
-
-        infraProperties = getDeploymentProperties();
-        storeURL = infraProperties.getProperty(STORE_URL);
-        if (storeURL == null) {
-            storeURL = DEFAULT_STORE_URL;
-        }
-        setKeyStoreProperties();
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
