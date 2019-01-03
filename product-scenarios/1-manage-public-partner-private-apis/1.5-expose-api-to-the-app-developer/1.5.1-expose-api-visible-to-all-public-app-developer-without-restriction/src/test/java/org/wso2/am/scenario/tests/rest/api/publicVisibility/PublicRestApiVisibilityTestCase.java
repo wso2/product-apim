@@ -39,11 +39,7 @@ import static org.testng.Assert.assertTrue;
 public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
-    private String storeURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
-
     private String apiName = "PhoneVerification1";
     private String apiContext = "/verify";
     private String apiResource = "/find";
@@ -63,20 +59,6 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }

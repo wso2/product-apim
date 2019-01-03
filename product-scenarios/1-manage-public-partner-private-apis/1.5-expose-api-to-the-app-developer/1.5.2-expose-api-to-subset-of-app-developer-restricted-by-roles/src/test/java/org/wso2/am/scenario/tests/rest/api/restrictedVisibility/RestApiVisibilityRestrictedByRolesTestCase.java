@@ -36,11 +36,6 @@ import static org.testng.Assert.assertTrue;
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
-    private String storeURL;
-    private String keyManagerURL;
-    private Properties infraProperties;
-
     private String apiName;
     private String apiContext;
     private String apiVersion = "1.0.0";
@@ -61,25 +56,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-        keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        if (keyManagerURL == null) {
-            keyManagerURL = "https://localhost:9443/services/";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }

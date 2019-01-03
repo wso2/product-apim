@@ -34,9 +34,7 @@ import java.util.Properties;
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
     private String import_definition_url = "swagger-url";
     private String import_definition_file = "swagger-file";
     private File swagger_file;
@@ -50,15 +48,6 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
