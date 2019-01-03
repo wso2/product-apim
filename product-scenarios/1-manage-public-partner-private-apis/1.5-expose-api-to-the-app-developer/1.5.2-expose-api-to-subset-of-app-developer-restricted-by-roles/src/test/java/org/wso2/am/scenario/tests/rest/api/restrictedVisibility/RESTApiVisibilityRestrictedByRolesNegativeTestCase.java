@@ -37,11 +37,6 @@ import static org.testng.Assert.assertFalse;
 public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
-    private String storeURL;
-    private String keyManagerURL;
-    private Properties infraProperties;
-
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
@@ -62,24 +57,6 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-        keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        if (keyManagerURL == null) {
-            keyManagerURL = "https://localhost:9443/services/";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiPublisher.login("admin", "admin");
