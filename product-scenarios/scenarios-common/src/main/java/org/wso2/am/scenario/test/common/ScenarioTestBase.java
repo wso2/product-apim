@@ -61,7 +61,7 @@ public class ScenarioTestBase {
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
-    public static final String KEYAMANAGER_URL = "keyManagerUrl";
+    public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
 
     public ScenarioTestBase() {
