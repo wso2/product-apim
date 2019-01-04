@@ -75,6 +75,7 @@ public class ScenarioTestBase {
             publisherURL = "https://localhost:9443/publisher";
         }
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
+        keyManagerURL = keyManagerURL + "/"; //temp fix
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
         }
