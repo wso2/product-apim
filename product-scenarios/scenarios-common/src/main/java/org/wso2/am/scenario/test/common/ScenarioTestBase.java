@@ -86,10 +86,6 @@ public class ScenarioTestBase {
         if (storeURL == null) {
             storeURL = "https://localhost:9443/store";
         }
-        storeURL = infraProperties.getProperty(STORE_URL);
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
         setKeyStoreProperties();
     }
 
