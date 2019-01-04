@@ -86,6 +86,25 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
+    public APIRequest(String name, String context, String visibility, String version, String resource,
+                      String tiersCollection, URL productionEndpointUrl, URL sandboxEndpointUrl) {
+        this.name = name;
+        this.context = context;
+        this.visibility = visibility;
+        this.version = version;
+        this.resource = resource;
+        this.tiersCollection = tiersCollection;
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""+ productionEndpointUrl + "\"," +
+                            "\"config\":null},\"sandbox_endpoints\":{\"url\":\""+ sandboxEndpointUrl + "\"," +
+                            "\"config\":null},\"endpoint_type\":\"http\"}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+        }
+        constructSwagger();
+    }
+
     public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
                       String tiersCollection, URL endpointUrl) {
 
@@ -242,7 +261,12 @@ public class APIRequest extends AbstractRequest {
 
     public void constructSwagger() {
         setSwagger("{\"swagger\":\"2.0\",\"paths\":{" + "\"" + resource + "\""
-                + ":{\"post\":{\"parameters\":[{\"name\":\"Payload\",\"description\":\"Request Body\",\"required\":false,\"in\":\"body\",\"schema\":{\"type\":\"object\",\"properties\":{\"payload\":{\"type\":\"string\"}}}}],\"responses\":{\"200\":{\"description\":\"\"}}}}},\"info\":{\"title\": "
-                + "\"" + name + "\"" + ",\"version\":" + "\"" + version + "\"" + "}}");
+                + ":{\"post\":{\"x-auth-type\":\"Application %26 Application User\",\"x-throttling-tier\":\""
+                + tiersCollection + "\",\"parameters\":[{\"name\":\"Payload\",\"description\":\"Request Body\"," +
+                "\"required\":false,\"in\":\"body\",\"schema\":{\"type\":\"object\",\"properties\":{\"payload\":" +
+                "{\"type\":\"string\"}}}}],\"responses\":{\"200\":{\"description\":\"\"}}},\"get\":{\"x-auth-type\":" +
+                "\"Application %26 Application User\",\"x-throttling-tier\":\"" + tiersCollection + "\",\"responses\"" +
+                ":{\"200\":{\"description\":\"\"}}}}},\"info\":{\"title\": " + "\"" + name + "\"" + ",\"version\":" +
+                "\"" + version + "\"}}");
     }
 }
