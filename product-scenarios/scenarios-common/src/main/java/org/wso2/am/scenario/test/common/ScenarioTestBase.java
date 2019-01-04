@@ -50,6 +50,8 @@ import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import static org.testng.Assert.assertTrue;
+
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
@@ -75,9 +77,10 @@ public class ScenarioTestBase {
             publisherURL = "https://localhost:9443/publisher";
         }
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-        keyManagerURL = keyManagerURL + "/"; //temp fix
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
+        } else {
+            keyManagerURL = keyManagerURL + "/"; //temp fix
         }
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
@@ -255,6 +258,34 @@ public class ScenarioTestBase {
             userManagementClient.deleteRole(role);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete role :" + role, e);
+        }
+    }
+
+    public void isAPIVisibleInStoreForAnonymousUser(String apiName, String tenantDomain)
+            throws APIManagerIntegrationTestException {
+        APIStoreRestClient apiStoreClient = new APIStoreRestClient(storeURL);
+
+        long waitTime = System.currentTimeMillis() + 5 * 1000;
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse apiResponseStore = apiStoreClient.getAPIListFromStoreAsAnonymousUser(tenantDomain);
+
+            log.info("WAIT for availability of API: " + apiName);
+
+            if (apiResponseStore != null) {
+                log.info("Data: " + apiResponseStore.getData());
+                if (apiResponseStore.getData().contains(apiName)) {
+                    verifyResponse(apiResponseStore);
+                    assertTrue(apiResponseStore.getData().contains(apiName));
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
         }
     }
 
