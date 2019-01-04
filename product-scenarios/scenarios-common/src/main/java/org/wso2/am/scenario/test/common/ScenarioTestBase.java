@@ -184,6 +184,20 @@ public class ScenarioTestBase {
         }
     }
 
+    public void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
+                                                      String adminPassword) throws APIManagementException {
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient
+                    .addUser(username, password, new String[] { ScenarioTestConstants.CREATOR_ROLE,
+                            ScenarioTestConstants.PUBLISHER_ROLE }, username);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
+        }
+
+    }
+
     public void createUserWithPublisherRole(String username, String password, String adminUsername,
             String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
