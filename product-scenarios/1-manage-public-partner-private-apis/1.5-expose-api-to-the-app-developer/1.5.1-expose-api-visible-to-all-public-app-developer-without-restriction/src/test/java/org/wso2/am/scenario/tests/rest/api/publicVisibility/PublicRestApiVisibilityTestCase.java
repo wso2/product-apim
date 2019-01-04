@@ -89,31 +89,8 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
         verifyResponse(apiResponsePublisher);
 
-        apiStoreClient = new APIStoreRestClient(storeURL);
-        HttpResponse apiResponseStore;
-
-        while (waitTime > System.currentTimeMillis()) {
-            HttpResponse response = null;
-            apiResponseStore = apiStoreClient.getAPIListFromStoreAsAnonymousUser(tenantDomain);
-
-            log.info("WAIT for availability of API: " + apiName);
-
-            if (apiResponseStore != null) {
-                log.info("Data: " + response.getData());
-                if (response.getData().contains(apiName)) {
-                    verifyResponse(apiResponseStore);
-                    assertTrue(apiResponseStore.getData().contains(apiName));
-                    verifyResponse(apiResponseStore);
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
-
-                    }
-                }
-            }
-        }
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiName, "carbon.super");
     }
 
     @Test(description = "1.5.1.2")
@@ -123,9 +100,6 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         apiContext = "/findVerification";
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
                 new URL(backendEndPoint));
-
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + WAIT_TIME;
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -143,28 +117,8 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
         verifyResponse(apiPublishResponse);
 
-        apiStoreClient = new APIStoreRestClient(storeURL);
-        HttpResponse apiResponseStore;
-
-        while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreClient.getSwaggerDocumentWithoutLogin(admin, apiName, apiVersion);
-
-            log.info("WAIT for availability of resource in API: " + apiName);
-
-            if (apiResponseStore != null) {
-                log.info("Data: " + apiResponseStore.getData());
-                if (apiResponseStore.getData().contains(apiResource)) {
-                    assertTrue(apiResponseStore.getData().contains(apiResource));
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
-
-                    }
-                }
-            }
-        }
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiName, "carbon.super");
     }
 
     @AfterClass(alwaysRun = true)

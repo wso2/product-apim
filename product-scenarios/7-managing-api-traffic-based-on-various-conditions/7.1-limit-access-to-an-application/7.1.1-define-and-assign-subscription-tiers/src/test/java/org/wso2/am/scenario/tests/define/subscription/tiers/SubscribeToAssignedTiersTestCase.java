@@ -89,6 +89,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application for single tier
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameSingleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
@@ -113,6 +117,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application for multiple tiers
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameMultipleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
@@ -146,6 +154,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application to subscribe before republishing
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameBeforeAPIRepublish, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
