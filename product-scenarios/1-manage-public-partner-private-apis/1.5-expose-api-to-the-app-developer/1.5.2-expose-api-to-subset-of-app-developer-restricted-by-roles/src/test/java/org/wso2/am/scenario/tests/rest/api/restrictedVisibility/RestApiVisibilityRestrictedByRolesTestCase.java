@@ -18,6 +18,8 @@ package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
@@ -43,6 +45,10 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private String apiVisibility = "restricted";
     private String tierCollection = "Gold,Bronze";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private static final Log log = LogFactory.getLog(RestApiVisibilityRestrictedByRolesTestCase.class);
+    private static final long WAIT_TIME = 3 * 1000;
+    private long currentTime = System.currentTimeMillis();
+    private long waitTime = currentTime + WAIT_TIME;
 
     private String userName;
     private String password;
@@ -115,11 +121,29 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiStoreClient.login(userName, password);
     }
 
-    private void checkAPIInStore(String apiName) throws Exception {
+    private void checkAPIInStore(String publishedAPI) throws APIManagerIntegrationTestException {
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
 
-        HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
-        assertTrue(apiResponseStore.getData().contains(apiName), apiName + " is not visible in store");
-        verifyResponse(apiResponseStore);
+            log.info("WAIT for availability of API: " + publishedAPI);
+
+            if (apiResponseStore != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(publishedAPI)) {
+                    assertTrue(apiResponseStore.getData().contains(publishedAPI), publishedAPI +
+                            " is not visible in store");
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
     }
 
     private void validateRoles(String roles) throws APIManagerIntegrationTestException {
