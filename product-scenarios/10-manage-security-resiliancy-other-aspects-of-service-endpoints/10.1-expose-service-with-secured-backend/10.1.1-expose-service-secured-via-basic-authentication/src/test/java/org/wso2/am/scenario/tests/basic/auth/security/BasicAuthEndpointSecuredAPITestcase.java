@@ -54,19 +54,19 @@ import static org.eclipse.jdt.internal.compiler.util.Util.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class BasicAuthenticationEndpointSecurityTestcase extends ScenarioTestBase {
-    private static final Log log = LogFactory.getLog(BasicAuthenticationEndpointSecurityTestcase.class);
+public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
+    private static final Log log = LogFactory.getLog(BasicAuthEndpointSecuredAPITestcase.class);
     private final String apiName = UUID.randomUUID().toString();
     private final String apiContext = "/" + UUID.randomUUID().toString();
+    private final String admin = "admin";
     private final String apiVersion = "1.0.0";
     private final String apiResource = "/sec";
     private final String applicationName = "EndpointSecurityApplication";
     private final String applicationDescription = "SampleDescription";
-    private final String tiersCollection = "Unlimited";
     private final String endpointType = "secured";
     private final String endpointAuthType = "basicAuth";
-    private final String epUsername = "admin1";
-    private final String epPassword = "!@#$%^admin.123$%";
+    private final String epUsername = "wso2user";
+    private final String epPassword = "!@#$%^wso2.123$%";
     private final String endpointURL = "https://localhost:9443/jaxrs_basic/services/customers/customerservice/";
 
     private APIRequest apiRequest;
@@ -94,11 +94,11 @@ public class BasicAuthenticationEndpointSecurityTestcase extends ScenarioTestBas
 
         setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login("admin", "admin");
+        apiPublisher.login(admin, admin);
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login("admin", "admin");
+        apiStore.login(admin, admin);
         try {
-            WebAppDeployUtils.deployWebApp(serviceEndpoint, "admin", "admin", warFileLocation,
+            WebAppDeployUtils.deployWebApp(serviceEndpoint, admin, admin, warFileLocation,
                     warFileName);
             log.info("WebApp deployed successfully");
         } catch (RemoteException | MalformedURLException e) {
@@ -110,14 +110,16 @@ public class BasicAuthenticationEndpointSecurityTestcase extends ScenarioTestBas
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
         // Create an API
         apiRequest = new APIRequest(apiName, apiContext, apiVersion, endpointType, endpointAuthType,
-                tiersCollection, endpointURL, epUsername, URLEncoder.encode(epPassword, UTF_8), "0",
-                "GET", "Application & Application User",
-                "Unlimited", apiResource);
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, endpointURL, epUsername, URLEncoder.encode(epPassword, UTF_8), "0",
+                APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, apiResource);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(apiCreationResponse);
 
         // Change the API lifecycle state from CREATED to PUBLISHED
-        APILifeCycleStateRequest apiLifeCycleStateRequest = new APILifeCycleStateRequest(apiName, "admin", APILifeCycleState.PUBLISHED);
+        APILifeCycleStateRequest apiLifeCycleStateRequest = new APILifeCycleStateRequest(apiName, admin,
+                APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(apiLifeCycleStateRequest);
         verifyResponse(apiPublishResponse);
         log.info("Successfully published the API - " + apiName);
@@ -145,7 +147,7 @@ public class BasicAuthenticationEndpointSecurityTestcase extends ScenarioTestBas
         String accessToken = (keyGenerationRespData.getJSONObject("data").getJSONObject("key"))
                 .get("accessToken").toString();
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
 
         HttpResponse apiResponse = HttpClient.doGet(getHttpsAPIInvocationURL(apiContext, apiVersion, apiResource) ,
                 requestHeaders);
@@ -162,7 +164,7 @@ public class BasicAuthenticationEndpointSecurityTestcase extends ScenarioTestBas
     public void destroy() throws Exception {
         HttpResponse deleteApplicationResponse = apiStore.removeApplication(applicationName);
         verifyResponse(deleteApplicationResponse);
-        HttpResponse deleteAPIResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
+        HttpResponse deleteAPIResponse = apiPublisher.deleteAPI(apiName, apiVersion, admin);
         verifyResponse(deleteAPIResponse);
     }
 }
