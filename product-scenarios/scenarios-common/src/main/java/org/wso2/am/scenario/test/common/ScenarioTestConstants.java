@@ -20,5 +20,5 @@ public class ScenarioTestConstants {
     public static final String CREATOR_ROLE  = "Internal/creator";
     public static final String SUBSCRIBER_ROLE  = "Internal/subscriber";
     public static final String TENANT_WSO2  = "wso2.com";
-    public static final long WAIT_TIME  = 15000;
+    public static final long TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH = 15000;
 }
