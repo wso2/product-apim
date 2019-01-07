@@ -124,6 +124,17 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         verifyResponse(apiPublishResponse);
         log.info("Successfully published the API - " + apiName);
 
+        // Retrieve the created API
+        HttpResponse getAPIResponse = apiPublisher.getAPI(apiName, admin);
+        verifyResponse(getAPIResponse);
+        JSONObject getAPIRespData = new JSONObject(getAPIResponse.getData());
+        assertTrue(getAPIRespData.getJSONObject("api").get("endpointAuthTypeDigest").equals("false"),
+                "Endpoint security type does not match");
+        assertTrue(getAPIRespData.getJSONObject("api").get("epUsername").equals(epUsername),
+                "Endpoint username does not match");
+        assertTrue(getAPIRespData.getJSONObject("api").get("epPassword").equals(epPassword),
+                "Endpoint password does not match");
+
         // Create an application
         HttpResponse addApplicationResponse = apiStore.addApplication(applicationName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", applicationDescription);
