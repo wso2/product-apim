@@ -15,8 +15,7 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
-import org.apache.axis2.AxisFault;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -25,7 +24,6 @@ import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -33,19 +31,11 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 
 import java.net.URL;
 import java.util.Properties;
-import javax.ws.rs.core.Response;
-
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
-    private String storeURL;
-    private String keyManagerURL;
-    private Properties infraProperties;
-
     private String apiName;
     private String apiContext;
     private String apiVersion = "1.0.0";
@@ -62,52 +52,25 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
 
-    private UserManagementClient userManagementClient;
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-        keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        if (keyManagerURL == null) {
-            keyManagerURL = "https://localhost:9443/services/";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-
-        try {
-            userManagementClient = new UserManagementClient(keyManagerURL, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        } catch (AxisFault e) {
-            throw new APIManagerIntegrationTestException("Unable to create UserManagementClient", e);
-        }
     }
 
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISRestrictedByRoles() throws Exception {
 
-        subscribeRole = "Health-Subscriber";
         userName = "SubscriberUser";
         password = "password123$";
         apiName = "PhoneVerificationAdd";
         apiContext = "/phoneVerifyAdd";
+        subscribeRole = "Health-Subscriber";
 
-        createRole(userManagementClient, subscribeRole);
-        createUser(userManagementClient, userName, password, subscribeRole);
-
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole);
+        createUser(userName, password, new String[]{subscribeRole} , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
         apiPublisher.validateRoles(subscribeRole);
@@ -129,9 +92,9 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiName = "APIWildCardApi";
         apiContext = "/AddApiWildCardApi";
 
-        createRole(userManagementClient, subscribeRole);
-        createRole(userManagementClient, creatorRole);
-        createUser(userManagementClient, userName, password, subscribeRole);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, creatorRole);
+        createUser(userName, password, new String[]{subscribeRole} , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, apiVersion, apiResource,
@@ -157,23 +120,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
         assertTrue(apiResponseStore.getData().contains(apiName), apiName + " is not visible in store");
         verifyResponse(apiResponseStore);
-    }
-
-    private void createRole(UserManagementClient userManagementClient, String role) throws Exception {
-
-        userManagementClient.addRole(role,
-                new String[]{},
-                new String[]{"/permission/admin/login",
-                        "/permission/admin/manage/api/subscribe"});
-    }
-
-    private void createUser(UserManagementClient userManagementClient, String userName, String password, String role)
-            throws Exception {
-
-        if (userManagementClient.userNameExists(role, userName)) {
-            userManagementClient.deleteUser(userName);
-        }
-        userManagementClient.addUser(userName, password, new String[]{role}, "");
     }
 
     private void validateRoles(String roles) throws APIManagerIntegrationTestException {
@@ -205,17 +151,17 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         assertTrue(apiResponseGetAPI.getData().contains(apiName), apiName + " is not visible in publisher");
     }
 
-    @AfterTest(alwaysRun = true)
+   @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, ADMIN_LOGIN_USERNAME);
         apiPublisher.deleteAPI("APIWildCardApi", apiVersion, ADMIN_LOGIN_USERNAME);
 
-        userManagementClient.deleteUser("SubscriberUser");
-        userManagementClient.deleteRole("Health-Subscriber");
-        userManagementClient.deleteUser("MultipleRoleUser");
-        userManagementClient.deleteRole("NewRole1");
-        userManagementClient.deleteRole("NewRole2");
+        deleteUser("SubscriberUser", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteRole("Health-Subscriber", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser("MultipleRoleUser", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteRole("NewRole1", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteRole("NewRole2", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 }
 

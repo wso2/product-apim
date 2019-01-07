@@ -43,8 +43,6 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private final Log log = LogFactory.getLog(SubscribeToAssignedTiersTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private String publisherURL;
-    private String storeURL;
     private APIRequest apiRequest;
 
     private String apiNameSingleTier = "Single_Tier_API";
@@ -62,7 +60,6 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private String apiVisibility = "public";
     private String providerName = "admin";
     private String apiResource = "/groups";
-    private Properties infraProperties;
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_PASSWORD = "admin";
 
@@ -74,17 +71,6 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher.login(ADMIN_USERNAME, ADMIN_PASSWORD);
@@ -103,6 +89,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application for single tier
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameSingleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
@@ -127,6 +117,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application for multiple tiers
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameMultipleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
@@ -160,6 +154,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        // wait till API indexed in Store
+        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+
         //Create Application to subscribe before republishing
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameBeforeAPIRepublish, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,

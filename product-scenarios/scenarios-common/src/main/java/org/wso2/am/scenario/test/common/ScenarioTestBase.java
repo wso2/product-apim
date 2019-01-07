@@ -50,17 +50,20 @@ import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import static org.testng.Assert.assertTrue;
+
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     protected static String publisherURL;
+    protected static String storeURL;
     protected static String keyManagerURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
-    public static final String KEYAMANAGER_URL = "keyManagerUrl";
+    public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
     protected static String httpsAPIInvocationURL;
 
@@ -77,6 +80,12 @@ public class ScenarioTestBase {
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
+        } else {
+            keyManagerURL = keyManagerURL + "/"; //temp fix
+        }
+        storeURL = infraProperties.getProperty(STORE_URL);
+        if (storeURL == null) {
+            storeURL = "https://localhost:9443/store";
         }
         setKeyStoreProperties();
         httpsAPIInvocationURL = "https://localhost:8243";
@@ -146,7 +155,7 @@ public class ScenarioTestBase {
         }
     }
 
-    public static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
+    private static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
             throws AxisFault {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
@@ -181,6 +190,20 @@ public class ScenarioTestBase {
         }
     }
 
+    public void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
+                                                      String adminPassword) throws APIManagementException {
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient
+                    .addUser(username, password, new String[] { ScenarioTestConstants.CREATOR_ROLE,
+                            ScenarioTestConstants.PUBLISHER_ROLE }, username);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
+        }
+
+    }
+
     public void createUserWithPublisherRole(String username, String password, String adminUsername,
             String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
@@ -193,7 +216,6 @@ public class ScenarioTestBase {
         }
 
     }
-
     public void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
@@ -218,13 +240,68 @@ public class ScenarioTestBase {
         }
     }
 
+    public void createRole(String adminUsername, String adminPassword, String role) throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addRole(role,
+                    new String[]{},
+                    new String[]{"/permission/admin/login",
+                            "/permission/admin/manage/api/subscribe"});
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to create role :" + role, e);
+        }
+
+    }
+
     public void deleteUser(String username, String adminUsername, String adminPassword) throws APIManagementException {
+
         UserManagementClient userManagementClient;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.deleteUser(username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete user :" + username, e);
+        }
+    }
+
+    public void deleteRole(String role, String adminUsername, String adminPassword) throws APIManagementException {
+
+        UserManagementClient userManagementClient;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.deleteRole(role);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to delete role :" + role, e);
+        }
+    }
+
+    public void isAPIVisibleInStoreForAnonymousUser(String apiName, String tenantDomain)
+            throws APIManagerIntegrationTestException {
+        APIStoreRestClient apiStoreClient = new APIStoreRestClient(storeURL);
+
+        long waitTime = System.currentTimeMillis() + 5 * 1000;
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse apiResponseStore = apiStoreClient.getAPIListFromStoreAsAnonymousUser(tenantDomain);
+
+            log.info("WAIT for availability of API: " + apiName);
+
+            if (apiResponseStore != null) {
+                log.info("Data: " + apiResponseStore.getData());
+                if (apiResponseStore.getData().contains(apiName)) {
+                    verifyResponse(apiResponseStore);
+                    assertTrue(apiResponseStore.getData().contains(apiName));
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
         }
     }
 

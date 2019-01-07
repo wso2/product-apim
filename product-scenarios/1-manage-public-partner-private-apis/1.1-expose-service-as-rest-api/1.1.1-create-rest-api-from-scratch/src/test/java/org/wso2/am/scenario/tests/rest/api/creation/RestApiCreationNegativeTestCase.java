@@ -15,10 +15,7 @@ import java.net.URL;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
-
     private String apiName = "PhoneVerificationNeg";
     private String newApiName = "PhoneVerificationNegNew";
     private String apiName255 = "REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API1234567890";
@@ -41,14 +38,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
