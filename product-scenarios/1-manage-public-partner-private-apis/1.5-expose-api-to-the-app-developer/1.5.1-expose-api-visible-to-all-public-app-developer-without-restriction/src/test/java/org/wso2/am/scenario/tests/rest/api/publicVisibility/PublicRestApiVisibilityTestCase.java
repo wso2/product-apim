@@ -52,8 +52,6 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(PublicRestApiVisibilityTestCase.class);
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private static final long WAIT_TIME = 3 * 1000;
-    private long currentTime = System.currentTimeMillis();
-    private long waitTime = currentTime + WAIT_TIME;
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
