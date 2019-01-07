@@ -62,6 +62,7 @@ public class ScenarioTestBase {
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "keyManagerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
+    protected static String httpsAPIInvocationURL;
 
     public ScenarioTestBase() {
         setup();
@@ -78,6 +79,7 @@ public class ScenarioTestBase {
             keyManagerURL = "https://localhost:9443/services/";
         }
         setKeyStoreProperties();
+        httpsAPIInvocationURL = "https://localhost:8243";
     }
 
     /**
@@ -224,6 +226,10 @@ public class ScenarioTestBase {
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete user :" + username, e);
         }
+    }
+
+    public String getHttpsAPIInvocationURL(String apiContext, String apiVersion, String apiResource) {
+        return httpsAPIInvocationURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
 }
