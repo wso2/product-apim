@@ -275,31 +275,35 @@ public class ScenarioTestBase {
         }
     }
 
-    public void isAPIVisibleInStoreForAnonymousUser(String apiName, String tenantDomain)
+    public void isAPIVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
             throws APIManagerIntegrationTestException {
-        APIStoreRestClient apiStoreClient = new APIStoreRestClient(storeURL);
-
-        long waitTime = System.currentTimeMillis() + 5 * 1000;
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.WAIT_TIME;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
-            HttpResponse apiResponseStore = apiStoreClient.getAPIListFromStoreAsAnonymousUser(tenantDomain);
-
-            log.info("WAIT for availability of API: " + apiName);
-
+            apiResponseStore = apiStoreRestClient.getAPI();
             if (apiResponseStore != null) {
-                log.info("Data: " + apiResponseStore.getData());
                 if (apiResponseStore.getData().contains(apiName)) {
+                    log.info("API found in store : " + apiName);
+                    log.info(apiResponseStore.getData());
                     verifyResponse(apiResponseStore);
                     assertTrue(apiResponseStore.getData().contains(apiName));
                     verifyResponse(apiResponseStore);
                     break;
                 } else {
                     try {
+                        log.info("API : " + apiName + " not found in store yet.");
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
 
                     }
                 }
             }
+        }
+        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was not found in store at the end of wait time.");
+            Assert.assertTrue(false, "API not found in store : " + apiName);
+
         }
     }
 

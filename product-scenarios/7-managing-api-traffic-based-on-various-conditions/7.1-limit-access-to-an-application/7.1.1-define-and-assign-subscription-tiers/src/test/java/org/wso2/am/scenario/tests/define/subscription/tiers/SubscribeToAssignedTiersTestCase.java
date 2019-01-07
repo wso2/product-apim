@@ -36,7 +36,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.Properties;
 
 public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
@@ -91,7 +90,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
         
         // wait till API indexed in Store
-        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+        isAPIVisibleInStore(apiNameSingleTier, apiStore);
 
         //Create Application for single tier
         HttpResponse addApplicationResponse = apiStore
@@ -119,7 +118,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
 
         // wait till API indexed in Store
-        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+        isAPIVisibleInStore(apiNameMultipleTier, apiStore);
 
         //Create Application for multiple tiers
         HttpResponse addApplicationResponse = apiStore
@@ -156,7 +155,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
 
         // wait till API indexed in Store
-        isAPIVisibleInStoreForAnonymousUser(apiRepublishedWithDiffTier, "carbon.super");
+        isAPIVisibleInStore(apiRepublishedWithDiffTier, apiStore);
 
         //Create Application to subscribe before republishing
         HttpResponse addApplicationResponse = apiStore

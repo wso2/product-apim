@@ -30,7 +30,6 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIRequest;
 
 import java.net.URL;
-import java.util.Properties;
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
@@ -55,12 +54,14 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
     private static final long WAIT_TIME = 3 * 1000;
     private long currentTime = System.currentTimeMillis();
     private long waitTime = currentTime + WAIT_TIME;
-    private APIStoreRestClient apiStoreClient;
+    private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
+        apiStore = new APIStoreRestClient(storeURL);
+        apiStore.login("admin","admin");
     }
 
     @Test(description = "1.5.1.1 and 1.5.1.2")
@@ -90,7 +91,7 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         verifyResponse(apiResponsePublisher);
 
         // wait till API indexed in Store
-        isAPIVisibleInStoreForAnonymousUser(apiName, "carbon.super");
+        isAPIVisibleInStore(apiName, apiStore);
     }
 
     @Test(description = "1.5.1.2")
@@ -118,7 +119,7 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         verifyResponse(apiPublishResponse);
 
         // wait till API indexed in Store
-        isAPIVisibleInStoreForAnonymousUser(apiName, "carbon.super");
+        isAPIVisibleInStore(apiName, apiStore);
     }
 
     @AfterClass(alwaysRun = true)
