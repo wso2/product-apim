@@ -17,6 +17,7 @@
 */
 package org.wso2.am.integration.tests.other;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
@@ -34,7 +35,7 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.ServerConstants;
-import sun.misc.BASE64Encoder;
+//import sun.misc.BASE64Encoder;
 
 import java.io.File;
 import java.net.URL;
@@ -80,8 +81,8 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
         apiPublisher.addAPI(apiRequest);
 
         Map<String, String> map = new HashMap<String, String>();
-        map.put("Authorization", "Basic " + new BASE64Encoder().encode((user.getUserName() + ':' + user.getPassword())
-                .getBytes()));
+        map.put("Authorization", "Basic " + new String(Base64.encodeBase64((user.getUserName() + ':' + user.getPassword()).getBytes())));
+
         String username = user.getUserNameWithoutDomain();
         if (TestUserMode.TENANT_ADMIN == userMode) {
             username = user.getUserNameWithoutDomain() + "-AT-" + user.getUserDomain();

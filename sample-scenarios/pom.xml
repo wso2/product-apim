@@ -161,5 +161,13 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+            <dependency>
+            <groupId>org.wso2.orbit.javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>javax.annotation</groupId>
+           <artifactId>javax.annotation-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
