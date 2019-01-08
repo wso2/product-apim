@@ -65,8 +65,11 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     @Test(description = "1.5.2.1")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
 
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, HEALTH_API_PUBLISHER);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER);
+        String[] permission = new String[]{"/permission/admin/login",
+                "/permission/admin/manage/api/subscribe"};
+
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, HEALTH_API_PUBLISHER, permission);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER, permission);
 
         createUser(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD, new String[]{HEALTH_API_PUBLISHER},
                 ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);

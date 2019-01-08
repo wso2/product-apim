@@ -232,15 +232,15 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createRole(String adminUsername, String adminPassword, String role) throws APIManagementException {
+    public void createRole(String adminUsername, String adminPassword, String role, String[] permisionArray) throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addRole(role,
                     new String[]{},
-                    new String[]{"/permission/admin/login",
-                            "/permission/admin/manage/api/subscribe"});
+                    permisionArray
+                   );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
@@ -258,6 +258,18 @@ public class ScenarioTestBase {
         }
     }
 
+    public void updateUser(String username,String newRole,String deletedRole, String adminUsername, String adminPassword)
+            throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addRemoveRolesOfUser(username,new String[] { newRole },new String[] { deletedRole });
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to update user with the provided role " + newRole, e);
+        }
+    }
+
     public void deleteRole(String role, String adminUsername, String adminPassword) throws APIManagementException {
 
         UserManagementClient userManagementClient;
@@ -266,6 +278,17 @@ public class ScenarioTestBase {
             userManagementClient.deleteRole(role);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete role :" + role, e);
+        }
+    }
+
+    public void getUserList(String username, String password, String[] roleList,
+                           String adminUsername, String adminPassword) throws APIManagementException {
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addUser(username, password, roleList, username);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to create user with the provided role list " + roleList, e);
         }
     }
 
