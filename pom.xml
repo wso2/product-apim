@@ -841,6 +841,12 @@
             </dependency>
 
             <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wso2.orbit.com.github.dblock.waffle</groupId>
                 <artifactId>waffle-jna</artifactId>
                 <version>${waffle-jna.version}</version>
@@ -996,7 +1002,11 @@
                 <artifactId>logging-interceptor</artifactId>
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.orbit.javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${version.org.wso2.orbit.javax.xml.bind}</version>
+            </dependency>
             <!-- Forget-me tool -->
             <dependency>
                 <groupId>org.wso2.carbon.privacy</groupId>
@@ -1131,11 +1141,13 @@
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
         <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
-        <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
+        <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
         <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
+        <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
+        <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
