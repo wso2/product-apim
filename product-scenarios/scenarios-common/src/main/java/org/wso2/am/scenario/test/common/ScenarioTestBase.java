@@ -75,7 +75,7 @@ public class ScenarioTestBase {
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
-        } 
+        }
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
             storeURL = "https://localhost:9443/store";
