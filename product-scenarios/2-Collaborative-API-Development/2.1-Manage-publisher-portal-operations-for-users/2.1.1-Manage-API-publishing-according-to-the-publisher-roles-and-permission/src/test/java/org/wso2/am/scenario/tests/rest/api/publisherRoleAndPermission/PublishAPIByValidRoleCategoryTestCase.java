@@ -259,8 +259,8 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         }
 
         if (roleList.size() > 0) {
-            for (String username : userList) {
-                deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+            for (String role : roleList) {
+                deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
             }
         }
     }
