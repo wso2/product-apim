@@ -74,6 +74,79 @@ public class ScenarioDataProvider {
         };
     }
 
+    @DataProvider(name = "RoleValidationDataProvider")
+    public static Object[][] roleValidationDataProvider() {
+        return new Object[][]{
+                { "admin" , "internal/publisher"},
+                { "internal/creator" , "internal/publisher"},
+
+                { "admin", "internal/creator,internal/publisher"},
+                { "internal/creator", "internal/creator,internal/publisher"},
+
+                { "admin", "internal/creator,internal/publisher,internal/subscriber"},
+                { "internal/creator", "internal/creator,internal/publisher,internal/subscriber"},
+
+                { "admin", "admin,internal/publisher"},
+                { "internal/creator", "admin,internal/publisher"},
+
+                { "admin", "admin,internal/creator"},
+                { "internal/creator", "admin,internal/creator"},
+
+                { "admin", "admin,internal/creator,internal/publisher"},
+                { "internal/creator","admin,internal/creator,internal/publisher"},
+
+
+                { "admin", "admin,internal/creator,internal/publisher,internal/subscriber"},
+                { "internal/creator", "admin,internal/creator,internal/publisher,internal/subscriber"},
+
+                { "admin", "admin"},
+                { "internal/creator" , "admin"}
+        };
+    }
+
+    @DataProvider(name = "RoleUpdatingDataProvider")
+    public static Object[][] roleUpdatingDataProvider() {
+        return new Object[][]{
+                {"internal/subscriber"},
+                {""},
+                {"internal/creator"}
+        };
+    }
+
+    @DataProvider(name = "PermissionValidationDataProvider")
+    public static Object[][] permissionValidationDataProvider() {
+
+        String loginPermission = "/permission/admin/login";
+        String adminPermission = "/permission/admin";
+        String apiCreatorPermission = "/permission/admin/manage/api/create";
+        String apiPublisherPermission = "/permission/admin/manage/api/publish";
+        String apiSubscriberPermission = "/permission/admin/manage/api/subscribe";
+
+        String[] publisherPermissionList = new String[] { loginPermission, apiPublisherPermission };
+        String[] publisherCreatorPermissionList = new String[] { loginPermission, apiPublisherPermission,
+                apiCreatorPermission };
+        String[] publisherCreatorSubscriberPermissionList = new String[] { loginPermission, apiPublisherPermission, apiCreatorPermission,
+                apiSubscriberPermission};
+        String[] publisherAdminPermissionList = new String[] { apiPublisherPermission, adminPermission};
+        String[] publisherCreatorAdminPermissionList = new String[] { apiPublisherPermission, apiCreatorPermission ,
+                adminPermission };
+        String[] publisherCreatorSubscriberAdminPermissionList = new String[] { apiPublisherPermission,
+                apiCreatorPermission, apiSubscriberPermission, adminPermission };
+        String[] adminPermissionList = new String[] { adminPermission };
+
+        return new Object[][]{
+                { publisherPermissionList },
+                { publisherCreatorPermissionList },
+                { publisherCreatorSubscriberPermissionList },
+                { publisherAdminPermissionList },
+                { publisherCreatorAdminPermissionList },
+                { publisherCreatorSubscriberAdminPermissionList },
+                { adminPermissionList },
+        };
+    }
+
+
+
     @DataProvider(name = "MissingMandatoryApplicationValuesDataProvider")
     public static Object[][] missingMandatoryApplicationValuesDataProvider() {
         String urlPrefix = "{{backendURL}}/site/blocks/application/application-add/ajax/application-add.jag?" +
