@@ -24,5 +24,16 @@
 
     <artifactId>org.wso2.carbon.apimgt.clients.publisher.api</artifactId>
     <name>Publisher API client</name>
+    <dependencies>
+    <dependency>
+            <groupId>org.wso2.orbit.javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.2</version>
+        </dependency>
+    </dependencies>
 
 </project>
