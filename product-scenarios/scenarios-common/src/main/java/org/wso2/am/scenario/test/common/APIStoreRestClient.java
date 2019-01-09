@@ -145,7 +145,7 @@ public class APIStoreRestClient {
      * @return - http response of get API post request
      * @throws APIManagerIntegrationTestException - throws if API information retrieval fails.
      */
-    public HttpResponse getAPI() throws APIManagerIntegrationTestException {
+    public HttpResponse getAPIs() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpClient.doPost(
@@ -156,6 +156,18 @@ public class APIStoreRestClient {
                                                          "Error: " + e.getMessage(), e);
         }
 
+    }
+
+    public HttpResponse getAPI(String provider, String name, String version) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + "/site/blocks/listing/ajax/item-list.jag?action=getAPI"),
+                    "name=" + name + "&version=" + version + "&provider=" + provider, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve API information. " +
+                    "Error: " + e.getMessage(), e);
+        }
     }
 
     private String getSession(Map<String, String> responseHeaders) {

@@ -86,5 +86,13 @@
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-models</artifactId>
+        </dependency>
     </dependencies>
 </project>

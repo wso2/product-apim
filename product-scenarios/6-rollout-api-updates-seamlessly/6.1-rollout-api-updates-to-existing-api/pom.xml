@@ -28,12 +28,24 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Manage New API Version</name>
+    <version>2.6.0</version>
     <artifactId>manage-api-versions</artifactId>
+    <name>[APIM][SCENARIO_6][SUBSCENARIO_1] - Rollout an interface change to an existing API that will impact existing users of the current API</name>
     <packaging>pom</packaging>
 
     <modules>
         <module>6.1.1-update-published-api-using-api-publisher</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>scenarios-common</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 
 </project>
