@@ -7,3 +7,4 @@
 
 ### [1.1 Expose your service as REST API and apply QoS.](https://github.com/wso2/product-apim/tree/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api)
 ### [1.2 XXX]()
+### [1.5 Expose API to the app developer] (https://github.com/wso2/product-apim/tree/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.5-expose-api-to-the-app-developer)
