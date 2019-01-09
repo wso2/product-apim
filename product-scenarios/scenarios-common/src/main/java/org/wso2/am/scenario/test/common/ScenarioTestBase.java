@@ -281,8 +281,6 @@ public class ScenarioTestBase {
                     log.info("API found in store : " + apiName);
                     log.info(apiResponseStore.getData());
                     verifyResponse(apiResponseStore);
-                    assertTrue(apiResponseStore.getData().contains(apiName));
-                    verifyResponse(apiResponseStore);
                     break;
                 } else {
                     try {
@@ -297,7 +295,36 @@ public class ScenarioTestBase {
         if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was not found in store at the end of wait time.");
             Assert.assertTrue(false, "API not found in store : " + apiName);
+        }
+    }
 
+    public void isChangeVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient, String assertText,
+            String tenantDomain) throws APIManagerIntegrationTestException {
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAllPaginatedPublishedAPIs(tenantDomain, 1, 5);
+            if (apiResponseStore != null) {
+                if (apiResponseStore.getData().contains(apiName) && apiResponseStore.getData().contains(assertText)) {
+                    log.info("New changes visible in store for API : " + apiName);
+                    log.info(apiResponseStore.getData());
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        log.info("New changes for  API : " + apiName + " not visible in store yet.");
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName) && !apiResponseStore.getData()
+                .contains(assertText)) {
+            Assert.assertTrue(false,
+                    "New changes for :" + apiName + " was not visible in store at the end of wait time.");
         }
     }
 

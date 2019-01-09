@@ -33,6 +33,7 @@ import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -177,6 +178,9 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse rePublishServiceResponse = apiPublisher.changeAPILifeCycleStatus(republishRequest);
         Assert.assertTrue(rePublishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        isChangeVisibleInStore(apiRepublishedWithDiffTier, apiStore, silverTier, "carbon.super");
+
         //Create new application to subscribe to updated API
         HttpResponse newAddApplicationResponse = apiStore
                 .addApplication(applicationNameAfterAPIRepublish, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
