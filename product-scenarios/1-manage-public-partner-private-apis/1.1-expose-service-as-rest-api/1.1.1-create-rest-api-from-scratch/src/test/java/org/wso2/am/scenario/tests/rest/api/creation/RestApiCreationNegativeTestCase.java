@@ -15,10 +15,7 @@ import java.net.URL;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
-
     private String apiName = "PhoneVerificationNeg";
     private String newApiName = "PhoneVerificationNegNew";
     private String apiName255 = "REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API_with_API_name_contains_more_than_255_charactors_REST_API1234567890";
@@ -41,14 +38,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
@@ -64,7 +53,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.4", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.6", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -75,7 +64,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.5", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -86,7 +75,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.6")
+    @Test(description = "1.1.1.8")
     public void testRESTAPICreationWith255CharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiName255, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -97,7 +86,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.7")
+    @Test(description = "1.1.1.9")
     public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiNameSpecial, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -109,7 +98,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     //TODO: Remove the comment once considered environment fix for create context with 255characters
 
-//    @Test(description = "1.1.1.8")
+//    @Test(description = "1.1.1.10")
 //    public void testRESTAPICreationWith255CharactersContext() throws Exception {
 //
 //        apiRequest = new APIRequest(newApiName, apiContext255, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -121,7 +110,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     /*
      //TODO: this test should be enabled once context validation in jaggery call fixed..
-    @Test(description = "1.1.1.9")
+    @Test(description = "1.1.1.11")
     public void testRESTAPICreationWithNotAllowedCharactersContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpecial, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -132,7 +121,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.10")
+    @Test(description = "1.1.1.12")
     public void testRESTAPICreationWithSpacesContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpaces, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -143,7 +132,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.11")
+    @Test(description = "1.1.1.13")
     public void testRESTAPICreationWithSpacesApiname() throws Exception{
 
         apiRequest = new APIRequest(apiNameSpaces, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -154,7 +143,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 */
 
-    @Test(description = "1.1.1.12")
+    @Test(description = "1.1.1.14")
     public void testRESTAPICreationWithoutApiname() throws Exception {
 
         apiRequest = new APIRequest("", newContext, apiVisibility, apiVersion, apiResource);
@@ -169,7 +158,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.13")
+    @Test(description = "1.1.1.15")
     public void testRESTAPICreationWithoutContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, "", apiVisibility, apiVersion, apiResource);
@@ -184,7 +173,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.14")
+    @Test(description = "1.1.1.16")
     public void testRESTAPICreationWithoutVersion() throws Exception {
 
         apiRequest = new APIRequest(newApiName, newContext, apiVisibility, "", apiResource);
@@ -199,7 +188,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.15", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.17", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
     public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception {
 
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
