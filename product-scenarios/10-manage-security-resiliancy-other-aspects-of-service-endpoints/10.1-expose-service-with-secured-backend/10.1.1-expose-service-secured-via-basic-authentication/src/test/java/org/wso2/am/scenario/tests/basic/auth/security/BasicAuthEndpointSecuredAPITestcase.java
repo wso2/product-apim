@@ -70,29 +70,16 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private final String endpointURL = "https://localhost:9443/jaxrs_basic/services/customers/customerservice/";
 
     private APIRequest apiRequest;
-    private Properties infraProperties;
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
-        infraProperties = getDeploymentProperties();
-        String publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        String storeURL = infraProperties.getProperty(STORE_URL);
         String warFileName = "jaxrs_basic";
         String warFileLocation = System.getProperty("user.dir") + File.separator+ "src/test/resources" + File.separator
                 + warFileName + ".war";
         String serviceEndpoint = "https://localhost:9443/services/";
 
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(admin, admin);
         apiStore = new APIStoreRestClient(storeURL);
@@ -145,6 +132,9 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
         HttpResponse keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
         verifyResponse(keyGenerationResponse);
+
+        // Check the visibility of the API in API store
+
 
         // Add subscription to API
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, "admin", applicationName,
