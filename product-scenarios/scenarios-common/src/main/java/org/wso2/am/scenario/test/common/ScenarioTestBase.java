@@ -188,7 +188,7 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
+    public static void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
                                                       String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
@@ -214,7 +214,7 @@ public class ScenarioTestBase {
         }
 
     }
-    public void createUserWithSubscriberRole(String username, String password,
+    public static void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
@@ -281,7 +281,7 @@ public class ScenarioTestBase {
         HttpResponse apiResponseStore = null;
         log.info("WAIT for availability of API: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreRestClient.getAPI();
+            apiResponseStore = apiStoreRestClient.getAPIs();
             if (apiResponseStore != null) {
                 if (apiResponseStore.getData().contains(apiName)) {
                     log.info("API found in store : " + apiName);

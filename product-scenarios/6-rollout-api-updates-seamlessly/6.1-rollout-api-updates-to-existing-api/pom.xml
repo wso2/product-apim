@@ -29,7 +29,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <version>2.6.0</version>
-    <artifactId>manage-api-versions</artifactId>
+    <artifactId>6.1-rollout-api-updates-to-existing-api</artifactId>
     <name>[APIM][SCENARIO_6][SUBSCENARIO_1] - Rollout an interface change to an existing API that will impact existing users of the current API</name>
     <packaging>pom</packaging>
 
