@@ -25,10 +25,8 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -45,10 +43,8 @@ import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
-import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import static org.testng.Assert.assertTrue;
 
@@ -80,8 +76,6 @@ public class ScenarioTestBase {
         keyManagerURL = infraProperties.getProperty(KEYAMANAGER_URL);
         if (StringUtils.isEmpty(keyManagerURL)) {
             keyManagerURL = "https://localhost:9443/services/";
-        } else {
-            keyManagerURL = keyManagerURL + "/"; //temp fix
         }
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
@@ -277,31 +271,62 @@ public class ScenarioTestBase {
         }
     }
 
-    public void isAPIVisibleInStoreForAnonymousUser(String apiName, String tenantDomain)
+    public void isAPIVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
             throws APIManagerIntegrationTestException {
-        APIStoreRestClient apiStoreClient = new APIStoreRestClient(storeURL);
-
-        long waitTime = System.currentTimeMillis() + 5 * 1000;
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
-            HttpResponse apiResponseStore = apiStoreClient.getAPIListFromStoreAsAnonymousUser(tenantDomain);
-
-            log.info("WAIT for availability of API: " + apiName);
-
+            apiResponseStore = apiStoreRestClient.getAPI();
             if (apiResponseStore != null) {
-                log.info("Data: " + apiResponseStore.getData());
                 if (apiResponseStore.getData().contains(apiName)) {
-                    verifyResponse(apiResponseStore);
-                    assertTrue(apiResponseStore.getData().contains(apiName));
+                    log.info("API found in store : " + apiName);
+                    log.info(apiResponseStore.getData());
                     verifyResponse(apiResponseStore);
                     break;
                 } else {
                     try {
+                        log.info("API : " + apiName + " not found in store yet.");
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
 
                     }
                 }
             }
+        }
+        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was not found in store at the end of wait time.");
+            Assert.assertTrue(false, "API not found in store : " + apiName);
+        }
+    }
+
+    public void isChangeVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient, String assertText,
+            String tenantDomain) throws APIManagerIntegrationTestException {
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAllPaginatedPublishedAPIs(tenantDomain, 1, 5);
+            if (apiResponseStore != null) {
+                if (apiResponseStore.getData().contains(apiName) && apiResponseStore.getData().contains(assertText)) {
+                    log.info("New changes visible in store for API : " + apiName);
+                    log.info(apiResponseStore.getData());
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        log.info("New changes for  API : " + apiName + " not visible in store yet.");
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName) && !apiResponseStore.getData()
+                .contains(assertText)) {
+            Assert.assertTrue(false,
+                    "New changes for :" + apiName + " was not visible in store at the end of wait time.");
         }
     }
 

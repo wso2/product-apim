@@ -79,7 +79,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         getAPI();
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
         loginToStore(userName, password);
-        checkAPIInStore(apiName);
+        isAPIVisibleInStore(apiName, apiStoreClient);
     }
 
     @Test(description = "1.5.2.2")
@@ -105,7 +105,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         getAPI();
         publishAPI(apiName, ADMIN_LOGIN_USERNAME);
         loginToStore(userName, password);
-        checkAPIInStore(apiName);
+        isAPIVisibleInStore(apiName, apiStoreClient);
     }
 
     private void loginToStore(String userName, String password) throws Exception {
@@ -113,13 +113,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(userName, password);
-    }
-
-    private void checkAPIInStore(String apiName) throws Exception {
-
-        HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
-        assertTrue(apiResponseStore.getData().contains(apiName), apiName + " is not visible in store");
-        verifyResponse(apiResponseStore);
     }
 
     private void validateRoles(String roles) throws APIManagerIntegrationTestException {

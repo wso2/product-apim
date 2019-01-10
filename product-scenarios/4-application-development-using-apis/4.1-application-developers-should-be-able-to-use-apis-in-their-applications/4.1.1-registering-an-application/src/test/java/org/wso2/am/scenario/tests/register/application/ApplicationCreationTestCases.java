@@ -118,7 +118,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         validateApplicationWithValidMandatoryValues(applicationName, tier, APPLICATION_DESCRIPTION);
     }
 
-    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+ /*   @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateProductionKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
         verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), PRODUCTION);
@@ -129,7 +129,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
         appKeyRequestGenerator.setKeyType(SANDBOX);
         verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), SANDBOX);
-    }
+    }*/
 
     private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
             throws Exception {
