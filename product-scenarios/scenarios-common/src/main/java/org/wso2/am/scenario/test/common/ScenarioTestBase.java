@@ -63,7 +63,6 @@ public class ScenarioTestBase {
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
-    protected static String httpsAPIInvocationURL;
 
     public ScenarioTestBase() {
         setup();
@@ -88,7 +87,6 @@ public class ScenarioTestBase {
             gatewayHttpsURL = "https://localhost:8243";
         }
         setKeyStoreProperties();
-        httpsAPIInvocationURL = "https://localhost:8243";
     }
 
     /**
@@ -337,7 +335,7 @@ public class ScenarioTestBase {
     }
 
     public String getHttpsAPIInvocationURL(String apiContext, String apiVersion, String apiResource) {
-        return httpsAPIInvocationURL + "/" + apiContext + "/" + apiVersion + apiResource;
+        return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
 }
