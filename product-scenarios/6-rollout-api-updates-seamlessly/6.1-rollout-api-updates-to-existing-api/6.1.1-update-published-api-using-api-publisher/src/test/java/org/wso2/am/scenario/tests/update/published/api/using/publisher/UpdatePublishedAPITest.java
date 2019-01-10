@@ -141,9 +141,6 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
 
         Assert.assertEquals(matchingTemplateCount, 2);
         Assert.assertTrue(newTemplate.toString().contains(UPDATE_RESOURCE));
-
-
-        System.out.println(updatedApi);
     }
 
     private APIIdentifier addAPI(String provider, String apiName, String apiVersion,
