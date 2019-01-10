@@ -35,9 +35,15 @@ timeStamp() {
 
 disableDataPublisher(){
 	value=`xmllint --xpath '//DataPublisher/Enabled/text()' $pathToApiManagerXML`
+	kernal=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		sed -i "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		if [ "$kernal" = "Darwin" ]
+		then
+			sed -i '' -e "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		else
+			sed -i "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		fi
 		timeStamp
 		echo "[${timestamp}] INFO - Disabled the <DataPublisher> from api-manager.xml file"
 	fi
@@ -45,9 +51,15 @@ disableDataPublisher(){
 
 disableJMSConnectionDetails(){
 	value=`xmllint --xpath '//JMSConnectionDetails/Enabled/text()' $pathToApiManagerXML`
+	kernal=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		sed -i "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		if [ "$kernal" = "Darwin" ]
+		then
+			sed -i '' -e "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		else
+			sed -i "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML	
+		fi
 		timeStamp
   	    	echo "[${timestamp}] INFO - Disabled the <JMSConnectionDetails> from api-manager.xml file"
 	fi
@@ -55,9 +67,15 @@ disableJMSConnectionDetails(){
 
 disablePolicyDeployer(){
 	value=`xmllint --xpath '//PolicyDeployer/Enabled/text()' $pathToApiManagerXML`
+	kernal=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		sed -i "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		if [ "$kernal" = "Darwin" ]
+		then
+			sed -i '' -e "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		else
+			sed -i "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML	
+		fi
 		timeStamp
 		echo "[${timestamp}] INFO - Disabled the <PolicyDeployer> from api-manager.xml file"
 	fi
@@ -65,12 +83,18 @@ disablePolicyDeployer(){
 
 disableTransportSenderWS(){
 	value=`grep -E '"ws"' $pathToAxis2XML`
+	kernal=$(uname -s)
 	if [ -n "$value" ]
 	then
 		value=`grep -E '<!--.*"ws"' $pathToAxis2XML`
 		if [ -z "$value" ]
 		then
-			sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			if [ "$kernal" = "Darwin" ]
+			then
+				sed -i '' -e '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			else
+				sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML	
+			fi
 			timeStamp
 			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 		fi
@@ -79,12 +103,18 @@ disableTransportSenderWS(){
 
 disableTransportSenderWSS(){
 	value=`grep -E '"wss"' $pathToAxis2XML`
+	kernal=$(uname -s)
 	if [ -n "$value" ]
 	then
 		value=`grep -E '<!--.*"wss"' $pathToAxis2XML`
 		if [ -z "$value" ]
 		then
-			sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			if [ "$kernal" = "Darwin" ]
+			then
+				sed -i '' -e '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
+			else
+				sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML	
+			fi
 			timeStamp
 			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
 		fi
@@ -112,8 +142,14 @@ removeSecureWebSocketInboundEndpoint(){
 disableIndexingConfiguration(){
 	value=`xmllint --xpath 'wso2registry/indexingConfiguration/startIndexing/text()' $pathToRegistry`
 	if [ "$value" = "true" ]
+	kernal=$(uname -s)
 	then
-		sed -i "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
+		if [ "$kernal" = "Darwin" ]
+		then
+			sed -i '' -e "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
+		else
+			sed -i "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry	
+		fi
 		timeStamp
 		echo "[${timestamp}] INFO - Disabled the <indexingConfiguration> from registry.xml file"
 	fi
