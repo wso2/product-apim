@@ -18,6 +18,8 @@
 
 package org.wso2.am.scenario.tests.register.application;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -27,13 +29,14 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -42,6 +45,7 @@ import static org.testng.Assert.assertNotNull;
 public class ApplicationCreationTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private List<String> applicationsList = new ArrayList<>();
+    private static final Log log = LogFactory.getLog(ApplicationCreationTestCases.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
     private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
@@ -118,18 +122,18 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         validateApplicationWithValidMandatoryValues(applicationName, tier, APPLICATION_DESCRIPTION);
     }
 
- /*   @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateProductionKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), PRODUCTION);
+        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator), PRODUCTION);
     }
 
     @Test(description = "4.1.1.5", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateSandboxKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
         appKeyRequestGenerator.setKeyType(SANDBOX);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator).getData(), SANDBOX);
-    }*/
+        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator), SANDBOX);
+    }
 
     private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
             throws Exception {
@@ -166,20 +170,37 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    private void verifyKeyGeneration(String responseString, String keyType) {
-        JSONObject responseStringJson = new JSONObject(responseString);
-        assertFalse(responseStringJson.getBoolean(ERROR),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+    private void verifyKeyGeneration(HttpResponse response, String keyType) throws Exception {
+        JSONObject responseStringJson = new JSONObject(response.getData());
+        log.info(keyType + " key generation response for application \'" + APPLICATION_NAME + "\' response data :"
+                + response.getData());
+        if (!responseStringJson.getBoolean(ERROR)) {
+            assertFalse(responseStringJson.getBoolean(ERROR),
+                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+            assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
+                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+            assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
+                    .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
+                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
+                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
+                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        } else {
+            HashMap<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Basic ZHVtbXk6ZHVtbXk=");
+            headers.put("Content-Type", "application/x-www-form-urlencoded");
+            HttpResponse keyManagerURLResponse = HttpClient.doPost(keyManagerURL.replace("services/",
+                    "") + "oauth2/token", headers,
+                    "grant_type=password&username=admin&password=admin");
+            log.info("key manager url token endpoint response code :" + keyManagerURLResponse.getResponseCode());
+            log.info("key manager url token endpoint response data :" + keyManagerURLResponse.getData());
+            HttpResponse gatewayResponse = HttpClient.doPost(gatewayHttpsURL + "/token", headers,
+                    "grant_type=password&username=admin&password=admin");
+            log.info("Gateway url token endpoint response code  :" + gatewayResponse.getResponseCode());
+            log.info("Gateway url token endpoint response data  :" + gatewayResponse.getData());
+        }
     }
 
     @AfterClass(alwaysRun = true)
