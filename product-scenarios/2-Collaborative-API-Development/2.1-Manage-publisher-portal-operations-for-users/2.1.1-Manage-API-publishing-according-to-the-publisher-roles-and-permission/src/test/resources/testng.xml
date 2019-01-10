@@ -18,7 +18,7 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="1.5.1-expose-api-visible-to-all-public-app-developer-without-restriction" preserve-order="true"
+    <test name="2.1.1-Manage-API-publishing-according-to-the-publisher-roles-and-permission" preserve-order="true"
           verbose="2" parallel="false">
         <classes>
             <class name="org.wso2.am.scenario.tests.rest.api.publisherRoleAndPermission.PublishAPIByValidRoleCategoryTestCase"/>

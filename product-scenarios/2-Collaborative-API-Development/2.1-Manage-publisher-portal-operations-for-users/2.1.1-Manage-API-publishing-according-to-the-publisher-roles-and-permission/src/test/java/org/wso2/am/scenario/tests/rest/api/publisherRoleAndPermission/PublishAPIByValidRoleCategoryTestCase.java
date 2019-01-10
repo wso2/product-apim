@@ -21,7 +21,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -34,7 +33,9 @@ import java.util.Properties;
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
+
 import java.util.*;
+
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 
@@ -67,11 +68,8 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
 
     String userRole;
 
-    private static final long WAIT_TIME = 3 * 1000;
-    private APIStoreRestClient apiStoreClient;
-
     @BeforeClass(alwaysRun = true)
-    public void init(){
+    public void init() {
 
         infraProperties = getDeploymentProperties();
         publisherURL = infraProperties.getProperty(PUBLISHER_URL);
@@ -93,42 +91,32 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
             dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAPIByValidRoleAssignedUser(String creatorRole, String role) throws Exception {
 
+        String[] roleList;
+        roleList = role.split(",");
         apiName = "API" + count;
         apiContext = "/verify" + count;
         creatorUser = "User_" + count;
         testUser = "User" + count;
         password = "password123$";
         count++;
-        String[] roleList;
-        roleList = role.split(",");
 
-        createUser(creatorUser, password,new String[] { creatorRole }, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        createUser(creatorUser, password, new String[]{creatorRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         apiPublisher.login(creatorUser, password);
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
                 new URL(backendEndPoint));
-
-        apiNames.put(apiName,creatorUser);
-        userList.add(testUser);
-
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, creatorUser, apiVersion);
-        verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
-        verifyResponse(apiResponsePublisher);
+        createAPI(apiRequest);
+        getAPI(apiName, creatorUser, apiVersion);
+        apiNames.put(apiName, creatorUser);
 
         apiPublisher.logout();
-        createUser(testUser, password, roleList , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        createUser(testUser, password, roleList, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        userList.add(testUser);
         apiPublisher.login(testUser, password);
 
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        HttpResponse apiResponsePublishedAPI = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(apiResponsePublishedAPI);
-        assertTrue(apiResponsePublishedAPI.getData().contains("PUBLISHED"),
+        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(publishAPI);
+        assertTrue(publishAPI.getData().contains("PUBLISHED"),
                 "API has not been created in publisher");
     }
 
@@ -145,37 +133,26 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         count++;
 
         createUserWithCreatorRole(creatorUser, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        userList.add(creatorUser);
         apiPublisher.login(creatorUser, password);
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
                 new URL(backendEndPoint));
+        createAPI(apiRequest);
+        getAPI(apiName, creatorUser, apiVersion);
+        apiNames.put(apiName, creatorUser);
 
-        apiNames.put(apiName,creatorUser);
-        userList.add(testUser);
-
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, creatorUser, apiVersion);
-        verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
-        verifyResponse(apiResponsePublisher);
-
-
-        createRole(ADMIN_LOGIN_USERNAME,ADMIN_PASSWORD,userRole,permissionList);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, userRole, permissionList);
         roleList.add(userRole);
 
-        createUser(testUser, password,new String[] {userRole},ADMIN_LOGIN_USERNAME,ADMIN_PASSWORD);
-
+        createUser(testUser, password, new String[]{userRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        userList.add(testUser);
         apiPublisher.logout();
-        apiPublisher.login(testUser, password);
 
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        HttpResponse apiResponsePublishedAPI = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(apiResponsePublishedAPI);
-        assertTrue(apiResponsePublishedAPI.getData().contains("PUBLISHED"),
+        apiPublisher.login(testUser, password);
+        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(publishAPI);
+        assertTrue(publishAPI.getData().contains("PUBLISHED"),
                 "API has not been created in publisher");
     }
 
@@ -194,54 +171,60 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         apiPublisher.login(creatorUser, password);
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
                 new URL(backendEndPoint));
-
-        apiNames.put(apiName,creatorUser);
+        createAPI(apiRequest);
+        getAPI(apiName, creatorUser, apiVersion);
+        apiNames.put(apiName, creatorUser);
         userList.add(testUser);
+        apiPublisher.logout();
+
+        createUser(testUser, password, new String[]{role}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        assertFalse(publishAPI.getData().contains("PUBLISHED"), "API has been created in publisher");
+
+        updateUser(testUser, "internal/publisher", role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse publisherPublishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(publisherPublishAPI);
+        assertTrue(publisherPublishAPI.getData().contains("PUBLISHED"),
+                "API has not been created in publisher");
+
+        HttpResponse changeAPIStatus = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.CREATED);
+        verifyResponse(changeAPIStatus);
+        assertTrue(changeAPIStatus.getData().contains("CREATED"),
+                "API has been created in publisher");
+
+        updateUser(testUser, "admin", role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse adminChangeAPIStatus = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(adminChangeAPIStatus);
+        assertTrue(adminChangeAPIStatus.getData().contains("PUBLISHED"),
+                "API has not been created in publisher");
+    }
+
+    public void createAPI(APIRequest apiRequest) throws Exception {
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
         verifyResponse(apiCreationResponse);
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, creatorUser, apiVersion);
+    }
+
+    public void getAPI(String apiName, String username, String apiVersion) throws Exception {
+
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, username, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
         verifyResponse(apiResponsePublisher);
+    }
 
-        apiPublisher.logout();
-        createUser(testUser, password, new String[] { role } , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        apiPublisher.login(testUser, password);
+    public HttpResponse changeAPILifeCycleStatus(String apiName, String username, APILifeCycleState apiLifeCycleState)
+            throws Exception {
 
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        HttpResponse apiResponsePublishedAPI = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertFalse(apiResponsePublishedAPI.getData().contains("PUBLISHED"),
-                "API has been created in publisher");
-
-        updateUser(testUser,"internal/publisher", role, ADMIN_LOGIN_USERNAME,ADMIN_PASSWORD);
-        apiPublisher.login(testUser, password);
-        APILifeCycleStateRequest updatePublishRequest1 =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        HttpResponse updatePublishResponse1 = apiPublisher.changeAPILifeCycleStatus(updatePublishRequest1);
-        verifyResponse(updatePublishResponse1);
-        assertTrue(updatePublishResponse1.getData().contains("PUBLISHED"),
-                "API has been created in publisher");
-
-        APILifeCycleStateRequest updatePublishRequest =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.CREATED);
-        HttpResponse updatePublishResponse = apiPublisher.changeAPILifeCycleStatus(updatePublishRequest);
-        verifyResponse(updatePublishResponse);
-        assertTrue(updatePublishResponse.getData().contains("CREATED"),
-                "API has been created in publisher");
-
-        updateUser(testUser,"admin", role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        apiPublisher.login(testUser, password);
-        APILifeCycleStateRequest updatePublishRequest2 =
-                new APILifeCycleStateRequest(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        HttpResponse updatePublishResponse2 = apiPublisher.changeAPILifeCycleStatus(updatePublishRequest2);
-        verifyResponse(updatePublishResponse2);
-        assertTrue(updatePublishResponse2.getData().contains("PUBLISHED"),
-                "API has been created in publisher");
-
+                new APILifeCycleStateRequest(apiName, username, apiLifeCycleState);
+        HttpResponse apiResponsePublishAPI = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        return apiResponsePublishAPI;
     }
 
     @AfterClass(alwaysRun = true)
@@ -255,7 +238,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         }
 
         for (String username : userList) {
-            deleteUser(username,ADMIN_LOGIN_USERNAME,ADMIN_PASSWORD);
+            deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         }
 
         if (roleList.size() > 0) {
