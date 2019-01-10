@@ -170,8 +170,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    private void
-    verifyKeyGeneration(HttpResponse response, String keyType) throws Exception {
+    private void verifyKeyGeneration(HttpResponse response, String keyType) throws Exception {
         JSONObject responseStringJson = new JSONObject(response.getData());
         log.info(keyType + " key generation response for application \'" + APPLICATION_NAME + "\' response data :"
                 + response.getData());
