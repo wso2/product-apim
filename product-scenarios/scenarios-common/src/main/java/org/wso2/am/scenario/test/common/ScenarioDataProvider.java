@@ -79,26 +79,18 @@ public class ScenarioDataProvider {
         return new Object[][]{
                 { "admin" , "internal/publisher"},
                 { "internal/creator" , "internal/publisher"},
-
                 { "admin", "internal/creator,internal/publisher"},
                 { "internal/creator", "internal/creator,internal/publisher"},
-
                 { "admin", "internal/creator,internal/publisher,internal/subscriber"},
                 { "internal/creator", "internal/creator,internal/publisher,internal/subscriber"},
-
                 { "admin", "admin,internal/publisher"},
                 { "internal/creator", "admin,internal/publisher"},
-
                 { "admin", "admin,internal/creator"},
                 { "internal/creator", "admin,internal/creator"},
-
                 { "admin", "admin,internal/creator,internal/publisher"},
                 { "internal/creator","admin,internal/creator,internal/publisher"},
-
-
                 { "admin", "admin,internal/creator,internal/publisher,internal/subscriber"},
                 { "internal/creator", "admin,internal/creator,internal/publisher,internal/subscriber"},
-
                 { "admin", "admin"},
                 { "internal/creator" , "admin"}
         };
