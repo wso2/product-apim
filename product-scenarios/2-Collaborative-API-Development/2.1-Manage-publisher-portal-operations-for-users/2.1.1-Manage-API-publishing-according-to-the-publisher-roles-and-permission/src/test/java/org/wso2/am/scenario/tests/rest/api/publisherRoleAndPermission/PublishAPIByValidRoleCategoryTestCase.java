@@ -97,7 +97,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
         verifyResponse(publishAPI);
         assertTrue(publishAPI.getData().contains("PUBLISHED"),
-                "API has not been created in publisher");
+                "API has not been published using " + role);
     }
 
     @Test(description = "2.1.1.2", dataProvider = "PermissionValidationDataProvider",
@@ -132,7 +132,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
         verifyResponse(publishAPI);
         assertTrue(publishAPI.getData().contains("PUBLISHED"),
-                "API has not been created in publisher");
+                "API has not been published");
     }
 
     @Test(description = "2.1.1.3", dataProvider = "RoleUpdatingDataProvider",
@@ -159,26 +159,25 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         createUser(testUser, password, new String[]{role}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         apiPublisher.login(testUser, password);
         HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
-        assertFalse(publishAPI.getData().contains("PUBLISHED"), "API has been created in publisher");
+        assertFalse(publishAPI.getData().contains("PUBLISHED"), "API has been published");
 
         updateUser(testUser, "internal/publisher", role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         apiPublisher.login(testUser, password);
         HttpResponse publisherPublishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
         verifyResponse(publisherPublishAPI);
         assertTrue(publisherPublishAPI.getData().contains("PUBLISHED"),
-                "API has not been created in publisher");
+                "API has not been published by internal/publisher");
 
         HttpResponse changeAPIStatus = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.CREATED);
         verifyResponse(changeAPIStatus);
-        assertTrue(changeAPIStatus.getData().contains("CREATED"),
-                "API has been created in publisher");
+        assertTrue(changeAPIStatus.getData().contains("CREATED"));
 
         updateUser(testUser, "admin", role, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         apiPublisher.login(testUser, password);
         HttpResponse adminChangeAPIStatus = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
         verifyResponse(adminChangeAPIStatus);
         assertTrue(adminChangeAPIStatus.getData().contains("PUBLISHED"),
-                "API has not been created in publisher");
+                "API has not been published by admin");
     }
 
     public void createAPI(APIRequest apiRequest) throws Exception {
