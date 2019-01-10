@@ -35,10 +35,10 @@ timeStamp() {
 
 disableDataPublisher(){
 	value=`xmllint --xpath '//DataPublisher/Enabled/text()' $pathToApiManagerXML`
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		if [ "$kernal" = "Darwin" ]
+		if [ "$kernel" = "Darwin" ]
 		then
 			sed -i '' -e "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		else
@@ -51,10 +51,10 @@ disableDataPublisher(){
 
 disableJMSConnectionDetails(){
 	value=`xmllint --xpath '//JMSConnectionDetails/Enabled/text()' $pathToApiManagerXML`
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		if [ "$kernal" = "Darwin" ]
+		if [ "$kernel" = "Darwin" ]
 		then
 			sed -i '' -e "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		else
@@ -67,10 +67,10 @@ disableJMSConnectionDetails(){
 
 disablePolicyDeployer(){
 	value=`xmllint --xpath '//PolicyDeployer/Enabled/text()' $pathToApiManagerXML`
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	if [ "$value" = "true" ]
 	then
-		if [ "$kernal" = "Darwin" ]
+		if [ "$kernel" = "Darwin" ]
 		then
 			sed -i '' -e "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
 		else
@@ -83,13 +83,13 @@ disablePolicyDeployer(){
 
 disableTransportSenderWS(){
 	value=`grep -E '"ws"' $pathToAxis2XML`
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	if [ -n "$value" ]
 	then
 		value=`grep -E '<!--.*"ws"' $pathToAxis2XML`
 		if [ -z "$value" ]
 		then
-			if [ "$kernal" = "Darwin" ]
+			if [ "$kernel" = "Darwin" ]
 			then
 				sed -i '' -e '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			else
@@ -103,13 +103,13 @@ disableTransportSenderWS(){
 
 disableTransportSenderWSS(){
 	value=`grep -E '"wss"' $pathToAxis2XML`
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	if [ -n "$value" ]
 	then
 		value=`grep -E '<!--.*"wss"' $pathToAxis2XML`
 		if [ -z "$value" ]
 		then
-			if [ "$kernal" = "Darwin" ]
+			if [ "$kernel" = "Darwin" ]
 			then
 				sed -i '' -e '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			else
@@ -142,9 +142,9 @@ removeSecureWebSocketInboundEndpoint(){
 disableIndexingConfiguration(){
 	value=`xmllint --xpath 'wso2registry/indexingConfiguration/startIndexing/text()' $pathToRegistry`
 	if [ "$value" = "true" ]
-	kernal=$(uname -s)
+	kernel=$(uname -s)
 	then
-		if [ "$kernal" = "Darwin" ]
+		if [ "$kernel" = "Darwin" ]
 		then
 			sed -i '' -e "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
 		else
