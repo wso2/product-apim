@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -44,8 +44,11 @@ import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.apimgt.samples.utils.WebAppDeployUtils;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
@@ -59,6 +62,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private final String apiName = UUID.randomUUID().toString();
     private final String apiContext = "/" + UUID.randomUUID().toString();
     private final String admin = "admin";
+    private final String apiProvider = "APIProvider";
     private final String apiVersion = "1.0.0";
     private final String apiResource = "/sec";
     private final String applicationName = "EndpointSecurityApplication";
@@ -80,10 +84,11 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
                 + warFileName + ".war";
         String serviceEndpoint = "https://localhost:9443/services/";
 
+        createUsers();
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(admin, admin);
+        apiPublisher.login(apiProvider, "wso2123$");
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(admin, admin);
+        apiStore.login("APIConsumer", "wso2123$");
         try {
             WebAppDeployUtils.deployWebApp(serviceEndpoint, admin, admin, warFileLocation,
                     warFileName);
@@ -97,22 +102,22 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
         // Create an API
         apiRequest = new APIRequest(apiName, apiContext, apiVersion, endpointType, endpointAuthType,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, endpointURL, epUsername, URLEncoder.encode(epPassword, UTF_8), "0",
-                APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, endpointURL, epUsername,
+                URLEncoder.encode(epPassword, UTF_8), "0", APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, apiResource);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(apiCreationResponse);
 
         // Change the API lifecycle state from CREATED to PUBLISHED
-        APILifeCycleStateRequest apiLifeCycleStateRequest = new APILifeCycleStateRequest(apiName, admin,
+        APILifeCycleStateRequest apiLifeCycleStateRequest = new APILifeCycleStateRequest(apiName, apiProvider,
                 APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(apiLifeCycleStateRequest);
         verifyResponse(apiPublishResponse);
         log.info("Successfully published the API - " + apiName);
 
         // Retrieve the created API
-        HttpResponse getAPIResponse = apiPublisher.getAPI(apiName, admin);
+        HttpResponse getAPIResponse = apiPublisher.getAPI(apiName, apiProvider);
         verifyResponse(getAPIResponse);
         JSONObject getAPIRespData = new JSONObject(getAPIResponse.getData());
         assertTrue(getAPIRespData.getJSONObject("api").get("endpointAuthTypeDigest").equals("false"),
@@ -134,11 +139,11 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         verifyResponse(keyGenerationResponse);
 
         // Check the visibility of the API in API store
-
+        isAPIVisibleInStore(apiName, apiStore);
 
         // Add subscription to API
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, "admin", applicationName,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, apiProvider,
+                applicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(addSubscriptionResponse);
         log.info(applicationName + " is subscribed to " + apiName);
@@ -165,7 +170,19 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     public void destroy() throws Exception {
         HttpResponse deleteApplicationResponse = apiStore.removeApplication(applicationName);
         verifyResponse(deleteApplicationResponse);
-        HttpResponse deleteAPIResponse = apiPublisher.deleteAPI(apiName, apiVersion, admin);
+        HttpResponse deleteAPIResponse = apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
         verifyResponse(deleteAPIResponse);
+        deleteUser("APIConsumer", admin, admin);
+        deleteUser(apiProvider, admin, admin);
+    }
+
+    private void createUsers() throws APIManagerIntegrationTestException {
+        String[] roleList = new String[]{ScenarioTestConstants.CREATOR_ROLE, ScenarioTestConstants.PUBLISHER_ROLE};
+        try {
+            createUser("APIProvider", "wso2123$", roleList, admin, admin);
+            createUserWithSubscriberRole("APIConsumer", "wso2123$", admin, admin);
+        } catch (RemoteException | UserAdminUserAdminException  | APIManagementException e) {
+            throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
+        }
     }
 }
