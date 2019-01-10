@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,23 +29,17 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIRequest;
 
 import java.net.URL;
-import java.util.Properties;
 import javax.ws.rs.core.Response;
-
-import static org.testng.Assert.assertEquals;
-
 import java.util.*;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 
 public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
-    private String publisherURL;
-    private String storeURL;
     private APIRequest apiRequest;
-    private Properties infraProperties;
 
     private String apiName;
     private String apiContext = "/verify";
@@ -70,20 +64,6 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() {
-
-        infraProperties = getDeploymentProperties();
-        publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        storeURL = infraProperties.getProperty(STORE_URL);
-
-        if (publisherURL == null) {
-            publisherURL = "https://localhost:9443/publisher";
-        }
-
-        if (storeURL == null) {
-            storeURL = "https://localhost:9443/store";
-        }
-
-        setKeyStoreProperties();
         apiPublisher = new APIPublisherRestClient(publisherURL);
     }
 
@@ -133,7 +113,6 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         count++;
 
         createUserWithCreatorRole(creatorUser, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        userList.add(creatorUser);
         apiPublisher.login(creatorUser, password);
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,

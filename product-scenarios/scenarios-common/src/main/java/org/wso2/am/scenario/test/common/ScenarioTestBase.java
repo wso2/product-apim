@@ -281,17 +281,6 @@ public class ScenarioTestBase {
         }
     }
 
-    public void getUserList(String username, String password, String[] roleList,
-                           String adminUsername, String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
-        try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addUser(username, password, roleList, username);
-        } catch (Exception e) {
-            throw new APIManagementException("Unable to create user with the provided role list " + roleList, e);
-        }
-    }
-
     public void isAPIVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
             throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
