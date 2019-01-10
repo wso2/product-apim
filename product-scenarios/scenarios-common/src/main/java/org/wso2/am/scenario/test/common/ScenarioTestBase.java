@@ -56,10 +56,12 @@ public class ScenarioTestBase {
     protected static String publisherURL;
     protected static String storeURL;
     protected static String keyManagerURL;
+    protected static String gatewayHttpsURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
+    public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
     protected static String httpsAPIInvocationURL;
 
@@ -80,6 +82,10 @@ public class ScenarioTestBase {
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
             storeURL = "https://localhost:9443/store";
+        }
+        gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayHttpsURL == null) {
+            gatewayHttpsURL = "https://localhost:8243";
         }
         setKeyStoreProperties();
         httpsAPIInvocationURL = "https://localhost:8243";
