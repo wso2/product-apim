@@ -200,6 +200,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
                     "grant_type=password&username=admin&password=admin");
             log.info("Gateway url token endpoint response code  :" + gatewayResponse.getResponseCode());
             log.info("Gateway url token endpoint response data  :" + gatewayResponse.getData());
+            Thread.sleep(3600000);
         }
     }
 
