@@ -196,16 +196,11 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
                     "grant_type=password&username=admin&password=admin");
             log.info("key manager url token endpoint response code :" + keyManagerURLResponse.getResponseCode());
             log.info("key manager url token endpoint response data :" + keyManagerURLResponse.getData());
-            if(keyManagerURLResponse.getResponseCode() == 404) {
-                Thread.sleep(3600000);
-            }
             HttpResponse gatewayResponse = HttpClient.doPost(gatewayHttpsURL + "/token", headers,
                     "grant_type=password&username=admin&password=admin");
             log.info("Gateway url token endpoint response code  :" + gatewayResponse.getResponseCode());
             log.info("Gateway url token endpoint response data  :" + gatewayResponse.getData());
-            if(gatewayResponse.getResponseCode() == 404) {
-                Thread.sleep(3600000);
-            }
+            Thread.sleep(3600000);
         }
     }
 
