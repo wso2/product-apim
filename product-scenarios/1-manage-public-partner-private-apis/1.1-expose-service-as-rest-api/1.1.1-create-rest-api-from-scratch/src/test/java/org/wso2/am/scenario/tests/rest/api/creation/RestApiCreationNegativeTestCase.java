@@ -198,7 +198,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse));
     }
 
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");

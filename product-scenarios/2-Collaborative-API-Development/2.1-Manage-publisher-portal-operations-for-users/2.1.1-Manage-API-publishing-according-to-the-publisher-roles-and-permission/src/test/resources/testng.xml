@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -18,11 +18,10 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false">
+    <test name="2.1.1-Manage-API-publishing-according-to-the-publisher-roles-and-permission" preserve-order="true"
+          verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationTestCase"/>
-            <class name="org.wso2.am.scenario.tests.rest.api.creation.RestApiCreationNegativeTestCase"/>
+            <class name="org.wso2.am.scenario.tests.rest.api.publisherRoleAndPermission.PublishAPIByValidRoleCategoryTestCase"/>
         </classes>
     </test>
 </suite>
-
