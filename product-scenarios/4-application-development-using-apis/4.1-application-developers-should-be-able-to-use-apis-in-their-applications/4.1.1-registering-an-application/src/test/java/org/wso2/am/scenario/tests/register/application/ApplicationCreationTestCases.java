@@ -32,6 +32,7 @@ import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(ApplicationCreationTestCases.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
+    private static final String SUBSCRIBER_LOGIN_USERNAME = "AppCreationPosSubscriber";
+    private static final String SUBSCRIBER_LOGIN_PW = "AppCreationPosSubscriber";
     private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
     private static final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
             " for application: ";
@@ -76,10 +79,13 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws APIManagerIntegrationTestException, APIManagementException {
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME, SUBSCRIBER_LOGIN_PW,
+                ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        apiStore.login(SUBSCRIBER_LOGIN_USERNAME, SUBSCRIBER_LOGIN_PW);
     }
+
 
     @Test(description = "4.1.1.1")
     public void testApplicationCreationWithMandatoryValues() throws Exception {
@@ -210,5 +216,6 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
             apiStore.removeApplication(name);
         }
         applicationsList.clear();
+        deleteUser(SUBSCRIBER_LOGIN_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 }
