@@ -346,4 +346,8 @@ public class ScenarioTestBase {
         }
     }
 
+    public String getHttpsAPIInvocationURL(String apiContext, String apiVersion, String apiResource) {
+        return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
+    }
+
 }
