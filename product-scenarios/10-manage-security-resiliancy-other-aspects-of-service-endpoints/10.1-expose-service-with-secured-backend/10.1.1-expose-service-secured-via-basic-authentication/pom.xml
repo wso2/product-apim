@@ -11,6 +11,33 @@
     <name>[APIM][SCENARIO_10][SUBSCENARIO_1][USECASE_1] - Expose a service which is secured via Basic Authentication</name>
 
     <artifactId>10.1.1-expose-service-secured-via-basic-authentication</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.14.1</version>
+                <configuration>
+                    <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemProperties>
+                        <property>
+                            <name>maven.test.haltafterfailure</name>
+                            <value>false</value>
+                        </property>
+                        <property>
+                            <name>framework.resource.location</name>
+                            <value>
+                                ${project.parent.parent.basedir}/../scenarios-common/src/main/resources/
+                            </value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -39,6 +66,10 @@
         <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
