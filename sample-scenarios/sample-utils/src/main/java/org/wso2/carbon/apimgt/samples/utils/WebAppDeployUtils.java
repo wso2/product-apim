@@ -51,34 +51,4 @@ public class WebAppDeployUtils {
         }
         return result;
     }
-
-    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
-                                                   String webAppFileName)
-            throws RemoteException {
-
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
-
-        List<String> webAppList;
-        long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
-
-        String webAppName = webAppFileName + ".war";
-        boolean isWebappDeployed = false;
-        long waitingTime = System.currentTimeMillis() + WEB_APP_DEPLOYMENT_DELAY;
-        while (waitingTime > System.currentTimeMillis()) {
-            webAppList = webAppAdminClient.getWebAppList(webAppFileName);
-            for (String name : webAppList) {
-                if (webAppName.equalsIgnoreCase(name)) {
-                    return !isWebappDeployed;
-                }
-            }
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-
-            }
-
-        }
-        return isWebappDeployed;
-    }
 }

@@ -88,15 +88,12 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login("APIConsumer", "wso2123$");
         try {
-            WebAppDeployUtils.deployWebApp(serviceEndpoint, admin, admin, warFileLocation,
-                    warFileName);
-
-            boolean isWebAppDeployed =
-                    WebAppDeployUtils.isWebApplicationDeployed(serviceEndpoint, admin, admin, warFileName);
+            WebAppDeployUtils.deployWebApp(serviceEndpoint, admin, admin, warFileLocation, warFileName);
+            boolean isWebAppDeployed = isWebApplicationDeployed(serviceEndpoint, admin, admin, warFileName);
             assertTrue(isWebAppDeployed, warFileName + " is not deployed" );
             log.info("WebApp deployed successfully");
         } catch (RemoteException | MalformedURLException e) {
-            log.error("Error when deploying webApp", e);
+            log.error("Error when deploying webApp - " + warFileName + ".war", e);
         }
     }
 
