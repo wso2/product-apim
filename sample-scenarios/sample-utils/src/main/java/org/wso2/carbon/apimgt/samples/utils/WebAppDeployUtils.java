@@ -54,15 +54,16 @@ public class WebAppDeployUtils {
 
     public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
                                                    String webAppFileName)
-            throws RemoteException, MalformedURLException {
+            throws RemoteException {
 
         WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
 
         List<String> webAppList;
+        long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
 
         String webAppName = webAppFileName + ".war";
         boolean isWebappDeployed = false;
-        long waitingTime = System.currentTimeMillis() + (90 * 1000);
+        long waitingTime = System.currentTimeMillis() + WEB_APP_DEPLOYMENT_DELAY;
         while (waitingTime > System.currentTimeMillis()) {
             webAppList = webAppAdminClient.getWebAppList(webAppFileName);
             for (String name : webAppList) {
@@ -73,9 +74,10 @@ public class WebAppDeployUtils {
 
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
+
             }
+
         }
         return isWebappDeployed;
     }
