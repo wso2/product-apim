@@ -35,6 +35,7 @@
         <module>scenarios-common</module>
         <!--<module>1-api-updates-using-new-versions</module>-->
         <module>1-manage-public-partner-private-apis</module>
+        <!--<module>2-collaborative-api-development</module>-->
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
         <module>7-managing-api-traffic-based-on-various-conditions</module>
