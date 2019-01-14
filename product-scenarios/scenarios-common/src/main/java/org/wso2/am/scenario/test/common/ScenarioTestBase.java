@@ -32,6 +32,7 @@ import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceCl
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Properties;
 
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
@@ -57,11 +59,13 @@ public class ScenarioTestBase {
     protected static String storeURL;
     protected static String keyManagerURL;
     protected static String gatewayHttpsURL;
+    protected static String serviceEndpoint;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
+    public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
 
     public ScenarioTestBase() {
@@ -85,6 +89,10 @@ public class ScenarioTestBase {
         gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
+        }
+        serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
+        if (serviceEndpoint == null) {
+            serviceEndpoint = "https://localhost:9443/services/";
         }
         setKeyStoreProperties();
     }
@@ -350,4 +358,31 @@ public class ScenarioTestBase {
         return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
+    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
+                                                   String webAppFileName)
+            throws RemoteException {
+
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
+
+        List<String> webAppList;
+        long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
+
+        String webAppName = webAppFileName + ".war";
+        boolean isWebappDeployed = false;
+        long waitingTime = System.currentTimeMillis() + WEB_APP_DEPLOYMENT_DELAY;
+        while (waitingTime > System.currentTimeMillis()) {
+            webAppList = webAppAdminClient.getWebAppList(webAppFileName);
+            for (String name : webAppList) {
+                if (webAppName.equalsIgnoreCase(name)) {
+                    return !isWebappDeployed;
+                }
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+
+            }
+        }
+        return isWebappDeployed;
+    }
 }
