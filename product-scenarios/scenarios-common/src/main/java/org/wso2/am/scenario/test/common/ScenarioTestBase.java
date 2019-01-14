@@ -57,11 +57,13 @@ public class ScenarioTestBase {
     protected static String storeURL;
     protected static String keyManagerURL;
     protected static String gatewayHttpsURL;
+    protected static String serviceEndpoint;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
+    public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
 
     public ScenarioTestBase() {
@@ -85,6 +87,10 @@ public class ScenarioTestBase {
         gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
+        }
+        serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
+        if (serviceEndpoint == null) {
+            serviceEndpoint = "https://localhost:9443/services/";
         }
         setKeyStoreProperties();
     }

@@ -51,4 +51,32 @@ public class WebAppDeployUtils {
         }
         return result;
     }
+
+    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
+                                                   String webAppFileName)
+            throws RemoteException, MalformedURLException {
+
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
+
+        List<String> webAppList;
+
+        String webAppName = webAppFileName + ".war";
+        boolean isWebappDeployed = false;
+        long waitingTime = System.currentTimeMillis() + (90 * 1000);
+        while (waitingTime > System.currentTimeMillis()) {
+            webAppList = webAppAdminClient.getWebAppList(webAppFileName);
+            for (String name : webAppList) {
+                if (webAppName.equalsIgnoreCase(name)) {
+                    return !isWebappDeployed;
+                }
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return isWebappDeployed;
+    }
 }

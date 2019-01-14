@@ -81,7 +81,6 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         String warFileName = "jaxrs_basic";
         String warFileLocation = System.getProperty("user.dir") + File.separator+ "src/test/resources" + File.separator
                 + warFileName + ".war";
-        String serviceEndpoint = "https://localhost:9443/services/";
 
         createUsers();
         apiPublisher = new APIPublisherRestClient(publisherURL);
@@ -91,9 +90,13 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         try {
             WebAppDeployUtils.deployWebApp(serviceEndpoint, admin, admin, warFileLocation,
                     warFileName);
+
+            boolean isWebAppDeployed =
+                    WebAppDeployUtils.isWebApplicationDeployed(serviceEndpoint, admin, admin, warFileName);
+            assertTrue(isWebAppDeployed, warFileName + " is not deployed" );
             log.info("WebApp deployed successfully");
         } catch (RemoteException | MalformedURLException e) {
-            e.printStackTrace();
+            log.error("Error when deploying webApp", e);
         }
     }
 
