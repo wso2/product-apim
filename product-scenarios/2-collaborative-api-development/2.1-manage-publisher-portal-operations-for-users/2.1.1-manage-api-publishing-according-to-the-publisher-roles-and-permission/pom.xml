@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>1.5-expose-api-to-the-app-developer</artifactId>
+        <artifactId>2.1-manage-publisher-portal-operations-for-users</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>[APIM][SCENARIO_2][SUBSCENARIO_1][USECASE_1] - Manage-API-publishing-according-to-the-publisher-roles-and-permission</name>
+    <name>[APIM][SCENARIO_2][SUBSCENARIO_1][USECASE_1] - manage API publishing according to the publisher roles and permission</name>
 
-    <artifactId>2.1.1-Manage-API-publishing-according-to-the-publisher-roles-and-permission</artifactId>
+    <artifactId>2.1.1-manage-api-publishing-according-to-the-publisher-roles-and-permission</artifactId>
 
     <build>
         <plugins>
