@@ -8,7 +8,7 @@
         <version>2.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>[APIM][SCENARIO_2][SUBSCENARIO_1][USECASE_1] - manage-API-publishing-according-to-the-publisher-roles-and-permission</name>
+    <name>[APIM][SCENARIO_2][SUBSCENARIO_1][USECASE_1] - manage API publishing according to the publisher roles and permission</name>
 
     <artifactId>2.1.1-manage-api-publishing-according-to-the-publisher-roles-and-permission</artifactId>
 
