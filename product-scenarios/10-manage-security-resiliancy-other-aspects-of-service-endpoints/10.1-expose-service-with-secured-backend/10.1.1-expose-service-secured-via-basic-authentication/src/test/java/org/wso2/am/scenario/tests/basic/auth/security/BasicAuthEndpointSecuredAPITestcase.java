@@ -59,7 +59,7 @@ import static org.testng.Assert.assertTrue;
 public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(BasicAuthEndpointSecuredAPITestcase.class);
     private final String apiName = UUID.randomUUID().toString();
-    private final String apiContext = "/" + UUID.randomUUID().toString();
+    private final String apiContext = UUID.randomUUID().toString();
     private final String admin = "admin";
     private final String apiProvider = "APIProvider";
     private final String apiVersion = "1.0.0";
@@ -70,7 +70,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private final String endpointAuthType = "basicAuth";
     private final String epUsername = "wso2user";
     private final String epPassword = "!@#$%^wso2.123$%";
-    private final String endpointURL = "https://localhost:9443/jaxrs_basic/services/customers/customerservice/";
+    private final String serviceName = "jaxrs_basic/services/customers/customerservice/";
 
     private APIRequest apiRequest;
     private APIPublisherRestClient apiPublisher;
@@ -101,8 +101,8 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
         // Create an API
         apiRequest = new APIRequest(apiName, apiContext, apiVersion, endpointType, endpointAuthType,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, endpointURL, epUsername,
-                URLEncoder.encode(epPassword, UTF_8), "0", APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, getBackendEndServiceEndPointHttps(serviceName),
+                epUsername, URLEncoder.encode(epPassword, UTF_8), "0", APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, apiResource);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
@@ -159,7 +159,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         String endpointCredentials = epUsername + ":" + epPassword;
         String encodedCredentials = DatatypeConverter.printBase64Binary(endpointCredentials.getBytes());
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when invoking the API");
+                "Response code mismatched when invoking the API - " + apiResponse.getData());
         assertTrue(apiResponse.getData().contains(encodedCredentials), "Response Data not match for GET" +
                 " request for endpoint type secured. Expected value :" + encodedCredentials + " not contains in " +
                 "response data:" + apiResponse.getData());

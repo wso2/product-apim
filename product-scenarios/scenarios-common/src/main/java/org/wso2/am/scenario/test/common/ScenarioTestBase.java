@@ -385,4 +385,9 @@ public class ScenarioTestBase {
         }
         return isWebappDeployed;
     }
+
+    public String getBackendEndServiceEndPointHttps(String serviceName) {
+        String webAppURL = serviceEndpoint.replace("/services", "");
+        return webAppURL + "/" + serviceName;
+    }
 }
