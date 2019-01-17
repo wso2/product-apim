@@ -84,7 +84,7 @@
                 <inherited>false</inherited>
                 <configuration>
                     <aggregate>true</aggregate>
-                    <outputDirectory>${basedir}/target</outputDirectory>
+                    <outputDirectory>${basedir}/target/aggregate-surefire-report</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
