@@ -10,7 +10,7 @@ public class ScenarioDataProvider {
     @DataProvider(name = "apiNames")
     public static Object[][] ApiDataProvide() {
         return new Object[][]{
-                {"PhoneVerification"}, {"123567890"}, {"eñe"}, {"Pho_ne-verify?api."}
+                {"PhoneVerification"}, {"123567890"}, {"eñe"}, {"Pho_ne-verify?api."}, {"PhoneVerification123567890"}
         };
     }
 
