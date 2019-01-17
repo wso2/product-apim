@@ -93,6 +93,7 @@
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/org.apache.servicemix.bundles.jaxb-api-2.0_4.0.0.m1.jar</exclude>
 
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
