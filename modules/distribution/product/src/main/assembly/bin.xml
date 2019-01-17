@@ -140,7 +140,7 @@
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/endorsed</directory>
           <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>
 	    <includes>
-                <include>**/Saxon-HE-9.4.jar</include>
+                <include>**/Saxon-HE-9.5.1-8.jar</include>
             </includes>
         </fileSet>
         <fileSet>
