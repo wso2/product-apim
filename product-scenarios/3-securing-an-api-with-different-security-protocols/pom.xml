@@ -31,12 +31,12 @@
     <groupId>org.wso2.am</groupId>
     <version>2.6.0</version>
     <name>[APIM][SCENARIO_3] - Securing an API with Different Security Protocols</name>
-    <artifactId>3-securing-api-with-different-security-protocol</artifactId>
+    <artifactId>3-securing-an-api-with-different-security-protocols</artifactId>
     <packaging>pom</packaging>
     <url>http://wso2.org</url>
 
     <modules>
-        <module>3.1-API-developers-want-to-secure-their-API-using-an-authentication-machanism</module>
+        <module>3.1-api-developers-want-to-secure-their-api-using-an-authentication-machanism</module>
     </modules>
 
 </project>

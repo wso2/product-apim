@@ -21,7 +21,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <artifactId>3-securing-api-with-different-security-protocol</artifactId>
+        <artifactId>3-securing-an-api-with-different-security-protocols</artifactId>
         <groupId>org.wso2.am</groupId>
         <version>2.6.0</version>
     </parent>

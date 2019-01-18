@@ -29,7 +29,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
     <version>2.6.0</version>
-    <name>[APIM][SCENARIO_3] - :todo: collaborative api development</name>
+    <name>[APIM][SCENARIO_3][SUBSCENARIO_1][USECASE_1] - Secure an application</name>
     <artifactId>3.1.1-api-developers-and-publishers-want-to-make-their-apis-secure-using-the-oauth2-protocol</artifactId>
     <packaging>pom</packaging>
     <url>http://wso2.org</url>
