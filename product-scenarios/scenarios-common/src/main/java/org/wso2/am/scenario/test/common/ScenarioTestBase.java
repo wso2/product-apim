@@ -272,15 +272,15 @@ public class ScenarioTestBase {
         }
     }
 
-    public void updateUser(String username,String newRole,String deletedRole, String adminUsername, String adminPassword)
+    public void updateUser(String username,String[] newRoles,String[] deletedRoles, String adminUsername, String adminPassword)
             throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addRemoveRolesOfUser(username,new String[] { newRole },new String[] { deletedRole });
+            userManagementClient.addRemoveRolesOfUser(username,newRoles,deletedRoles);
         } catch (Exception e) {
-            throw new APIManagementException("Unable to update user with the provided role " + newRole, e);
+            throw new APIManagementException("Unable to update user with the provided role " + newRoles.toString(), e);
         }
     }
 
@@ -321,6 +321,35 @@ public class ScenarioTestBase {
         if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was not found in store at the end of wait time.");
             Assert.assertTrue(false, "API not found in store : " + apiName);
+        }
+    }
+
+    public void isAPINotVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
+            throws APIManagerIntegrationTestException {
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAPI();
+            if (apiResponseStore != null) {
+                if (apiResponseStore.getData().contains(apiName)) {
+                    log.info("API found in store : " + apiName);
+                    log.info(apiResponseStore.getData());
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        log.info("API : " + apiName + " not found in store yet.");
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was found in store at the end of wait time.");
+            Assert.assertFalse(false, "API found in store : " + apiName);
         }
     }
 
