@@ -214,7 +214,8 @@ public class APIPublisherRestClient {
      * @return http response object
      * @throws APIManagerIntegrationTestException - throws if change lifecycle state fails
      */
-    public HttpResponse changeAPILifeCycleStatus(org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateRequest)
+    public HttpResponse changeAPILifeCycleStatus(org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest
+                                                         updateRequest)
             throws APIManagerIntegrationTestException {
         try {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
