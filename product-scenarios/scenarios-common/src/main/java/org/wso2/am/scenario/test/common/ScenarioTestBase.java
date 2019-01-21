@@ -330,7 +330,7 @@ public class ScenarioTestBase {
         HttpResponse apiResponseStore = null;
         log.info("WAIT for availability of API: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreRestClient.getAPI();
+            apiResponseStore = apiStoreRestClient.getAPIs();
             if (apiResponseStore != null) {
                 if (apiResponseStore.getData().contains(apiName)) {
                     log.info("API found in store : " + apiName);

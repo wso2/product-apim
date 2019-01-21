@@ -36,7 +36,7 @@ import java.util.*;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
+public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStoreClient;
@@ -55,7 +55,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
     private String password;
     private int count = 0;
 
-    private static final Log log = LogFactory.getLog(PublishAPIByValidRoleCategoryTestCase.class);
+    private static final Log log = LogFactory.getLog(PublishAPIByValidRolePermissionCategoryTestCase.class);
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
     Map<String, String> apiNames = new HashMap<>();

@@ -44,7 +44,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
     private String password;
     private int count = 0;
 
-    private static final Log log = LogFactory.getLog(PublishAPIByValidRoleCategoryTestCase.class);
+    private static final Log log = LogFactory.getLog(PublishAPIByValidRolePermissionCategoryTestCase.class);
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
     Map<String, String> apiNames = new HashMap<>();
