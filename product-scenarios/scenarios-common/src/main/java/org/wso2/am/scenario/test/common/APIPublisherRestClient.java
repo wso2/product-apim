@@ -25,7 +25,6 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -215,7 +214,32 @@ public class APIPublisherRestClient {
      * @return http response object
      * @throws APIManagerIntegrationTestException - throws if change lifecycle state fails
      */
-    public HttpResponse changeAPILifeCycleStatus(APILifeCycleStateRequest updateRequest)
+    public HttpResponse changeAPILifeCycleStatus(org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateRequest)
+            throws APIManagerIntegrationTestException {
+        try {
+            Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + URL_SUFFIX + "/life-cycles/ajax/life-cycles.jag"),
+                    updateRequest.generateRequestParameters(),
+                    requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to update API. Error: " + e.getMessage(), e);
+        }
+
+    }
+
+
+
+    /**
+     * change status of a created API
+     *
+     * @param updateRequest - APILifeCycleStateRequest object
+     * @return http response object
+     * @throws APIManagerIntegrationTestException - throws if change lifecycle state fails
+     */
+    public HttpResponse changeAPILifeCycleStatusByAction(APILifeCycleStateRequest updateRequest)
             throws APIManagerIntegrationTestException {
         try {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
@@ -458,8 +482,8 @@ public class APIPublisherRestClient {
         try {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
-            APILifeCycleStateRequest publishUpdateRequest =
-                    new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
+            org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest publishUpdateRequest =
+                    new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
                             APILifeCycleState.PUBLISHED);
             publishUpdateRequest.setVersion(apiIdentifier.getVersion());
             if (isRequireReSubscription) {

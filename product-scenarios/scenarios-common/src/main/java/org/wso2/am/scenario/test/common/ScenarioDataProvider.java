@@ -2,6 +2,7 @@ package org.wso2.am.scenario.test.common;
 
 import org.testng.annotations.DataProvider;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 
 public class ScenarioDataProvider {
 
@@ -74,69 +75,74 @@ public class ScenarioDataProvider {
         };
     }
 
-    @DataProvider(name = "RoleValidationDataProvider")
-    public static Object[][] roleValidationDataProvider() {
+    @DataProvider(name = "ApiStateAndValidRoleDataProvider")
+    public static Object[][] apiStateAndValidRoleDataProvider() {
+
+
         return new Object[][]{
-                { "admin" , "internal/publisher"},
-                { "internal/creator" , "internal/publisher"},
-                { "admin", "internal/creator,internal/publisher"},
-                { "internal/creator", "internal/creator,internal/publisher"},
-                { "admin", "internal/creator,internal/publisher,internal/subscriber"},
-                { "internal/creator", "internal/creator,internal/publisher,internal/subscriber"},
-                { "admin", "admin,internal/publisher"},
-                { "internal/creator", "admin,internal/publisher"},
-                { "admin", "admin,internal/creator"},
-                { "internal/creator", "admin,internal/creator"},
-                { "admin", "admin,internal/creator,internal/publisher"},
-                { "internal/creator","admin,internal/creator,internal/publisher"},
-                { "admin", "admin,internal/creator,internal/publisher,internal/subscriber"},
-                { "internal/creator", "admin,internal/creator,internal/publisher,internal/subscriber"},
-                { "admin", "admin"},
-                { "internal/creator" , "admin"}
+                { "internal/publisher", APILifeCycleState.CREATED.toString()},
+                { "internal/publisher", APILifeCycleState.PROTOTYPED.toString()},
+                { "internal/publisher", APILifeCycleState.BLOCKED.toString()},
+                { "admin", APILifeCycleState.CREATED.toString()},
+                { "admin", APILifeCycleState.PROTOTYPED.toString()},
+                { "admin", APILifeCycleState.BLOCKED.toString()}
         };
     }
 
-    @DataProvider(name = "RoleUpdatingDataProvider")
-    public static Object[][] roleUpdatingDataProvider() {
+    @DataProvider(name = "ApiStateAndInvalidRoleDataProvider")
+    public static Object[][] apiStateAndInvalidRoleDataProvider() {
+
+
         return new Object[][]{
-                {"internal/subscriber"},
-                {""},
-                {"internal/creator"}
+                { "internal/creator", APILifeCycleState.CREATED.toString()},
+                { "internal/creator", APILifeCycleState.PROTOTYPED.toString()},
+                { "internal/creator", APILifeCycleState.BLOCKED.toString()},
+                { "internal/subscriber", APILifeCycleState.CREATED.toString()},
+                { "internal/subscriber", APILifeCycleState.PROTOTYPED.toString()},
+                { "internal/subscriber", APILifeCycleState.BLOCKED.toString()}
         };
     }
 
-    @DataProvider(name = "PermissionValidationDataProvider")
-    public static Object[][] permissionValidationDataProvider() {
+
+    @DataProvider(name = "ApiInvalidPermissionDataProvider")
+    public static Object[][] apiInvalidPermissionDataProvider() {
 
         String loginPermission = "/permission/admin/login";
-        String adminPermission = "/permission/admin";
-        String apiCreatorPermission = "/permission/admin/manage/api/create";
-        String apiPublisherPermission = "/permission/admin/manage/api/publish";
         String apiSubscriberPermission = "/permission/admin/manage/api/subscribe";
+        String apiCreatorPermission = "/permission/admin/manage/api/create";
+
+        String[] creatorPermissionList = new String[] { loginPermission, apiCreatorPermission };
+        String[] subscribePermissionList = new String[] { loginPermission, apiSubscriberPermission };
+
+        return new Object[][]{
+                { creatorPermissionList },
+                { subscribePermissionList }
+        };
+    }
+
+    @DataProvider(name = "ValidRoleDataProvider")
+    public static Object[][] validRoleDataProvider() {
+        return new Object[][]{
+                { "internal/publisher"},
+                { "admin"}
+        };
+    }
+
+    @DataProvider(name = "ValidPermissionDataProvider")
+    public static Object[][] validPermissionDataProvider() {
+
+        String loginPermission = "/permission/admin/login";
+        String apiAdminPermission = "/permission/admin";
+        String apiPublisherPermission = "/permission/admin/manage/api/publish";
 
         String[] publisherPermissionList = new String[] { loginPermission, apiPublisherPermission };
-        String[] publisherCreatorPermissionList = new String[] { loginPermission, apiPublisherPermission,
-                apiCreatorPermission };
-        String[] publisherCreatorSubscriberPermissionList = new String[] { loginPermission, apiPublisherPermission, apiCreatorPermission,
-                apiSubscriberPermission};
-        String[] publisherAdminPermissionList = new String[] { apiPublisherPermission, adminPermission};
-        String[] publisherCreatorAdminPermissionList = new String[] { apiPublisherPermission, apiCreatorPermission ,
-                adminPermission };
-        String[] publisherCreatorSubscriberAdminPermissionList = new String[] { apiPublisherPermission,
-                apiCreatorPermission, apiSubscriberPermission, adminPermission };
-        String[] adminPermissionList = new String[] { adminPermission };
+        String[] apiAdminPermissionList = new String[] { apiAdminPermission };
 
         return new Object[][]{
                 { publisherPermissionList },
-                { publisherCreatorPermissionList },
-                { publisherCreatorSubscriberPermissionList },
-                { publisherAdminPermissionList },
-                { publisherCreatorAdminPermissionList },
-                { publisherCreatorSubscriberAdminPermissionList },
-                { adminPermissionList },
+                { apiAdminPermissionList }
         };
     }
-
 
 
     @DataProvider(name = "MissingMandatoryApplicationValuesDataProvider")

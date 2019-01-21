@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.wso2.am.scenario.tests.rest.api.publisherRoleAndPermission;
 
 import org.apache.commons.logging.Log;
@@ -20,23 +5,27 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.scenario.test.common.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
+import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.APILifeCycleStateRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.scenario.test.common.APIRequest;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ws.rs.core.Response;
-import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
 
-public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
+public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStoreClient;
@@ -70,9 +59,9 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         apiPublisher = new APIPublisherRestClient(publisherURL);
     }
 
-    @Test(description = "2.1.1.1", dataProvider = "ApiStateAndValidRoleDataProvider",
+    @Test(description = "2.1.1.1", dataProvider = "ApiStateAndInvalidRoleDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
-    public void testPublishAPIByValidRoleAssignedUser(String role, String state) throws Exception {
+    public void testPublishAPIByInvalidRoleAssignedUser(String role, String state) throws Exception {
 
         apiName = "API" + count;
         apiContext = "/verify" + count;
@@ -89,17 +78,19 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         createAPI(apiRequest);
         getAPI(apiName, developer, apiVersion);
         apiNames.put(apiName, developer);
+
         createUser(testUser, password, new String[]{role}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         userList.add(testUser);
-        checkPublishAPI(state, role);
+
+        checkPublishAPI(state, testUser, developer, role);
         updateUser(developer, new String[]{"internal/subscriber"}, null, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         loginToStore(developer, password);
-        isAPIVisibleInStore(apiName, apiStoreClient);
+        isAPINotVisibleInStore(apiName, apiStoreClient);
     }
 
-    @Test(description = "2.1.1.2", dataProvider = "ValidPermissionDataProvider",
+    @Test(description = "2.1.1.2", dataProvider = "ApiInvalidPermissionDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
-    public void testPublishAPIByValidPermissionUser(String[] permissionList) throws Exception {
+    public void testPublishAPIByInvalidPermissionUser(String[] permissionList) throws Exception {
 
         apiName = "API_" + count;
         apiContext = "/verify_" + count;
@@ -120,6 +111,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
 
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, userRole, permissionList);
         roleList.add(userRole);
+
         createUser(testUser, password, new String[]{userRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         userList.add(testUser);
 
@@ -129,76 +121,7 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
 
         updateUser(developer, new String[]{"internal/subscriber"}, null, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         loginToStore(developer, password);
-        isAPIVisibleInStore(apiName, apiStoreClient);
-    }
-
-    @Test(description = "2.1.1.3", dataProvider = "ValidRoleDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testPublishAlreadyPublishedAPIByValidRoleAssignedUser(String role) throws Exception {
-
-        apiName = "API" + count;
-        apiContext = "/verify" + count;
-        developer = "User_" + count;
-        testUser = "User" + count;
-        password = "password123$";
-        count++;
-
-        createUserWithPublisherAndCreatorRole(developer, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        apiPublisher.login(developer, password);
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
-                new URL(backendEndPoint));
-        createAPI(apiRequest);
-        getAPI(apiName, developer, apiVersion);
-        apiNames.put(apiName, developer);
-
-        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.PUBLISHED);
-        assertTrue(publishAPI.getData().contains("PUBLISHED"), "API has not been published");
-        createUser(testUser, password, new String[]{role}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        userList.add(testUser);
-        apiPublisher.logout();
-        apiPublisher.login(testUser, password);
-        publishAPI(apiName, developer, role);
-
-        updateUser(developer, new String[]{"internal/subscriber"}, null, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        loginToStore(developer, password);
-        isAPIVisibleInStore(apiName, apiStoreClient);
-    }
-
-    @Test(description = "2.1.1.4", dataProvider = "ValidPermissionDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testPublishAlreadyPublishedAPIByValidPermissionAssignedUser(String[] permissionList) throws Exception {
-
-        apiName = "API_" + count;
-        apiContext = "/verify_" + count;
-        userRole = "role" + count;
-        developer = "User_" + count;
-        testUser = "User" + count;
-        password = "password123$";
-        count = count + 1;
-
-        createUserWithPublisherAndCreatorRole(developer, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        apiPublisher.login(developer, password);
-
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
-                new URL(backendEndPoint));
-        createAPI(apiRequest);
-        getAPI(apiName, developer, apiVersion);
-        apiNames.put(apiName, developer);
-
-        HttpResponse publishAPIByCreatorRole = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.PUBLISHED);
-        assertTrue(publishAPIByCreatorRole.getData().contains("PUBLISHED"), "API has not been published");
-
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, userRole, permissionList);
-        roleList.add(userRole);
-        createUser(testUser, password, new String[]{userRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        userList.add(testUser);
-        apiPublisher.logout();
-        apiPublisher.login(testUser, password);
-        publishAPI(apiName, developer, userRole);
-
-        updateUser(developer, new String[]{"internal/subscriber"}, null, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        loginToStore(developer, password);
-        isAPIVisibleInStore(apiName, apiStoreClient);
+        isAPINotVisibleInStore(apiName, apiStoreClient);
     }
 
     private void loginToStore(String userName, String password) throws Exception {
@@ -233,48 +156,49 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
         return apiResponsePublishAPI;
     }
 
-    public void publishAPI(String apiName, String provider, String role)
+    public void publishAPI(String apiName, String creatorUser, String role)
             throws Exception {
 
-        HttpResponse publishCreatedAPI = changeAPILifeCycleStatus(apiName, provider, APILifeCycleState.PUBLISHED);
-        verifyResponse(publishCreatedAPI);
-        assertTrue(publishCreatedAPI.getData().contains("PUBLISHED"),
-                "API has not been published using " + role);
+        HttpResponse publishCreatedAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        assertFalse(publishCreatedAPI.getData().contains("PUBLISHED"),
+                "API has been published using " + role);
     }
 
-    public void rePublishAPI(String apiName, String publisher, String role)
+    public void rePublishAPI(String apiName, String creatorUser, String role)
             throws Exception {
 
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, publisher, "Re-Publish");
+                new APILifeCycleStateRequest(apiName, creatorUser, "Re-Publish");
         HttpResponse apiResponsePublishAPI = apiPublisher.changeAPILifeCycleStatusByAction(updateRequest);
-        assertTrue(apiResponsePublishAPI.getData().contains("PUBLISHED"),
+        assertFalse(apiResponsePublishAPI.getData().contains("PUBLISHED"),
                 "API has not been published using " + role);
     }
 
-    public void checkPublishAPI(String state, String role) throws Exception {
+    public void checkPublishAPI(String state, String testUser, String creatorUser, String role) throws Exception {
 
         if (state == APILifeCycleState.CREATED.toString()) {
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
-            publishAPI(apiName, developer, role);
+            publishAPI(apiName, creatorUser, role);
 
         } else if (state == APILifeCycleState.PROTOTYPED.toString()) {
-            HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.PROTOTYPED);
+            HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PROTOTYPED);
             assertTrue(publishAPI.getData().contains("PROTOTYPED"), "API has not been prototyped");
 
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
-            publishAPI(apiName, developer, role);
+            publishAPI(apiName, creatorUser, role);
 
         } else if (state == APILifeCycleState.BLOCKED.toString()) {
-            publishAPI(apiName, developer, role);
-            HttpResponse blockAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.BLOCKED);
+            HttpResponse publishCreatedAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+            assertTrue(publishCreatedAPI.getData().contains("PUBLISHED"), "API has not been published");
+
+            HttpResponse blockAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.BLOCKED);
             assertTrue(blockAPI.getData().contains("BLOCKED"), "API has not been blocked");
 
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
-            rePublishAPI(apiName, developer, role);
+            rePublishAPI(apiName, creatorUser, role);
         }
     }
 
@@ -299,4 +223,5 @@ public class PublishAPIByValidRoleCategoryTestCase extends ScenarioTestBase {
             }
         }
     }
+
 }
