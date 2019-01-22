@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -18,10 +18,9 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="4.1.1-registering-an-application" preserve-order="true" verbose="2" parallel="false">
+    <test name="3.1.1-Secure-an-application" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.register.application.ApplicationCreationTestCases"/>
-            <class name="org.wso2.am.scenario.tests.register.application.ApplicationCreationNegativeTestCases"/>
+            <class name="org.wso2.am.scenario.tests.api.secure.oauth2.SecureUsingAuth2TestCases"/>
         </classes>
     </test>
 </suite>
