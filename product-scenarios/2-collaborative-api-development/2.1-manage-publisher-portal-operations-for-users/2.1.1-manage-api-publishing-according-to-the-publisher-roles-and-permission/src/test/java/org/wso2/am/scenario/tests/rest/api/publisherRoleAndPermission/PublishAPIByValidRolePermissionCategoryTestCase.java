@@ -256,20 +256,20 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
     public void checkPublishAPI(String state, String role) throws Exception {
 
-        if (state == APILifeCycleState.CREATED.toString()) {
+        if (state.equals(APILifeCycleState.CREATED.toString())) {
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
             publishAPI(apiName, developer, role);
 
-        } else if (state == APILifeCycleState.PROTOTYPED.toString()) {
-            HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.PROTOTYPED);
-            assertTrue(publishAPI.getData().contains("PROTOTYPED"), "API has not been prototyped");
+        } else if (state.equals(APILifeCycleState.PROTOTYPED.toString())) {
+            HttpResponse prototypedAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.PROTOTYPED);
+            assertTrue(prototypedAPI.getData().contains("PROTOTYPED"), "API has not been prototyped");
 
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
             publishAPI(apiName, developer, role);
 
-        } else if (state == APILifeCycleState.BLOCKED.toString()) {
+        } else if (state.equals(APILifeCycleState.BLOCKED.toString())) {
             publishAPI(apiName, developer, role);
             HttpResponse blockAPI = changeAPILifeCycleStatus(apiName, developer, APILifeCycleState.BLOCKED);
             assertTrue(blockAPI.getData().contains("BLOCKED"), "API has not been blocked");

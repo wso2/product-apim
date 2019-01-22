@@ -193,20 +193,20 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
 
     public void checkPublishAPI(String state, String testUser, String creatorUser, String role) throws Exception {
 
-        if (state == APILifeCycleState.CREATED.toString()) {
+        if (state.equals(APILifeCycleState.CREATED.toString())) {
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
             publishAPI(apiName, creatorUser, role);
 
-        } else if (state == APILifeCycleState.PROTOTYPED.toString()) {
-            HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PROTOTYPED);
-            assertTrue(publishAPI.getData().contains("PROTOTYPED"), "API has not been prototyped");
+        } else if (state.equals(APILifeCycleState.PROTOTYPED.toString())) {
+            HttpResponse prototypedAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PROTOTYPED);
+            assertTrue(prototypedAPI.getData().contains("PROTOTYPED"), "API has not been prototyped");
 
             apiPublisher.logout();
             apiPublisher.login(testUser, password);
             publishAPI(apiName, creatorUser, role);
 
-        } else if (state == APILifeCycleState.BLOCKED.toString()) {
+        } else if (state.equals(APILifeCycleState.BLOCKED.toString())) {
             HttpResponse publishCreatedAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
             assertTrue(publishCreatedAPI.getData().contains("PUBLISHED"), "API has not been published");
 
