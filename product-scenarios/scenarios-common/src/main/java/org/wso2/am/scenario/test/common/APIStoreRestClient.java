@@ -106,6 +106,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
+            log.debug("Cookie for add subscription call:" + requestHeaders.get("Cookie"));
             return HttpClient.doPost(
                     new URL(backendURL + "/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
                     subscriptionRequest.generateRequestParameters(), requestHeaders);
@@ -489,6 +490,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
+            log.debug("Cookie for add application call : " + requestHeaders.get("Cookie"));
             return HttpClient.doPost(
                     new URL(backendURL +
                             "/site/blocks/application/application-add" +
