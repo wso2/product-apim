@@ -143,7 +143,6 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
 
     private void loginToStore(String userName, String password) throws Exception {
 
-        setKeyStoreProperties();
         apiStoreClient = new APIStoreRestClient(storeURL);
         apiStoreClient.login(userName, password);
     }
