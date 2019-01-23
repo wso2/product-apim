@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -334,7 +335,6 @@ public class ScenarioTestBase {
             if (apiResponseStore != null) {
                 if (apiResponseStore.getData().contains(apiName)) {
                     log.info("API found in store : " + apiName);
-                    log.info(apiResponseStore.getData());
                     verifyResponse(apiResponseStore);
                     break;
                 } else {
@@ -357,21 +357,27 @@ public class ScenarioTestBase {
             String tenantDomain) throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
-        while (waitTime > System.currentTimeMillis()) {
+        log.info("WAIT for availability of change in API: " + apiName);
+        boolean apiUpdated = false;
+        while ((waitTime > System.currentTimeMillis()) && !apiUpdated) {
             apiResponseStore = apiStoreRestClient.getAllPaginatedPublishedAPIs(tenantDomain, 1, 5);
             if (apiResponseStore != null) {
-                if (apiResponseStore.getData().contains(apiName) && apiResponseStore.getData().contains(assertText)) {
-                    log.info("New changes visible in store for API : " + apiName);
-                    log.info(apiResponseStore.getData());
-                    verifyResponse(apiResponseStore);
-                    break;
-                } else {
-                    try {
-                        log.info("New changes for  API : " + apiName + " not visible in store yet.");
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
+                JSONObject jsonObjectOfResponse = new JSONObject(apiResponseStore.getData());
+                JSONArray jsonArrayOfResponse = jsonObjectOfResponse.getJSONArray("apis");
+                for (int i = 0; i < jsonArrayOfResponse.length(); i++) {
+                    String response = jsonArrayOfResponse.getJSONObject(i).toString();
+                    if (response.contains(apiName) && response.contains(assertText)) {
+                        log.info("New changes visible in store for API : " + apiName);
+                        verifyResponse(apiResponseStore);
+                        apiUpdated = true;
+                        break;
+                    } else {
+                        try {
+                            log.info("New changes for  API : " + apiName + " not visible in store yet.");
+                            Thread.sleep(500);
+                        } catch (InterruptedException ignored) {
 
+                        }
                     }
                 }
             }

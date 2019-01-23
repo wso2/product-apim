@@ -161,8 +161,9 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
             Map<String, String> requestHeaders = new HashMap<>();
             requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
 
-            HttpResponse apiResponse = HttpClient.doGet(getHttpsAPIInvocationURL(apiContext, apiVersion, apiResource),
-                    requestHeaders);
+            String gatewayHttpsUrl = getHttpsAPIInvocationURL(apiContext, apiVersion, apiResource);
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
+            HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
             String endpointCredentials = epUsername + ":" + epPassword;
             String encodedCredentials = DatatypeConverter.printBase64Binary(endpointCredentials.getBytes());
             assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
