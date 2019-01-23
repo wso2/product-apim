@@ -1055,11 +1055,11 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.101</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.102-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.6.38</carbon.registry.version>
+        <carbon.registry.version>4.6.42-SNAPSHOT</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.5.4, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1077,7 +1077,7 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.105</carbon.mediation.version>
+        <carbon.mediation.version>4.6.107-SNAPSHOT</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.12.153</carbon.identity.version>
@@ -1116,7 +1116,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v80</synapse.version>
+        <synapse.version>2.1.7-wso2v85-SNAPSHOT</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
 	<axis2.wso2.version>1.6.1-wso2v29</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v12</axiom.wso2.version>
@@ -1187,7 +1187,7 @@
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
         <google.guava.version>18.0</google.guava.version>
 
-        <carbon.metrics.version>1.2.3</carbon.metrics.version>
+        <carbon.metrics.version>1.2.4-SNAPSHOT</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.2.44</carbon.messaging.version>
         <carbon.event-processing.version>2.1.23</carbon.event-processing.version>
