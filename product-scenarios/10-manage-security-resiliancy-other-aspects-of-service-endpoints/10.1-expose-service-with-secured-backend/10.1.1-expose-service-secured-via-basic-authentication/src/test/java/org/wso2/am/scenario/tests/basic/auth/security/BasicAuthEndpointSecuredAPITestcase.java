@@ -102,7 +102,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
         // Create an API
         apiRequest = new APIRequest(apiName, apiContext, apiVersion, endpointType, endpointAuthType,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, getBackendEndServiceEndPointHttps(serviceName),
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "http://localhost:9763/" + serviceName,
                 epUsername, URLEncoder.encode(epPassword, UTF_8), "0", APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, apiResource);
