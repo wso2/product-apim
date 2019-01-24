@@ -15,21 +15,25 @@
 */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.ScenarioDataProvider;
+import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.*;
-import java.util.Iterator;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
@@ -82,6 +86,11 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
+
+        //Assert resources
+        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(0)));
+
     }
 
     @Test(description = "1.1.2.2", dependsOnMethods = "createApiWithValidOAS2DocumentAsJSONFile")
@@ -115,6 +124,13 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
+
+        //Assert resources
+        assertPOSTResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(0)));
+        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(1)));
+
     }
 
     @Test(description = "1.1.2.3", dependsOnMethods = "createApiWithValidOAS3DocumentAsJSONFile")
@@ -152,6 +168,10 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
+
+        //Assert resources
+        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(0)));
     }
 
     @Test(description = "1.1.2.4", dependsOnMethods = "createApiWithValidOAS2DocumentAsYAMLFile")
@@ -189,6 +209,35 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         HttpResponse getResponse = apiPublisher.getAPI(apiName, "admin", apiVersion);
         String resource = (new JSONObject(getResponse.getData())).getJSONObject("api").get("resources").toString();
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
+
+        //Assert resources
+        assertPOSTResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(0)));
+        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(1)));
+    }
+
+    private void assertGETResource(JSONArray resource) throws JSONException {
+        String path = resource.get(0).toString();
+        Assert.assertEquals(path, "/pets/{petId}","API resource path not imported correctly");
+
+        String httpMethod = resource.get(1).toString();
+        Assert.assertEquals(httpMethod, "GET","API resource's httpMethod not imported correctly");
+
+        String authType = resource.get(2).toString();
+        Assert.assertEquals(authType, "Any","API resource's authType not imported correctly");
+
+    }
+    private void assertPOSTResource(JSONArray resource) throws JSONException {
+        String path = resource.get(0).toString();
+        Assert.assertEquals(path, "/pets","API resource path not imported correctly");
+
+        String httpMethod = resource.get(1).toString();
+        Assert.assertEquals(httpMethod, "POST","API resource's httpMethod not imported correctly");
+
+        String authType = resource.get(2).toString();
+        Assert.assertEquals(authType, "Any","API resource's authType not imported correctly");
+
     }
 
     //TODO: Commented due to the SSL certification issue for read from url still occurs

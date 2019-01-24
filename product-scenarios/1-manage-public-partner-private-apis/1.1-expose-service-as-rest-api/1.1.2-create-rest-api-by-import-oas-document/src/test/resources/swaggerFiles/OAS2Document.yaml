@@ -9,7 +9,7 @@ schemes:
   - https
   - http
 paths:
-  "/pet/{petId}":
+  "/pets/{petId}":
     get:
       tags:
         - pet
