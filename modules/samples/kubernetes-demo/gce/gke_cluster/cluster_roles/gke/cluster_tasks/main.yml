@@ -1,0 +1,32 @@
+#  cat roles/gke/cluster_tasks/main.yml
+---
+- name: create a cluster
+  gcp_container_cluster:
+      name: "{{ gkename }}"
+      initial_node_count: "{{ initial_node_count }}"
+      master_auth:
+        username: "{{ username }}"
+        password: "{{ password }}"
+      node_config:
+        machine_type: "{{ machine_type }}"
+        disk_size_gb: "{{ disk_size_gb }}"
+      zone: "{{ zone }}"
+      project: "{{ project }}"
+      auth_kind: "{{ auth_kind }}"
+      service_account_file: "{{ service_account_file }}"
+      scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+      state: present
+  register: cluster
+- name: create a node pool
+  gcp_container_node_pool:
+      name: "{{ npname }}"
+      initial_node_count: "{{ np_initial_node_count }}"
+      cluster: "{{ cluster }}"
+      zone: "{{ zone }}"
+      project: "{{ project }}"
+      auth_kind: "{{ auth_kind }}"
+      service_account_file: "{{ service_account_file }}"
+      scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+      state: present
