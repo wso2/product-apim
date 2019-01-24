@@ -127,7 +127,11 @@
 ## **2.Deploying Backend service**
 
 - Execute `ingress-deploy.sh` with Kubernetes cluster admin password.
-(Update the <PATH_FOR_THE_SERVICE_YML_FILE> with the backend service’s service file yml and <PATH_FOR_THE_SERICE_DEPLOYMENT_YML_FILE> with the backend service deployment file
+  ```
+  ./ingress-deploy.sh --cap=<Kubernetes cluster admin password>
+  ```
+
+- Execute `service-deploy.sh` with Kubernetes cluster admin password.(Update the <PATH_FOR_THE_SERVICE_YML_FILE> with your backend service’s service file yml and <PATH_FOR_THE_SERICE_DEPLOYMENT_YML_FILE> with your backend service deployment file)
   ```
   ./service-deploy.sh --cap=<Kubernetes cluster admin password>
   ```

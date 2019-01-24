@@ -1,0 +1,22 @@
+---
+apiVersion: "extensions/v1beta1"
+kind: "Ingress"
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    kubernetes.io/ingress.class: "nginx"
+  finalizers: []
+  labels:
+    app: "vehicle_rest_service"
+  name: "vehicle-telemetry-service-v1"
+  ownerReferences: []
+spec:
+  rules:
+  - host: "vehicle-telemetry-service-v1"
+    http:
+      paths:
+      - backend:
+          serviceName: "vehicle-telemetry-service-v1"
+          servicePort: 9090
+        path: "/"
+  tls: []
