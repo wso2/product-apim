@@ -88,7 +88,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
 
         //Assert resources
-        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+        assertGETResource(((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(0)));
 
     }
@@ -126,9 +126,9 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
 
         //Assert resources
-        assertPOSTResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
-                get("templates")).get(0)));
-        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+        assertPOSTResource((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
+                get("templates")).get(0));
+        assertGETResource(((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(1)));
 
     }
@@ -170,7 +170,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
 
         //Assert resources
-        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+        assertGETResource(((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(0)));
     }
 
@@ -211,32 +211,35 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertTrue(resource != "null", "API resource was not imported correctly");
 
         //Assert resources
-        assertPOSTResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+        assertPOSTResource(((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(0)));
-        assertGETResource(((JSONArray)((JSONArray)(new JSONObject(getResponse.getData())).getJSONObject("api").
+        assertGETResource(((JSONArray) ((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(1)));
     }
 
     private void assertGETResource(JSONArray resource) throws JSONException {
+
         String path = resource.get(0).toString();
-        Assert.assertEquals(path, "/pets/{petId}","API resource path not imported correctly");
+        Assert.assertEquals(path, "/pets/{petId}", "API resource path not imported correctly");
 
         String httpMethod = resource.get(1).toString();
-        Assert.assertEquals(httpMethod, "GET","API resource's httpMethod not imported correctly");
+        Assert.assertEquals(httpMethod, "GET", "API resource's httpMethod not imported correctly");
 
         String authType = resource.get(2).toString();
-        Assert.assertEquals(authType, "Any","API resource's authType not imported correctly");
+        Assert.assertEquals(authType, "Any", "API resource's authType not imported correctly");
 
     }
+
     private void assertPOSTResource(JSONArray resource) throws JSONException {
+
         String path = resource.get(0).toString();
-        Assert.assertEquals(path, "/pets","API resource path not imported correctly");
+        Assert.assertEquals(path, "/pets", "API resource path not imported correctly");
 
         String httpMethod = resource.get(1).toString();
-        Assert.assertEquals(httpMethod, "POST","API resource's httpMethod not imported correctly");
+        Assert.assertEquals(httpMethod, "POST", "API resource's httpMethod not imported correctly");
 
         String authType = resource.get(2).toString();
-        Assert.assertEquals(authType, "Any","API resource's authType not imported correctly");
+        Assert.assertEquals(authType, "Any", "API resource's authType not imported correctly");
 
     }
 
