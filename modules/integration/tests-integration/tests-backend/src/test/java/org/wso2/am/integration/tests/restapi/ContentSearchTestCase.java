@@ -20,6 +20,8 @@ package org.wso2.am.integration.tests.restapi;
 
 import org.apache.axiom.util.base64.Base64Utils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -53,11 +55,13 @@ import java.net.URL;
 import java.util.HashMap;
 
 public class ContentSearchTestCase extends APIMIntegrationBaseTest {
-    private String storeRestAPIBasePath = "api/am/store/v0.13/";
-    private String publisherRestAPIBasePath = "api/am/publisher/v0.13/";
+    private Log log  = LogFactory.getLog(ContentSearchTestCase.class);
+    private String storeRestAPIBasePath = "api/am/store/v0.14/";
+    private String publisherRestAPIBasePath = "api/am/publisher/v0.14/";
     private URL tokenApiUrl;
     private String endpointURL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private String version = "1.0.0";
+    private int retries = 10; //because indexing needs time, we are retrying api calls at an interval of 3s
 
     @Factory(dataProvider = "userModeDataProvider") public ContentSearchTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -75,6 +79,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Test basic content Search") public void testBasicContentSearch()
             throws Exception {
+        log.info("Basic Content Search");
         String contentSearchTestAPI = "contentSearchTestAPI";
         String description = "UnifiedSearchFeature";
         APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
@@ -83,46 +88,85 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APIIdentifier apiIdentifier = new APIIdentifier(user.getUserName(), contentSearchTestAPI, version);
         apiPublisher.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
-        Thread.sleep(10000);//Wait till APIs get indexed
 
         HttpClient client = HTTPSClientUtils.getHttpsClient();
+        String accessToken = getAccessToken("publisher_client", user.getUserName(), user.getPassword());
 
         //check in publisher
-        HttpGet getPublisherAPIs = new HttpGet(
-                getStoreURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getPublisherAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getPublisherAPIs = new HttpGet(
+                    getStoreURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+            getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
+            HttpResponse publisherResponse = client.execute(getPublisherAPIs);
+            if (getResultCount(publisherResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Basic content search in publisher failed. Received response : " + publisherResponse);
+                } else {
+                    log.warn("Basic content search in publisher failed. Received response : " + publisherResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
 
-        String accessToken = getAccessToken("publisher_client", user.getUserName(), user.getPassword());
-        getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
-        HttpResponse publisherResponse = client.execute(getPublisherAPIs);
-        Assert.assertEquals(getResultCount(publisherResponse), 1);
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+            }
 
-        HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+            //search term : UnifiedSearchFeature, created api has this in description filed
+            getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
+            HttpResponse storeResponse = client.execute(getStoreAPIs);
+            if (getResultCount(storeResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Basic content search in store failed. Received response : " + storeResponse);
+                } else {
+                    log.warn("Basic content search in store failed. Received response : " + storeResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-
-        //search term : UnifiedSearchFeature, created api has this in description filed
-        HttpResponse storeResponse = client.execute(getStoreAPIs);
-        Assert.assertEquals(getResultCount(storeResponse), 1);
 
         //change status to create and check whether it is accessible from store
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(contentSearchTestAPI, user.getUserName(),
                 APILifeCycleState.CREATED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        Thread.sleep(10000);//Wait till APIs get indexed
-        storeResponse = client.execute(getStoreAPIs);
-        Assert.assertEquals(getResultCount(storeResponse), 0);
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+            }
+
+            //search term : UnifiedSearchFeature, created api has this in description filed
+            getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
+            HttpResponse storeResponse = client.execute(getStoreAPIs);
+            if (getResultCount(storeResponse) == 0) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Basic content search in store failed. 0 results expected. Received response : " + storeResponse);
+                } else {
+                    log.warn("Basic content search in store failed. 0 results expected. Received response : " + storeResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
+        }
 
         //clear
         apiPublisher.deleteAPI(contentSearchTestAPI, version, user.getUserName());
-        Thread.sleep(10000);
+        Thread.sleep(5000);
     }
 
     @Test(groups = { "wso2.am" }, description = "Test document content Search") public void testDocumentContentSearch()
             throws Exception {
+        log.info("Document Content Search");
         String apiName = "contentSearchTestAPIWithDocument";
         String apiContext = "/contentSearchTestAPIWithDocument";
         String provider = user.getUserName();
@@ -137,31 +181,52 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.API_DOCUMENT_TYPE_HOW_TO, APIMIntegrationConstants.API_DOCUMENT_SOURCE_INLINE,
                 "", "document summary", "");
         apiPublisher.updateDocument(apiName, version, user.getUserName(), documentName, documentContent);
-        Thread.sleep(20000);//Wait till APIs get indexed
 
         HttpClient client = HTTPSClientUtils.getHttpsClient();
+        String accessToken = getAccessToken("publisher_client", user.getUserName(), user.getPassword());
 
         //check in publisher
-        HttpGet getPublisherAPIs = new HttpGet(
-                getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=github4156");
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getPublisherAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getPublisherAPIs = new HttpGet(
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=github4156");
+            getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
+            HttpResponse publisherResponse = client.execute(getPublisherAPIs);
+            if (getResultCount(publisherResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Document content search in store failed. 1 result expected. Received response : " + publisherResponse);
+                } else {
+                    log.warn("Document content search in store failed. 1 results expected. Received response : " + publisherResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        String accessToken = getAccessToken("publisher_client", user.getUserName(), user.getPassword());
-        getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
-        HttpResponse publisherResponse = client.execute(getPublisherAPIs);
-        Assert.assertEquals(getResultCount(publisherResponse), 1);
 
         //check in store
-        HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=github4156");
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=github4156");
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
+            }
+            getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
+            HttpResponse storeResponse = client.execute(getStoreAPIs);
+            if (getResultCount(storeResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Document content search in store failed. 1 result expected. Received response : " + storeResponse);
+                } else {
+                    log.warn("Document content search in store failed. 1 results expected. Received response : " + storeResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        HttpResponse storeResponse = client.execute(getStoreAPIs);
-        Assert.assertEquals(getResultCount(storeResponse), 1);
 
         apiPublisher.deleteAPI(apiName, version, provider);
-        Thread.sleep(10000);
+        Thread.sleep(5000);
     }
 
     @Test(groups = {
@@ -199,29 +264,52 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         HttpClient client = HTTPSClientUtils.getHttpsClient();
 
         //check with user1
-        HttpGet getAPIsForUser1 = new HttpGet(
-                getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getAPIsForUser1.setHeader("X-WSO2-Tenant", user.getUserDomain());
-            user1 = user1 + "@" + user.getUserDomain();
-            user2 = user2 + "@" + user.getUserDomain();
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getAPIsForUser1 = new HttpGet(
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                user1 = user1 + "@" + user.getUserDomain();
+            }
+            String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
+            getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
+            HttpResponse publisherResponse = client.execute(getAPIsForUser1);
+            if (getResultCount(publisherResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Content search with access control failed. 1 result expected. Received response : " + publisherResponse);
+                } else {
+                    log.warn("Content search with access control failed. 1 results expected. Received response : " + publisherResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
-        getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
-        HttpResponse publisherResponse1 = client.execute(getAPIsForUser1);
-        Assert.assertEquals(getResultCount(publisherResponse1), 1);
 
         //check with user2 who doesn't have permissions for api
-        HttpGet getAPIsForUser2 = new HttpGet(
-                getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getAPIsForUser2.setHeader("X-WSO2-Tenant", user.getUserDomain());
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getAPIsForUser2 = new HttpGet(
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                user2 = user2 + "@" + user.getUserDomain();
+            }
+            String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
+            getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
+            HttpResponse publisherResponse = client.execute(getAPIsForUser2);
+            if (getResultCount(publisherResponse) == 0) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Content search with access control failed. 0 result expected. Received response : " + publisherResponse);
+                } else {
+                    log.warn("Content search with access control failed. 0 results expected. Received response : " + publisherResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
-        getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
-        HttpResponse publisherResponse2 = client.execute(getAPIsForUser2);
-        Assert.assertEquals(getResultCount(publisherResponse2), 0);
 
+        //clear apis, roles and users
         apiPublisher.deleteAPI(apiName, version, user.getUserName());
         userManagementClient.deleteRole(role1);
         userManagementClient.deleteRole(role2);
@@ -263,28 +351,52 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         HttpClient client = HTTPSClientUtils.getHttpsClient();
 
         //check with user1
-        HttpGet getAPIsForUser1 = new HttpGet(
-                getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getAPIsForUser1.setHeader("X-WSO2-Tenant", user.getUserDomain());
-            user1 = user1 + "@" + user.getUserDomain();
-            user2 = user2 + "@" + user.getUserDomain();
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getAPIsForUser1 = new HttpGet(
+                    getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                getAPIsForUser1.setHeader("X-WSO2-Tenant", user.getUserDomain());
+                user1 = user1 + "@" + user.getUserDomain();
+            }
+            String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
+            getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
+            HttpResponse storeResponse = client.execute(getAPIsForUser1);
+            if (getResultCount(storeResponse) == 1) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Content search with access control failed. 1 result expected. Received response : " + storeResponse);
+                } else {
+                    log.warn("Content search with access control failed. 1 results expected. Received response : " + storeResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
-        getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
-        HttpResponse storeResponse1 = client.execute(getAPIsForUser1);
-        Assert.assertEquals(getResultCount(storeResponse1), 1);
 
         //check with user2 who doesn't have permissions for api
-        HttpGet getAPIsForUser2 = new HttpGet(
-                getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
-        if (TestUserMode.TENANT_ADMIN == userMode) {
-            getAPIsForUser2.setHeader("X-WSO2-Tenant", user.getUserDomain());
+        for (int i = 0; i <= retries; i++) {
+            HttpGet getAPIsForUser2 = new HttpGet(
+                    getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            if (TestUserMode.TENANT_ADMIN == userMode) {
+                getAPIsForUser2.setHeader("X-WSO2-Tenant", user.getUserDomain());
+                user2 = user2 + "@" + user.getUserDomain();
+            }
+            String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
+            getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
+            HttpResponse storeResponse = client.execute(getAPIsForUser2);
+            if (getResultCount(storeResponse) == 0) {
+                Assert.assertTrue(true);
+                break;
+            } else {
+                if (i == retries) {
+                    Assert.fail("Content search with access control failed. 0 result expected. Received response : " + storeResponse);
+                } else {
+                    log.warn("Content search with access control failed. 0 results expected. Received response : " + storeResponse + " Retrying...");
+                    Thread.sleep(3000);
+                }
+            }
         }
-        String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
-        getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
-        HttpResponse storeResponse2 = client.execute(getAPIsForUser2);
-        Assert.assertEquals(getResultCount(storeResponse2), 0);
 
         apiPublisher.deleteAPI(apiName, version, user.getUserName());
         userManagementClient.deleteRole(role1);
@@ -313,13 +425,14 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             jsonString = jsonString + line;
         }
         JSONObject responseJSON = new JSONObject(jsonString);
+        log.info(responseJSON);
         return responseJSON.getInt("count");
     }
 
     private String getAccessToken(String clientName, String username, String password)
             throws IOException, JSONException, AutomationFrameworkException {
         HttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.13/register");
+        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.14/register");
         byte[] namePasswordPair = (username + ":" + password).getBytes();
         tokenPost.setHeader("Authorization", "Basic " + Base64Utils.encode(namePasswordPair));
         tokenPost.setHeader("Content-Type", "application/json");
