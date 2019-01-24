@@ -23,7 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -41,7 +45,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * This class is used to test gateway urls of WS APIs
@@ -166,9 +172,13 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
     @Test(groups = { "wso2.am" }, description = "Test API gateway urls", dependsOnMethods = "publishWebSocketAPI")
     public void testApiGatewayUrlsTest() throws Exception {
         String provider = user.getUserName();
+        String tenant;
+        tenant = storeContext.getContextTenant().getDomain();
+
+
         HttpResponse serviceResponse = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "store/apis/info?name=" + API_NAME + "&version=" + API_VERSION
-                        + "&provider=" + provider, null);
+                        + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
 
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -184,7 +194,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         }
         serviceResponse = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "store/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
-                        + "&provider=" + provider, null);
+                        + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             assertTrue(serviceResponse.getData()
@@ -205,11 +215,11 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
                     getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketTest"
                             + File.separator + "api-manager.xml"));
         }
-
+        String tenant = storeContext.getContextTenant().getDomain();
         String provider = user.getUserName();
         HttpResponse serviceResponse = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "store/apis/info?name=" + API_NAME + "&version=" + API_VERSION
-                        + "&provider=" + provider, null);
+                        + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
 
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -225,7 +235,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         }
         serviceResponse = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "store/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
-                        + "&provider=" + provider, null);
+                        + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             assertTrue(
