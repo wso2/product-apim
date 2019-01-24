@@ -1,4 +1,3 @@
-
 # ------------------------------------------------------------------------
 
 set -e
@@ -48,7 +47,9 @@ while [ "$1" != "" ]; do
     shift
 done
 echoBold 'Deploying BACK END SERVICE...'
-${KUBECTL} create -f <PATH_FOR_THE_SERVICE_YML_FILE> -n wso2
-${KUBECTL} create -f <PATH_FOR_THE_SERICE_DEPLOYMENT_YML_FILE> -n wso2
+#update <PATH_FOR_THE_SERVICE_DEPLOYMENT_YML_FILE> with your backend service yml file
+${KUBECTL} delete -f ../service/kubernetes/vehicle_rest_service/vehicle_rest_service_svc.yaml -n wso2
+#update <PATH_FOR_THE_SERVICE_DEPLOYMENT_YML_FILE> with your backend service deployment yml file
+${KUBECTL} delete -f ../service/kubernetes/vehicle_rest_service/vehicle_rest_service_deployment.yaml -n wso2
 sleep 10s
 echoBold 'Finished'
