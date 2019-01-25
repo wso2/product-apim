@@ -425,4 +425,21 @@ public class ScenarioTestBase {
         String webAppURL = serviceEndpoint.replace("/services", "");
         return webAppURL + "/" + serviceName;
     }
+
+    /**
+     * Checks whether the provided json object (taken from getAllTags response) contains a given tag.
+     *
+     * @param tagsResponse JSONObject containing the getAllTags response
+     * @param tagName      tag name to check for the existence
+     * @return true if the tagResponse contains the tagName, false otherwise;
+     */
+    public boolean isTagsResponseContainsTag(JSONObject tagsResponse, String tagName) {
+        JSONArray tags = tagsResponse.getJSONArray("tags");
+        for (int i = 0; i < tags.length(); i++) {
+            if (tagName.equals(tags.getJSONObject(i).getString("name"))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
