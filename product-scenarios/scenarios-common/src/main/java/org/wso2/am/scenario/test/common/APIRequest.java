@@ -116,7 +116,7 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String version, String resource,
+    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
                       String description, String tag, String tiersCollection, String backend, String bizOwner,
                       String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType,
                       String endpointAuthType, String epUsername, String epPassword, String default_version_checked,
@@ -125,6 +125,7 @@ public class APIRequest extends AbstractRequest {
         this.name = name;
         this.context = context;
         this.visibility = visibility;
+        this.roles = roles;
         this.version = version;
         this.resource = resource;
         this.description = description;
