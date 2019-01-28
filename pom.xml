@@ -341,7 +341,7 @@
 
         <!-- Siddhi related dependency versins-->
 
-        <carbon.coordination.version>2.0.12</carbon.coordination.version>
+        <carbon.coordination.version>2.0.18</carbon.coordination.version>
         <carbon.analytics-common.version>6.0.52</carbon.analytics-common.version>
         <carbon.analytics.version>2.0.250</carbon.analytics.version>
 
