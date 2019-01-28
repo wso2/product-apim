@@ -437,7 +437,7 @@
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
-                <version>1.5.2</version>
+                <version>1.5.3</version>
                 <executions>
             	    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
                     <execution>
