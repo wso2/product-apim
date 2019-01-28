@@ -329,7 +329,7 @@
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
 
         <!-- Dependencies -->
-        <carbon.kernel.version>5.2.6</carbon.kernel.version>
+        <carbon.kernel.version>5.2.8</carbon.kernel.version>
         <carbon.kernel.package.import.version.range>[5.2.0, 6.0.0)</carbon.kernel.package.import.version.range>
         <carbon.config.version>2.1.5</carbon.config.version>
         <carbon.utils.version>2.0.4</carbon.utils.version>
