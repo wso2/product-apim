@@ -20,4 +20,4 @@ No additional configuration or data to be added to servers.
 API Manager 2.6.0 deployment required. No additional artifact or data to be added to servers.
 
 ## REST API (if available)
-https://docs.wso2.com/display/AM260/apidocs/store/
+https://docs.wso2.com/display/AM260/apidocs/publisher/
