@@ -35,7 +35,7 @@
     <url>http://wso2.org</url>
 
     <modules>
-        <module>3.2.1-API-developer-wants-to-secure-api-resources-using-user-roles</module>
+        <module>3.2.1-api-developer-wants-to-secure-api-resources-using-user-roles</module>
     </modules>
 
 </project>
