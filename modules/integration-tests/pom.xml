@@ -294,7 +294,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <feign.version>9.5.0</feign.version>
         <feign-form-version>2.1.0</feign-form-version>
-        <jackson-version>2.8.9</jackson-version>
+        <jackson-version>2.9.8</jackson-version>
         <jackson-threetenbp-version>2.6.4</jackson-threetenbp-version>
         <oltu-version>1.0.1</oltu-version>
     </properties>
