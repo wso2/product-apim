@@ -7,10 +7,11 @@ More information about this product can be found [here](http://wso2.com/api-mana
 ## Building from source
 
 1. Download and install JDK 8 update 77 or later
-2. Get a clone or download the source from this repository (https://github.com/wso2/carbon-apimgt)
-3. Run the Maven command ``mvn clean  install`` from within the carbon-apimgt directory.
-4. Get a clone or download the source from this repository (https://github.com/wso2/product-apim)
-5. Run the Maven command ``mvn clean install`` from within the product-apim directory.
+2. Make sure you have npm 5.x or above installed.
+3. Get a clone or download the source from this repository (https://github.com/wso2/carbon-apimgt)
+4. Run the Maven command ``mvn clean  install`` from within the carbon-apimgt directory.
+5. Get a clone or download the source from this repository (https://github.com/wso2/product-apim)
+6. Run the Maven command ``mvn clean install`` from within the product-apim directory.
 
 ## Running the product
 
