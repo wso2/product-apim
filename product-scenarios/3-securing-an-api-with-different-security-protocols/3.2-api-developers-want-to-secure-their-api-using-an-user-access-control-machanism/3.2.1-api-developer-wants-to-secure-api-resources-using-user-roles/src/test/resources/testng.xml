@@ -21,6 +21,7 @@
     <test name="3.2.1-Secure-api-resources-using-user-roles" preserve-order="true" verbose="2" parallel="false">
         <classes>
             <class name="org.wso2.am.scenario.tests.api.secure.userRoles.SecureUsingUserRolesTestCases"/>
+            <class name="org.wso2.am.scenario.tests.api.secure.userRoles.SecureUsingUserRolesNegativeTestCases"/>
         </classes>
     </test>
 </suite>
