@@ -11,7 +11,8 @@ More information about this product can be found [here](http://wso2.com/api-mana
 3. Get a clone or download the source from this repository (https://github.com/wso2/carbon-apimgt)
 4. Run the Maven command ``mvn clean  install`` from within the carbon-apimgt directory.
 5. Get a clone or download the source from this repository (https://github.com/wso2/product-apim)
-6. Run the Maven command ``mvn clean install`` from within the product-apim directory.
+6. Make sure you have Docker v17.09.0 or above installed.
+7. Run the Maven command ``mvn clean install`` from within the product-apim directory.
 
 ## Running the product
 
