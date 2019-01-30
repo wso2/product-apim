@@ -333,7 +333,7 @@
         <carbon.kernel.package.import.version.range>[5.2.0, 6.0.0)</carbon.kernel.package.import.version.range>
         <carbon.config.version>2.1.5</carbon.config.version>
         <carbon.utils.version>2.0.4</carbon.utils.version>
-        <carbon.secvault.version>5.0.10</carbon.secvault.version>
+        <carbon.secvault.version>5.0.12</carbon.secvault.version>
         <osgi.api.version>6.0.0</osgi.api.version>
         <equinox.osgi.version>3.10.2.v20150203-1939</equinox.osgi.version>
         <equinox.osgi.services.version>3.4.0.v20140312-2051</equinox.osgi.services.version>
