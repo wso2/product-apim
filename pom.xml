@@ -372,7 +372,7 @@
         <javax.cache-api.version>1.0.0</javax.cache-api.version>
         <carbon.lcm.version>1.2.0</carbon.lcm.version>
         <carbon.deployment.version>5.2.0</carbon.deployment.version>
-        <carbon.analytics.common.version>6.0.52</carbon.analytics.common.version>
+        <carbon.analytics.common.version>6.0.73</carbon.analytics.common.version>
         <carbon.uis.version>0.19.3</carbon.uis.version>
         <broker.version>0.1.44</broker.version>
     </properties>
