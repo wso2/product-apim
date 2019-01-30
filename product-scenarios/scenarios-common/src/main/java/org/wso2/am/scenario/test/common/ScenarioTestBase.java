@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 public class ScenarioTestBase {
 
@@ -222,7 +223,8 @@ public class ScenarioTestBase {
     }
 
     public static void createUserWithSubscriberRole(String username, String password,
-            String adminUsername, String adminPassword) throws APIManagementException {
+            String adminUsername, String adminPassword)
+            throws  RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);

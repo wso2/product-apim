@@ -31,8 +31,10 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.*;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +56,8 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     private static final String API_VERSION = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, APIManagementException {
+    public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
+            UserAdminUserAdminException {
         createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER, ADMIN, ADMIN);
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER);
