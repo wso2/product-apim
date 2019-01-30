@@ -82,7 +82,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     @DataProvider(name = "ScopeAndValidRoleDataProvider")
     public static Object[][] ValidRoleDataProvider() {
-
         return new Object[][]{
                 {MANAGER_ROLE, ITEM_ADD},
                 {AGENT_ROLE, ORDER_ADD},
@@ -91,7 +90,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     private void setupUserData() {
-
         try {
             createRoles();
             createUsers();
@@ -101,7 +99,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     private void createRoles() throws APIManagementException {
-
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, MANAGER_ROLE, new String[]{API_ADMIN_PERMISSION});
         roleList.add(MANAGER_ROLE);
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, AGENT_ROLE, new String[]{API_PUBLISHER_PERMISSION,
@@ -112,7 +109,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     private void createUsers() throws APIManagementException {
-
         createUser(MANAGER, MANAGER_LOGIN_PW, new String[]{MANAGER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         userList.add(MANAGER);
         createUser(AGENT, AGENT_LOGIN_PW, new String[]{AGENT_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
@@ -125,7 +121,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     private void deleteUsers() throws APIManagementException {
-
         if (userList.size() > 0) {
             for (String username : userList) {
                 deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
@@ -134,7 +129,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     private void deleteRoles() throws APIManagementException {
-
         if (roleList.size() > 0) {
             for (String role : roleList) {
                 deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
@@ -144,7 +138,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException {
-
         setupUserData();
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);
@@ -156,7 +149,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     @Test(description = "3.2.1.1", dataProvider = "ScopeAndValidRoleDataProvider",
             dataProviderClass = SecureUsingUserRolesTestCases.class)
     public void testScopeCreationWithValidValues(String role, String scope) throws Exception {
-
         HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
         verifyResponse(httpResponse);
         assertEquals(new JSONObject(httpResponse.getData()).get(SCOPE_EXISTANCE).toString(), "false",
@@ -168,7 +160,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws APIManagerIntegrationTestException {
-
         for (String name : applicationsList) {
             apiStore.removeApplication(name);
         }

@@ -56,8 +56,8 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     private static final String ROLE_EXISTANCE = "isRoleExist";
     List<String> userList = new ArrayList();
     List<String> roleList = new ArrayList();
-    private void setupUserData() {
 
+    private void setupUserData() {
         try {
             createRoles();
             createUsers();
@@ -67,7 +67,6 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     private void createRoles() throws APIManagementException {
-
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, MANAGER_ROLE, new String[]{API_ADMIN_PERMISSION});
         roleList.add(MANAGER_ROLE);
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, AGENT_ROLE, new String[]{API_PUBLISHER_PERMISSION,
@@ -76,14 +75,12 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     private void createUsers() throws APIManagementException {
-
         createUser(SUPER_USER, SUPER_USER_LOGIN_PW, new String[]{MANAGER_ROLE, AGENT_ROLE}, ADMIN_LOGIN_USERNAME,
                 ADMIN_LOGIN_PW);
         userList.add(SUPER_USER);
     }
 
     private void deleteUsers() throws APIManagementException {
-
         if (userList.size() > 0) {
             for (String username : userList) {
                 this.deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
@@ -92,25 +89,24 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     private void deleteRoles() throws APIManagementException {
-
         if (roleList.size() > 0) {
             for (String role : roleList) {
                 this.deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
             }
         }
     }
+
     @DataProvider(name = "ScopeAndInValidRoleDataProvider")
     public static Object[][] ValidRoleDataProvider() {
-
         return new Object[][]{
                 {"everyone", ITEM_ADD},
                 {"admn", ORDER_ADD},
                 {"Internal/Craetor", ORDER_VIEW}
         };
     }
+
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException {
-
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
     }
@@ -118,16 +114,15 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     @Test(description = "3.2.1.9", dataProvider = "ScopeAndInValidRoleDataProvider",
             dataProviderClass = SecureUsingUserRolesNegativeTestCases.class)
     public void testScopeCreationWithInValidRoles(String role, String scope) throws Exception {
-
         HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
         verifyResponse(httpResponse);
         assertEquals(new JSONObject(httpResponse.getData()).get(ROLE_EXISTANCE).toString(), "false",
                 "Error in scope creation with Invalid values. Role  : " + role);
 
     }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws APIManagerIntegrationTestException {
-
         try {
             deleteUsers();
             deleteRoles();
