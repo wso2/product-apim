@@ -850,5 +850,21 @@ public class APIPublisherRestClient {
         }
     }
 
+    /**
+     * @param scope    scope name
+     * @param roleName comma seperated roles
+     * @return HttpResponse
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse validateScope(String scope, String roleName) throws APIManagerIntegrationTestException {
 
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
+                    "action=validateScope&scope=" + scope + "&roleName=" + roleName, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
+                    + ". Error: " + e.getMessage(), e);
+        }
+    }
 }
