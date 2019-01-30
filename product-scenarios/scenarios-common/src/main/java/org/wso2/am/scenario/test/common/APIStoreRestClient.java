@@ -126,8 +126,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            HttpResponse responseApp = getAllApplications();
-            String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
+            String appId = getApplicationId(generateAppKeyRequest.getApplication());
             generateAppKeyRequest.setAppId(appId);
 
             return HttpClient.doPost(
@@ -850,8 +849,7 @@ public class APIStoreRestClient {
                                               String appName) throws APIManagerIntegrationTestException{
         try{
             checkAuthentication();
-            HttpResponse responseApp = getAllApplications();
-            String appId = getApplicationId(responseApp.getData(), appName);
+            String appId = getApplicationId(appName);
 
             return removeAPISubscription(API,version,provider,appId);
 
@@ -950,12 +948,13 @@ public class APIStoreRestClient {
         }
     }
 
-    private String getApplicationId(String jsonStringOfApplications, String applicationName)
+    public String getApplicationId(String applicationName)
             throws APIManagerIntegrationTestException {
+        HttpResponse responseApp = getAllApplications();
         String applicationId = null;
         JSONObject obj;
         try {
-            obj = new JSONObject(jsonStringOfApplications);
+            obj = new JSONObject(responseApp.getData());
             JSONArray arr = obj.getJSONArray("applications");
             for (int i = 0; i < arr.length(); i++) {
                 String appName = arr.getJSONObject(i).getString("name");
