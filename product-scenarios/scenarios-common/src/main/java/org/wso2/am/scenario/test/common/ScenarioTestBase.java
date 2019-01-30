@@ -224,7 +224,7 @@ public class ScenarioTestBase {
 
     public static void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
-            throws  RemoteException, UserAdminUserAdminException, APIManagementException {
+            throws RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
