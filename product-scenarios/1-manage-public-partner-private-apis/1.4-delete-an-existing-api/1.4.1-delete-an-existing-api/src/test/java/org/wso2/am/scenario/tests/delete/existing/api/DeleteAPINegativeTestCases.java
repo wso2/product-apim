@@ -48,22 +48,27 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private List<String> applicationsList = new ArrayList<>();
     private List<String> apiList = new ArrayList<>();
-    private final String ADMIN = "admin";
-    private final String API_CREATOR_PUBLISHER_USER = "DeleteAPICreatorNeg";
-    private final String API_SUBSCRIBER_USER = "DeleteAPISubscriberNeg";
-    private final String API_PUBLISHER_USER = "DeleteAPIPublisherNeg";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "DeleteAPICreatorNeg";
+    private static final String API_CREATOR_PUBLISHER_PW = "DeleteAPICreatorNeg";
+    private static final String API_SUBSCRIBER_USERNAME = "DeleteAPISubscriberNeg";
+    private static final String API_SUBSCRIBER_PW = "DeleteAPISubscriberNeg";
+    private static final String API_PUBLISHER_USERNAME = "DeleteAPIPublisherNeg";
+    private static final String API_PUBLISHER_PW = "DeleteAPIPublisherNeg";
     private static final String API_NAME_PREFIX = "DeleteAPINeg_";
     private static final String API_VERSION = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
             UserAdminUserAdminException {
-        createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER, ADMIN, ADMIN);
+        createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW, ADMIN_USERNAME,
+                ADMIN_PW);
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER);
-        createUserWithSubscriberRole(API_SUBSCRIBER_USER, API_SUBSCRIBER_USER, ADMIN, ADMIN);
+        apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
+        createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(API_SUBSCRIBER_USER, API_SUBSCRIBER_USER);
+        apiStore.login(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW);
     }
 
     @Test(description = "1.4.1.4", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
@@ -86,11 +91,11 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     public void testDeleteAPIByUnauthorizedUser() throws Exception {
         String name = API_NAME_PREFIX + "unauthUser";
         createApi(name);
-        createUserWithPublisherRole(API_PUBLISHER_USER, API_PUBLISHER_USER, ADMIN, ADMIN);
-        apiPublisher.login(API_PUBLISHER_USER, API_PUBLISHER_USER);
+        createUserWithPublisherRole(API_PUBLISHER_USERNAME, API_PUBLISHER_PW, ADMIN_USERNAME, ADMIN_PW);
+        apiPublisher.login(API_PUBLISHER_USERNAME, API_PUBLISHER_PW);
         checkDeleteAPI(name,
                 "does not have the required permission: /permission/admin/manage/api/create");
-        apiPublisher.login(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER);
+        apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
 //        API is in CREATED state therefor only check availability in publisher
         verifyAPIAvailableInPublisher(name);
     }
@@ -124,7 +129,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         HttpResponse createAPIResponse = apiPublisher.addAPI(apiRequest);
         apiList.add(apiName);
         verifyResponse(createAPIResponse);
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USER, API_VERSION);
+        HttpResponse apiInfo = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USERNAME, API_VERSION);
         verifyResponse(apiInfo);
     }
 
@@ -133,27 +138,27 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         switch (state) {
             case PROTOTYPED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
-                        API_CREATOR_PUBLISHER_USER, APILifeCycleState.PROTOTYPED);
+                        API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.PROTOTYPED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
             case PUBLISHED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
-                        API_CREATOR_PUBLISHER_USER, APILifeCycleState.PUBLISHED);
+                        API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.PUBLISHED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
             case BLOCKED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
-                        API_CREATOR_PUBLISHER_USER, APILifeCycleState.BLOCKED);
+                        API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.BLOCKED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
             case DEPRECATED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
-                        API_CREATOR_PUBLISHER_USER, APILifeCycleState.DEPRECATED);
+                        API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.DEPRECATED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
             case RETIRED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
-                        API_CREATOR_PUBLISHER_USER, APILifeCycleState.RETIRED);
+                        API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.RETIRED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
             case CREATED:
@@ -163,7 +168,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     }
 
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, API_CREATOR_PUBLISHER_USER);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, API_CREATOR_PUBLISHER_USERNAME);
         subscriptionRequest.setApplicationName(applicationName);
         subscriptionRequest.setTier(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         HttpResponse subscribeAPIResponse = apiStore.subscribe(subscriptionRequest);
@@ -179,26 +184,26 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     }
 
     private void checkDeleteAPI(String apiName, String errorMessage) throws Exception {
-        HttpResponse response = apiPublisher.deleteAPI(apiName, API_VERSION, API_CREATOR_PUBLISHER_USER);
+        HttpResponse response = apiPublisher.deleteAPI(apiName, API_VERSION, API_CREATOR_PUBLISHER_USERNAME);
         log.info("API delete response code for API \'" + apiName + "\' : "
                 + response.getResponseCode());
         log.info("API delete response data for API \'" + apiName + "\' : " + response.getData());
         JSONObject responseData = new JSONObject(response.getData());
-        assertTrue(responseData.getBoolean("error"), "API deletion successful for API : " + apiName);
+        assertTrue(responseData.getBoolean("error"), "API has been deleted : " + apiName);
         assertTrue(responseData.getString("message").contains(errorMessage),
-                "API deletion successful for API : " + apiName);
+                "API has been deleted : " + apiName);
     }
 
     private void verifyAPIAvailableInPublisher(String apiName) throws Exception {
-        HttpResponse response = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USER, API_VERSION);
+        HttpResponse response = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USERNAME, API_VERSION);
         log.info("Check API available in publisher response code for API \'" + apiName + "\' : "
                 + response.getResponseCode());
         log.info("Check API available in publisher response data for API \'" + apiName + "\' : "
                 + response.getData());
         assertTrue(response.getData().contains(apiName),
-                "API deletion successful for API : " + apiName);
+                "API has been delete : " + apiName);
         assertFalse(new JSONObject(response.getData()).getBoolean("error"),
-                "API deletion successful for API : " + apiName);
+                "API has been deleted : " + apiName);
 
     }
 
@@ -211,13 +216,13 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         for (String name : applicationsList) {
             apiStore.removeApplication(name);
         }
-        apiPublisher.login(API_CREATOR_PUBLISHER_USER, API_CREATOR_PUBLISHER_USER);
+        apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
         for (String name : apiList) {
-            apiPublisher.deleteAPI(name, API_VERSION, API_CREATOR_PUBLISHER_USER);
+            apiPublisher.deleteAPI(name, API_VERSION, API_CREATOR_PUBLISHER_USERNAME);
         }
-        deleteUser(API_CREATOR_PUBLISHER_USER, ADMIN, ADMIN);
-        deleteUser(API_SUBSCRIBER_USER, ADMIN, ADMIN);
-        deleteUser(API_PUBLISHER_USER, ADMIN, ADMIN);
+        deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        deleteUser(API_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         applicationsList.clear();
     }
 }
