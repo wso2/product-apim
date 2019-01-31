@@ -16,7 +16,7 @@
 
 package org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction;
 
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -230,7 +230,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         assertTrue(apiResponseGetAPI.getData().contains(apiName), apiName + " is not visible in publisher");
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         for (Map.Entry<String, String> entry : apiNames.entrySet()) {
