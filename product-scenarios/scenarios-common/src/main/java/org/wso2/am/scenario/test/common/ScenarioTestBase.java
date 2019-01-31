@@ -49,8 +49,6 @@ import java.util.Properties;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
-import static org.testng.Assert.assertTrue;
-
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
@@ -223,6 +221,7 @@ public class ScenarioTestBase {
         }
 
     }
+
     public static void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
@@ -329,27 +328,27 @@ public class ScenarioTestBase {
             throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
+        log.info("WAIT for API to be unavailable in store: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
             apiResponseStore = apiStoreRestClient.getAPIs();
             if (apiResponseStore != null) {
+                verifyResponse(apiResponseStore);
                 if (apiResponseStore.getData().contains(apiName)) {
-                    log.info("API found in store : " + apiName);
-                    verifyResponse(apiResponseStore);
-                    break;
-                } else {
                     try {
-                        log.info("API : " + apiName + " not found in store yet.");
+                        log.info("API found in store : " + apiName);
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
-
+//                        do nothing
                     }
+                } else {
+                    log.info("API : " + apiName + " not found in store.");
+                    break;
                 }
             }
         }
-        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+        if(apiResponseStore != null && apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was found in store at the end of wait time.");
-            Assert.assertFalse(false, "API found in store : " + apiName);
+            Assert.assertTrue(false, "API found in store : " + apiName);
         }
     }
 
