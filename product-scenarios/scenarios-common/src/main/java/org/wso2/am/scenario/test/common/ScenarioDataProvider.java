@@ -159,4 +159,14 @@ public class ScenarioDataProvider {
                         "&application=application-missingMandatory2", "Specified application tier does not exist."}
         };
     }
+
+    @DataProvider(name = "UserTypeDataProvider")
+    public static Object[][] userTypeDataProvider() {
+        return new Object[][]{
+                { "normalUser" , "admin"},
+                { "normalUser" , "nonAdmin"},
+                { "tenantUser" , "admin"},
+                { "tenantUser" , "nonAdmin"}
+        };
+    }
 }
