@@ -106,6 +106,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, publisherRole, visibilityType,
                 apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
         apiPublisher.login(creatorUsername, password);
+        validateRoles(publisherRole);
         createAPI(apiRequest);
         createUser(testUser, password, new String[]{role}, adminUsername, ADMIN_PASSWORD);
         apiPublisher.logout();
@@ -168,6 +169,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
                 apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
 
         apiPublisher.login(creator, password);
+        validateRoles(roleSet);
         createAPI(apiRequest);
         apiPublisher.logout();
         apiPublisher.login(testUser, password);
