@@ -144,7 +144,6 @@ public class ScenarioDataProvider {
         };
     }
 
-
     @DataProvider(name = "MissingMandatoryApplicationValuesDataProvider")
     public static Object[][] missingMandatoryApplicationValuesDataProvider() {
         String urlPrefix = "{{backendURL}}/site/blocks/application/application-add/ajax/application-add.jag?" +
@@ -157,6 +156,27 @@ public class ScenarioDataProvider {
                         "&callbackUrl=&application=application-missingMandatory1", "Missing parameters."},
                 {"application-missingMandatory2", urlPrefix + "&callbackUrl=&description=description" +
                         "&application=application-missingMandatory2", "Specified application tier does not exist."}
+        };
+    }
+
+    @DataProvider(name = "DeleteAPIInLifeCycleStateDataProvider")
+    public static Object[][] deleteAPIInLifeCycleStateDataProvider() {
+        return new Object[][]{
+                {APILifeCycleState.CREATED},
+                {APILifeCycleState.PUBLISHED},
+                {APILifeCycleState.PROTOTYPED},
+                {APILifeCycleState.BLOCKED},
+                {APILifeCycleState.DEPRECATED},
+                {APILifeCycleState.RETIRED},
+        };
+    }
+
+    @DataProvider(name = "DeleteAPIAfterSubscribingDataProvider")
+    public static Object[][] deleteAPIAfterSubscribingDataProvider() {
+        return new Object[][]{
+                {APILifeCycleState.PUBLISHED},
+                {APILifeCycleState.BLOCKED},
+                {APILifeCycleState.DEPRECATED},
         };
     }
 
