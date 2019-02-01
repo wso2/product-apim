@@ -198,7 +198,7 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
         HttpResponse httpResponse = apiPublisher.validateScope(ITEM_VIEW, AGENT_ROLE);
         verifyResponse(httpResponse);
         assertEquals(new JSONObject(httpResponse.getData()).get(SCOPE_EXISTANCE).toString(), "true",
-                "Error in scope creation with Invalid values. Scope  : " + ITEM_VIEW);
+                "Error in scope creation with duplicate key : " + ITEM_VIEW);
     }
 
     @AfterClass(alwaysRun = true)
