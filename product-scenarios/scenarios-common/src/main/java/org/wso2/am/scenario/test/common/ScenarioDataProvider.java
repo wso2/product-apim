@@ -179,4 +179,14 @@ public class ScenarioDataProvider {
                 {APILifeCycleState.DEPRECATED},
         };
     }
+
+    @DataProvider(name = "UserTypeDataProvider")
+    public static Object[][] userTypeDataProvider() {
+        return new Object[][]{
+                { "normalUser" , "admin"},
+                { "normalUser" , "nonAdmin"},
+                { "tenantUser" , "admin"},
+                { "tenantUser" , "nonAdmin"}
+        };
+    }
 }

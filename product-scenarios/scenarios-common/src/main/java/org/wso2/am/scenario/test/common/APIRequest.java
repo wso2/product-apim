@@ -63,6 +63,9 @@ public class APIRequest extends AbstractRequest {
     private String swagger_filename;
     private String swagger_url;
     private String type;
+    private String accessControl;
+    private String visibilityType;
+    private String accessControlRoles;
 
     public APIRequest(String name, String context, String visibility, String version, String resource) {
         this.name = name;
@@ -91,18 +94,23 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
+    public APIRequest(String name, String context, String visibility, String roles, String visibilityType, String version, String resource,
                       String tiersCollection, URL endpointUrl) {
 
         this.name = name;
         this.context = context;
         this.version = version;
         this.resource = resource;
-        this.visibility = visibility;
         this.tiersCollection = tiersCollection;
 
-        if (this.visibility == "restricted") {
+        if (visibility.equals("restricted") && visibilityType.equals("store")) {
             this.roles = roles;
+            this.visibility = visibility;
+        }
+
+        if (visibility.equals("restricted") && visibilityType.equals("publisher")) {
+            this.accessControl = visibility;
+            this.accessControlRoles = roles;
         }
 
         try {
@@ -220,6 +228,12 @@ public class APIRequest extends AbstractRequest {
         }
         if (this.roles != null) {
             this.addParameter("roles", this.roles);
+        }
+        if (this.accessControl != null) {
+            this.addParameter("accessControl", this.accessControl);
+        }
+        if (this.accessControlRoles != null) {
+            this.addParameter("accessControlRoles", this.accessControlRoles);
         }
         if (this.tag != null) {
             this.addParameter("tags", this.tag);
