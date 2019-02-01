@@ -246,7 +246,8 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createRole(String adminUsername, String adminPassword, String role, String[] permisionArray) throws APIManagementException {
+    public void createRole(String adminUsername, String adminPassword, String role,
+                           String[] permisionArray) throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
@@ -257,6 +258,23 @@ public class ScenarioTestBase {
                    );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
+        }
+
+    }
+
+    public void updateRole(String adminUsername, String adminPassword, String role, String[] userList,
+                           String[] permissionArray) throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.deleteRole(role);
+            userManagementClient.addRole(role,
+                    userList,
+                    permissionArray
+            );
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to update role :" + role, e);
         }
 
     }

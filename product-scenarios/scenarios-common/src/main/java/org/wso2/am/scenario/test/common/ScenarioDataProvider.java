@@ -77,8 +77,6 @@ public class ScenarioDataProvider {
 
     @DataProvider(name = "ApiStateAndValidRoleDataProvider")
     public static Object[][] apiStateAndValidRoleDataProvider() {
-
-
         return new Object[][]{
                 { "internal/publisher", APILifeCycleState.CREATED.toString()},
                 { "internal/publisher", APILifeCycleState.PROTOTYPED.toString()},
@@ -91,8 +89,6 @@ public class ScenarioDataProvider {
 
     @DataProvider(name = "ApiStateAndInvalidRoleDataProvider")
     public static Object[][] apiStateAndInvalidRoleDataProvider() {
-
-
         return new Object[][]{
                 { "internal/creator", APILifeCycleState.CREATED.toString()},
                 { "internal/creator", APILifeCycleState.PROTOTYPED.toString()},
@@ -189,4 +185,31 @@ public class ScenarioDataProvider {
                 { "tenantUser" , "nonAdmin"}
         };
     }
-}
+
+    @DataProvider(name = "RoleUpdatingDataProvider")
+    public static Object[][] roleUpdatingDataProvider() {
+        return new Object[][]{
+                {"admin", ScenarioTestConstants.CREATOR_ROLE},
+                {ScenarioTestConstants.PUBLISHER_ROLE, ScenarioTestConstants.CREATOR_ROLE},
+        };
+    }
+
+    @DataProvider(name = "PermissionUpdatingDataProvider")
+    public static Object[][] permissionUpdatingDataProvider() {
+
+        String loginPermission = "/permission/admin/login";
+        String creatorPermission = "/permission/admin/manage/api/create";
+        String adminPermission = "/permission/admin";
+        String publisherPermission = "/permission/admin/manage/api/publish";
+
+        String[] creatorPermissionList = new String[] {loginPermission, creatorPermission};
+        String[] publisherPermissionList = new String[]{loginPermission, publisherPermission};
+        String[] adminPermissionList = new String[]{adminPermission};
+
+        return new Object[][]{
+                {adminPermissionList, creatorPermissionList},
+                {publisherPermissionList, creatorPermissionList}
+        };
+    }
+
+    }
