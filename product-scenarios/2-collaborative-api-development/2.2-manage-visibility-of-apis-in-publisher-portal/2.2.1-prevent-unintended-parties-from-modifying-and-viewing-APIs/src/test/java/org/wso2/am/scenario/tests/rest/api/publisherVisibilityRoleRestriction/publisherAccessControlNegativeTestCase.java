@@ -16,6 +16,7 @@
 
 package org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -147,7 +148,7 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         return client.deleteAPI(apiName, apiVersion, apiProvider);
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         apiPublisherRestClient.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
