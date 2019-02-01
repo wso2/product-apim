@@ -48,6 +48,7 @@
                     <systemPropertyVariables>
                         <framework.resource.location>${project.parent.parent.basedir}/../scenarios-common/src/main/resources/</framework.resource.location>
                         <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
+                        <test.resource.location>${project.basedir}/src/test/resources/</test.resource.location>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
