@@ -215,6 +215,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         createApplication(applicationName);
         createApi(apiName);
         changeApiState(apiName, APILifeCycleState.PUBLISHED);
+        isAPIVisibleInStore(apiName, apiStore);
         subscribeToAPI(apiName, applicationName);
     }
 
