@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
@@ -38,6 +39,7 @@ import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +52,7 @@ import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import static org.testng.Assert.assertTrue;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class ScenarioTestBase {
 
@@ -441,5 +444,65 @@ public class ScenarioTestBase {
             }
         }
         return false;
+    }
+
+    /**
+     *
+     * @param apiPublisher APIPublisherRestClient
+     * @param swaggerFileRelativePath Swagger file relative path to create API
+     * @param apiDeveloperUsername Developer name
+     * @param backendEndPoint Backendpoint url
+     * @param publish Whether to publish APi or not
+     * @param storeVisibility Store visibility level of the API
+     * @throws Exception
+     */
+    public void developSampleAPI(APIPublisherRestClient apiPublisher, String swaggerFileRelativePath,
+                                 String apiDeveloperUsername, String backendEndPoint, boolean publish,
+                                 String storeVisibility) throws Exception {
+        String swaggerFileLocation = System.getProperty("user.dir") + File.separator + "src/test/resources" +
+                File.separator + swaggerFileRelativePath;
+        try {
+            File swagger_file = new File(swaggerFileLocation);
+            String swaggerContent = readFromFile(swagger_file.getAbsolutePath());
+            JSONObject json = new JSONObject(swaggerContent);
+            String apiName = json.getJSONObject("info").get("title").toString();
+            String apiContext = json.get("basePath").toString();
+            String apiVersion = json.getJSONObject("info").get("version").toString();
+            APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVersion);
+            apiRequest.setVisibility(storeVisibility);
+            apiRequest.setSwagger(swaggerContent);
+
+            //Design API
+            HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
+            verifyResponse(serviceResponse);
+            assertTrue(serviceResponse.getData().contains(apiName), apiName + " is not visible in publisher");
+
+            //implementAPI API
+            APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName, apiVersion,
+                    apiDeveloperUsername, new URL(backendEndPoint));
+            apiImplementationBean.setSwagger(swaggerContent);
+            HttpResponse implementApiResponse = apiPublisher.implementAPI(apiImplementationBean);
+            verifyResponse(implementApiResponse);
+
+            // -- Manage API -- //
+            // get Swagger
+            HttpResponse getSwaggerResponse = apiPublisher.getSwagger(apiName, apiVersion, apiDeveloperUsername);
+            APIManageBean apiManageBean = new APIManageBean(apiName, apiVersion, apiDeveloperUsername, "https", "disabled",
+                    "resource_level", "Production and Sandbox", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
+            HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
+            verifyResponse(apiManageResponse);
+
+            if (publish) {
+                //publish API
+                org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
+                        new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName, apiDeveloperUsername, APILifeCycleState.PUBLISHED);
+                HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
+                verifyResponse(apiPublishResponse);
+            }
+        } catch (MalformedURLException e) {
+            throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
+        } catch (IOException e) {
+            throw new IOException("Error in reading swagger file from path :" + swaggerFileLocation, e);
+        }
     }
 }
