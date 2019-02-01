@@ -448,6 +448,9 @@ public class ScenarioTestBase {
     }
 
     /**
+     * Design, Implement and Manage (and publish if required) an API via the approach that the Publisher UI is
+     * performing, by calling required Jaggery APIs. This is to be used as a common method to develop/publish APIs for
+     * scenario tests.
      *
      * @param apiPublisher APIPublisherRestClient
      * @param swaggerFileRelativePath Swagger file relative path to create API
