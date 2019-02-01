@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -32,6 +33,7 @@ import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceCl
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,12 +43,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Properties;
 
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-
-import static org.testng.Assert.assertTrue;
 
 public class ScenarioTestBase {
 
@@ -56,10 +57,14 @@ public class ScenarioTestBase {
     protected static String publisherURL;
     protected static String storeURL;
     protected static String keyManagerURL;
+    protected static String gatewayHttpsURL;
+    protected static String serviceEndpoint;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
+    public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
+    public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
 
     public ScenarioTestBase() {
@@ -79,6 +84,14 @@ public class ScenarioTestBase {
         storeURL = infraProperties.getProperty(STORE_URL);
         if (storeURL == null) {
             storeURL = "https://localhost:9443/store";
+        }
+        gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayHttpsURL == null) {
+            gatewayHttpsURL = "https://localhost:8243";
+        }
+        serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
+        if (serviceEndpoint == null) {
+            serviceEndpoint = "https://localhost:9443/services/";
         }
         setKeyStoreProperties();
     }
@@ -182,7 +195,7 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
+    public static void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
                                                       String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
@@ -208,7 +221,8 @@ public class ScenarioTestBase {
         }
 
     }
-    public void createUserWithSubscriberRole(String username, String password,
+
+    public static void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
@@ -232,17 +246,35 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createRole(String adminUsername, String adminPassword, String role) throws APIManagementException {
+    public void createRole(String adminUsername, String adminPassword, String role,
+                           String[] permisionArray) throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addRole(role,
                     new String[]{},
-                    new String[]{"/permission/admin/login",
-                            "/permission/admin/manage/api/subscribe"});
+                    permisionArray
+                   );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
+        }
+
+    }
+
+    public void updateRole(String adminUsername, String adminPassword, String role, String[] userList,
+                           String[] permissionArray) throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.deleteRole(role);
+            userManagementClient.addRole(role,
+                    userList,
+                    permissionArray
+            );
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to update role :" + role, e);
         }
 
     }
@@ -255,6 +287,18 @@ public class ScenarioTestBase {
             userManagementClient.deleteUser(username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete user :" + username, e);
+        }
+    }
+
+    public void updateUser(String username,String[] newRoles,String[] deletedRoles, String adminUsername, String adminPassword)
+            throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addRemoveRolesOfUser(username,newRoles,deletedRoles);
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to update user with the provided role " + newRoles.toString(), e);
         }
     }
 
@@ -275,7 +319,7 @@ public class ScenarioTestBase {
         HttpResponse apiResponseStore = null;
         log.info("WAIT for availability of API: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreRestClient.getAPI();
+            apiResponseStore = apiStoreRestClient.getAPIs();
             if (apiResponseStore != null) {
                 if (apiResponseStore.getData().contains(apiName)) {
                     log.info("API found in store : " + apiName);
@@ -298,25 +342,59 @@ public class ScenarioTestBase {
         }
     }
 
+    public void isAPINotVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
+            throws APIManagerIntegrationTestException {
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for API to be unavailable in store: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAPIs();
+            if (apiResponseStore != null) {
+                verifyResponse(apiResponseStore);
+                if (apiResponseStore.getData().contains(apiName)) {
+                    try {
+                        log.info("API found in store : " + apiName);
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+//                        do nothing
+                    }
+                } else {
+                    log.info("API : " + apiName + " not found in store.");
+                    break;
+                }
+            }
+        }
+        if(apiResponseStore != null && apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was found in store at the end of wait time.");
+            Assert.assertTrue(false, "API found in store : " + apiName);
+        }
+    }
+
     public void isChangeVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient, String assertText,
             String tenantDomain) throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
-        while (waitTime > System.currentTimeMillis()) {
+        log.info("WAIT for availability of change in API: " + apiName);
+        boolean apiUpdated = false;
+        while ((waitTime > System.currentTimeMillis()) && !apiUpdated) {
             apiResponseStore = apiStoreRestClient.getAllPaginatedPublishedAPIs(tenantDomain, 1, 5);
             if (apiResponseStore != null) {
-                if (apiResponseStore.getData().contains(apiName) && apiResponseStore.getData().contains(assertText)) {
-                    log.info("New changes visible in store for API : " + apiName);
-                    log.info(apiResponseStore.getData());
-                    verifyResponse(apiResponseStore);
-                    break;
-                } else {
-                    try {
-                        log.info("New changes for  API : " + apiName + " not visible in store yet.");
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
+                JSONObject jsonObjectOfResponse = new JSONObject(apiResponseStore.getData());
+                JSONArray jsonArrayOfResponse = jsonObjectOfResponse.getJSONArray("apis");
+                for (int i = 0; i < jsonArrayOfResponse.length(); i++) {
+                    String response = jsonArrayOfResponse.getJSONObject(i).toString();
+                    if (response.contains(apiName) && response.contains(assertText)) {
+                        log.info("New changes visible in store for API : " + apiName);
+                        verifyResponse(apiResponseStore);
+                        apiUpdated = true;
+                        break;
+                    } else {
+                        try {
+                            log.info("New changes for  API : " + apiName + " not visible in store yet.");
+                            Thread.sleep(500);
+                        } catch (InterruptedException ignored) {
 
+                        }
                     }
                 }
             }
@@ -328,4 +406,57 @@ public class ScenarioTestBase {
         }
     }
 
+    public String getHttpsAPIInvocationURL(String apiContext, String apiVersion, String apiResource) {
+        return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
+    }
+
+    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
+                                                   String webAppFileName)
+            throws RemoteException {
+
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
+
+        List<String> webAppList;
+        long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
+
+        String webAppName = webAppFileName + ".war";
+        boolean isWebappDeployed = false;
+        long waitingTime = System.currentTimeMillis() + WEB_APP_DEPLOYMENT_DELAY;
+        while (waitingTime > System.currentTimeMillis()) {
+            webAppList = webAppAdminClient.getWebAppList(webAppFileName);
+            for (String name : webAppList) {
+                if (webAppName.equalsIgnoreCase(name)) {
+                    return !isWebappDeployed;
+                }
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+
+            }
+        }
+        return isWebappDeployed;
+    }
+
+    public String getBackendEndServiceEndPointHttps(String serviceName) {
+        String webAppURL = serviceEndpoint.replace("/services", "");
+        return webAppURL + "/" + serviceName;
+    }
+
+    /**
+     * Checks whether the provided json object (taken from getAllTags response) contains a given tag.
+     *
+     * @param tagsResponse JSONObject containing the getAllTags response
+     * @param tagName      tag name to check for the existence
+     * @return true if the tagResponse contains the tagName, false otherwise;
+     */
+    public boolean isTagsResponseContainsTag(JSONObject tagsResponse, String tagName) {
+        JSONArray tags = tagsResponse.getJSONArray("tags");
+        for (int i = 0; i < tags.length(); i++) {
+            if (tagName.equals(tags.getJSONObject(i).getString("name"))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

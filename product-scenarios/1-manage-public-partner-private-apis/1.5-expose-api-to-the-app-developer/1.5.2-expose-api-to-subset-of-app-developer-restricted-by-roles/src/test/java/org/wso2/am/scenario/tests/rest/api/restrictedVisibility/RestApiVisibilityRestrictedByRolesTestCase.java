@@ -30,7 +30,6 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 
 import java.net.URL;
-import java.util.Properties;
 import static org.testng.Assert.assertTrue;
 
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
@@ -51,6 +50,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
+    private final String VISIBILITY_TYPE = "store";
 
     private APIStoreRestClient apiStoreClient;
 
@@ -69,9 +69,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiContext = "/phoneVerifyAdd";
         subscribeRole = "Health-Subscriber";
 
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole);
+        String[] permissionArray = new String[]{"/permission/admin/login",
+                "/permission/admin/manage/api/subscribe"};
+
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole, permissionArray);
         createUser(userName, password, new String[]{subscribeRole} , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, apiVersion, apiResource,
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, subscribeRole, VISIBILITY_TYPE, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
         apiPublisher.validateRoles(subscribeRole);
 
@@ -92,12 +95,15 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiName = "APIWildCardApi";
         apiContext = "/AddApiWildCardApi";
 
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, creatorRole);
+        String[] permissionArray = new String[]{"/permission/admin/login",
+                "/permission/admin/manage/api/subscribe"};
+
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, subscribeRole, permissionArray);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, creatorRole, permissionArray);
         createUser(userName, password, new String[]{subscribeRole} , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, apiVersion, apiResource,
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, VISIBILITY_TYPE, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
 
         validateRoles(multipleRoles);

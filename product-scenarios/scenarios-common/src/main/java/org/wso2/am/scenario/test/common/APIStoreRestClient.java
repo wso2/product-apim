@@ -106,6 +106,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
+            log.debug("Cookie for add subscription call:" + requestHeaders.get("Cookie"));
             return HttpClient.doPost(
                     new URL(backendURL + "/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
                     subscriptionRequest.generateRequestParameters(), requestHeaders);
@@ -125,8 +126,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            HttpResponse responseApp = getAllApplications();
-            String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
+            String appId = getApplicationId(generateAppKeyRequest.getApplication());
             generateAppKeyRequest.setAppId(appId);
 
             return HttpClient.doPost(
@@ -145,7 +145,7 @@ public class APIStoreRestClient {
      * @return - http response of get API post request
      * @throws APIManagerIntegrationTestException - throws if API information retrieval fails.
      */
-    public HttpResponse getAPI() throws APIManagerIntegrationTestException {
+    public HttpResponse getAPIs() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpClient.doPost(
@@ -156,6 +156,18 @@ public class APIStoreRestClient {
                                                          "Error: " + e.getMessage(), e);
         }
 
+    }
+
+    public HttpResponse getAPI(String provider, String name, String version) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + "/site/blocks/listing/ajax/item-list.jag?action=getAPI"),
+                    "name=" + name + "&version=" + version + "&provider=" + provider, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve API information. " +
+                    "Error: " + e.getMessage(), e);
+        }
     }
 
     private String getSession(Map<String, String> responseHeaders) {
@@ -477,6 +489,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
+            log.debug("Cookie for add application call : " + requestHeaders.get("Cookie"));
             return HttpClient.doPost(
                     new URL(backendURL +
                             "/site/blocks/application/application-add" +
@@ -836,8 +849,7 @@ public class APIStoreRestClient {
                                               String appName) throws APIManagerIntegrationTestException{
         try{
             checkAuthentication();
-            HttpResponse responseApp = getAllApplications();
-            String appId = getApplicationId(responseApp.getData(), appName);
+            String appId = getApplicationId(appName);
 
             return removeAPISubscription(API,version,provider,appId);
 
@@ -936,12 +948,13 @@ public class APIStoreRestClient {
         }
     }
 
-    private String getApplicationId(String jsonStringOfApplications, String applicationName)
+    public String getApplicationId(String applicationName)
             throws APIManagerIntegrationTestException {
+        HttpResponse responseApp = getAllApplications();
         String applicationId = null;
         JSONObject obj;
         try {
-            obj = new JSONObject(jsonStringOfApplications);
+            obj = new JSONObject(responseApp.getData());
             JSONArray arr = obj.getJSONArray("applications");
             for (int i = 0; i < arr.length(); i++) {
                 String appName = arr.getJSONObject(i).getString("name");

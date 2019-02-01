@@ -61,7 +61,7 @@ while getopts "$optspec" optchar; do
             OUTPUT_DIR=$val
             ;;
         m)
-            MVN_OPTS=$val
+            MVN_OPTS=   $val
             ;;
         i)
             INPUT_DIR=$val
@@ -91,3 +91,4 @@ mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf
 echo "Copying surefire-reports to ${OUTPUT_DIR}"
 mkdir -p ${OUTPUT_DIR}
 find . -name "surefire-reports" -exec cp --parents -r {} ${OUTPUT_DIR} \;
+find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR} \;

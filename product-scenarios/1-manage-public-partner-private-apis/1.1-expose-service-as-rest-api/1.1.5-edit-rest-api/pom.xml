@@ -23,18 +23,11 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <systemProperties>
-                        <property>
-                            <name>maven.test.haltafterfailure</name>
-                            <value>false</value>
-                        </property>
-                        <property>
-                            <name>framework.resource.location</name>
-                            <value>
-                                ${project.parent.parent.basedir}/../scenarios-common/src/main/resources/
-                            </value>
-                        </property>
-                    </systemProperties>
+                    <systemPropertyVariables>
+                        <framework.resource.location>${project.parent.parent.basedir}/../scenarios-common/src/main/resources/</framework.resource.location>
+                        <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
+                        <test.resource.location>${project.basedir}/src/test/resources/</test.resource.location>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
@@ -48,7 +41,7 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>scenarios-common</artifactId>
-            <version>2.6.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>

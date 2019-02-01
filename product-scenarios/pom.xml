@@ -35,8 +35,11 @@
         <module>scenarios-common</module>
         <!--<module>1-api-updates-using-new-versions</module>-->
         <module>1-manage-public-partner-private-apis</module>
+        <module>2-collaborative-api-development</module>
+        <module>3-securing-an-api-with-different-security-protocols</module>
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
+        <module>6-rollout-api-updates-seamlessly</module>
         <module>7-managing-api-traffic-based-on-various-conditions</module>
         <module>8-analyze-usage-of-apis-for-business-insights</module>
         <module>9-developer-community-building</module>
@@ -74,6 +77,25 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.4.2</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <aggregate>true</aggregate>
+                    <outputDirectory>${basedir}/target/aggregate-surefire-report</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -448,6 +470,16 @@
                 <version>${swagger-annotations-version}</version>
             </dependency>
             <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-core</artifactId>
+                <version>${swagger-core-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>${swagger-core-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-client</artifactId>
                 <version>${jersey-version}</version>
@@ -538,6 +570,7 @@
 
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.0</swagger-annotations-version>
+        <swagger-core-version>1.5.21</swagger-core-version>
         <jersey-version>1.18</jersey-version>
         <jackson-version>2.9.5</jackson-version>
         <jodatime-version>2.3</jodatime-version>

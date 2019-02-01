@@ -23,24 +23,11 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <systemProperties>
-                        <property>
-                            <name>maven.test.haltafterfailure</name>
-                            <value>false</value>
-                        </property>
-                        <property>
-                            <name>framework.resource.location</name>
-                            <value>
-                                ${project.parent.parent.basedir}/../scenarios-common/src/main/resources/
-                            </value>
-                        </property>
-                        <property>
-                            <name>test.resource.location</name>
-                            <value>
-                                ${project.basedir}/src/test/resources/
-                            </value>
-                        </property>
-                    </systemProperties>
+                    <systemPropertyVariables>
+                        <framework.resource.location>${project.parent.parent.basedir}/../scenarios-common/src/main/resources/</framework.resource.location>
+                        <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
+                        <test.resource.location>${project.basedir}/src/test/resources/</test.resource.location>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

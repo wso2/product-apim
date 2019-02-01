@@ -53,11 +53,19 @@ public class APIRequest extends AbstractRequest {
     private String outSequence;
     private String description;
     private String tag;
+    private String resourceCount;
+    private String resourceMethod;
+    private String resourceMethodAuthType;
+    private String resourceMethodThrottlingTier;
+    private String uriTemplate;
 
     private String import_definition;
     private String swagger_filename;
     private String swagger_url;
     private String type;
+    private String accessControl;
+    private String visibilityType;
+    private String accessControlRoles;
 
     public APIRequest(String name, String context, String visibility, String version, String resource) {
         this.name = name;
@@ -86,18 +94,23 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
+    public APIRequest(String name, String context, String visibility, String roles, String visibilityType, String version, String resource,
                       String tiersCollection, URL endpointUrl) {
 
         this.name = name;
         this.context = context;
         this.version = version;
         this.resource = resource;
-        this.visibility = visibility;
         this.tiersCollection = tiersCollection;
 
-        if (this.visibility == "restricted") {
+        if (visibility.equals("restricted") && visibilityType.equals("store")) {
             this.roles = roles;
+            this.visibility = visibility;
+        }
+
+        if (visibility.equals("restricted") && visibilityType.equals("publisher")) {
+            this.accessControl = visibility;
+            this.accessControlRoles = roles;
         }
 
         try {
@@ -111,7 +124,7 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
-    public APIRequest(String name, String context, String visibility, String version, String resource,
+    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
                       String description, String tag, String tiersCollection, String backend, String bizOwner,
                       String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType,
                       String endpointAuthType, String epUsername, String epPassword, String default_version_checked,
@@ -120,6 +133,7 @@ public class APIRequest extends AbstractRequest {
         this.name = name;
         this.context = context;
         this.visibility = visibility;
+        this.roles = roles;
         this.version = version;
         this.resource = resource;
         this.description = description;
@@ -146,6 +160,29 @@ public class APIRequest extends AbstractRequest {
         this.inSequence = inSequence;
         this.outSequence = outSequence;
         constructSwagger();
+    }
+
+    public APIRequest(String name, String context, String version, String visibility, String endpointType, String endpointAuthType,
+                      String tiersCollection, String backendUrl, String epUsername, String epPassword,
+                      String resourceCount, String resourceMethod, String resourceMethodAuthType,
+                      String resourceMethodThrottlingTier, String uriTemplate) {
+        this.name = name;
+        this.context = context;
+        this.version = version;
+        this.visibility = visibility;
+        this.endpointType = endpointType;
+        this.endpointAuthType = endpointAuthType;
+        this.tiersCollection = tiersCollection;
+        this.epPassword = epPassword;
+        this.epUsername = epUsername;
+        this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
+                + backendUrl + "\",\"config\":null},\"endpoint_type\":\""
+                + "http" + "\"}");
+        this.resourceCount = resourceCount;
+        this.resourceMethod = resourceMethod;
+        this.resourceMethodAuthType = resourceMethodAuthType;
+        this.resourceMethodThrottlingTier = resourceMethodThrottlingTier;
+        this.uriTemplate = uriTemplate;
     }
 
     public APIRequest(String definition, String filename, String url, String type) {
@@ -175,7 +212,9 @@ public class APIRequest extends AbstractRequest {
         this.addParameter("context", this.context);
         this.addParameter("visibility", this.visibility);
         this.addParameter("version", this.version);
-        this.addParameter("swagger", this.swagger);
+        if (this.swagger != null) {
+            this.addParameter("swagger", this.swagger);
+        }
         if (tiersCollection != null) {
             this.addParameter("tiersCollection", this.tiersCollection);
         }
@@ -189,6 +228,12 @@ public class APIRequest extends AbstractRequest {
         }
         if (this.roles != null) {
             this.addParameter("roles", this.roles);
+        }
+        if (this.accessControl != null) {
+            this.addParameter("accessControl", this.accessControl);
+        }
+        if (this.accessControlRoles != null) {
+            this.addParameter("accessControlRoles", this.accessControlRoles);
         }
         if (this.tag != null) {
             this.addParameter("tags", this.tag);
@@ -236,6 +281,21 @@ public class APIRequest extends AbstractRequest {
         if (this.inSequence != null && this.outSequence != null) {
             this.addParameter("inSequence", inSequence);
             this.addParameter("outSequence", outSequence);
+        }
+        if (this.resourceCount != null) {
+            this.addParameter("resourceCount", resourceCount);
+        }
+        if (this.resourceMethod != null) {
+            this.addParameter("resourceMethod-0", resourceMethod);
+        }
+        if (this.resourceMethodAuthType != null) {
+            this.addParameter("resourceMethodAuthType-0", resourceMethodAuthType);
+        }
+        if (this.resourceMethodThrottlingTier != null) {
+            this.addParameter("resourceMethodThrottlingTier-0", resourceMethodThrottlingTier);
+        }
+        if (this.uriTemplate != null) {
+            this.addParameter("uriTemplate-0", uriTemplate);
         }
 
     }

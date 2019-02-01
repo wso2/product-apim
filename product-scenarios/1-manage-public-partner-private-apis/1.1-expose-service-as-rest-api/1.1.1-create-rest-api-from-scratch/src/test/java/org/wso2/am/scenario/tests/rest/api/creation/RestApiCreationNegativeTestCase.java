@@ -35,15 +35,10 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private String DuplicateContextResponse = "A duplicate API context already exists for ";
     private String InvalidNameResponse = " Error while adding the API- ";
 
-
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
-    }
-
-    @Test(description = "Base Test case")
-    public void testRESTAPICreationWithMandatoryValuesNeg() throws Exception {
 
         apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
 
@@ -52,8 +47,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-
-    @Test(description = "1.1.1.6", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.6")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -63,8 +57,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse + apiName + "-" + apiVersion));
     }
 
-
-    @Test(description = "1.1.1.7", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.7")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -73,7 +66,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateContextResponse + apiContext));
     }
-
 
     @Test(description = "1.1.1.8")
     public void testRESTAPICreationWith255CharactersName() throws Exception {
@@ -84,7 +76,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiName255 + "-" + apiVersion));
     }
-
 
     @Test(description = "1.1.1.9")
     public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
@@ -187,8 +178,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         }
     }
 
-
-    @Test(description = "1.1.1.17", dependsOnMethods = "testRESTAPICreationWithMandatoryValuesNeg")
+    @Test(description = "1.1.1.17")
     public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception {
 
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -197,7 +187,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse));
     }
-
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
