@@ -55,6 +55,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String ADMIN_PASSWORD = "admin";
     private final String SUBSCRIBER_USERNAME = "subscriberUser2";
     private final String SUBSCRIBER_PASSWORD = "password@123";
+    private final String VISIBILITY_TYPE = "store";
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String CREATOR_ROLE = "Creator";
     private final String SUBSCRIBER_ROLE = "Subscriber";
@@ -84,7 +85,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
 
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER_ROLE, apiVersion, apiResource,
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
