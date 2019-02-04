@@ -104,27 +104,27 @@ public class APIManageBean extends AbstractRequest {
         this.provider = provider;
     }
 
-    public String getDefault_version_checked() {
+    public String getDefaultVersionChecked() {
         return default_version_checked;
     }
 
-    public void setDefault_version_checked(String default_version_checked) {
+    public void setDefaultVersionChecked(String default_version_checked) {
         this.default_version_checked = default_version_checked;
     }
 
-    public String getTransport_https() {
+    public String getTransportHttps() {
         return transport_https;
     }
 
-    public void setTransport_https(String transport_https) {
+    public void setTransportHttps(String transport_https) {
         this.transport_https = transport_https;
     }
 
-    public String getTransport_http() {
+    public String getTransportHttp() {
         return transport_http;
     }
 
-    public void setTransport_http(String transport_http) {
+    public void setTransportHttp(String transport_http) {
         this.transport_http = transport_http;
     }
 

@@ -67,7 +67,7 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
     @Test(description = "1.1.1.1")
     public void testOAuth2Authorization() throws Exception {
         // create and publish sample API
-        developSampleAPI(apiPublisher, "swaggerFiles/pizzashack-swagger.json", API_DEVELOPER_USERNAME, backendEndPoint,
+        apiPublisher.developSampleAPI("swaggerFiles/pizzashack-swagger.json", API_DEVELOPER_USERNAME, backendEndPoint,
                 true, "public");
         //TO DO
     }

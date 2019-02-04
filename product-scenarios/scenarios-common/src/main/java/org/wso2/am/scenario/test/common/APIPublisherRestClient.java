@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
@@ -30,11 +31,17 @@ import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.testng.Assert.assertTrue;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
@@ -44,7 +51,7 @@ public class APIPublisherRestClient {
     private static final String START_API_ACTION = "start";
     private static final String URL_SUFFIX = "/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-
+    ScenarioTestBase scenarioTestBase = new ScenarioTestBase();
     /**
      * construct of API rest client
      *
@@ -903,6 +910,68 @@ public class APIPublisherRestClient {
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                     + ". Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Design, Implement and Manage (and publish if required) an API via the approach that the Publisher UI is
+     * performing, by calling required Jaggery APIs. This is to be used as a common method to develop/publish APIs for
+     * scenario tests.
+     *
+     * @param swaggerFileRelativePath Swagger file relative path to create API
+     * @param apiDeveloperUsername Developer name
+     * @param backendEndPoint Backendpoint url
+     * @param publish Whether to publish APi or not
+     * @param storeVisibility Store visibility level of the API
+     * @throws Exception
+     */
+    public void developSampleAPI(String swaggerFileRelativePath,
+                                 String apiDeveloperUsername, String backendEndPoint, boolean publish,
+                                 String storeVisibility) throws Exception {
+        String swaggerFileLocation = System.getProperty("user.dir") + File.separator + "src/test/resources" +
+                File.separator + swaggerFileRelativePath;
+        try {
+            File swagger_file = new File(swaggerFileLocation);
+            String swaggerContent = readFromFile(swagger_file.getAbsolutePath());
+            JSONObject json = new JSONObject(swaggerContent);
+            String apiName = json.getJSONObject("info").get("title").toString();
+            String apiContext = json.get("basePath").toString();
+            String apiVersion = json.getJSONObject("info").get("version").toString();
+            APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVersion);
+            apiRequest.setVisibility(storeVisibility);
+            apiRequest.setSwagger(swaggerContent);
+
+            //Design API
+            HttpResponse serviceResponse = designAPI(apiRequest);
+            scenarioTestBase.verifyResponse(serviceResponse);
+            assertTrue(serviceResponse.getData().contains(apiName), apiName + " is not visible in publisher");
+
+            //implementAPI API
+            APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName, apiVersion,
+                    apiDeveloperUsername, new URL(backendEndPoint));
+            apiImplementationBean.setSwagger(swaggerContent);
+            HttpResponse implementApiResponse = implementAPI(apiImplementationBean);
+            scenarioTestBase.verifyResponse(implementApiResponse);
+
+            // -- Manage API -- //
+            // get Swagger
+            HttpResponse getSwaggerResponse = getSwagger(apiName, apiVersion, apiDeveloperUsername);
+            APIManageBean apiManageBean = new APIManageBean(apiName, apiVersion, apiDeveloperUsername, "https", "disabled",
+                    "resource_level", "Production and Sandbox", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
+            HttpResponse apiManageResponse = manageAPI(apiManageBean);
+            scenarioTestBase.verifyResponse(apiManageResponse);
+
+            if (publish) {
+                //publish API
+                org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
+                        new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName, apiDeveloperUsername, APILifeCycleState.PUBLISHED);
+                HttpResponse apiPublishResponse = changeAPILifeCycleStatus(updateLifeCycle);
+                scenarioTestBase.verifyResponse(apiPublishResponse);
+            }
+        } catch (MalformedURLException e) {
+            throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
+        } catch (IOException e) {
+            throw new IOException("Error in reading swagger file from path :" + swaggerFileLocation, e);
         }
     }
 }
