@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
@@ -39,6 +40,10 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +56,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     private APIStoreRestClient apiStore;
     private APIPublisherRestClient apiPublisher;
+    private APIPublisherRestClient apiPublisherAdmin;
     private List<String> applicationsList = new ArrayList<>();
     private static final Log log = LogFactory.getLog(SecureUsingUserRolesTestCases.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
@@ -76,9 +82,15 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     private static final String ORDER_ADD = "order_add";
     private static final String SCOPE_EXISTANCE = "isScopeExist";
     private static final String ROLE_EXISTANCE = "isRoleExist";
+    private String apiVersion = "1.0.0";
+    private String apiVisibility = "public";
+    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private String apiName = "APIScopeTestAPI";
 
     List<String> userList = new ArrayList();
     List<String> roleList = new ArrayList();
+    File swagger_file;
+    String resourceLocation = System.getProperty("test.resource.location");
 
     @DataProvider(name = "ScopeAndValidRoleDataProvider")
     public static Object[][] ValidRoleDataProvider() {
@@ -86,6 +98,19 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
                 {MANAGER_ROLE, ITEM_ADD},
                 {AGENT_ROLE, ORDER_ADD},
                 {CUSTOMER_ROLE, ORDER_VIEW}
+        };
+    }
+
+    @DataProvider(name = "SwaggerFilesAndVerb")
+    public static Object[][] SwaggerFileAndHttpVerb() {
+        ArrayList<String> httpverb1 = new ArrayList<>() ;
+        httpverb1.add("PUT");
+        ArrayList<String> httpverb2 = new ArrayList<>() ;
+        httpverb2.add("PUT");
+        httpverb2.add("GET");
+        return new Object[][]{
+                {"APIScopeTest1.json", httpverb1},
+                {"APIScopeTest2.json", httpverb2}
         };
     }
 
@@ -143,6 +168,14 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
+        apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
+        apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        try {
+            apiPublisher.developSampleAPI("swaggerFiles/apiScopeTest1.json",
+                    SUPER_USER, backendEndPoint, true, apiVisibility);
+        } catch (Exception ex) {
+            log.error("API publication failed", ex);
+        }
 
     }
 
@@ -158,6 +191,31 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     }
 
+    @Test(description = "3.2.1.2", dataProvider = "SwaggerFilesAndVerb",
+            dataProviderClass = SecureUsingUserRolesTestCases.class)
+    public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
+        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
+        String payload = Utils.readFromFile(swagger_file.getAbsolutePath());
+        HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
+        verifyResponse(updateResponse);
+        HttpResponse updatedResponse = apiPublisher.getAPI(apiName, SUPER_USER, apiVersion);
+        JSONObject jasonPayload = new JSONObject(updatedResponse.getData());
+        for (String httpverb: httpVerbs) {
+            String scope = new JSONObject(
+                    new JSONObject(
+                            (new JSONObject(
+                                    new JSONArray(
+                                            jasonPayload.getJSONObject("api").
+                                                    get("resources").toString()
+                                    ).get(0).toString()
+                            ).get("http_verbs")
+                            ).toString()
+                    ).get(httpverb).toString()
+            ).get("scope").toString();
+            assertEquals(ITEM_VIEW, scope);
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws APIManagerIntegrationTestException {
         for (String name : applicationsList) {
@@ -170,5 +228,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         } catch (APIManagementException ex) {
             log.error("Users or role deletion failed", ex);
         }
+        apiPublisherAdmin.deleteAPI(apiName, apiVersion, SUPER_USER);
     }
 }
