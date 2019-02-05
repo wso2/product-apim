@@ -82,31 +82,10 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     private static final String ORDER_ADD = "order_add";
     private static final String SCOPE_EXISTANCE = "isScopeExist";
     private static final String ROLE_EXISTANCE = "isRoleExist";
-    private String description = "This is a API creation description";
-    private String tag = "APICreationTag";
-    private String tierCollection = "Silver";
-    private String bizOwner = "wso2Test";
-    private String bizOwnerMail = "wso2test@gmail.com";
-    private String techOwner = "wso2";
-    private String techOwnerMail = "wso2@gmail.com";
-    private String endpointType = "secured";
-    private String endpointAuthType = "basicAuth";
-    private String epUsername = "wso2";
-    private String epPassword = "wso2123";
-    private String default_version_checked = "default_version";
-    private String responseCache = "enabled";
-    private String cacheTimeout = "300";
-    private String subscriptions = "all_tenants";
-    private String http_checked = "http";
-    private String https_checked = "";
-    private String inSequence = "debug_in_flow";
-    private String outSequence = "debug_out_flow";
     private String apiVersion = "1.0.0";
-    private String apiResource = "/find";
     private String apiVisibility = "public";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private String apiName = "APIScopeTestAPI";
-    private String apiContext = "phone";
 
     List<String> userList = new ArrayList();
     List<String> roleList = new ArrayList();
@@ -182,32 +161,6 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         }
     }
 
-    private void createAndPublishAPI()throws APIManagerIntegrationTestException{
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
-                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
-                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
-                subscriptions, http_checked, https_checked, inSequence, outSequence);
-        //Design API with name,context,version,visibility,apiResource and with all optional values
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        HttpResponse serviceResponseGetApi = apiPublisher.getAPI(apiName, SUPER_USER);
-
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, SUPER_USER,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
-    }
-
-    public static String readFromFile(String file_name) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(file_name));
-        StringBuilder sb = new StringBuilder();
-        int x;
-        while ((x = br.read()) != -1) {
-            sb.append((char) x);
-        }
-        String payloadText = sb.toString();
-        return payloadText;
-    }
-
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException {
         setupUserData();
@@ -217,7 +170,12 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        createAndPublishAPI();
+        try {
+            apiPublisher.developSampleAPI("swaggerFiles/apiScopeTest1.json",
+                    SUPER_USER, backendEndPoint, true, apiVisibility);
+        } catch (Exception ex) {
+            log.error("API publication failed", ex);
+        }
 
     }
 
@@ -237,7 +195,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
             dataProviderClass = SecureUsingUserRolesTestCases.class)
     public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
-        String payload = readFromFile(swagger_file.getAbsolutePath());
+        String payload = Utils.readFromFile(swagger_file.getAbsolutePath());
         HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
         verifyResponse(updateResponse);
         HttpResponse updatedResponse = apiPublisher.getAPI(apiName, SUPER_USER, apiVersion);
