@@ -33,7 +33,6 @@
 
     <modules>
         <module>scenarios-common</module>
-        <!--<module>1-api-updates-using-new-versions</module>-->
         <module>1-manage-public-partner-private-apis</module>
         <module>2-collaborative-api-development</module>
         <module>3-securing-an-api-with-different-security-protocols</module>
