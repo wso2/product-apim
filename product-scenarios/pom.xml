@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-                <version>${apimserver.version}</version>
+                <version>2.6.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
@@ -535,7 +535,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.73</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.113-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->

@@ -20,20 +20,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
+import org.wso2.am.integration.test.utils.bean.APIManageBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.testng.Assert.assertTrue;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
@@ -43,7 +51,7 @@ public class APIPublisherRestClient {
     private static final String START_API_ACTION = "start";
     private static final String URL_SUFFIX = "/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-
+    ScenarioTestBase scenarioTestBase = new ScenarioTestBase();
     /**
      * construct of API rest client
      *
@@ -103,7 +111,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Failed to logout from publisher."
-                                                         + " Error: " + e.getMessage(), e);
+                    + " Error: " + e.getMessage(), e);
         }
     }
 
@@ -178,7 +186,7 @@ public class APIPublisherRestClient {
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/overview/ajax/overview.jag"),
                     "action=createNewAPI&provider=" + provider + "&apiName=" + apiName + "&version="
-                    + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion,
+                            + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion,
                     requestHeaders);
 
         } catch (Exception e) {
@@ -199,8 +207,8 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                                          apiRequest.generateRequestParameters("updateAPI"),
-                                          requestHeaders);
+                    apiRequest.generateRequestParameters("updateAPI"),
+                    requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to update API. Error: " + e.getMessage(), e);
         }
@@ -230,7 +238,6 @@ public class APIPublisherRestClient {
         }
 
     }
-
 
 
     /**
@@ -274,7 +281,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get API " + apiName
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
 
     }
@@ -298,7 +305,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get API - " + apiName
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -341,11 +348,11 @@ public class APIPublisherRestClient {
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/documentation/ajax/docs.jag"),
                     "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
-                    apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
-                    docType, requestHeaders);
+                            apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
+                            docType, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to remove document from API - " + apiName
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -365,10 +372,10 @@ public class APIPublisherRestClient {
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/tokens/ajax/revokeToken.jag"),
                     "action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
-                    authUser + "&consumerKey=" + consumerKey, requestHeaders);
+                            authUser + "&consumerKey=" + consumerKey, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to revoke access token"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -389,10 +396,10 @@ public class APIPublisherRestClient {
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/tiers/ajax/tiers.jag"),
                     "action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
-                    permissionType + "&roles=" + roles, requestHeaders);
+                            permissionType + "&roles=" + roles, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to update permission."
-                                                         + " Error: " + e.getMessage(), e);
+                    + " Error: " + e.getMessage(), e);
         }
     }
 
@@ -415,10 +422,10 @@ public class APIPublisherRestClient {
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
                     "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
-                    version + "&swagger=" + swaggerRes, requestHeaders);
+                            version + "&swagger=" + swaggerRes, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to update resource of API - " + apiName
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -442,7 +449,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve API information - " + apiName
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -456,7 +463,7 @@ public class APIPublisherRestClient {
      * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
     public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
-            String apiVersion) throws APIManagerIntegrationTestException {
+                                           String apiVersion) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
@@ -464,7 +471,7 @@ public class APIPublisherRestClient {
                             + "&apiName=" + apiName + "&apiVersion=" + apiVersion, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Check for valid endpoint fails for " + endpointUrl
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -496,7 +503,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when change he lifecycle to publish"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -519,7 +526,7 @@ public class APIPublisherRestClient {
                             apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving a API"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -536,7 +543,7 @@ public class APIPublisherRestClient {
             return HttpClient.doGet(backendURL + "/site/pages/tiers.jag", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -559,7 +566,7 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Manage page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -582,7 +589,7 @@ public class APIPublisherRestClient {
                     "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -603,7 +610,7 @@ public class APIPublisherRestClient {
      *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
-                                    String sourceType, String docUrl, String summary, String docLocation,String mimeType, String newType)
+                                    String sourceType, String docUrl, String summary, String docLocation, String mimeType, String newType)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
@@ -611,17 +618,16 @@ public class APIPublisherRestClient {
                     new URL(backendURL + URL_SUFFIX + "/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
-                            "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType+ "&newType="
-                    + newType, requestHeaders);
+                            "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType + "&newType="
+                            + newType, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
 
-
-/**
+    /**
      * Adding a Document to a API
      *
      * @param apiName     - Name of the API.
@@ -649,7 +655,7 @@ public class APIPublisherRestClient {
                             "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -674,10 +680,10 @@ public class APIPublisherRestClient {
                             addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation() +
                             "&mimeType=" + addDocRequestBean.getMimeType() +
                             "&optionsRadios=" + addDocRequestBean.getDocType() + "&optionsRadios1=" +
-                    addDocRequestBean.getDocSourceType(), requestHeaders);
+                            addDocRequestBean.getDocSourceType(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -696,7 +702,7 @@ public class APIPublisherRestClient {
                     backendURL + URL_SUFFIX + "/listing/ajax/item-list.jag?action=getAllAPIs", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for " +
-                                                         "the user in Publisher. Error: " + e.getMessage(), e);
+                    "the user in Publisher. Error: " + e.getMessage(), e);
         }
     }
 
@@ -717,7 +723,7 @@ public class APIPublisherRestClient {
                     creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
-                                                         + "Error: " + e.getMessage(), e);
+                    + "Error: " + e.getMessage(), e);
         }
     }
 
@@ -762,10 +768,13 @@ public class APIPublisherRestClient {
         }
     }
 
-
-    public HttpResponse implement(APIImplementationBean implementationBean)
+    /**
+     * Do the implementation phase of API
+     */
+    public HttpResponse implementAPI(APIImplementationBean implementationBean)
             throws APIManagerIntegrationTestException {
         try {
+            log.debug("Implementing API");
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag?"),
@@ -775,6 +784,21 @@ public class APIPublisherRestClient {
         }
     }
 
+    /**
+     * Do the manage phase of API
+     */
+    public HttpResponse manageAPI(APIManageBean apiManageBean)
+            throws APIManagerIntegrationTestException {
+        try {
+            log.debug("Managing API..");
+            checkAuthentication();
+            return HttpClient.doPost(
+                    new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag?"),
+                    apiManageBean.generateRequestParameters("manage"), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to update resource of API Error: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * Retrieve implementation page for the requested API
@@ -795,25 +819,26 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Implement page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
     /**
      * Validate API Name when creating a new API
+     *
      * @param apiName - Name of the API
      * @return - Response that contains the API is valid or not..
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
-     *                                           method and HTTPSClientUtils.doPost() method call
+     *                                            method and HTTPSClientUtils.doPost() method call
      */
-    public HttpResponse checkValidAPIName(String apiName) throws APIManagerIntegrationTestException{
+    public HttpResponse checkValidAPIName(String apiName) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return  HttpClient.doPost( new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                    "action=isAPINameExist&apiName=" + apiName , requestHeaders);
-        }catch (Exception e){
+            return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
+                    "action=isAPINameExist&apiName=" + apiName, requestHeaders);
+        } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exeption when adding a new API with existing API name"
-                                                         + ". Error: " + e.getMessage(),e);
+                    + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -826,15 +851,14 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                                           "action=getTiers" ,requestHeaders);
+                    "action=getTiers", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
     /**
-     *
      * @param role role
      * @return HttpResponse
      * @throws APIManagerIntegrationTestException
@@ -843,10 +867,31 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HttpClient.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                                           "action=validateRoles&roles=" + role ,requestHeaders);
+                    "action=validateRoles&roles=" + role, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
-                                                         + ". Error: " + e.getMessage(), e);
+                    + ". Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Get the Swagger definition of API
+     *
+     * @param name API name
+     * @param version API version
+     * @param provider API provider
+     * @return Swagger definition of the API
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse getSwagger(String name, String version, String provider) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpClient.doGet(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag?name=" + name + "&version=" +
+                            version + "&provider=" + provider + "&action=swagger",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for " +
+                    "the user in Publisher. Error: " + e.getMessage(), e);
         }
     }
 
@@ -865,6 +910,68 @@ public class APIPublisherRestClient {
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                     + ". Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Design, Implement and Manage (and publish if required) an API via the approach that the Publisher UI is
+     * performing, by calling required Jaggery APIs. This is to be used as a common method to develop/publish APIs for
+     * scenario tests.
+     *
+     * @param swaggerFileRelativePath Swagger file relative path to create API
+     * @param apiDeveloperUsername Developer name
+     * @param backendEndPoint Backendpoint url
+     * @param publish Whether to publish APi or not
+     * @param storeVisibility Store visibility level of the API
+     * @throws Exception
+     */
+    public void developSampleAPI(String swaggerFileRelativePath,
+                                 String apiDeveloperUsername, String backendEndPoint, boolean publish,
+                                 String storeVisibility) throws Exception {
+        String swaggerFileLocation = System.getProperty("user.dir") + File.separator + "src/test/resources" +
+                File.separator + swaggerFileRelativePath;
+        try {
+            File swagger_file = new File(swaggerFileLocation);
+            String swaggerContent = readFromFile(swagger_file.getAbsolutePath());
+            JSONObject json = new JSONObject(swaggerContent);
+            String apiName = json.getJSONObject("info").get("title").toString();
+            String apiContext = json.get("basePath").toString();
+            String apiVersion = json.getJSONObject("info").get("version").toString();
+            APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVersion);
+            apiRequest.setVisibility(storeVisibility);
+            apiRequest.setSwagger(swaggerContent);
+
+            //Design API
+            HttpResponse serviceResponse = designAPI(apiRequest);
+            scenarioTestBase.verifyResponse(serviceResponse);
+            assertTrue(serviceResponse.getData().contains(apiName), apiName + " is not visible in publisher");
+
+            //implementAPI API
+            APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName, apiVersion,
+                    apiDeveloperUsername, new URL(backendEndPoint));
+            apiImplementationBean.setSwagger(swaggerContent);
+            HttpResponse implementApiResponse = implementAPI(apiImplementationBean);
+            scenarioTestBase.verifyResponse(implementApiResponse);
+
+            // -- Manage API -- //
+            // get Swagger
+            HttpResponse getSwaggerResponse = getSwagger(apiName, apiVersion, apiDeveloperUsername);
+            APIManageBean apiManageBean = new APIManageBean(apiName, apiVersion, apiDeveloperUsername, "https", "disabled",
+                    "resource_level", "Production and Sandbox", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
+            HttpResponse apiManageResponse = manageAPI(apiManageBean);
+            scenarioTestBase.verifyResponse(apiManageResponse);
+
+            if (publish) {
+                //publish API
+                org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
+                        new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName, apiDeveloperUsername, APILifeCycleState.PUBLISHED);
+                HttpResponse apiPublishResponse = changeAPILifeCycleStatus(updateLifeCycle);
+                scenarioTestBase.verifyResponse(apiPublishResponse);
+            }
+        } catch (MalformedURLException e) {
+            throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
+        } catch (IOException e) {
+            throw new IOException("Error in reading swagger file from path :" + swaggerFileLocation, e);
         }
     }
 }
