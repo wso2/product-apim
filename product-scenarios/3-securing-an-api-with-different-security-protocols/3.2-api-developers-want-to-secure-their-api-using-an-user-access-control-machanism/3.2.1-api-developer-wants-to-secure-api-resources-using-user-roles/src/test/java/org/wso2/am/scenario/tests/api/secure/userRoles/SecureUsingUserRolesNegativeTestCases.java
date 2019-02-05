@@ -70,7 +70,7 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     private String apiVisibility = "public";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private String apiName = "APIScopeTestAPI";
-    private File swagger_file;
+    private File swaggerFile;
     String resourceLocation = System.getProperty("test.resource.location");
 
     private void setupUserData() {
@@ -148,8 +148,8 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     @Test(description = "3.2.1.13")
     public void testScopeWithDuplicateKey() throws Exception {
         // This swagger will create "item_view" scope and assign it to a resource.
-        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest1.json");
-        String payload = ScenarioTestUtils.readFromFile(swagger_file.getAbsolutePath());
+        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest1.json");
+        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
         HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
         verifyResponse(updateResponse);
         // Redeclare scope with item_view key.
