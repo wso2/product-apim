@@ -31,6 +31,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -148,7 +149,7 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     public void testScopeWithDuplicateKey() throws Exception {
         // This swagger will create "item_view" scope and assign it to a resource.
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest1.json");
-        String payload = Utils.readFromFile(swagger_file.getAbsolutePath());
+        String payload = ScenarioTestUtils.readFromFile(swagger_file.getAbsolutePath());
         HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
         verifyResponse(updateResponse);
         // Redeclare scope with item_view key.

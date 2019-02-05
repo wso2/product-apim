@@ -37,6 +37,7 @@ import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -195,7 +196,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
             dataProviderClass = SecureUsingUserRolesTestCases.class)
     public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
-        String payload = Utils.readFromFile(swagger_file.getAbsolutePath());
+        String payload = ScenarioTestUtils.readFromFile(swagger_file.getAbsolutePath());
         HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
         verifyResponse(updateResponse);
         HttpResponse updatedResponse = apiPublisher.getAPI(apiName, SUPER_USER, apiVersion);
