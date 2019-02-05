@@ -90,7 +90,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
     List<String> userList = new ArrayList();
     List<String> roleList = new ArrayList();
-    File swagger_file;
+    File swaggerFile;
     String resourceLocation = System.getProperty("test.resource.location");
 
     @DataProvider(name = "ScopeAndValidRoleDataProvider")
@@ -195,8 +195,8 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     @Test(description = "3.2.1.2", dataProvider = "SwaggerFilesAndVerb",
             dataProviderClass = SecureUsingUserRolesTestCases.class)
     public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
-        swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
-        String payload = ScenarioTestUtils.readFromFile(swagger_file.getAbsolutePath());
+        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
+        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
         HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
         verifyResponse(updateResponse);
         HttpResponse updatedResponse = apiPublisher.getAPI(apiName, SUPER_USER, apiVersion);
