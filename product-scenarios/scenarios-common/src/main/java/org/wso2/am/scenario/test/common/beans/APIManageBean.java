@@ -16,7 +16,9 @@
  *under the License.
  */
 
-package org.wso2.am.integration.test.utils.bean;
+package org.wso2.am.scenario.test.common.beans;
+
+import org.wso2.am.integration.test.utils.bean.AbstractRequest;
 
 public class APIManageBean extends AbstractRequest {
     private String name;
