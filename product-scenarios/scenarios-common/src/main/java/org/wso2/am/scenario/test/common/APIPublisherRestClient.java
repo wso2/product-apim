@@ -25,7 +25,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
-import org.wso2.am.integration.test.utils.bean.APIManageBean;
+import org.wso2.am.scenario.test.common.beans.APIManageBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;

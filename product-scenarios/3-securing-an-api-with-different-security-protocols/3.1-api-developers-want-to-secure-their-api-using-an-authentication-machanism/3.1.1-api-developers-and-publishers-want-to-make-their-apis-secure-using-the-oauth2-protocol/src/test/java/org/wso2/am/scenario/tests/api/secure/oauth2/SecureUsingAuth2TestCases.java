@@ -62,6 +62,9 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
             apiStore.removeApplication(name);
         }
         applicationsList.clear();
+        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(API_DEVELOPER_USERNAME,  ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.deleteAPI("PizzaShackTestAPI", "1.0.0", API_DEVELOPER_USERNAME);
     }
 
     @Test(description = "1.1.1.1")
