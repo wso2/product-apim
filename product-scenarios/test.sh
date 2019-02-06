@@ -81,8 +81,27 @@ echo "output directory : ${OUTPUT_DIR}"
 
 export DATA_BUCKET_LOCATION=${INPUT_DIR}
 
+# Retrieve specific property from deployment.properties file
+function get_prop {
+    prop_file=$(cat "${INPUT_DIR}/deployment.properties")
+    echo ${prop_file} | grep "${1}" | cut -d'=' -f2
+}
+
+PRODUCT_VERSION=$(get_prop 'ProductVersion')
+
+if [[ -z "$PRODUCT_VERSION" ]]
+then
+    echo "\$ProductVersion not found in property list."
+#    After merging changes to wso2/testgrid-job-configs this need to be enabled
+#    exit 1
+else
+    PRODUCT_VERSION="-$PRODUCT_VERSION"
+fi
+
+
 #=============== Execute Scenarios ===============================================
 mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
 
 
