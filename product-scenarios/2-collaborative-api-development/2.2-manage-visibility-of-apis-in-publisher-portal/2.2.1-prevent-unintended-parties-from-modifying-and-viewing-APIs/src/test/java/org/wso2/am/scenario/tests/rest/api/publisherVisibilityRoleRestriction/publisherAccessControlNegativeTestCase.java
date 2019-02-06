@@ -69,11 +69,10 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         createUser(CREATOR_PUBLISHER_USERNAME, PASSWORD, new String[]{PUBLISHER_ROLE},
                 ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         usersToDeleteList.add(CREATOR_PUBLISHER_USERNAME);
-        usersToDeleteList.add(TEST_PUBLISHER_USERNAME);
         rolesToDeleteList.add(PUBLISHER_ROLE);
         apiPublisherRestClient = new APIPublisherRestClient(publisherURL);
     }
-
+    
     @Test(description = "2.2.1.1")
     private void testAccessControlUsingNoneExistingRoles() throws APIManagerIntegrationTestException {
 
@@ -107,6 +106,7 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         verifyResponse(createRestrictedApi(apiPublisherRestClient));
         apiPublisherRestClient.logout();
         createUserWithPublisherAndCreatorRole(TEST_PUBLISHER_USERNAME, PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        usersToDeleteList.add(TEST_PUBLISHER_USERNAME);
         apiPublisherRestClient.login(TEST_PUBLISHER_USERNAME, PASSWORD);
         assertFalse(isApiAvailable(apiName, apiPublisherRestClient));
         apiPublisherRestClient.logout();
