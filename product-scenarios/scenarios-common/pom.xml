@@ -25,6 +25,10 @@
                             <value>
                                 ${project.basedir}/src/main/resources/
                             </value>
+                            <name>test.resource.location</name>
+                            <value>
+                                ${project.basedir}/src/test/resources/
+                            </value>
                         </property>
                     </systemProperties>
                 </configuration>

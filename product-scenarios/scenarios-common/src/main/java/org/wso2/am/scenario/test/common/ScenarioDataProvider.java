@@ -32,17 +32,13 @@ public class ScenarioDataProvider {
     @DataProvider(name = "OASDocsWithJsonURL")
     public static Object[][] OASDocJsonURLProvide() {
         return new Object[][]{
-                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS2Document.json"},
-                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS3Document.json"}
-        };
+                {"http://localhost:8083/swaggerFiles/OAS2Document.json"}, {"http://localhost:8083/swaggerFiles/OAS3Document.json"}};
     }
 
     @DataProvider(name = "OASDocsWithYamlURL")
     public static Object[][] OASDocYamlURLProvide() {
         return new Object[][]{
-                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS2Document.yaml"},
-                {"https://raw.githubusercontent.com/wso2/product-apim/product-scenarios/product-scenarios/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.2-create-rest-api-by-import-oas-document/src/test/resources/swaggerFiles/OAS3Document.yaml"}
-        };
+                {"http://localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http://localhost:8083/swaggerFiles/OAS3Document.yaml"}};
     }
 
     @DataProvider(name = "ValidApplicationNameAndTierDataProvider")
@@ -212,4 +208,11 @@ public class ScenarioDataProvider {
         };
     }
 
+    @DataProvider(name = "thumbUrlProvider")
+    public static Object[][] thumbUrlDataProvider() {
+
+        return new Object[][]{
+                {"http://localhost:8083/thumbnail/petstoreapi.jpg"}
+        };
     }
+}
