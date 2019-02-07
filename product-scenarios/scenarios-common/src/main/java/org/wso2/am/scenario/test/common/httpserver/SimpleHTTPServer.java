@@ -70,25 +70,6 @@ public class SimpleHTTPServer implements Runnable {
         }
     }
 
-    /*        public static void main(String[] args) {
-                try {
-                    ServerSocket serverConnect = new ServerSocket(PORT);
-                    log.info("Server started.\nListening for connections on port : " + PORT + " ...\n");
-
-                    // we listen until user halts server execution
-                    while (isRunning) {
-                        SimpleHTTPServer simpleServer = new SimpleHTTPServer();
-
-
-                        // create dedicated thread to manage the client connection
-                        Thread thread = new Thread(simpleServer);
-                        thread.start();
-                    }
-
-                } catch (IOException e) {
-                    log.error("Server Connection error : " + e.getMessage());
-                }
-            }*/
     @Override
     public void run() {
 
@@ -219,14 +200,6 @@ public class SimpleHTTPServer implements Runnable {
         }
     }
 
-//    public void start() {
-//
-//        isRunning = true;
-//        // create dedicated thread to manage the client connection
-//        Thread thread = new Thread(this);
-//        thread.start();
-//    }
-
     public void stop() {
 
         isRunning = false;
@@ -279,30 +252,3 @@ public class SimpleHTTPServer implements Runnable {
     }
 
 }
-
-/*
- *  Tests for Edit api thumbUrl
- *
- * */
-/*    @Test(description = "1.1.5.6", dataProvider = "thumbUrlProvider", dataProviderClass = ScenarioDataProvider.class)
-    public void testRESTAPIEditThumbUrl(String thumbUrl) throws Exception {
-
-        //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
-        verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains("thumb"), apiName + " is not visible in publisher");
-        JSONObject responseData = new JSONObject(apiResponsePublisher.getData());
-        assertTrue(responseData.getJSONObject("api").get("thumb").equals(null), "ThumbUrl is already added in the api " + apiName);
-
-        //Update API with a thumb url
-        apiCreationRequestBean.setThumbUrl(thumbUrl);
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(apiUpdateResponse);
-
-        //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
-        JSONObject updatedResponseData = new JSONObject(apiResponsePublisher.getData());
-        assertTrue(!responseData.getJSONObject("api").get("thumb").equals(null), "ThumbUrl is updated in the api " + apiName);
-
-    }*/
