@@ -20,7 +20,7 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="10.1.1-expose-service-secured-via-basic-authentication" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.scenario.tests.basic.auth.security.BasicAuthEndpointSecuredAPITestcase"/>-->
+            <class name="org.wso2.am.scenario.tests.basic.auth.security.BasicAuthEndpointSecuredAPITestcase"/>
         </classes>
     </test>
 </suite>

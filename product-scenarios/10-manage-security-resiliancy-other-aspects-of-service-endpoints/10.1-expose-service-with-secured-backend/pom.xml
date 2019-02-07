@@ -14,7 +14,7 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>10.1.1-expose-service-secured-via-basic-authentication</module>
+        <!--<module>10.1.1-expose-service-secured-via-basic-authentication</module>-->
         <module>10.1.2-expose-service-secured-via-basic-authentication-with-encrypted-password-in-api-definition</module>
         <module>10.1.3-expose-service-secured-via-digest-authentication</module>
         <module>10.1.4-expose-service-secured-via-digest-authentication-with-encrypted-password-in-api-definition</module>
