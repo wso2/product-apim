@@ -207,6 +207,7 @@ public class ScenarioDataProvider {
                 {publisherPermissionList, creatorPermissionList}
         };
     }
+
     @DataProvider(name = "thumbUrlProvider")
     public static Object[][] thumbUrlDataProvider() {
 
@@ -214,4 +215,4 @@ public class ScenarioDataProvider {
                 {"http://localhost:8083/thumbnail/petstoreapi.jpg"}
         };
     }
-    }
+}
