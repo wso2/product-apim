@@ -15,6 +15,8 @@
 */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +27,9 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.httpserver.SimpleHTTPServer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
@@ -33,7 +37,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Map;
+
+import static org.apache.axis2.transport.http.HTTPConstants.USER_AGENT;
 
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
@@ -50,8 +61,11 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     String resourceLocation = System.getProperty("test.resource.location");
 
+    private static final Log log = LogFactory.getLog(RESTApiCreationUsingOASDocTestCase.class);
+
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
+
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
     }
@@ -95,6 +109,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.2.2", dependsOnMethods = "createApiWithValidOAS2DocumentAsJSONFile")
     public void createApiWithValidOAS3DocumentAsJSONFile() throws Exception {
+
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS3Document.json");
 
         //Import api definition from swagger file
@@ -135,6 +150,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.2.3", dependsOnMethods = "createApiWithValidOAS3DocumentAsJSONFile")
     public void createApiWithValidOAS2DocumentAsYAMLFile() throws Exception {
+
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS2Document.yaml");
 
         //Import api definition from swagger file
@@ -176,6 +192,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.2.4", dependsOnMethods = "createApiWithValidOAS2DocumentAsYAMLFile")
     public void createApiWithValidOAS3DocumentAsYAMLFile() throws Exception {
+
         swagger_file = new File(resourceLocation + File.separator + "swaggerFiles/OAS3Document.yaml");
 
         //Import api definition from swagger file
@@ -248,32 +265,37 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     }
 
     //TODO: Commented due to the SSL certification issue for read from url still occurs
-//    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
-//    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
-//        swagger_url = url;
-//
-//        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
-//
-//        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-//        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-//
-//        String payload = readFromUrl(swagger_url);
-//        JSONObject json = new JSONObject(payload);
-//        String apiName = json.getJSONObject("info").get("title").toString();
-//        String context = json.get("basePath").toString();
-//        String version = json.getJSONObject("info").get("version").toString();
-//
-//        apiRequest = new APIRequest(apiName, context, version);
-//        apiRequest.setSwagger(payload);
-//
-//        serviceResponse = apiPublisher.designAPI(apiRequest);
-//        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
-//        Assert.assertEquals(name, apiName);
-//
-//        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
-//        verifyResponse(serviceResponse);
-//
-//    }
+    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
+    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
+
+        swagger_url = url;
+
+        apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains("imported"));
+
+        new Thread(new SimpleHTTPServer()).start();
+
+        String payload = doGet(swagger_url);
+        JSONObject json = new JSONObject(payload);
+        String apiName = json.getJSONObject("info").get("title").toString();
+        String context = json.get("basePath").toString();
+        String version = json.getJSONObject("info").get("version").toString();
+
+        apiRequest = new APIRequest(apiName, context, version);
+        apiRequest.setSwagger(payload);
+
+        serviceResponse = apiPublisher.designAPI(apiRequest);
+        String name = (new JSONObject(serviceResponse.getData())).getJSONObject("data").get("apiName").toString();
+        Assert.assertEquals(name, apiName);
+
+        serviceResponse = apiPublisher.deleteAPI(apiName, version, "admin");
+        verifyResponse(serviceResponse);
+
+        Thread.sleep(1000); // To avoid connection failure in the next iteration.
+
+    }
 
     //TODO: Commented due to the SSL certification issue for read from url still occurs
 
@@ -344,6 +366,48 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         }
         String payloadText = sb.toString();
         return payloadText;
+    }
+
+    public String doGet(String url) {
+
+        StringBuffer response = new StringBuffer();
+        URL obj = null;
+        try {
+            obj = new URL(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        BufferedReader in = null;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) obj.openConnection();
+
+            con.setRequestMethod("GET");
+
+            con.setRequestProperty("User-Agent", USER_AGENT);
+            int responseCode = 0;
+            responseCode = con.getResponseCode();
+            System.out.println("GET Response Code :: " + responseCode);
+            if (responseCode == HttpURLConnection.HTTP_OK) { // success
+                in = new BufferedReader(new InputStreamReader(
+                        con.getInputStream()));
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+            }
+        } catch (IOException e) {
+            log.error("Error in reading url : " + url, e);
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
+        }
+        return response.toString();
     }
 }
 
