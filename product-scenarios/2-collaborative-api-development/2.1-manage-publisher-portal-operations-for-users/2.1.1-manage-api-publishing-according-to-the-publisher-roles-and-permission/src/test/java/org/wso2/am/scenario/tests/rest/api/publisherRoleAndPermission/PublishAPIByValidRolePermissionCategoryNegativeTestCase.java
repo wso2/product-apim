@@ -29,6 +29,7 @@ import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -58,6 +59,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private String developer;
     private String testUser;
+    private String creatorUser;
     private String password;
     private int count = 0;
 
@@ -139,6 +141,78 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         updateUser(developer, new String[]{"internal/subscriber"}, null, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         loginToStore(developer, password);
         isAPINotVisibleInStore(apiName, apiStoreClient);
+    }
+
+    @Test(description = "2.1.1.3", dataProvider = "RoleUpdatingDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testPublishAPIByUpdatingRoleInUser(String validRole, String inValidRole) throws Exception {
+
+        apiName = "API_updateRole" + count;
+        apiContext = "/verify_updateRole" + count;
+        creatorUser = "User_updateRole" + count;
+        testUser = "User1_updateRole" + count;
+        password = "password123$";
+        count++;
+
+        createUserWithCreatorRole(creatorUser, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(creatorUser, password);
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint));
+        createAPI(apiRequest);
+        getAPI(apiName, creatorUser, apiVersion);
+        apiNames.put(apiName, creatorUser);
+        userList.add(testUser);
+        apiPublisher.logout();
+
+        createUser(testUser, password, new String[]{validRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse publisherPublishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(publisherPublishAPI);
+        assertTrue(publisherPublishAPI.getData().contains("PUBLISHED"),
+                "API has not been published by internal/publisher");
+
+        changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.CREATED);
+
+        updateUser(testUser, new String[] {inValidRole}, new String[] {validRole},ADMIN_LOGIN_USERNAME,ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        assertFalse(publishAPI.getData().contains("PUBLISHED"), "API has been published");
+    }
+
+    @Test(description = "2.1.1.4", dataProvider = "permissionUpdatingDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testPublishAPIByUpdatingPermissionInUser(String[] validPermissionList, String[] inValidPermissionList) throws Exception {
+
+        apiName = "API_permissionUpdate" + count;
+        apiContext = "/verify_permissionUpdate" + count;
+        creatorUser = "User_permissionUpdate" + count;
+        testUser = "User1_permissionUpdate" + count;
+        userRole = "userRole_permissionUpdate" + count;
+        password = "password123$";
+        count++;
+
+        createUserWithCreatorRole(creatorUser, password, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(creatorUser, password);
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint));
+        createAPI(apiRequest);
+        getAPI(apiName, creatorUser, apiVersion);
+        apiNames.put(apiName, creatorUser);
+        userList.add(testUser);
+        apiPublisher.logout();
+
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, userRole, validPermissionList);
+        createUser(testUser, password, new String[]{userRole}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiPublisher.login(testUser, password);
+        HttpResponse publisherPublishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        verifyResponse(publisherPublishAPI);
+        assertTrue(publisherPublishAPI.getData().contains("PUBLISHED"),
+                "API has not been published by internal/publisher");
+
+        updateRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, userRole, new String[]{testUser}, inValidPermissionList);
+        apiPublisher.login(testUser, password);
+        HttpResponse publishAPI = changeAPILifeCycleStatus(apiName, creatorUser, APILifeCycleState.PUBLISHED);
+        assertFalse(publishAPI.getData().contains("PUBLISHED"), "API has been published");
     }
 
     private void loginToStore(String userName, String password) throws Exception {

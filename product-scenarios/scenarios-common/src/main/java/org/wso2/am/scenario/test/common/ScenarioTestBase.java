@@ -38,6 +38,7 @@ import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,8 +49,6 @@ import java.util.Properties;
 
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-
-import static org.testng.Assert.assertTrue;
 
 public class ScenarioTestBase {
 
@@ -223,6 +222,7 @@ public class ScenarioTestBase {
         }
 
     }
+
     public static void createUserWithSubscriberRole(String username, String password,
             String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
@@ -247,7 +247,8 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createRole(String adminUsername, String adminPassword, String role, String[] permisionArray) throws APIManagementException {
+    public void createRole(String adminUsername, String adminPassword, String role,
+                           String[] permisionArray) throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
@@ -258,6 +259,23 @@ public class ScenarioTestBase {
                    );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
+        }
+
+    }
+
+    public void updateRole(String adminUsername, String adminPassword, String role, String[] userList,
+                           String[] permissionArray) throws APIManagementException {
+
+        UserManagementClient userManagementClient = null;
+        try {
+            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.deleteRole(role);
+            userManagementClient.addRole(role,
+                    userList,
+                    permissionArray
+            );
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to update role :" + role, e);
         }
 
     }
@@ -329,27 +347,27 @@ public class ScenarioTestBase {
             throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
+        log.info("WAIT for API to be unavailable in store: " + apiName);
         while (waitTime > System.currentTimeMillis()) {
             apiResponseStore = apiStoreRestClient.getAPIs();
             if (apiResponseStore != null) {
+                verifyResponse(apiResponseStore);
                 if (apiResponseStore.getData().contains(apiName)) {
-                    log.info("API found in store : " + apiName);
-                    verifyResponse(apiResponseStore);
-                    break;
-                } else {
                     try {
-                        log.info("API : " + apiName + " not found in store yet.");
+                        log.info("API found in store : " + apiName);
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
-
+//                        do nothing
                     }
+                } else {
+                    log.info("API : " + apiName + " not found in store.");
+                    break;
                 }
             }
         }
-        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+        if(apiResponseStore != null && apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was found in store at the end of wait time.");
-            Assert.assertFalse(false, "API found in store : " + apiName);
+            Assert.assertTrue(false, "API found in store : " + apiName);
         }
     }
 
@@ -424,5 +442,22 @@ public class ScenarioTestBase {
     public String getBackendEndServiceEndPointHttps(String serviceName) {
         String webAppURL = serviceEndpoint.replace("/services", "");
         return webAppURL + "/" + serviceName;
+    }
+
+    /**
+     * Checks whether the provided json object (taken from getAllTags response) contains a given tag.
+     *
+     * @param tagsResponse JSONObject containing the getAllTags response
+     * @param tagName      tag name to check for the existence
+     * @return true if the tagResponse contains the tagName, false otherwise;
+     */
+    public boolean isTagsResponseContainsTag(JSONObject tagsResponse, String tagName) {
+        JSONArray tags = tagsResponse.getJSONArray("tags");
+        for (int i = 0; i < tags.length(); i++) {
+            if (tagName.equals(tags.getJSONObject(i).getString("name"))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

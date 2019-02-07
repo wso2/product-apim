@@ -101,10 +101,10 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     @Test(description = "10.1.1.1")
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
         // Create an API
-        apiRequest = new APIRequest(apiName, apiContext, apiVersion, endpointType, endpointAuthType,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, getBackendEndServiceEndPointHttps(serviceName),
-                epUsername, URLEncoder.encode(epPassword, UTF_8), "0", APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+        apiRequest = new APIRequest(apiName, apiContext, apiVersion, "Public", endpointType, endpointAuthType,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "http://localhost:9763/" + serviceName,
+                epUsername, URLEncoder.encode(epPassword, UTF_8), "1", APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, apiResource);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(apiCreationResponse);
@@ -163,7 +163,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
 
             String gatewayHttpsUrl = getHttpsAPIInvocationURL(apiContext, apiVersion, apiResource);
             log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
-            HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
+            HttpResponse    apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
             String endpointCredentials = epUsername + ":" + epPassword;
             String encodedCredentials = DatatypeConverter.printBase64Binary(endpointCredentials.getBytes());
             assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),

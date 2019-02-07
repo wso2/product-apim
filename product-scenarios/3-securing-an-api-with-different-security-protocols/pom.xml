@@ -37,6 +37,7 @@
 
     <modules>
         <module>3.1-api-developers-want-to-secure-their-api-using-an-authentication-machanism</module>
+        <module>3.2-api-developers-want-to-secure-their-api-using-an-user-access-control-machanism</module>
     </modules>
 
 </project>

@@ -114,7 +114,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource, description, tag,
+        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
                 tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
                 endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
                 subscriptions, http_checked, https_checked, inSequence, outSequence);
