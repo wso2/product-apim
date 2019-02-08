@@ -286,7 +286,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     }
 
     //TODO: Commented due to the SSL certification issue for read from url still occurs
-    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class, enabled = false)
+    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
     public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
 
         swagger_url = url;
