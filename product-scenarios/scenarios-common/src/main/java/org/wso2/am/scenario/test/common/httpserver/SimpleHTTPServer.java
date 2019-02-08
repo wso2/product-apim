@@ -61,9 +61,8 @@ public class SimpleHTTPServer implements Runnable {
     public SimpleHTTPServer(int serverPort) {
 
         try {
-            ServerSocket serverConnect = new ServerSocket(serverPort);
+            serverConnect = new ServerSocket(serverPort);
             log.info("Server started.\nListening for connections on port : " + serverPort + " ...\n");
-            connect = serverConnect.accept();
 
         } catch (IOException e) {
             System.err.println("Server Connection error : " + e.getMessage());
@@ -84,6 +83,7 @@ public class SimpleHTTPServer implements Runnable {
         PrintWriter out = null;
         BufferedOutputStream dataOut = null;
         String fileRequested = null;
+
         if (isRunning) {
             try {
                 // we read characters from the client via input stream on the socket
@@ -99,7 +99,7 @@ public class SimpleHTTPServer implements Runnable {
                 StringTokenizer parse = new StringTokenizer(input);
                 String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
                 // we get file requested
-                fileRequested = parse.nextToken().toLowerCase();
+                fileRequested = parse.nextToken();
 
                 // we support only GET and HEAD methods, we check
                 if (!method.equals("GET") && !method.equals("HEAD")) {
@@ -129,7 +129,6 @@ public class SimpleHTTPServer implements Runnable {
                     if (fileRequested.endsWith("/")) {
                         fileRequested += DEFAULT_FILE;
                     }
-
                     File file = new File(WEB_ROOT, fileRequested);
                     int fileLength = (int) file.length();
                     String content = getContentType(fileRequested);
@@ -157,15 +156,11 @@ public class SimpleHTTPServer implements Runnable {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // Ignore
                 }
 
             } catch (FileNotFoundException fnfe) {
-                try {
-                    fileNotFound(out, dataOut, fileRequested);
-                } catch (IOException ioe) {
-                    log.error("Error while creating the connection : " + ioe.getMessage());
-                }
+                log.error("Error while creating the connection : " + fnfe.getMessage(), fnfe);
 
             } catch (NullPointerException npe) {
                 log.error("Error with file not found exception : " + npe.getMessage());
@@ -174,10 +169,12 @@ public class SimpleHTTPServer implements Runnable {
                 log.error("Server error : " + ioe);
             } finally {
                 try {
-                    in.close();
+                    if (in != null) {
+                        in.close();
+                    }
                     out.close();
                     dataOut.close();
-                    connect.close(); // we close socket connection
+                    connect.close(); // close socket connection
                     closeConnection(serverConnect);
                 } catch (Exception e) {
                     log.error("Error closing stream : " + e.getMessage());
@@ -228,27 +225,6 @@ public class SimpleHTTPServer implements Runnable {
             return "text/html";
         else
             return "text/plain";
-    }
-
-    private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-
-        File file = new File(WEB_ROOT, FILE_NOT_FOUND);
-        int fileLength = (int) file.length();
-        String content = "text/html";
-        byte[] fileData = readFileData(file, fileLength);
-
-        out.println("HTTP/1.1 404 File Not Found");
-        out.println("Server: Java HTTP Server from SSaurel : 1.0");
-        out.println("Date: " + new Date());
-        out.println("Content-type: " + content);
-        out.println("Content-length: " + fileLength);
-        out.println(); // blank line between headers and content, very important !
-        out.flush(); // flush character output stream buffer
-
-        dataOut.write(fileData, 0, fileLength);
-        dataOut.flush();
-
-        log.error("File " + fileRequested + " not found");
     }
 
 }
