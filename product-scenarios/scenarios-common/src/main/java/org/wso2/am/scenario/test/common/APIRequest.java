@@ -202,6 +202,14 @@ public class APIRequest extends AbstractRequest {
         this.swagger = swagger;
     }
 
+    public String getSwagger() {
+        return this.swagger;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
     @Override
     public void setAction() {
     }
