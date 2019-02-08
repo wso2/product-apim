@@ -22,10 +22,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -33,26 +31,11 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.am.scenario.test.common.httpserver.SimpleHTTPServer;
-import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import static org.apache.axis2.transport.http.HTTPConstants.USER_AGENT;
 
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
