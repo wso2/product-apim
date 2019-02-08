@@ -112,6 +112,9 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         assertGETResource(((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(0));
 
+        HttpResponse response = apiPublisher.deleteAPI("PetApiSample_OAS2_JSON", apiVersion, APICreator);
+        verifyResponse(response);
+
     }
 
     @Test(description = "1.1.2.2", dependsOnMethods = "createApiWithValidOAS2DocumentAsJSONFile")
@@ -152,6 +155,9 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
                 get("templates")).get(0));
         assertGETResource(((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(1));
+
+        HttpResponse response = apiPublisher.deleteAPI("PetApiSample_OAS3_JSON", apiVersion, APICreator);
+        verifyResponse(response);
 
     }
 
@@ -195,6 +201,10 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         //Assert resources
         assertGETResource(((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(0));
+
+        HttpResponse response = apiPublisher.deleteAPI("PetApiSample_OAS2_YAML", apiVersion, APICreator);
+        verifyResponse(response);
+
     }
 
     @Test(description = "1.1.2.4", dependsOnMethods = "createApiWithValidOAS2DocumentAsYAMLFile")
@@ -239,6 +249,10 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
                 get("templates")).get(0));
         assertGETResource(((JSONArray) (new JSONObject(getResponse.getData())).getJSONObject("api").
                 get("templates")).get(1));
+
+        HttpResponse response = apiPublisher.deleteAPI("PetApiSample_OAS3_YAML", apiVersion, APICreator);
+        verifyResponse(response);
+
     }
 
     private void assertGETResource(Object resource) throws JSONException {
@@ -357,10 +371,10 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void RemoveAPI() throws Exception {
         //clean the data
-        apiPublisher.deleteAPI("PetApiSample_OAS2_JSON", apiVersion, admin);
-        apiPublisher.deleteAPI("PetApiSample_OAS2_YAML", apiVersion, admin);
-        apiPublisher.deleteAPI("PetApiSample_OAS3_JSON", apiVersion, admin);
-        apiPublisher.deleteAPI("PetApiSample_OAS3_YAML", apiVersion, admin);
+        apiPublisher.deleteAPI("PetApiSample_OAS2_JSON", apiVersion, APICreator);
+        apiPublisher.deleteAPI("PetApiSample_OAS2_YAML", apiVersion, APICreator);
+        apiPublisher.deleteAPI("PetApiSample_OAS3_JSON", apiVersion, APICreator);
+        apiPublisher.deleteAPI("PetApiSample_OAS3_YAML", apiVersion, APICreator);
         deleteUser(APICreator, admin, adminPw);
 
     }
