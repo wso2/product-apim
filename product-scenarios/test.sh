@@ -92,3 +92,9 @@ echo "Copying surefire-reports to ${OUTPUT_DIR}"
 mkdir -p ${OUTPUT_DIR}
 find . -name "surefire-reports" -exec cp --parents -r {} ${OUTPUT_DIR} \;
 find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR} \;
+
+#=============== Code Coverage Report Generation ===========================================
+
+echo "Generating Scenario Code Coverage Reports"
+source ${HOME}/code-coverage/code-coverage.sh
+generate_code_coverage ${INPUT_DIR} ${OUTPUT_DIR}
