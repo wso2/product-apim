@@ -37,7 +37,6 @@ function generate_code_coverage(){
 
     #=============== Read Deployment.property file ===============================================
 
-    source ${HOME}/test.sh
     VAR_TEST_PLAN_ID=$(get_prop 'TEST_PLAN_ID')
     VAR_IS_TESTGRID=$(get_prop 'IS_TESTGRID')
     VAR_TINKERER_ENDPOINT=$(echo $(get_prop 'TESTGRID_TINKERER_ENDPOINT') | sed 's/\\//g')
@@ -142,9 +141,19 @@ function tinkerer_curl_commands(){
     shell_command=$2
 
     curl -X POST "${VAR_TINKERER_ENDPOINT}"/api/test-plan/"${VAR_TEST_PLAN_ID}"/agent/"${agent_name}"/operation \
-           -H 'content-type: application/json' \
-           -d '{"code":"SHELL", "request":"'$shell_command'"}' \
+           -H "content-type: application/json" \
+           -d "{\"code\":\"SHELL\", \"request\":\"$shell_command\"}" \
            -u "${VAR_TINKERER_USERNAME}":"${VAR_TINKERER_PASSWORD}"
 
      sleep 30
+}
+
+#=== FUNCTION ==================================================================
+# NAME: get_prop
+# DESCRIPTION: Retrieve specific property from deployment.properties file
+# PARAMETER 1: property_value
+#===============================================================================
+function get_prop {
+    local prop=$(grep -w "${1}" "${INPUT_DIR}/deployment.properties" | cut -d'=' -f2)
+    echo $prop
 }
