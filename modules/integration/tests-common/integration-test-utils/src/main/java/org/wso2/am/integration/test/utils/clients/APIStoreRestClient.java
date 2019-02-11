@@ -35,6 +35,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.extensions.servers.httpserver.SimpleHttpClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -1467,7 +1468,8 @@ public class APIStoreRestClient {
         if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
             try {
                 checkAuthentication();
-                response = HTTPSClientUtils.doGet(backendURL + "store/api-docs/" + userName + "/" +
+                String tenant = MultitenantUtils.getTenantDomain(userName);
+                response = HTTPSClientUtils.doGet(backendURL + "store/api-docs/" + tenant + "/" +
                                                           apiName + "/" + apiVersion, null);
             } catch (IOException ex) {
                 throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
@@ -1511,14 +1513,15 @@ public class APIStoreRestClient {
      * @throws APIManagerIntegrationTestException if failed to generate the SDK
      */
     public org.apache.http.HttpResponse generateSDKUpdated(String sdkLanguage, String apiName, String apiVersion,
-                                                           String apiProvider) throws APIManagerIntegrationTestException {
+                                                           String apiProvider, String tenant)
+            throws APIManagerIntegrationTestException {
 
         try {
             checkAuthentication();
             SimpleHttpClient httpClient = new SimpleHttpClient();
             String restURL = backendURL + "store/site/blocks/sdk/ajax/sdk-create.jag?" +
-                    "action=generateSDK&apiName=" + apiName + "&apiVersion=" + apiVersion + "&apiProvider=" +
-                    apiProvider + "&language=java";
+                    "action=generateSDK&apiName=" + apiName + "&apiVersion=" + apiVersion + "&tenant=" +
+                    tenant + "&language=java";
             //response is org.apache.http.HttpResponse, because we need to write it to a file
             return httpClient.doGet(restURL, requestHeaders);
         } catch (IOException e) {

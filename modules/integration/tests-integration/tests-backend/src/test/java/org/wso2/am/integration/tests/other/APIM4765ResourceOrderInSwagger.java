@@ -106,7 +106,7 @@ import static org.testng.Assert.assertTrue;
 
         apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, swagger);
         //get swagger doc.
-        String swaggerURL = getStoreURLHttps() + "store/api-docs/admin/SwaggerReorderTest/1.0.0";
+        String swaggerURL = getStoreURLHttps() + "store/api-docs/carbon.super/SwaggerReorderTest/1.0.0";
 
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
         HttpResponse swaggerFileReadFromRegistry = HttpRequestUtil.doGet(swaggerURL, requestHeadersSandBox);
