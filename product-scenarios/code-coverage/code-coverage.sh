@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2018, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2019, WSO2 Inc. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 
 #set -o xtrace
 
-FILE=""
 VAR_TEST_PLAN_ID=""
 VAR_IS_TESTGRID=""
 VAR_TINKERER_ENDPOINT=""
@@ -36,23 +35,16 @@ function generate_code_coverage(){
     OUTPUT_DIR=$2
     HOME=`pwd`
 
-    FILE="${INPUT_DIR}/deployment.properties"
-    PROP_TEST_PLAN_ID=TEST_PLAN_ID
-    PROP_TESTGRID=IS_TESTGRID
-    PROP_TINKERE_ENDPOINT=TESTGRID_TINKERER_ENDPOINT
-    PROP_SERVER_DIR=RemoteProductDir
-    PROP_TINKERER_USERNAME=TESTGRID_TINKERER_USERNAME
-    PROP_TINKERER_PASSWORD=TESTGRID_TINKERER_PASSWORD
-    user=ubuntu
-
     #=============== Read Deployment.property file ===============================================
 
-    VAR_TEST_PLAN_ID=`cat ${FILE} | grep -w "$PROP_TEST_PLAN_ID" ${FILE} | cut -d'=' -f2`
-    VAR_IS_TESTGRID=`cat ${FILE} | grep -w "$PROP_TESTGRID" ${FILE} | cut -d'=' -f2`
-    VAR_TINKERER_ENDPOINT=$(echo "$(grep -w "$PROP_TINKERE_ENDPOINT" ${FILE} | cut -d'=' -f2)" | sed 's/\\//g')
-    VAR_TINKERER_USERNAME=`grep -w "$PROP_TINKERER_USERNAME" ${FILE} | cut -d'=' -f2`
-    VAR_TINKERER_PASSWORD=`grep -w "$PROP_TINKERER_PASSWORD" ${FILE} | cut -d'=' -f2`
-    VAR_REM_DIR=`grep -w "$PROP_SERVER_DIR" ${FILE} | cut -d'=' -f2`
+    source ${HOME}/test.sh
+    VAR_TEST_PLAN_ID=$(get_prop 'TEST_PLAN_ID')
+    VAR_IS_TESTGRID=$(get_prop 'IS_TESTGRID')
+    VAR_TINKERER_ENDPOINT=$(echo $(get_prop 'TESTGRID_TINKERER_ENDPOINT') | sed 's/\\//g')
+    VAR_TINKERER_USERNAME=$(get_prop 'TESTGRID_TINKERER_USERNAME')
+    VAR_TINKERER_PASSWORD=$(get_prop 'TESTGRID_TINKERER_PASSWORD')
+    VAR_REM_DIR=$(get_prop 'RemoteProductDir')
+    user=ubuntu
 
     #=============== Code Coverage Report Generation ===========================================
 
