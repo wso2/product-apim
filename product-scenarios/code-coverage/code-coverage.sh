@@ -129,6 +129,12 @@ function generate_code_coverage(){
         echo "Copy code coverage reports to the output directory"
         cp -r ${HOME}/code-coverage/target/scenario-code-coverage ${OUTPUT_DIR}
 
+        #Copy Code Coverage Artifacts to the output directory
+        echo "Copy code coverage artifacts to the output directory"
+        mkdir ${HOME}/code-coverage/resources/code-coverage-artifacts
+        cp -r ${HOME}/code-coverage/resources/instance* ${HOME}/code-coverage/resources/code-coverage-artifacts
+        cp -r ${HOME}/code-coverage/resources/code-coverage-artifacts ${OUTPUT_DIR}
+
     fi
 }
 
