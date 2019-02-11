@@ -123,8 +123,8 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiLinkToTestInPage =
-                    "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 + "&provider=" +
-                            providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
+                    "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 +
+                            "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
                 //API Link should be in page
                 assertTrue(apiPageFilteredWithTagsResponseString.contains(apiLinkToTestInPage),
