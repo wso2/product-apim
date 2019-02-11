@@ -20,15 +20,29 @@ package org.wso2.am.scenario.tests.api.secure.oauth2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.entity.ContentType;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 
 public class SecureUsingAuth2TestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
@@ -42,14 +56,15 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
     private final String API_DEVELOPER_USERNAME = "3.1.1-user";
     private final String API_DEVELOPER_PASSWORD = "password@3.1.1-user";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    // private String backendEndPoint = "http://localhost:9443/am/sample/pizzashack/v1/api";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher = new APIPublisherRestClient(publisherURL);
 
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        //  createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        //    createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
         apiPublisher.login(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD);
@@ -67,11 +82,59 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
         apiPublisher.deleteAPI("PizzaShackTestAPI", "1.0.0", API_DEVELOPER_USERNAME);
     }
 
-    @Test(description = "1.1.1.1")
+    @Test(description = "3.1.1.1")
     public void testOAuth2Authorization() throws Exception {
         // create and publish sample API
-        apiPublisher.developSampleAPI("swaggerFiles/pizzashack-swagger.json", API_DEVELOPER_USERNAME, backendEndPoint,
+        apiPublisher.developSampleAPI("swaggerFiles/phoneverify-swagger.json", API_DEVELOPER_USERNAME, backendEndPoint,
                 true, "public");
-        //TO DO
+        String testApplication = "TestApp1";
+        applicationsList.add(testApplication);
+
+        // Create an application
+        HttpResponse addApplicationResponse = apiStore.addApplication(testApplication,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "description");
+        verifyResponse(addApplicationResponse);
+        log.info("Application - " + testApplication + "is created successfully");
+
+        // Generate keys for the application
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(testApplication);
+        HttpResponse keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
+        // add logs to verify http response 404 when generating tokens
+        JSONObject responseStringJson = new JSONObject(keyGenerationResponse.getData());
+        log.info("key generation response for application \'" + testApplication + "\' response data :"
+                + keyGenerationResponse.getData());
+
+        if (!responseStringJson.getBoolean("error")) {
+            verifyResponse(keyGenerationResponse);
+
+            // Check the visibility of the API in API store
+            isAPIVisibleInStore("PhoneVerifyAPI", apiStore);
+
+            // Add subscription to API
+            SubscriptionRequest subscriptionRequest = new SubscriptionRequest("PhoneVerifyAPI", "1.0.0", API_DEVELOPER_USERNAME,
+                    testApplication, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+            HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
+            verifyResponse(addSubscriptionResponse);
+            log.info(testApplication + " is subscribed to " + "PhoneVerifyAPI");
+
+            // Generate Keys
+            JSONObject keyGenerationRespData = new JSONObject(keyGenerationResponse.getData());
+            String accessToken = (keyGenerationRespData.getJSONObject("data").getJSONObject("key"))
+                    .get("accessToken").toString();
+
+            // Invoke the API
+            Map<String, String> requestHeaders = new HashMap<>();
+            requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+            String gatewayHttpsUrl = getHttpsAPIInvocationURL("/phone", "1.0.0", "/CheckPhoneNumber");
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
+            List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+            urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
+            urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+            HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+            log.info("API response : " + apiResponse.getData());
+            assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched when api invocation");
+        }
     }
 }
