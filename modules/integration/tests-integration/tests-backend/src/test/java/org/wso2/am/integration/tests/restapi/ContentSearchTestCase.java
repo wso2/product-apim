@@ -82,7 +82,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             throws Exception {
         log.info("Basic Content Search");
         String contentSearchTestAPI = "contentSearchTestAPI";
-        String description = "UnifiedSearchFeature";
+        String description = "Unified Search Feature";
         APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
                 user.getUserName(), description);
         apiPublisher.login(user.getUserName(), user.getPassword());
