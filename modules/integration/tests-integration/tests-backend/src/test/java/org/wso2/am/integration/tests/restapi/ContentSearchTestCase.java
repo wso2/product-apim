@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 public class ContentSearchTestCase extends APIMIntegrationBaseTest {
@@ -95,7 +96,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check in publisher
         for (int i = 0; i <= retries; i++) {
             HttpGet getPublisherAPIs = new HttpGet(
-                    getStoreURLHttps() + publisherRestAPIBasePath + "search?query=" + description);
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "search?query=" + URLEncoder
+                            .encode(description, "UTF-8"));
             getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse publisherResponse = client.execute(getPublisherAPIs);
             if (getResultCount(publisherResponse) == 1) {
@@ -112,7 +114,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         }
 
         for (int i = 0; i <= retries; i++) {
-            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + URLEncoder
+                    .encode(description, "UTF-8"));
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
             }
@@ -138,7 +141,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.CREATED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         for (int i = 0; i <= retries; i++) {
-            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + URLEncoder
+                    .encode(description, "UTF-8"));
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
             }
