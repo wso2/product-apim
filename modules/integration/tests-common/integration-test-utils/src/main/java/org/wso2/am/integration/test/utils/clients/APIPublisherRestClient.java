@@ -626,6 +626,20 @@ public class APIPublisherRestClient {
         }
     }
 
+    public HttpResponse updateDocument(String apiName, String version, String provider, String docName, String content)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    "action=addInlineContent&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
+                            "&docName=" + docName + "&content=" + content, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when adding inline content to a document"
+                    + ". Error: " + e.getMessage(), e);
+        }
+    }
+
 
     /**
      * Retrieve the All APIs available for the user in Publisher.
