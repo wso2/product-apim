@@ -95,7 +95,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check in publisher
         for (int i = 0; i <= retries; i++) {
             HttpGet getPublisherAPIs = new HttpGet(
-                    getStoreURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+                    getStoreURLHttps() + publisherRestAPIBasePath + "search?query=" + description);
             getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse publisherResponse = client.execute(getPublisherAPIs);
             if (getResultCount(publisherResponse) == 1) {
@@ -112,7 +112,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         }
 
         for (int i = 0; i <= retries; i++) {
-            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
             }
@@ -138,7 +138,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.CREATED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         for (int i = 0; i <= retries; i++) {
-            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
             }
@@ -188,7 +188,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check in publisher
         for (int i = 0; i <= retries; i++) {
             HttpGet getPublisherAPIs = new HttpGet(
-                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=github4156");
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "search?query=github4156");
             getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse publisherResponse = client.execute(getPublisherAPIs);
             if (getResultCount(publisherResponse) == 1) {
@@ -206,7 +206,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
 
         //check in store
         for (int i = 0; i <= retries; i++) {
-            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "results?query=github4156");
+            HttpGet getStoreAPIs = new HttpGet(getStoreURLHttps() + storeRestAPIBasePath + "search?query=github4156");
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getStoreAPIs.setHeader("X-WSO2-Tenant", user.getUserDomain());
             }
@@ -266,7 +266,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check with user1
         for (int i = 0; i <= retries; i++) {
             HttpGet getAPIsForUser1 = new HttpGet(
-                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 user1 = user1 + "@" + user.getUserDomain();
             }
@@ -289,7 +289,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check with user2 who doesn't have permissions for api
         for (int i = 0; i <= retries; i++) {
             HttpGet getAPIsForUser2 = new HttpGet(
-                    getPublisherURLHttps() + publisherRestAPIBasePath + "results?query=" + description);
+                    getPublisherURLHttps() + publisherRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 user2 = user2 + "@" + user.getUserDomain();
             }
@@ -353,7 +353,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check with user1
         for (int i = 0; i <= retries; i++) {
             HttpGet getAPIsForUser1 = new HttpGet(
-                    getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+                    getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getAPIsForUser1.setHeader("X-WSO2-Tenant", user.getUserDomain());
                 user1 = user1 + "@" + user.getUserDomain();
@@ -377,7 +377,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         //check with user2 who doesn't have permissions for api
         for (int i = 0; i <= retries; i++) {
             HttpGet getAPIsForUser2 = new HttpGet(
-                    getStoreURLHttps() + storeRestAPIBasePath + "results?query=" + description);
+                    getStoreURLHttps() + storeRestAPIBasePath + "search?query=" + description);
             if (TestUserMode.TENANT_ADMIN == userMode) {
                 getAPIsForUser2.setHeader("X-WSO2-Tenant", user.getUserDomain());
                 user2 = user2 + "@" + user.getUserDomain();
