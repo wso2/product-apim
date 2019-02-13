@@ -18,6 +18,12 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
+import com.google.gson.reflect.TypeToken;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
 import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
@@ -44,6 +50,7 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
+import org.wso2.carbon.apimgt.importexport.CertificateDetail;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.context.RegistryType;
@@ -60,12 +67,14 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+import waffle.util.Base64;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -75,10 +84,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -889,5 +903,172 @@ public class APIExportUtil {
         UserStoreManager manager = realm.getUserStoreManager();
         AbstractUserStoreManager abstractManager = (AbstractUserStoreManager) manager;
         return abstractManager.isUserInRole(tenantAwareUserName, role);
+    }
+
+    /**
+     *export endpoint certificates
+     *
+     * @param api API to be exported
+     * @param tenantid tenant id of the user
+     * @param apiprovider api Provider
+     * @throws APIExportException
+     */
+    private static void exportEndpointCertificates(API api, int tenantid, APIProvider apiprovider)
+            throws APIExportException {
+        String archivePath = archiveBasePath.concat(File.separator + api.getId().getApiName() + "-" +
+                api.getId().getVersion());
+        createDirectory(archivePath + File.separator + APIImportExportConstants.META_INFO_DIRECTORY);
+        JSONObject endpointConfig = null;
+        JSONTokener tokener = new JSONTokener(api.getEndpointConfig());
+        List<CertificateMetadataDTO> certificateMetadataDTOS;
+        List<String> productionHostNames;
+        List<String> sandboxEndpoints;
+        Set<String> uniqueHostNames = new HashSet<String>();
+        List<CertificateDetail> endpointCertificatesDetails = new ArrayList<CertificateDetail>();
+        try {
+            endpointConfig = new JSONObject(tokener);
+            productionHostNames = getHostNames(endpointConfig, "production_endpoints", api.getId().getApiName());
+            sandboxEndpoints = getHostNames(endpointConfig, "sandbox_endpoints", api.getId().getApiName());
+            uniqueHostNames.addAll(productionHostNames); // Remove duplicate and append result
+            uniqueHostNames.addAll(sandboxEndpoints);
+            for (String hostname : uniqueHostNames) {
+                List<CertificateDetail> list = getCertificateContentAndMetaData(tenantid, hostname, apiprovider);
+                endpointCertificatesDetails.addAll(list);
+            }
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String element = gson.toJson(endpointCertificatesDetails,
+                    new TypeToken<ArrayList<CertificateDetail>>() {
+                    }.getType());
+            writeFile(archivePath + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
+                            File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE,
+                    element);
+        } catch (JSONException e) {
+            String errorMsg = "Error in converting Endpoint config to JSON object in API [" + api.getId().getApiName() + "]" ;
+            throw new APIExportException(errorMsg, e);
+        }
+    }
+
+    /**
+     * get the hostname from a given endpoint url
+     *
+     * @param url url of the endpoint
+     * @return host address of the endpoint
+     */
+    private static String getHostAddress(URL url){
+        String host = url.getHost();
+        String protocol = url.getProtocol();
+        int port = url.getPort();
+        String address = null;
+        if (port != -1){
+            address = protocol + "://" + host + ":" + port;
+        } else {
+            address = protocol + "://" + host;
+        }
+        return address;
+    }
+
+    /**
+     * Get hostname list from endpoint config
+     *
+     * @param endpointConfig JSON converted endpoint config
+     * @param type end point type - production/sandbox
+     * @return list of hostnames
+     * @throws APIExportException
+     */
+    private static List<String> getHostNames(JSONObject endpointConfig, String type, String apiName) throws APIExportException {
+        List<String> hostNames = new ArrayList<String>();
+        List<String> urls = new ArrayList<String>();
+        if (endpointConfig != null) {
+            try {
+                Object item = null;
+                item = endpointConfig.get(type);
+                if (item instanceof JSONArray) {
+                    JSONArray endpointsJSON = new JSONArray(endpointConfig.getJSONArray(type).toString());
+                    for (int i = 0; i < endpointsJSON.length(); i++) {
+                        try {
+                            String urlvalue = endpointsJSON.getJSONObject(i).get("url").toString();
+                            urls.add(urlvalue);
+
+                        } catch (JSONException ex) {
+                            log.error("Endpoint URL extraction from endpoints JSON objectfailed in API[" +apiName + "]", ex);
+                            continue;
+                        }
+                    }
+                } else if (item instanceof JSONObject) {
+                    JSONObject endpointJSON = new JSONObject(endpointConfig.getJSONObject(type).toString());
+                    try {
+                        String urlvalue = endpointJSON.get("url").toString();
+                        urls.add(urlvalue);
+                    } catch (JSONException ex) {
+                        log.error("Endpoint URL extraction from endpoint JSON object failed in API[" +apiName + "]", ex);
+                    }
+                }
+                for (String url : urls) {
+                    try {
+                        URL urlObj = new URL(url);
+                        String address = getHostAddress(urlObj);
+                        hostNames.add(address);
+                    } catch (MalformedURLException e) {
+                        log.error("URL object creation from extracted endpoint URL [" + url + "] failed in API [" + apiName + "]");
+                        continue;
+                    }
+                }
+            } catch (JSONException ex) {
+                log.info("Endpoint type [" + type + "] not found in API [" + apiName + "]");
+            }
+        }
+        return hostNames;
+    }
+
+    /**
+     * get Certificate MetaData and Certificate detail and build JSON list
+     *
+     * @param tenantid tenant id of the user
+     * @param hostname hostname of the endpoint
+     * @param apiProvider api Provider
+     * @return list of certificate detail JSON objects
+     * @throws APIExportException
+     */
+    private static List<CertificateDetail> getCertificateContentAndMetaData(int tenantid, String hostname,
+                                                                            APIProvider apiProvider)
+            throws APIExportException {
+        List<CertificateDetail> certificateDetails = new ArrayList<CertificateDetail>();
+        List<CertificateMetadataDTO> certificateMetadataDTOS;
+        try {
+            certificateMetadataDTOS = apiProvider.searchCertificates(tenantid, null, hostname);
+
+        } catch (APIManagementException e) {
+            String errorMsg = "Error retrieving certificate meta data. tenantId [" + tenantid + "] hostname ["
+                    + hostname + "]";
+            throw new APIExportException(errorMsg, e);
+        }
+        ByteArrayInputStream certificate = null;
+        try {
+            for (CertificateMetadataDTO metadataDTO : certificateMetadataDTOS) {
+                try {
+                    certificate = apiProvider.getCertificateContent(metadataDTO.getAlias());
+                    certificate.close();
+                    byte[] certificateContent = IOUtils.toByteArray(certificate);
+                    String encodedCertificate = Base64.encode(certificateContent);
+                    CertificateDetail certificateDetail = new CertificateDetail();
+                    certificateDetail.setHostName(hostname);
+                    certificateDetail.setAlias(metadataDTO.getAlias());
+                    certificateDetail.setCertificate(encodedCertificate);
+                    certificateDetails.add(certificateDetail);
+                } catch (APIManagementException e) {
+                    log.error("Error retrieving certificate content. tenantId [" + tenantid + "] hostname [" +
+                            hostname + "] Alias [" + metadataDTO.getAlias() + "]");
+                    continue;
+                } catch (IOException e) {
+                    log.error("Error while converting certificate content to Byte Array");
+                    continue;
+                }
+            }
+        } finally {
+            if(certificate != null)
+                IOUtils.closeQuietly(certificate);
+        }
+
+        return certificateDetails;
     }
 }

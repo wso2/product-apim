@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.importexport.utils;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -708,6 +709,42 @@ public final class APIImportUtil {
     private static boolean checkFileExistence(String fileLocation) {
         File testFile = new File(fileLocation);
         return testFile.exists();
+    }
+
+    /**
+     * This method import endpoint certificate
+     *
+     * @param pathToArchive location of the extracted folder of the API
+     * @param importedApi the imported API object
+     * @throws APIImportException
+     */
+    private static void addEndpointCertificates(String pathToArchive, API importedApi)
+            throws APIImportException {
+        String pathToJSONFile = pathToArchive + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
+                File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE;
+        try {
+            String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
+            JsonElement configElement = new JsonParser().parse(jsonContent);
+            JsonArray certificates = configElement.getAsJsonArray().getAsJsonArray();
+            for (JsonElement certificate : certificates) {
+                String certificate_content = certificate.getAsJsonObject().
+                        get(APIImportExportConstants.CERTIFICATE_CONTENT_JSON_KEY).getAsString();
+                String alias = certificate.getAsJsonObject().get(APIImportExportConstants.ALIAS_JSON_KEY).getAsString();
+                String endpoint = certificate.getAsJsonObject().get(APIImportExportConstants.HOSTNAME_JSON_KEY).getAsString();
+                try {
+                    provider.addCertificate(APIUtil.replaceEmailDomainBack(importedApi.getId().getProviderName()), certificate_content, alias, endpoint);
+                } catch (APIManagementException e) {
+                    String errorMessage = "Error while importing certificate endpoint [" + endpoint + " ]" + "alias [" +
+                            alias + " ] tenantuser [" +  APIUtil.replaceEmailDomainBack(importedApi.getId().getProviderName()) + "]";
+                    log.error(errorMessage, e);
+                    continue;
+                }
+            }
+        } catch (IOException e) {
+            String errorMessage = "Error in reading " + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE + "file";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        }
     }
 }
 
