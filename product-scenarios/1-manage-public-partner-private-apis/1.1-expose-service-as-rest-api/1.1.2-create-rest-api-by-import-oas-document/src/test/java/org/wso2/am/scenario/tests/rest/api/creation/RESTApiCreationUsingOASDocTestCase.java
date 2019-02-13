@@ -275,7 +275,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "1.1.2.2", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.2.5", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
     public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
 
         swagger_url = url;
@@ -307,7 +307,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     }
 
-    @Test(description = "1.1.2.4", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.2.6", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
     public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
 
         swagger_url = url;
