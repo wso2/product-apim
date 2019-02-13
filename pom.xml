@@ -1035,6 +1035,11 @@
                 <artifactId>org.wso2.carbon.apimgt.tracing</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.functions.library.mgt</artifactId>
+                <version>${carbon.identity.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1045,7 +1050,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.116</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.119</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1070,16 +1075,16 @@
         <carbon.mediation.version>4.6.105</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.12.153</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.53</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.12.231</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.83</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
-        <carbon.identity-local-auth-basicauth.version>6.0.6</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.1.18</carbon.identity-outbound-auth-samlsso.version>
-        <carbon.identity-metadata-saml2.version>1.0.5</carbon.identity-metadata-saml2.version>
+        <carbon.identity-local-auth-basicauth.version>6.0.7</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.19</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-metadata-saml2.version>1.0.7</carbon.identity-metadata-saml2.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.15</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.2.9</carbon.identity.carbon.auth.saml2.version>
-        <carbon.identity.auth.version>1.1.20</carbon.identity.auth.version>
+        <carbon.identity.carbon.auth.saml2.version>5.2.12</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.auth.version>1.1.23</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.19</carbon.deployment.version>
