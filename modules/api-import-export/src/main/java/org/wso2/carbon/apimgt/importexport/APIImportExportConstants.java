@@ -104,4 +104,8 @@ public final class APIImportExportConstants {
     public static final String ALIAS_JSON_KEY = "alias";
 
     public static final String CERTIFICATE_CONTENT_JSON_KEY = "certificate";
+
+    public static final String SEARCH_TYPE_CONTEXT = "Context";
+
+    public static final String SEARCH_TYPE_NAME = "Name";
 }

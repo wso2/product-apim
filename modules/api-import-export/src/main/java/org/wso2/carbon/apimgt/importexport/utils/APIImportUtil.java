@@ -247,7 +247,7 @@ public final class APIImportUtil {
             }
 
             //Checking whether this is a duplicate API
-            allMatchedApis = provider.searchAPIs(importedApi.getId().getApiName(), "Name", null);
+            allMatchedApis = provider.searchAPIs(importedApi.getId().getApiName(), APIImportExportConstants.SEARCH_TYPE_NAME, null);
             //if an API exist with the same name
             if (!allMatchedApis.isEmpty()) {
                 for (API matchAPI : allMatchedApis) {
@@ -259,6 +259,16 @@ public final class APIImportUtil {
                         throw new APIImportException(errorMessage);
                     }
                 }
+            }
+
+            //Checking context duplication
+            List<API> contextMatchedApis = provider.searchAPIs(importedApi.getContext(), APIImportExportConstants.SEARCH_TYPE_CONTEXT, null);
+            if (contextMatchedApis.size() > 0) {
+                String errMsg = "Error occurred while adding the API [" + importedApi.getId().getApiName()
+                        + '-' + importedApi.getId().getVersion() + "]. A duplicate context[" + importedApi.getContext()
+                        + "] already exists";
+                log.error(errMsg);
+                throw new APIImportException(errMsg);
             }
 
         } catch (IOException e) {
