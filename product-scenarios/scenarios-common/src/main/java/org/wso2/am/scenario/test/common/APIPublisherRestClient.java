@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -740,7 +741,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                    creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
+                    URLEncoder.encode(creationRequestBean.generateRequestParameters("updateAPI"), "UTF-8"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
                     "for the user in Publisher. Error: " + e.getMessage(), e);
@@ -939,7 +940,7 @@ public class APIPublisherRestClient {
             String apiVersion = json.getJSONObject("info").get("version").toString();
             APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVersion);
             apiRequest.setVisibility(storeVisibility);
-            apiRequest.setSwagger(swaggerContent);
+            apiRequest.setSwagger(URLEncoder.encode(swaggerContent, "UTF-8"));
 
             //Design API
             HttpResponse serviceResponse = designAPI(apiRequest);
@@ -949,7 +950,7 @@ public class APIPublisherRestClient {
             //implementAPI API
             APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName, apiVersion,
                     apiDeveloperUsername, new URL(backendEndPoint));
-            apiImplementationBean.setSwagger(swaggerContent);
+            apiImplementationBean.setSwagger(URLEncoder.encode(swaggerContent, "UTF-8"));
             HttpResponse implementApiResponse = implementAPI(apiImplementationBean);
             scenarioTestBase.verifyResponse(implementApiResponse);
 
