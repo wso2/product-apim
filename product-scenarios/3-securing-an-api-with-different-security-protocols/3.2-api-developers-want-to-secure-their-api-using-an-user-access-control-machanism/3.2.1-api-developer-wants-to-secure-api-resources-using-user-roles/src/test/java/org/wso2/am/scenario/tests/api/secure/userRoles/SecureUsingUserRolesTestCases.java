@@ -28,30 +28,25 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.HttpClient;
-import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
 
 public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
@@ -66,6 +61,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     private static final String API_ADMIN_PERMISSION = "/permission/admin";
     private static final String API_PUBLISHER_PERMISSION = "/permission/admin/manage/api/publish";
     private static final String API_CREATOR_PERMISSION = "/permission/admin/manage/api/create";
+    private static final String API_SUBSCRIBER_PERMISSION = "/permission/admin/manage/api/subscribe";
     private static final String MANAGER_ROLE = "managerRole";
     private static final String MANAGER_LOGIN_PW = "manager";
     private static final String AGENT_ROLE = "agentRole";
@@ -87,6 +83,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     private String apiVisibility = "public";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private String apiName = "APIScopeTestAPI";
+    private String applicationName = "TestApplication";
 
     List<String> userList = new ArrayList();
     List<String> roleList = new ArrayList();
@@ -115,6 +112,14 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         };
     }
 
+    @DataProvider(name="StoreUserDataProvider")
+    public static  Object[][] storeUserDataProvider() {
+        return new Object[][]{
+                {AGENT, AGENT_LOGIN_PW},
+                {CUSTOMER, CUSTOMER_LOGIN_PW}
+        };
+    }
+
     private void setupUserData() {
         try {
             createRoles();
@@ -128,9 +133,10 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, MANAGER_ROLE, new String[]{API_ADMIN_PERMISSION});
         roleList.add(MANAGER_ROLE);
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, AGENT_ROLE, new String[]{API_PUBLISHER_PERMISSION,
-                API_CREATOR_PERMISSION});
+                API_CREATOR_PERMISSION, API_SUBSCRIBER_PERMISSION, LOGIN_PERMISSION});
         roleList.add(AGENT_ROLE);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, CUSTOMER_ROLE, new String[]{LOGIN_PERMISSION});
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, CUSTOMER_ROLE,
+                new String[] { LOGIN_PERMISSION, API_SUBSCRIBER_PERMISSION });
         roleList.add(CUSTOMER_ROLE);
     }
 
@@ -144,6 +150,38 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         createUser(SUPER_USER, SUPER_USER_LOGIN_PW, new String[]{MANAGER_ROLE, AGENT_ROLE}, ADMIN_LOGIN_USERNAME,
                 ADMIN_LOGIN_PW);
         userList.add(SUPER_USER);
+    }
+
+    private void createNewApplicationAndSubscribe(String user, String password) throws Exception {
+        apiStore.login(user, password);
+        apiStore.addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, SUPER_USER);
+        subscriptionRequest.setApplicationName(applicationName);
+        apiStore.subscribe(subscriptionRequest);
+    }
+
+    private String generateKeysAndAccessToken(String user, String password) throws Exception {
+        //Generate production token and invoke with that
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject jsonResponse = new JSONObject(responseString);
+
+        // get Consumer Key and Consumer Secret
+        String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+
+        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
+        HttpResponse response;
+        String requestBody;
+        JSONObject accessTokenGenerationResponse;
+
+        //Obtain user access token for Admin
+        requestBody = "grant_type=password&username=" + user + "&password=" + password + "&scope=order_view";
+
+        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
+        return accessTokenGenerationResponse.getString("access_token");
     }
 
     private void deleteUsers() throws APIManagementException {
@@ -172,7 +210,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         try {
-            apiPublisher.developSampleAPI("swaggerFiles/apiScopeTest1.json",
+            apiPublisher.developSampleAPI("swaggerFiles/APIScopeTest1.json",
                     SUPER_USER, backendEndPoint, true, apiVisibility);
         } catch (Exception ex) {
             log.error("API publication failed", ex);
@@ -215,6 +253,35 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
             ).get("scope").toString();
             assertEquals(ITEM_VIEW, scope);
         }
+    }
+
+    @Test(description = "3.2.1.3", dataProvider = "StoreUserDataProvider",
+            dataProviderClass = SecureUsingUserRolesTestCases.class)
+    public void testScopeWithMultipleRoles(String user, String password) throws Exception {
+        //Adding a scope with two roles
+        HttpResponse httpResponse = apiPublisher.validateScope(ORDER_VIEW, AGENT_ROLE + "," + CUSTOMER_ROLE);
+        verifyResponse(httpResponse);
+
+        //Updating the resource with the new scope
+        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest3.json");
+        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
+        HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
+        verifyResponse(updateResponse);
+
+        createNewApplicationAndSubscribe(user, password);
+
+        String accessToken = generateKeysAndAccessToken(user, password);
+        Map<String, String> requestHeaders;
+        HttpResponse response;
+        requestHeaders = new HashMap<String, String>();
+
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        response = HttpRequestUtil
+                .doGet(gatewayHttpsURL + "/contextJsonV2/" + apiVersion, requestHeaders);
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Admin user cannot access the GET Method");
+        apiStore.removeAPISubscriptionByName(apiName, apiVersion, SUPER_USER, applicationName);
+        apiStore.removeApplication(applicationName);
     }
 
     @AfterClass(alwaysRun = true)
