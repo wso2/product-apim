@@ -26,7 +26,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 
@@ -251,20 +250,20 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         apiStoreClient.login(userName, password);
     }
 
-    private void validateRoles(String roles) throws APIManagerIntegrationTestException {
+    private void validateRoles(String roles) throws Exception {
 
         HttpResponse checkValidationRole = apiPublisher.validateRoles(roles);
         assertTrue(checkValidationRole.getData().contains("true"));
         verifyResponse(checkValidationRole);
     }
 
-    private void createAPI(APIRequest apiCreationRequest) throws APIManagerIntegrationTestException {
+    private void createAPI(APIRequest apiCreationRequest) throws Exception {
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequest);
         verifyResponse(apiCreationResponse);
     }
 
-    private void publishAPI(String apiName, String username) throws APIManagerIntegrationTestException {
+    private void publishAPI(String apiName, String username) throws Exception {
 
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(apiName, username, APILifeCycleState.PUBLISHED);
@@ -273,7 +272,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         assertTrue(apiResponsePublisher.getData().contains("PUBLISHED"), "API has not been created in publisher");
     }
 
-    public void getAPI(String provider) throws APIManagerIntegrationTestException {
+    public void getAPI(String provider) throws Exception {
 
         HttpResponse apiResponseGetAPI = apiPublisher.getAPI(apiName, provider, apiVersion);
         verifyResponse(apiResponseGetAPI);
