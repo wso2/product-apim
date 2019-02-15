@@ -414,7 +414,7 @@ public class ScenarioTestBase {
     }
 
     public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean  isAnonymousUser)
-            throws APIManagerIntegrationTestException{
+            throws Exception{
         long waitTime = System.currentTimeMillis() +
                 ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse tagResponse = null;
