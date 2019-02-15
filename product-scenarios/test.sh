@@ -81,14 +81,31 @@ echo "output directory : ${OUTPUT_DIR}"
 
 export DATA_BUCKET_LOCATION=${INPUT_DIR}
 
+# Retrieve specific property from deployment.properties file
+function get_prop {
+    local prop=$(grep -w "${1}" "${INPUT_DIR}/deployment.properties" | cut -d'=' -f2)
+    echo $prop
+}
+
+PRODUCT_VERSION=$(get_prop 'ProductVersion')
+
+if [[ -z "$PRODUCT_VERSION" ]]
+then
+    echo "\$ProductVersion not found in property list."
+#    After merging changes to wso2/testgrid-job-configs this need to be enabled
+#    exit 1
+else
+    PRODUCT_VERSION="-$PRODUCT_VERSION"
+fi
+
 #=============== Execute Scenarios ===============================================
 mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
-
 
 #=============== Copy Surefire Reports ===========================================
 
-echo "Copying surefire-reports to ${OUTPUT_DIR}"
-mkdir -p ${OUTPUT_DIR}
-find . -name "surefire-reports" -exec cp --parents -r {} ${OUTPUT_DIR} \;
-find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR} \;
+echo "Copying surefire-reports to ${OUTPUT_DIR}/scenarios"
+mkdir -p ${OUTPUT_DIR}/scenarios
+find . -name "surefire-reports" -exec cp --parents -r {} ${OUTPUT_DIR}/scenarios \;
+find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR}/scenarios \;
