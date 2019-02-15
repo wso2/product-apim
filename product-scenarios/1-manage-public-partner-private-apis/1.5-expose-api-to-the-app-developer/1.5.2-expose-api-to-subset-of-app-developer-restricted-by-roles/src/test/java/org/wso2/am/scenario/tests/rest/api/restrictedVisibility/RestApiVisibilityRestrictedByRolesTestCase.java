@@ -19,17 +19,20 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.*;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.testng.Assert.assertTrue;
 
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
@@ -51,13 +54,21 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
     private final String VISIBILITY_TYPE = "store";
+    private final String PUBLISHER_CREATOR_USERNAME = "APIVisiPublisherCreatorPos";
+    private final String PUBLISHER_CREATOR_PW = "APIVisiPublisherCreatorPos";
+    private final String SUBSCRIBER_USERNAME = "APIVisibilitySubscriberPos";
+    private final String SUBSCRIBER_PW = "APIVisibilitySubscriberPos";
 
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
+            UserAdminUserAdminException {
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        createUserWithPublisherAndCreatorRole(PUBLISHER_CREATOR_USERNAME, PUBLISHER_CREATOR_PW, ADMIN_LOGIN_USERNAME,
+                ADMIN_PASSWORD);
+        apiPublisher.login(PUBLISHER_CREATOR_USERNAME, PUBLISHER_CREATOR_PW);
+        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 
     @Test(description = "1.5.2.1")
@@ -78,9 +89,9 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
                 tierCollection, new URL(backendEndPoint));
         apiPublisher.validateRoles(subscribeRole);
 
-        createAPI(apiRequest, subscribeRole);
-        getAPI();
-        publishAPI(apiName, ADMIN_LOGIN_USERNAME);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
         loginToStore(userName, password);
         isAPIVisibleInStore(apiName, apiStoreClient);
     }
@@ -103,16 +114,137 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         createUser(userName, password, new String[]{subscribeRole} , ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
 
         String multipleRoles = subscribeRole + "," + creatorRole;
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, VISIBILITY_TYPE, apiVersion, apiResource,
-                tierCollection, new URL(backendEndPoint));
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, multipleRoles, VISIBILITY_TYPE,
+                apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
 
         validateRoles(multipleRoles);
-        createAPI(apiRequest, multipleRoles);
-        getAPI();
-        publishAPI(apiName, ADMIN_LOGIN_USERNAME);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
         loginToStore(userName, password);
         isAPIVisibleInStore(apiName, apiStoreClient);
     }
+
+//    todo need to config a secondary userstore to check roles with spaces
+//    @Test(description = "1.5.2.5")
+//    public void testVisibilityForRolesWithSpaces() throws Exception {
+//        apiName = "APIVisibility_roleWithSpace";
+//        String[] subscriberPermission = new String[]{"/permission/admin/login",
+//                "/permission/admin/manage/api/subscribe"};
+//
+//        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER_ROLE_WITH_SPACE, subscriberPermission);
+//        createUser(SUBSCRIBER1_USERNAME, SUBSCRIBER1_PW, new String[]{SUBSCRIBER_ROLE_WITH_SPACE} ,
+//                ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+//        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility, SUBSCRIBER_ROLE_WITH_SPACE,
+//                apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
+//        validateRoles(SUBSCRIBER_ROLE_WITH_SPACE);
+//        createAPI(apiRequest);
+//        getAPI(PUBLISHER_CREATOR_USERNAME);
+//        publishAPI(apiName, ADMIN_LOGIN_USERNAME);
+//        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+//        isAPIVisibleInStore(apiName, apiStoreClient);
+//    }
+
+    @Test(description = "1.5.2.7")
+    public void testVisibilityOfAPITags() throws Exception {
+        apiName = "APIVisibility_tags";
+        String tag = "tagA";
+
+        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+                ScenarioTestConstants.SUBSCRIBER_ROLE, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint), tag);
+        validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+        isAPIVisibleInStore(apiName, apiStoreClient);
+        isTagVisibleInStore(tag, apiStoreClient, false);
+    }
+
+    @Test(description = "1.5.2.8")
+    public void testVisibilityOfAPITagsWithRestrictedAndPublicAPIs() throws Exception {
+        apiName = "APIVisibility_tagsPublicAndRestricted1";
+        String tag = "tagsPublicAndRestricted";
+
+        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+                ScenarioTestConstants.CREATOR_ROLE, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint), tag);
+        validateRoles(ScenarioTestConstants.CREATOR_ROLE);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+
+        apiName = "APIVisibility_tagsPublicAndRestricted2";
+        apiRequest = new APIRequest(apiName, "/" + apiName, "public", apiVersion, apiResource,
+                tierCollection, new URL(backendEndPoint), tag);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+        isAPIVisibleInStore(apiName, apiStoreClient);
+        isTagVisibleInStore(tag, apiStoreClient,false);
+        isTagVisibleInStore(tag, new APIStoreRestClient(storeURL), true);
+    }
+
+    @Test(description = "1.5.2.9")
+    public void testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles() throws Exception {
+        apiName = "APIVisibility_tagsDistinctRoles1";
+        String tag = "tagsDistinctRoles";
+
+        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+                ScenarioTestConstants.CREATOR_ROLE, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint), tag);
+        validateRoles(ScenarioTestConstants.CREATOR_ROLE);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+
+        apiName = "APIVisibility_tagsDistinctRoles2";
+        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+                ScenarioTestConstants.SUBSCRIBER_ROLE, apiVersion, apiResource, tierCollection,
+                new URL(backendEndPoint), tag);
+        validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
+        createAPI(apiRequest);
+        getAPI(PUBLISHER_CREATOR_USERNAME);
+        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+        isAPIVisibleInStore(apiName, apiStoreClient);
+        isTagVisibleInStore(tag, apiStoreClient,false);
+    }
+
+//    todo asser whether only 1 API is available when APIs are retrieved by tag
+//    @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"})
+//    public void testListingOfRestrictedAPIsByTags() throws Exception {
+//        apiName = "APIVisibility_apiByTag1";
+//        String tag = "tagsDistinctRoles";
+//
+//        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+//                ScenarioTestConstants.CREATOR_ROLE, apiVersion, apiResource, tierCollection,
+//                new URL(backendEndPoint), tag);
+//        validateRoles(ScenarioTestConstants.CREATOR_ROLE);
+//        createAPI(apiRequest);
+//        getAPI(PUBLISHER_CREATOR_USERNAME);
+//        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+//
+//        apiName = "APIVisibility_apiByTag2";
+//        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+//                ScenarioTestConstants.SUBSCRIBER_ROLE, apiVersion, apiResource, tierCollection,
+//                new URL(backendEndPoint), tag);
+//        validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
+//        createAPI(apiRequest);
+//        getAPI(PUBLISHER_CREATOR_USERNAME);
+//        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+//        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+//        isAPIVisibleInStore(apiName, apiStoreClient);
+//        isTagVisibleInStore(tag, apiStoreClient,false);
+//        HttpResponse apisWithTagResponse = apiStoreClient.getAPIPageFilteredWithTags(tag);
+//        verifyResponse(apisWithTagResponse);
+//        assertTrue(apisWithTagResponse.getData().contains(apiName), "API \'" + apiName + "\' is not visible " +
+//                "to the user with restricted role");
+//        assertTrue(!apisWithTagResponse.getData().contains("APIVisibility_apiByTag1"),
+//                "API \'APIVisibility_tagsDistinctRoles1\' is visible to the user without the restricted role");
+//    }
 
     private void loginToStore(String userName, String password) throws Exception {
 
@@ -128,7 +260,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         verifyResponse(checkValidationRole);
     }
 
-    private void createAPI(APIRequest apiCreationRequest, String apiName) throws APIManagerIntegrationTestException {
+    private void createAPI(APIRequest apiCreationRequest) throws APIManagerIntegrationTestException {
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequest);
         verifyResponse(apiCreationResponse);
@@ -143,9 +275,9 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         assertTrue(apiResponsePublisher.getData().contains("PUBLISHED"), "API has not been created in publisher");
     }
 
-    public void getAPI() throws APIManagerIntegrationTestException {
+    public void getAPI(String provider) throws APIManagerIntegrationTestException {
 
-        HttpResponse apiResponseGetAPI = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, apiVersion);
+        HttpResponse apiResponseGetAPI = apiPublisher.getAPI(apiName, provider, apiVersion);
         verifyResponse(apiResponseGetAPI);
         assertTrue(apiResponseGetAPI.getData().contains(apiName), apiName + " is not visible in publisher");
     }
@@ -153,9 +285,25 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, ADMIN_LOGIN_USERNAME);
-        apiPublisher.deleteAPI("APIWildCardApi", apiVersion, ADMIN_LOGIN_USERNAME);
+        apiPublisher.deleteAPI("PhoneVerificationAdd", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIWildCardApi", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tags", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsPublicAndRestricted1", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsPublicAndRestricted2", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles1", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
+//        todo uncomment when 1.5.2.10 is fixed
+//        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion,
+//                PUBLISHER_CREATOR_USERNAME);
+//        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion,
+//                PUBLISHER_CREATOR_USERNAME);
 
+        deleteUser(PUBLISHER_CREATOR_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser("SubscriberUser", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteRole("Health-Subscriber", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser("MultipleRoleUser", ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);

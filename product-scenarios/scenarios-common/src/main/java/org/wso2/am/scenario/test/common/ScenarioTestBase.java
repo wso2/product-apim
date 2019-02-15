@@ -413,6 +413,38 @@ public class ScenarioTestBase {
         }
     }
 
+    public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean  isAnonymousUser)
+            throws APIManagerIntegrationTestException{
+        long waitTime = System.currentTimeMillis() +
+                ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse tagResponse = null;
+        log.info("WAIT for tag \'" + tag +"\' to be visible in store");
+        while ((waitTime > System.currentTimeMillis())) {
+            if(isAnonymousUser) {
+                tagResponse = apiStoreRestClient.getTagListFromStoreAsAnonymousUser();
+            } else {
+                tagResponse = apiStoreRestClient.getAllTags();
+            }
+            verifyResponse(tagResponse);
+            if (tagResponse != null) {
+                if(tagResponse.getData().contains(tag)) {
+                    log.info("Tag \'" + tag +"\' visible in store");
+                    break;
+                } else {
+                    log.info("Tag \'" + tag +"\' is not visible in store");
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+//                        do nothing
+                    }
+                }
+            }
+        }
+        if (tagResponse != null && !tagResponse.getData().contains(tag)) {
+            Assert.fail("Tag \'" + tag + "\' is not visible in store");
+        }
+    }
+
     public String getHttpsAPIInvocationURL(String apiContext, String apiVersion, String apiResource) {
         return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }

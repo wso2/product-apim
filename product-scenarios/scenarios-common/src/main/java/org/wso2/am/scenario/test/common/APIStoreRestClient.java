@@ -1052,7 +1052,33 @@ public class APIStoreRestClient {
         }
     }
 
+    /**
+     * Get tags of APIs in Store for an anonymous user
+     *
+     * @return HttpResponse - Response with tags of APIs visible to anonymous users
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse getTagListFromStoreAsAnonymousUser()
+            throws APIManagerIntegrationTestException {
+        try {
+            HttpResponse httpResponse = HttpClient.doPost(
+                    new URL(backendURL + "/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags" +
+                            "&tenant=carbon.super"),
+                    "", requestHeaders);
 
+            if (new JSONObject(httpResponse.getData()).getBoolean("error")) {
+                throw new APIManagerIntegrationTestException("Error when getting tag list as anonymous user");
+            }
+
+            return httpResponse;
+        } catch (IOException ioE) {
+            throw new APIManagerIntegrationTestException(
+                    "Exception when retrieve the tag list as anonymous user. Error: " + ioE.getMessage(), ioE);
+        } catch (JSONException e) {
+            throw new APIManagerIntegrationTestException("Response message is not JSON Response"
+                                                         + ". Error: " + e.getMessage(), e);
+        }
+    }
 
  /**
      * API Store logout

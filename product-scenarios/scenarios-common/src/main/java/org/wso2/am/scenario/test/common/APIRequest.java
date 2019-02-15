@@ -124,6 +124,55 @@ public class APIRequest extends AbstractRequest {
         constructSwagger();
     }
 
+    public APIRequest(String name, String context, String visibility, String version, String resource,
+                      String tiersCollection, URL endpointUrl, String tags) {
+
+        this.name = name;
+        this.context = context;
+        this.version = version;
+        this.resource = resource;
+        this.visibility = visibility;
+        this.tiersCollection = tiersCollection;
+        this.tag = tags;
+
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                            + "http" + "\"}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+        }
+        constructSwagger();
+    }
+
+
+    public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
+                      String tiersCollection, URL endpointUrl, String tags) {
+
+        this.name = name;
+        this.context = context;
+        this.version = version;
+        this.resource = resource;
+        this.visibility = visibility;
+        this.tiersCollection = tiersCollection;
+        this.tag = tags;
+
+        if (this.visibility == "restricted") {
+            this.roles = roles;
+        }
+
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                            + "http" + "\"}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+        }
+        constructSwagger();
+    }
+
     public APIRequest(String name, String context, String visibility, String roles, String version, String resource,
                       String description, String tag, String tiersCollection, String backend, String bizOwner,
                       String bizOwnerMail, String techOwner, String techOwnerMail, String endpointType,
