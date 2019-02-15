@@ -64,8 +64,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
-            UserAdminUserAdminException {
+    public void init() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         createUserWithPublisherAndCreatorRole(PUBLISHER_CREATOR_USERNAME, PUBLISHER_CREATOR_PW, ADMIN_LOGIN_USERNAME,
                 ADMIN_PASSWORD);
