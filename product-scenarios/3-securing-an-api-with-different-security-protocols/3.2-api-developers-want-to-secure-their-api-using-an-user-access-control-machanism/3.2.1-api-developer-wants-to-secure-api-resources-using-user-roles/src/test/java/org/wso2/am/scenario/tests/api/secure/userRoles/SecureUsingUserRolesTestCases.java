@@ -176,9 +176,8 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         String requestBody;
         JSONObject accessTokenGenerationResponse;
 
-        //Obtain user access token for Admin
+        //Obtain user access token for user
         requestBody = "grant_type=password&username=" + user + "&password=" + password + "&scope=order_view";
-
         response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
         return accessTokenGenerationResponse.getString("access_token");
