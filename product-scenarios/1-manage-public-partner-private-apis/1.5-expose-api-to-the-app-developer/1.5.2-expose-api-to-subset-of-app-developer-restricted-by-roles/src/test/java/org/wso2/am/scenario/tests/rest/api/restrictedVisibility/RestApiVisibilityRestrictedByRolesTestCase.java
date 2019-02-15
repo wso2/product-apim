@@ -19,7 +19,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.wso2.am.scenario.test.common.*;
+import org.wso2.am.scenario.test.common.APIPublisherRestClient;
+import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -30,8 +34,6 @@ import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.testng.Assert.assertTrue;
 
@@ -213,7 +215,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         isTagVisibleInStore(tag, apiStoreClient,false);
     }
 
-//    todo asser whether only 1 API is available when APIs are retrieved by tag
+//    todo assert whether only 1 API is available when APIs are retrieved by tag
 //    @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"})
 //    public void testListingOfRestrictedAPIsByTags() throws Exception {
 //        apiName = "APIVisibility_apiByTag1";
