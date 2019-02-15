@@ -8,7 +8,7 @@
                   "description":""
                }
             },
-            "x-auth-type":"Application & Application User",
+            "x-auth-type":"Application",
             "parameters":[
                {
                   "name":"PhoneNumber",
@@ -63,7 +63,19 @@
                   "description":""
                }
             },
-            "x-auth-type":"Application & Application User",
+            "x-auth-type":"Application User",
+            "x-throttling-tier":"Unlimited"
+         },
+         "get":{
+            "parameters":[
+
+            ],
+            "responses":{
+               "200":{
+                  "description":""
+               }
+            },
+            "x-auth-type":"Application User",
             "x-throttling-tier":"Unlimited"
          }
       }
