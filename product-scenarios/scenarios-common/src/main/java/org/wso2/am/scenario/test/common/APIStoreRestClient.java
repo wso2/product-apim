@@ -1056,7 +1056,6 @@ public class APIStoreRestClient {
      * Get tags of APIs in Store for an anonymous user
      *
      * @return HttpResponse - Response with tags of APIs visible to anonymous users
-     * @throws APIManagerIntegrationTestException
      */
     public HttpResponse getTagListFromStoreAsAnonymousUser() throws Exception {
         try {
