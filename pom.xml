@@ -839,6 +839,12 @@
                 <artifactId>javax.ws.rs-api</artifactId>
                 <version>${javax.ws.rs-api.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.github.dblock.waffle.wso2</groupId>
@@ -1002,7 +1008,11 @@
                 <artifactId>logging-interceptor</artifactId>
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.orbit.javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${version.org.wso2.orbit.javax.xml.bind}</version>
+            </dependency>
             <!-- Forget-me tool -->
             <dependency>
                 <groupId>org.wso2.carbon.privacy</groupId>
@@ -1040,6 +1050,11 @@
                 <artifactId>org.wso2.carbon.identity.functions.library.mgt</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.orbit.com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${com.jayway.jsonpath.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1054,15 +1069,15 @@
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.6.38</carbon.registry.version>
+        <carbon.registry.version>4.6.42-SNAPSHOT</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.5.4, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.7.27</carbon.governance.version>
+        <carbon.governance.version>4.7.29-SNAPSHOT</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.35</carbon.kernel.version>
+        <carbon.kernel.version>4.4.37-SNAPSHOT</carbon.kernel.version>
         <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
@@ -1072,7 +1087,7 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.105</carbon.mediation.version>
+        <carbon.mediation.version>4.6.107-SNAPSHOT</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.12.231</carbon.identity.version>
@@ -1111,10 +1126,10 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v80</synapse.version>
+        <synapse.version>2.1.7-wso2v85-SNAPSHOT</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v28</axis2.wso2.version>
-        <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
+	<axis2.wso2.version>1.6.1-wso2v29</axis2.wso2.version>
+        <axiom.wso2.version>1.2.11-wso2v12</axiom.wso2.version>
         <servlet-api.version>2.4</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
@@ -1137,11 +1152,13 @@
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
         <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
-        <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
+        <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v2</waffle-jna.version>
+        <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -1177,10 +1194,10 @@
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
-        <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
+        <jacoco.agent.version>0.8.2</jacoco.agent.version>
         <google.guava.version>18.0</google.guava.version>
 
-        <carbon.metrics.version>1.2.3</carbon.metrics.version>
+        <carbon.metrics.version>1.2.4-SNAPSHOT</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.2.44</carbon.messaging.version>
         <carbon.event-processing.version>2.1.23</carbon.event-processing.version>
@@ -1212,6 +1229,8 @@
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.0.18</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
+        
+        <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
     </properties>
 
 </project>
