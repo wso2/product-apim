@@ -130,9 +130,7 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         // create and publish sample API
-        String swaggerFilePath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" +
-                File.separator + "resources" + File.separator + "swaggerFiles" +
-                File.separator + "APIScopeTest1.json";
+        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
         File swaggerFile = new File(swaggerFilePath);
         String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
         JSONObject swaggerJson = new JSONObject(swaggerContent);

@@ -53,19 +53,19 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
     private APIPublisherRestClient apiPublisher;
     private final String SUBSCRIBER_USERNAME = "3.1.1-subscriber";
     private final String SUBSCRIBER_PASSWORD = "password@123";
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-    private static final String API_DEVELOPER_USERNAME = "3.1.1-developer";
-    private static final String API_DEVELOPER_PASSWORD = "password@123";
-    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private final String ADMIN_LOGIN_USERNAME = "admin";
+    private final String ADMIN_PASSWORD = "admin";
+    private final String API_DEVELOPER_USERNAME = "3.1.1-developer";
+    private final String API_DEVELOPER_PASSWORD = "password@123";
+    private final String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     String accessToken;
-    private static final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
-    private static final String TEST_API_2_NAME = "PhoneVerifyAPI-2";
-    private static final String TEST_API_1_CONTEXT = "/phone";
-    private static final String TEST_API_2_CONTEXT = "/phones";
-    private static final String TEST_API_1_VERSION = "1.0.0";
-    private static final String TEST_API_2_VERSION = "1.0.0";
-    private static final String TEST_APPLICATION_NAME = "TestApp1";
+    private final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
+    private final String TEST_API_2_NAME = "PhoneVerifyAPI-2";
+    private final String TEST_API_1_CONTEXT = "/phone";
+    private final String TEST_API_2_CONTEXT = "/phones";
+    private final String TEST_API_1_VERSION = "1.0.0";
+    private final String TEST_API_2_VERSION = "1.0.0";
+    private final String TEST_APPLICATION_NAME = "TestApp1";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -97,8 +97,9 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
                 TEST_APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(addSubscriptionResponse);
-        log.info(TEST_APPLICATION_NAME + " is subscribed to " + TEST_API_1_NAME);
-
+        if (log.isDebugEnabled()) {
+            log.debug(TEST_APPLICATION_NAME + " is subscribed to " + TEST_API_1_NAME);
+        }
         accessToken = generateAppKeys();
     }
 
@@ -109,14 +110,15 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION, "/CheckPhoneNumber");
-        log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
+        if (log.isDebugEnabled()){
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
+        }
         List<NameValuePair> urlParameters = new ArrayList<>();
         urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
         urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
         HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
-        log.debug("API response : " + apiResponse.getData());
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when api invocation");
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
     public void createApplication(String applicationName) throws APIManagerIntegrationTestException {
@@ -129,7 +131,9 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
             throw new APIManagerIntegrationTestException(error, e);
         }
         verifyResponse(addApplicationResponse);
-        log.info("Application - " + applicationName + "is created successfully");
+        if (log.isDebugEnabled()) {
+            log.debug("Application - " + applicationName + "is created successfully");
+        }
     }
 
     public String generateAppKeys() throws APIManagerIntegrationTestException {

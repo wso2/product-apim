@@ -930,6 +930,9 @@ public class APIPublisherRestClient {
                                  String apiDeveloperUsername, String backendEndPoint, boolean publish,
                                  String storeVisibility) throws Exception {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Creating api with below swagger definition : \n" + swaggerJson.toString());
+            }
             String apiName = swaggerJson.getJSONObject("info").get("title").toString();
             String apiContext = swaggerJson.get("basePath").toString();
             String apiVersion = swaggerJson.getJSONObject("info").get("version").toString();
