@@ -79,14 +79,15 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
         apiPublisher.login(CREATOR_PUBLISHER_USERNAME, CREATOR_PUBLISHER_PW);
     }
 
-    @Test(description = "4.1.2.1")
+    @Test(description = "4.1.3.2")
     public void testDeleteApplication() throws Exception {
         createApplication(APPLICATION_NAME_PREFIX);
         deleteApplication(APPLICATION_NAME_PREFIX);
     }
 
-    @Test(description = "4.1.2.2")
+    @Test(description = "4.1.3.1")
     public void testDeleteApplicationWithSubscription() throws Exception {
+//        delete app with subscriptions
         apiName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
         applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
 
@@ -95,18 +96,15 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
         subscribeToAPI(apiName, applicationName);
         deleteApplication(applicationName);
         verifyRemovalOfSubscriptionToAPI(apiName);
-    }
 
-    @Test(description = "4.1.2.3")
-    public void testDeleteApplicationWithKeys() throws Exception {
-        apiName = API_NAME_PREFIX +  WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
-        applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
-
-//        test deletion of applications with keys
+//        delete applications with keys
         applicationDeletionWithKeys(PRODUCTION);
         applicationDeletionWithKeys(SANDBOX);
 
-//        test deletion of applications with subscription and keys
+//        delete app with subscription and keys
+        apiName = API_NAME_PREFIX +  WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
+        applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
+
         createApplication(applicationName);
         createAndPublishAPI(apiName);
         subscribeToAPI(apiName, applicationName);
@@ -116,12 +114,12 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
         verifyRemovalOfSubscriptionToAPI(apiName);
     }
 
-    @Test(description = "4.1.2.4", dependsOnMethods = {"testDeleteApplication"})
+    @Test(description = "4.1.3.3", dependsOnMethods = {"testDeleteApplication"})
     public void testRecreateDeletedApplication() throws Exception {
         createApplication(APPLICATION_NAME_PREFIX);
     }
 
-    @Test(description = "4.1.2.5", dependsOnMethods = {"testRecreateDeletedApplication"})
+    @Test(description = "4.1.3.4", dependsOnMethods = {"testRecreateDeletedApplication"})
     public void testKeyGenerationForRecreateDeletedApplication() throws Exception {
         keyGenerationForApplication(APPLICATION_NAME_PREFIX, PRODUCTION);
         keyGenerationForApplication(APPLICATION_NAME_PREFIX, SANDBOX);
