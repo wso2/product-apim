@@ -17,12 +17,12 @@
  */
 package org.wso2.am.scenario.tests.delete.registered.application;
 
-import org.json.JSONArray;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -34,59 +34,49 @@ import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.URLEncoder;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private APIPublisherRestClient apiPublisher;
-    private List<String> applicationsList = new ArrayList<>();
     private List<String> apiList = new ArrayList<>();
-    private static final String API_NAME_PREFIX = "APIForDeleteApplication_";
-    private static final String API_VERSION = "1.0.0";
-    private static final String TIER_GOLD = "Gold";
+    private List<String> applicationsList = new ArrayList<>();
+    private String apiName = "";
+    private String applicationName = "";
+    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationTestCases.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String DEFAULT_URL_PREFIX = "https://localhost:9443/";
-    private static final String PUBLISHER_URL_SUFFIX = "publisher/";
-    private static final String UTF_8 = "UTF-8";
-    private static final String STATUS_APPROVED = "APPROVED";
-    private static final String APPLICATION_NAME_PREFIX = "ApplicationDeletion_";
-    private static final String KEY_GENERATION_SUFFIX = "KeyGeneration";
-    private static final String WITH_SUBSCRIPTION_SUFFIX = "WithSubscription";
-    private static final String APPLICATION_DESCRIPTION = "New application description";
-    private static final String ERROR_APPLICATION_KEY_GENERATION_FAILED = " key generation failed for application:  ";
-    private static final String DATA = "data";
-    private static final String KEY = "key";
-    private static final String KEY_STATE = "keyState";
-    private static final String APP_DETAILS = "appDetails";
-    private static final String KEY_TYPE = "key_type";
+    private static final String API_NAME_PREFIX = "AppDeleteAPI_";
+    private static final String API_VERSION = "1.0.0";
+    private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
+    private static final String APPLICATION_NAME_PREFIX = "AppDelete_";
+    private static final String CREATOR_PUBLISHER_USERNAME = "deleteAppCreatorPublisher";
+    private static final String CREATOR_PUBLISHER_PW = "deleteAppCreatorPublisher";
+    private static final String KEY_GENERATION_SUFFIX = "KeyGen";
     private static final String PRODUCTION = "PRODUCTION";
     private static final String SANDBOX = "SANDBOX";
+    private static final String STATUS_APPROVED = "APPROVED";
+    private static final String SUBSCRIBER_USERNAME = "deleteAppSubscriber";
+    private static final String SUBSCRIBER_PW = "deleteAppSubscriber";
+    private static final String TIER_GOLD = "Gold";
+    private static final String WITH_SUBSCRIPTION_SUFFIX = "WithSubs";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
-        Properties infraProperties = getDeploymentProperties();
-        String storeURL = infraProperties.getProperty(STORE_URL);
-        if (storeURL == null) {
-            storeURL = DEFAULT_URL_PREFIX;
-        }
-        setKeyStoreProperties();
+    public void init() throws Exception {
+        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
 
-        String publisherURL = infraProperties.getProperty(PUBLISHER_URL);
-        if (publisherURL == null) {
-            publisherURL = DEFAULT_URL_PREFIX + PUBLISHER_URL_SUFFIX;
-        }
+        createUserWithPublisherAndCreatorRole(CREATOR_PUBLISHER_USERNAME, CREATOR_PUBLISHER_PW, ADMIN_LOGIN_USERNAME,
+                ADMIN_LOGIN_PW);
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        apiPublisher.login(CREATOR_PUBLISHER_USERNAME, CREATOR_PUBLISHER_PW);
     }
 
     @Test(description = "4.1.2.1")
@@ -97,30 +87,33 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
 
     @Test(description = "4.1.2.2")
     public void testDeleteApplicationWithSubscription() throws Exception {
-        createApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX);
-        createAndPublishAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX);
-        subscribeToAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX,
-                APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX);
-        deleteApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX);
-        verifyRemovalOfSubscriptionToAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX);
+        apiName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
+        applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
+
+        createApplication(applicationName);
+        createAndPublishAPI(apiName);
+        subscribeToAPI(apiName, applicationName);
+        deleteApplication(applicationName);
+        verifyRemovalOfSubscriptionToAPI(apiName);
     }
 
     @Test(description = "4.1.2.3")
     public void testDeleteApplicationWithKeys() throws Exception {
+        apiName = API_NAME_PREFIX +  WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
+        applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
+
 //        test deletion of applications with keys
         applicationDeletionWithKeys(PRODUCTION);
         applicationDeletionWithKeys(SANDBOX);
+
 //        test deletion of applications with subscription and keys
-        createApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX);
-        createAndPublishAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX);
-        subscribeToAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX,
-                APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX);
-        keyGenerationForApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX
-                + KEY_GENERATION_SUFFIX, PRODUCTION);
-        keyGenerationForApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX
-                + KEY_GENERATION_SUFFIX, SANDBOX);
-        deleteApplication(APPLICATION_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX);
-        verifyRemovalOfSubscriptionToAPI(API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX);
+        createApplication(applicationName);
+        createAndPublishAPI(apiName);
+        subscribeToAPI(apiName, applicationName);
+        keyGenerationForApplication(applicationName, PRODUCTION);
+        keyGenerationForApplication(applicationName, SANDBOX);
+        deleteApplication(applicationName);
+        verifyRemovalOfSubscriptionToAPI(apiName);
     }
 
     @Test(description = "4.1.2.4", dependsOnMethods = {"testDeleteApplication"})
@@ -129,16 +122,14 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "4.1.2.5", dependsOnMethods = {"testRecreateDeletedApplication"})
-    public void testRecreateDeletedApplicationKeyGeneration() throws Exception {
+    public void testKeyGenerationForRecreateDeletedApplication() throws Exception {
         keyGenerationForApplication(APPLICATION_NAME_PREFIX, PRODUCTION);
         keyGenerationForApplication(APPLICATION_NAME_PREFIX, SANDBOX);
     }
 
     private void createApplication(String applicationName) throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(applicationName, UTF_8),
-                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
+        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName,
+                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", APPLICATION_DESCRIPTION);
         applicationsList.add(applicationName);
         verifyResponse(addApplicationResponse);
         assertEquals(new JSONObject(addApplicationResponse.getData()).get("status"), STATUS_APPROVED,
@@ -146,29 +137,25 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
     }
 
     private void deleteApplication(String applicationName) throws Exception {
-        HttpResponse deleteResponse = apiStore.removeApplication(URLEncoder.encode(applicationName, UTF_8));
+        HttpResponse deleteResponse = apiStore.removeApplication(applicationName);
         verifyResponse(deleteResponse);
         verifyApplicationDeletionFromStore(applicationName);
     }
 
     private void verifyApplicationDeletionFromStore(String applicationName) throws Exception {
 //        verify whether the application doesn't exist in store
-        HttpResponse allApplicationsResponse = apiStore.getAllApplications();
-        JSONArray applications = new JSONObject(allApplicationsResponse.getData()).getJSONArray("applications");
-        boolean success = true;
-        for (int i = 0; i < applications.length(); i++) {
-            JSONObject application = applications.getJSONObject(i);
-            if(application.getString("name").equals(applicationName)) {
-                success = false;
-            }
-        }
-        assertTrue(success, "Application still available in store: " + applicationName);
+        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
+        log.info("Verify application does not exist in store response code : " +
+                getApplicationsResponse.getResponseCode());
+        log.info("Verify application does not exist in store response message : " +
+                getApplicationsResponse.getData());
+        assertFalse(getApplicationsResponse.getData().contains(applicationName),
+                "Application still available in store: " + applicationName);
     }
 
     private void createAPI(String apiName) throws Exception {
-        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName,
-                "public", API_VERSION, "/find", TIER_GOLD,
-                new URL("http://ws.cdyne.com/phoneverify/phoneverify.asmx"));
+        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
+                "/find", TIER_GOLD, new URL("http://ws.cdyne.com/phoneverify/phoneverify.asmx"));
 
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         apiList.add(apiName);
@@ -177,21 +164,22 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
     }
 
     private void verifyApiCreation(String apiName) throws Exception {
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, API_VERSION);
+        HttpResponse apiInfo = apiPublisher.getAPI(apiName, CREATOR_PUBLISHER_USERNAME, API_VERSION);
         verifyResponse(apiInfo);
     }
 
     private void createAndPublishAPI(String apiName) throws Exception {
         createAPI(apiName);
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, ADMIN_LOGIN_USERNAME, APILifeCycleState.PUBLISHED);
+                new APILifeCycleStateRequest(apiName, CREATOR_PUBLISHER_USERNAME, APILifeCycleState.PUBLISHED);
         HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        log.info("API publish response code: " + creationResponse.getResponseCode());
+        log.info("API publish response data: " + creationResponse.getData());
         assertTrue(creationResponse.getData().contains("PUBLISHED"), "API has not been created in publisher");
     }
 
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                ADMIN_LOGIN_USERNAME);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, CREATOR_PUBLISHER_USERNAME);
         subscriptionRequest.setApplicationName(applicationName);
         subscriptionRequest.setTier(TIER_GOLD);
         HttpResponse serviceResponse = apiStore.subscribe(subscriptionRequest);
@@ -200,16 +188,18 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
 
     private void verifyRemovalOfSubscriptionToAPI(String apiName) throws Exception {
 //        verify subscription is removed from api
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, ADMIN_LOGIN_USERNAME, API_VERSION);
+        HttpResponse apiInfo = apiPublisher.getAPI(apiName, CREATOR_PUBLISHER_USERNAME, API_VERSION);
         verifyResponse(apiInfo);
         assertEquals(0, new JSONObject(apiInfo.getData()).getJSONObject("api").getInt("subs"),
                 "Incorrect subscription count for api \'" + apiName + "\'");
     }
 
     private void applicationDeletionWithKeys(String keyType) throws Exception {
-        createApplication(APPLICATION_NAME_PREFIX + KEY_GENERATION_SUFFIX + keyType);
-        keyGenerationForApplication(APPLICATION_NAME_PREFIX + KEY_GENERATION_SUFFIX + keyType, keyType);
-        deleteApplication(APPLICATION_NAME_PREFIX + KEY_GENERATION_SUFFIX + keyType);
+        applicationName = APPLICATION_NAME_PREFIX + KEY_GENERATION_SUFFIX + keyType;
+
+        createApplication(applicationName);
+        keyGenerationForApplication(applicationName, keyType);
+        deleteApplication(applicationName);
     }
 
     private void keyGenerationForApplication(String applicationName, String keyType) throws Exception {
@@ -218,20 +208,23 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
         HttpResponse responseString = apiStore.generateApplicationKey(appKeyRequestGenerator);
         verifyResponse(responseString);
         JSONObject responseStringJson = new JSONObject(responseString.getData());
-        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                keyType.toLowerCase() + ERROR_APPLICATION_KEY_GENERATION_FAILED + applicationName);
-        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), keyType, keyType.toLowerCase() + ERROR_APPLICATION_KEY_GENERATION_FAILED
-                + applicationName);
+        JSONObject key = responseStringJson.getJSONObject("data").getJSONObject("key");
+        assertEquals(key.getString("keyState"),
+                STATUS_APPROVED, keyType.toLowerCase() + " key generation failed for application:  "
+                        + applicationName);
+        assertEquals(new JSONObject(key.getString("appDetails")).get("key_type"), keyType,
+                keyType.toLowerCase() + " key generation failed for application:  " + applicationName);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         for (String name : applicationsList) {
-            apiStore.removeApplication(URLEncoder.encode(name, UTF_8));
+            apiStore.removeApplication(name);
         }
         for (String name : apiList) {
-            apiPublisher.deleteAPI(name, API_VERSION, ADMIN_LOGIN_USERNAME);
+            apiPublisher.deleteAPI(name, API_VERSION, CREATOR_PUBLISHER_USERNAME);
         }
+        deleteUser(CREATOR_PUBLISHER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
     }
 }
