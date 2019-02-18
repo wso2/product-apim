@@ -15,6 +15,10 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -34,7 +38,7 @@ import java.net.URL;
 import static org.testng.Assert.assertTrue;
 
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
-
+    private static final Log log = LogFactory.getLog(RestApiVisibilityRestrictedByRolesTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private String apiName;
     private String apiContext;
@@ -210,38 +214,21 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         isTagVisibleInStore(tag, apiStoreClient,false);
     }
 
-//    todo assert whether only 1 API is available when APIs are retrieved by tag
-//    @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"})
-//    public void testListingOfRestrictedAPIsByTags() throws Exception {
-//        apiName = "APIVisibility_apiByTag1";
-//        String tag = "tagsDistinctRoles";
-//
-//        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
-//                ScenarioTestConstants.CREATOR_ROLE, apiVersion, apiResource, tierCollection,
-//                new URL(backendEndPoint), tag);
-//        validateRoles(ScenarioTestConstants.CREATOR_ROLE);
-//        createAPI(apiRequest);
-//        getAPI(PUBLISHER_CREATOR_USERNAME);
-//        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
-//
-//        apiName = "APIVisibility_apiByTag2";
-//        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
-//                ScenarioTestConstants.SUBSCRIBER_ROLE, apiVersion, apiResource, tierCollection,
-//                new URL(backendEndPoint), tag);
-//        validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
-//        createAPI(apiRequest);
-//        getAPI(PUBLISHER_CREATOR_USERNAME);
-//        publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
-//        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-//        isAPIVisibleInStore(apiName, apiStoreClient);
-//        isTagVisibleInStore(tag, apiStoreClient,false);
-//        HttpResponse apisWithTagResponse = apiStoreClient.getAPIPageFilteredWithTags(tag);
-//        verifyResponse(apisWithTagResponse);
-//        assertTrue(apisWithTagResponse.getData().contains(apiName), "API \'" + apiName + "\' is not visible " +
-//                "to the user with restricted role");
-//        assertTrue(!apisWithTagResponse.getData().contains("APIVisibility_apiByTag1"),
-//                "API \'APIVisibility_tagsDistinctRoles1\' is visible to the user without the restricted role");
-//    }
+    @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"})
+    public void testListingOfRestrictedAPIsByTags() throws Exception {
+        String tag = "tagsDistinctRoles";
+
+        HttpResponse apisWithTagResponse = apiStoreClient.getAPIPageFilteredWithTags(tag);
+        Assert.assertNotNull(apisWithTagResponse, "Response object is null");
+        log.info("Response Code for get API by tag \'" + tag + "\': " + apisWithTagResponse.getResponseCode());
+        log.info("Response Message for get API by tag \'" + tag + "\': " + apisWithTagResponse.getData());
+        Assert.assertEquals(apisWithTagResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Response code is not as expected for retrieving APIs by tag");
+        assertTrue(apisWithTagResponse.getData().contains("APIVisibility_tagsDistinctRoles2"),
+                "API \'APIVisibility_tagsDistinctRoles2\' is not visible to the user with restricted role");
+        assertTrue(!apisWithTagResponse.getData().contains("APIVisibility_tagsDistinctRoles1"),
+                "API \'APIVisibility_tagsDistinctRoles1\' is visible to the user without the restricted role");
+    }
 
     private void loginToStore(String userName, String password) throws Exception {
 
@@ -293,11 +280,10 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
                 PUBLISHER_CREATOR_USERNAME);
         apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion,
                 PUBLISHER_CREATOR_USERNAME);
-//        todo uncomment when 1.5.2.10 is fixed
-//        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion,
-//                PUBLISHER_CREATOR_USERNAME);
-//        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion,
-//                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion,
+                PUBLISHER_CREATOR_USERNAME);
 
         deleteUser(PUBLISHER_CREATOR_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);

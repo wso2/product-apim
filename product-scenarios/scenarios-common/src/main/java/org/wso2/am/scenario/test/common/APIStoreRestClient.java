@@ -981,10 +981,10 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpClient.doGet(backendURL + "/store/apis/list?tag=" + apiTag + "&tenant=carbon.super",
-                                          requestHeaders);
+            return HttpClient.doGet(backendURL + "/site/pages/list-apis.jag?tenant=carbon.super&tag=" +
+                            apiTag, requestHeaders);
         } catch (IOException ex) {
-            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+            throw new APIManagerIntegrationTestException("Exception when get API page filtered by tag"
                                                          + ". Error: " + ex.getMessage(), ex);
         }
     }
