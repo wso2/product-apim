@@ -27,12 +27,8 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
     <name>[APIM][SCENARIO_3][SUBSCENARIO_2][USECASE_1] - secure api resources using user roles</name>
     <artifactId>3.2.1-api-developer-wants-to-secure-api-resources-using-user-roles</artifactId>
-    <packaging>pom</packaging>
-    <url>http://wso2.org</url>
 
     <build>
         <plugins>
@@ -43,7 +39,7 @@
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <framework.resource.location>${project.parent.parent.basedir}/../scenarios-common/src/main/resources/</framework.resource.location>
