@@ -20,7 +20,7 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="3.1.1-Secure-an-application" preserve-order="true" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.api.secure.oauth2.SecureUsingAuth2TestCases"/>
+            <class name="org.wso2.am.scenario.tests.api.secure.oauth2.SecureUsingAuth2TestCase"/>
         </classes>
     </test>
 </suite>
