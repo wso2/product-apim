@@ -215,4 +215,13 @@ public class ScenarioDataProvider {
                 {"http://localhost:8083/thumbnail/petstoreapi.jpg"}
         };
     }
-}
+
+    @DataProvider(name = "AuthorizationHeadersDataProvider")
+    public static Object[][] authorizationHeadersDataProvider() {
+            return new Object[][]{
+                    {"Bearer "},
+                    {"Basic WXS4DASADDDSDS5; Bearer "}
+            };
+        }
+    }
+
