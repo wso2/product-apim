@@ -202,7 +202,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, APIManagementException, IOException {
+    public void init() throws Exception {
         setupUserData();
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);

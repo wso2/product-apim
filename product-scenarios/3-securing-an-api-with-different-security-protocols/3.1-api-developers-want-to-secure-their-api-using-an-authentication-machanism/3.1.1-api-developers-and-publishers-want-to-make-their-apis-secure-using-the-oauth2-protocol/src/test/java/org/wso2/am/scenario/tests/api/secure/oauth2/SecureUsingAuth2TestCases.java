@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -121,30 +120,20 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    public void createApplication(String applicationName) throws APIManagerIntegrationTestException {
+    public void createApplication(String applicationName) throws Exception {
         HttpResponse addApplicationResponse = null;
-        try {
             addApplicationResponse = apiStore.addApplication(applicationName,
                     APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "description");
-        } catch (APIManagerIntegrationTestException e) {
-            String error = "Error in creating Testing Application " + applicationName;
-            throw new APIManagerIntegrationTestException(error, e);
-        }
         verifyResponse(addApplicationResponse);
         if (log.isDebugEnabled()) {
             log.debug("Application - " + applicationName + "is created successfully");
         }
     }
 
-    public String generateAppKeys() throws APIManagerIntegrationTestException {
+    public String generateAppKeys() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(TEST_APPLICATION_NAME);
         HttpResponse keyGenerationResponse = null;
-        try {
-            keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
-        } catch (APIManagerIntegrationTestException e) {
-            String error = "Error in generating Application Keys";
-            throw new APIManagerIntegrationTestException(error, e);
-        }
+        keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
         log.info("Key generation response for application \'" + TEST_APPLICATION_NAME + "\' response data :"
                 + keyGenerationResponse.getData());
         verifyResponse(keyGenerationResponse);

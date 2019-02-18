@@ -123,7 +123,7 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, IOException {
+    public void init() throws Exception {
         setupUserData();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
