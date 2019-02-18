@@ -15,9 +15,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
-public class DeleteRegisteredApplicationNegativeTestCases extends ScenarioTestBase {
+public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
-    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationNegativeTestCases.class);
+    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationNegativeTestCase.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
     private static final String APPLICATION_NAME = "DeleteUnownedApplication";

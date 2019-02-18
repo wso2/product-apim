@@ -42,14 +42,14 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
+public class DeleteRegisteredApplicationTestCase extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private APIPublisherRestClient apiPublisher;
     private List<String> apiList = new ArrayList<>();
     private List<String> applicationsList = new ArrayList<>();
     private String apiName = "";
     private String applicationName = "";
-    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationTestCases.class);
+    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationTestCase.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
     private static final String API_NAME_PREFIX = "AppDeleteAPI_";
