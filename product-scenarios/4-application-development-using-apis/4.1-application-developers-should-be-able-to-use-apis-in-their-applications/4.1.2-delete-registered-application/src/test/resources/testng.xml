@@ -21,6 +21,7 @@
     <test name="4.1.2-delete-registered-application" preserve-order="true" verbose="2" parallel="false">
         <classes>
             <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationTestCases"/>
+            <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationNegativeTestCases"/>
         </classes>
     </test>
 </suite>

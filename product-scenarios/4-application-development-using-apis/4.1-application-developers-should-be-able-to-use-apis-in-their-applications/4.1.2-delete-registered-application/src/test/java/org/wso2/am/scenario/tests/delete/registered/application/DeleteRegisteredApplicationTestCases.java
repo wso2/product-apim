@@ -179,6 +179,7 @@ public class DeleteRegisteredApplicationTestCases extends ScenarioTestBase {
     }
 
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
+        isAPIVisibleInStore(apiName, apiStore);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, CREATOR_PUBLISHER_USERNAME);
         subscriptionRequest.setApplicationName(applicationName);
         subscriptionRequest.setTier(TIER_GOLD);
