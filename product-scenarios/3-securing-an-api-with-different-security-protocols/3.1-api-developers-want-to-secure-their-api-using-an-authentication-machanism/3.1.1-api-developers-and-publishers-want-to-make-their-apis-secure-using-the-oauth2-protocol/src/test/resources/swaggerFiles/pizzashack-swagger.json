@@ -2,7 +2,7 @@
   "paths": {
     "/order": {
       "post": {
-        "x-auth-type": "Application And Application User",
+        "x-auth-type": "Application User",
         "x-throttling-tier": "Unlimited",
         "description": "Create a new Order",
         "parameters": [
@@ -58,7 +58,7 @@
     },
     "/menu": {
       "get": {
-        "x-auth-type": "Application And Application User",
+        "x-auth-type": "Application User",
         "x-throttling-tier": "Unlimited",
         "description": "Return a list of available menu items",
         "parameters": [],
@@ -94,7 +94,7 @@
     },
     "/order/{orderId}": {
       "put": {
-        "x-auth-type": "Application And Application User",
+        "x-auth-type": "Application User",
         "x-throttling-tier": "Unlimited",
         "description": "Update an existing Order",
         "parameters": [
@@ -162,7 +162,7 @@
         ]
       },
       "get": {
-        "x-auth-type": "Application And Application User",
+        "x-auth-type": "Application User",
         "x-throttling-tier": "Unlimited",
         "description": "Get details of an Order",
         "parameters": [
@@ -209,7 +209,7 @@
         ]
       },
       "delete": {
-        "x-auth-type": "Application And Application User",
+        "x-auth-type": "Application User",
         "x-throttling-tier": "Unlimited",
         "description": "Delete an existing Order",
         "parameters": [

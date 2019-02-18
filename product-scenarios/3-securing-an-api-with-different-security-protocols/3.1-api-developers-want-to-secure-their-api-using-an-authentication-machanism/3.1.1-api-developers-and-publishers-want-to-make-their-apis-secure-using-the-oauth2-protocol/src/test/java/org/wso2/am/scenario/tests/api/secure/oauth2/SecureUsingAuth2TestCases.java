@@ -20,28 +20,51 @@ package org.wso2.am.scenario.tests.api.secure.oauth2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.HttpClient;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class SecureUsingAuth2TestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
-    private List<String> applicationsList = new ArrayList<>();
     private static final Log log = LogFactory.getLog(SecureUsingAuth2TestCases.class);
     private APIPublisherRestClient apiPublisher;
-    private final String SUBSCRIBER_USERNAME = "subscriberUser2";
+    private final String SUBSCRIBER_USERNAME = "3.1.1-subscriber";
     private final String SUBSCRIBER_PASSWORD = "password@123";
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-    private final String API_DEVELOPER_USERNAME = "3.1.1-user";
-    private final String API_DEVELOPER_PASSWORD = "password@3.1.1-user";
-    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private final String ADMIN_LOGIN_USERNAME = "admin";
+    private final String ADMIN_PASSWORD = "admin";
+    private final String API_DEVELOPER_USERNAME = "3.1.1-developer";
+    private final String API_DEVELOPER_PASSWORD = "password@123";
+    private final String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    String accessToken;
+    private final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
+    private final String TEST_API_2_NAME = "PhoneVerifyAPI-2";
+    private final String TEST_API_1_CONTEXT = "/phone";
+    private final String TEST_API_2_CONTEXT = "/phones";
+    private final String TEST_API_1_VERSION = "1.0.0";
+    private final String TEST_API_2_VERSION = "1.0.0";
+    private final String TEST_APPLICATION_NAME = "TestApp1";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -49,29 +72,83 @@ public class SecureUsingAuth2TestCases extends ScenarioTestBase {
         apiPublisher = new APIPublisherRestClient(publisherURL);
 
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME,
+                ADMIN_PASSWORD);
 
         apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
         apiPublisher.login(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD);
+
+        // create and publish sample API
+        String swaggerFilePath = System.getProperty("framework.resource.location") + "swaggerFiles" + File.separator +
+                "phoneverify-swagger.json";
+        File swaggerFile = new File(swaggerFilePath);
+        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
+        JSONObject swaggerJson = new JSONObject(swaggerContent);
+
+        apiPublisher.developSampleAPI(swaggerJson, API_DEVELOPER_USERNAME, backendEndPoint, true, "public");
+        createApplication(TEST_APPLICATION_NAME);
+
+        // Check the visibility of the API in API store
+        isAPIVisibleInStore(TEST_API_1_NAME, apiStore);
+
+        // Add subscription to API
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEST_API_1_NAME, TEST_API_1_VERSION, API_DEVELOPER_USERNAME,
+                TEST_APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(addSubscriptionResponse);
+        if (log.isDebugEnabled()) {
+            log.debug(TEST_APPLICATION_NAME + " is subscribed to " + TEST_API_1_NAME);
+        }
+        accessToken = generateAppKeys();
     }
 
+    @Test(description = "3.1.1.1", dataProvider = "AuthorizationHeadersDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testOAuth2Authorization(String tokenPrefix) throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken);
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION, "/CheckPhoneNumber");
+        if (log.isDebugEnabled()){
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsURL);
+        }
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
+        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    public void createApplication(String applicationName) throws Exception {
+        HttpResponse addApplicationResponse = null;
+            addApplicationResponse = apiStore.addApplication(applicationName,
+                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "description");
+        verifyResponse(addApplicationResponse);
+        if (log.isDebugEnabled()) {
+            log.debug("Application - " + applicationName + "is created successfully");
+        }
+    }
+
+    public String generateAppKeys() throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(TEST_APPLICATION_NAME);
+        HttpResponse keyGenerationResponse = null;
+        keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
+        log.info("Key generation response for application \'" + TEST_APPLICATION_NAME + "\' response data :"
+                + keyGenerationResponse.getData());
+        verifyResponse(keyGenerationResponse);
+        JSONObject keyGenerationRespData = new JSONObject(keyGenerationResponse.getData());
+
+        accessToken = (keyGenerationRespData.getJSONObject("data").getJSONObject("key"))
+                .get("accessToken").toString();
+        return accessToken;
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        for (String name : applicationsList) {
-            apiStore.removeApplication(name);
-        }
-        applicationsList.clear();
+        apiStore.removeApplication(TEST_APPLICATION_NAME);
+        apiPublisher.deleteAPI(TEST_API_1_NAME, TEST_API_1_VERSION, API_DEVELOPER_USERNAME);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(API_DEVELOPER_USERNAME,  ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        apiPublisher.deleteAPI("PizzaShackTestAPI", "1.0.0", API_DEVELOPER_USERNAME);
-    }
-
-    @Test(description = "1.1.1.1")
-    public void testOAuth2Authorization() throws Exception {
-        // create and publish sample API
-        apiPublisher.developSampleAPI("swaggerFiles/pizzashack-swagger.json", API_DEVELOPER_USERNAME, backendEndPoint,
-                true, "public");
-        //TO DO
+        deleteUser(API_DEVELOPER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 }

@@ -39,6 +39,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
 
@@ -200,7 +202,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, APIManagementException {
+    public void init() throws Exception {
         setupUserData();
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);
@@ -208,9 +210,13 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        // create and publish sample API
+        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
+        File swaggerFile = new File(swaggerFilePath);
+        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
+        JSONObject swaggerJson = new JSONObject(swaggerContent);
         try {
-            apiPublisher.developSampleAPI("swaggerFiles/APIScopeTest1.json",
-                    SUPER_USER, backendEndPoint, true, apiVisibility);
+            apiPublisher.developSampleAPI(swaggerJson, SUPER_USER, backendEndPoint, true, apiVisibility);
         } catch (Exception ex) {
             log.error("API publication failed", ex);
         }

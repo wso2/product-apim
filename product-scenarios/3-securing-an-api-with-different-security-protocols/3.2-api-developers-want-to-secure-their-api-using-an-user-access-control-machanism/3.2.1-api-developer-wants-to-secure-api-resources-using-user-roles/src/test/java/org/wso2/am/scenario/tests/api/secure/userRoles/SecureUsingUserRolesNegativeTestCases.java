@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
 
@@ -122,15 +123,19 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws Exception {
         setupUserData();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        // create and publish sample API
+        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
+        File swaggerFile = new File(swaggerFilePath);
+        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
+        JSONObject swaggerJson = new JSONObject(swaggerContent);
         try {
-            apiPublisher.developSampleAPI("swaggerFiles/apiScopeTest1.json",
-                    SUPER_USER, backendEndPoint, true, apiVisibility);
+            apiPublisher.developSampleAPI(swaggerJson, SUPER_USER, backendEndPoint, true, apiVisibility);
         } catch (Exception ex) {
             log.error("API publication failed", ex);
         }
