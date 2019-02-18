@@ -27,6 +27,7 @@ import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -55,8 +56,11 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String ADMIN_PASSWORD = "admin";
     private final String SUBSCRIBER_USERNAME = "subscriberUser2";
     private final String SUBSCRIBER_PASSWORD = "password@123";
+    private final String SUPER_TENANT_USER_USERNAME = "APIVisiSuperTenantUserNeg";
+    private final String SUPER_TENANT_USER_PASSWORD = "APIVisiSuperTenantUserNeg";
+    private final String TENANT_SUBSCRIBER_USERNAME = "APIVisiTenantSubscriberNeg";
+    private final String TENANT_SUBSCRIBER_PASSWORD = "APIVisiTenantSubscriberNeg";
     private final String VISIBILITY_TYPE = "store";
-    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String CREATOR_ROLE = "Creator";
     private final String SUBSCRIBER_ROLE = "Subscriber";
 
@@ -76,11 +80,9 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER_ROLE, permission);
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         createUserWithPublisherAndCreatorRole(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
     }
 
-    @Test(description = "1.5.2.1")
+    @Test(description = "1.5.2.3")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
@@ -88,6 +90,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource,
                 tierCollection, new URL(backendEndPoint));
 
+        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(apiCreationResponse);
 
@@ -116,6 +119,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
                 "", "", "", APIConstants.DefaultVersion.ENABLED, APIConstants.ResponseCaching.DISABLED, "0",
                 APIConstants.SubscriptionAvailability.ALL_TENANTS, APIConstants.TRANSPORT.HTTP, "", "", "");
 
+        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         verifyResponse(serviceResponse);
         apiPublisher
@@ -132,18 +136,55 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
 
     @Test(description = "1.5.2.2")
     public void testCreateAPIWithInvalidRoleInStoreVisibility() throws Exception {
-
+        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
         HttpResponse checkValidationRole = apiPublisher.validateRoles(CREATOR_ROLE);
         assertFalse(checkValidationRole.getData().contains("true"));
         verifyResponse(checkValidationRole);
     }
 
+    @Test(description = "1.5.2.11")
+    public void testAPIVisibilityRestrictedByRoleAndTenantType() throws Exception {
+        //Add and activate wso2.com tenant
+        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        createUser(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD, new String[]{
+                ScenarioTestConstants.CREATOR_ROLE, ScenarioTestConstants.PUBLISHER_ROLE,
+                ScenarioTestConstants.SUBSCRIBER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        // create user in wso2.com tenant
+        createUserWithSubscriberRole(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD,
+                ADMIN_LOGIN_USERNAME + "@" + ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
+
+        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
+        APIRequest apiRequest = new APIRequest("APIVisibility_ByRoleAndTenant", apiContext, apiVisibility,
+                SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(apiCreationResponse);
+
+        APILifeCycleStateRequest updateLifeCycle =
+                new APILifeCycleStateRequest("APIVisibility_ByRoleAndTenant", SUPER_TENANT_USER_USERNAME,
+                        APILifeCycleState.PUBLISHED);
+        HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
+        verifyResponse(apiPublishStatusResponse);
+        assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
+
+        apiStoreClient.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
+        isAPIVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
+        apiStoreClient.login(TENANT_SUBSCRIBER_USERNAME+ "@" + ScenarioTestConstants.TENANT_WSO2,
+                TENANT_SUBSCRIBER_PASSWORD);
+        isAPINotVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
         apiPublisher.deleteAPI(apiName, apiVersion, API_DEVELOPER_USER);
         apiPublisher.deleteAPI(apiName2, apiVersion2, API_DEVELOPER_USER);
+        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
+        apiPublisher.deleteAPI("APIVisibility_ByRoleAndTenant", apiVersion, SUPER_TENANT_USER_USERNAME);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(SUPER_TENANT_USER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(TENANT_SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME + "@" +
+                ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
         deleteRole(SUBSCRIBER_ROLE, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 }
