@@ -46,9 +46,9 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
-public class SecureUsingAuth2TestCases extends ScenarioTestBase {
+public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
-    private static final Log log = LogFactory.getLog(SecureUsingAuth2TestCases.class);
+    private static final Log log = LogFactory.getLog(SecureUsingAuth2TestCase.class);
     private APIPublisherRestClient apiPublisher;
     private final String SUBSCRIBER_USERNAME = "3.1.1-subscriber";
     private final String SUBSCRIBER_PASSWORD = "password@123";

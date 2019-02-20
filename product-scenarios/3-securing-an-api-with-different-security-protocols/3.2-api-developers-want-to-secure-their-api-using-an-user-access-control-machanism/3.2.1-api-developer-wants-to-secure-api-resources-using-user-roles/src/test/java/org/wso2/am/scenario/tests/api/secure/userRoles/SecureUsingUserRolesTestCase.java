@@ -39,7 +39,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,13 +49,13 @@ import javax.ws.rs.core.Response;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
-public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
+public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
 
     private APIStoreRestClient apiStore;
     private APIPublisherRestClient apiPublisher;
     private APIPublisherRestClient apiPublisherAdmin;
     private List<String> applicationsList = new ArrayList<>();
-    private static final Log log = LogFactory.getLog(SecureUsingUserRolesTestCases.class);
+    private static final Log log = LogFactory.getLog(SecureUsingUserRolesTestCase.class);
     private static final String ADMIN_LOGIN_USERNAME = "admin";
     private static final String ADMIN_LOGIN_PW = "admin";
     private static final String LOGIN_PERMISSION = "/permission/admin/login";
@@ -224,7 +223,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "3.2.1.1", dataProvider = "ScopeAndValidRoleDataProvider",
-            dataProviderClass = SecureUsingUserRolesTestCases.class)
+            dataProviderClass = SecureUsingUserRolesTestCase.class)
     public void testScopeCreationWithValidValues(String role, String scope) throws Exception {
         HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
         verifyResponse(httpResponse);
@@ -236,7 +235,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "3.2.1.2", dataProvider = "SwaggerFilesAndVerb",
-            dataProviderClass = SecureUsingUserRolesTestCases.class)
+            dataProviderClass = SecureUsingUserRolesTestCase.class)
     public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
         swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
         String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
@@ -261,7 +260,7 @@ public class SecureUsingUserRolesTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "3.2.1.3", dataProvider = "StoreUserDataProvider",
-            dataProviderClass = SecureUsingUserRolesTestCases.class)
+            dataProviderClass = SecureUsingUserRolesTestCase.class)
     public void testScopeWithMultipleRoles(String user, String password) throws Exception {
         //Adding a scope with two roles
         HttpResponse httpResponse = apiPublisher.validateScope(ORDER_VIEW, AGENT_ROLE + "," + CUSTOMER_ROLE);
