@@ -45,12 +45,12 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
 
         apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
         HttpResponse deleteResponse = apiStore.removeApplication(APPLICATION_NAME);
-
         log.info("Delete unowned application Response Code : " + deleteResponse.getResponseCode());
         log.info("Delete unowned application Response Message : " + deleteResponse.getData());
         JSONObject responseData = new JSONObject(deleteResponse.getData());
         Assert.assertTrue(responseData.getBoolean("error"), "Error message received not received when" +
                 "deleting unowned application: " + deleteResponse.getData());
+        
         HttpResponse getApplicationsResponse = apiStore.getAllApplications();
         log.info("Verify application does not exist in store response code : " +
                 getApplicationsResponse.getResponseCode());
