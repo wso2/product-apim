@@ -39,7 +39,7 @@
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                     <suiteXmlFiles>
-                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <framework.resource.location>${project.parent.parent.basedir}/../scenarios-common/src/main/resources/</framework.resource.location>
