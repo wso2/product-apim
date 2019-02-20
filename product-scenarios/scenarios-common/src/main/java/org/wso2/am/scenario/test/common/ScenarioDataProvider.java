@@ -222,6 +222,19 @@ public class ScenarioDataProvider {
                     {"Bearer "},
                     {"Basic WXS4DASADDDSDS5; Bearer "}
             };
-        }
     }
+
+    @DataProvider(name = "IncorrectFormattedAuthorizationHeadersDataProvider")
+    public static Object[][] incorrectFormattedAuthorizationHeadersDataProvider() {
+        return new Object[][]{
+                {"Bearer" , "tokenVal"},
+                {"Bearer" , ""},
+                {"Basic su18eaodd" , ""},
+                {"Basic su18eaodd; Bearer", "tokenVal"},
+                {"",""},
+                {"Bearer " , "tokenDuplicated"}
+
+        };
+    }
+}
 

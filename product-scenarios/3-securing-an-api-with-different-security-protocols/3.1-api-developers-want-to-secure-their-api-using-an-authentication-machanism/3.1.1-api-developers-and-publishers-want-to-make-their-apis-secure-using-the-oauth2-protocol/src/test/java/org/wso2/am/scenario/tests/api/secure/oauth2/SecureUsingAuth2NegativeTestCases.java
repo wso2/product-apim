@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -49,10 +50,13 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
-public class SecureUsingAuth2TestCase extends ScenarioTestBase {
+public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
+
     private APIStoreRestClient apiStore;
-    private static final Log log = LogFactory.getLog(SecureUsingAuth2TestCase.class);
+    private static final Log log = LogFactory.getLog(SecureUsingAuth2NegativeTestCases.class);
     private APIPublisherRestClient apiPublisher;
+    private final String CREATOR_USERNAME = "3.1.1-creator";
+    private final String CREATOR_PASSWORD = "password@123";
     private final String SUBSCRIBER_USERNAME = "3.1.1-subscriber";
     private final String SUBSCRIBER_PASSWORD = "password@123";
     private final String ADMIN_LOGIN_USERNAME = "admin";
@@ -64,17 +68,20 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     private final String TEST_API_1_CONTEXT = "/phone";
     private final String TEST_API_1_VERSION = "1.0.0";
     private final String TEST_APPLICATION_NAME = "TestApp1";
-    private final String CUSTOM_AUTH_HEADER = "custom" ;
+    private final String TEST_APPLICATION_NAME2 = "TestApp3";
+    private final String INVALID_TOKEN = "Bear !23sqsAe%2@4&~";
+    private final String REVOKE_TOKEN = "revoke";
+    private final String CUSTOM_AUTH_HEADER = "foo";
     private String accessToken;
     private String consumerKey;
     private String consumerSecret;
-
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher = new APIPublisherRestClient(publisherURL);
 
+        createUserWithCreatorRole(CREATOR_USERNAME, CREATOR_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME,
                 ADMIN_PASSWORD);
@@ -107,13 +114,10 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         accessToken = generateAppKeys();
     }
 
-    @Test(description = "3.1.1.1", dataProvider = "AuthorizationHeadersDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testOAuth2Authorization(String tokenPrefix) throws Exception {
+    @Test(description = "3.1.1.8")
+    public void testOAuth2AuthorizationWithoutToken() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-
         String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
                 "/CheckPhoneNumber");
         if (log.isDebugEnabled()) {
@@ -123,85 +127,134 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
         urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
         HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    @Test(description = "3.1.1.2")
-    public void testResourceSetSecurityTypeAsApplicationInvokeByClientCredentials() throws Exception {
+    @Test(description = "3.1.1.9")
+    public void testOAuth2AuthorizationWithInValidToken() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, INVALID_TOKEN);
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "/CheckPhoneNumber");
+        if (log.isDebugEnabled()) {
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
+        }
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
+        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    @Test(description = "3.1.1.11")
+    public void testResourceInvokedByRevokedToken() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/" + REVOKE_TOKEN);
+
+        String requestBody = "token=" + accessToken;
+        HttpResponse response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when revoke toke. \n API response : " +
+                        response.getData());
+
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "/CheckPhoneNumber");
+
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
+        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    @Test(description = "3.1.1.12")
+    public void testSecurityTypeAsApplicationResourceInvokedByTokenWithPasswordGrantType() throws Exception {
+        String accessTokenWithPasswordGrantType = generateAccessTokenByPasswordGrantType();
+        Map<String, String> requestHeaders = new HashMap();
+        requestHeaders.put("Authorization", "Bearer " + accessTokenWithPasswordGrantType);
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "/CheckPhoneNumber");
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumber=18006785432&LicenseKey=0",
+                requestHeaders);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    @Test(description = "3.1.1.13")
+    public void testSecurityTypeAsApplicationResourceUserInvokedByTokenWithClientCredentials() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "/CheckPhoneNumbers");
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumbers=180785432&LicenseKey=0",
+                requestHeaders);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    @Test(description = "3.1.1.15")
+    public void testResourceApplicationInvokeByCustomAuthorization() throws Exception {
+        Map<String, String> requestHeaders = new HashMap();
+        apiPublisher.login(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD);
+        updateAPIWithCustomHeader(TEST_API_1_NAME, CUSTOM_AUTH_HEADER);
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
                 "/CheckPhoneNumber");
         HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumber=18006785432&LicenseKey=0",
                 requestHeaders);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+        changeCustomAuthorizationHeaderInAPI(TEST_API_1_NAME, "");
+        updateAPIWithCustomHeader(TEST_API_1_NAME, "");
     }
 
-    @Test(description = "3.1.1.3")
-    public void testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType() throws Exception {
-        String accessTokenWithPasswordGrantType = generateAccessTokenByPasswordGrantType();
-        Map<String, String> requestHeaders = new HashMap();
-        requestHeaders.put("Authorization", "Bearer " + accessTokenWithPasswordGrantType);
-        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumbers");
-        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumbers=18006785432&LicenseKey=0",
-                requestHeaders);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
-    }
+    @Test(description = "3.1.1.17", dataProvider = "IncorrectFormattedAuthorizationHeadersDataProvider",
+            dataProviderClass = ScenarioDataProvider.class)
+    public void testOAuth2AuthorizationWithIncorrectFormattedHeader(String tokenPrefix, String tokenValue)
+            throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
 
-    @Test(description = "3.1.1.4")
-    public void testResourceApplicationInvokeByCustomAuthorization() throws Exception {
-        changeCustomAuthorizationHeaderInAPI(CUSTOM_AUTH_HEADER);
-        Map<String, String> requestHeaders = new HashMap();
-        requestHeaders.put(CUSTOM_AUTH_HEADER, "Bearer " + accessToken);
+        if (tokenValue.isEmpty()) {
+            requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix);
+        }
+        if (tokenValue.equals("tokenVal")) {
+            requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken);
+        }
+        if (tokenValue.equals("tokenDuplicated")) {
+            requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken + "; " +
+                    tokenPrefix + accessToken);
+        }
+
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
                 "/CheckPhoneNumber");
-        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumber=18006785432&LicenseKey=0",
-                requestHeaders);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
-        changeCustomAuthorizationHeaderInAPI("");
-    }
-
-    @Test(description = "3.1.1.7")
-    public void testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader() throws Exception {
-        Map<String, String> requestHeaders;
-        requestHeaders = new HashMap<>();
-        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-
+        if (log.isDebugEnabled()) {
+            log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
+        }
         List<NameValuePair> urlParameters = new ArrayList<>();
-        urlParameters.add(new BasicNameValuePair("PhoneNumbers", "18006785432"));
+        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
         urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
-
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumbers");
         HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    public void changeCustomAuthorizationHeaderInAPI(String customAuth) throws Exception {
-        HttpResponse getSwaggerResponse = apiPublisher.getSwagger("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME);
-        APIManageBean apiManageBean = new APIManageBean("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME,
-                "https", "disabled",
-                "resource_level", "Production and Sandbox", getSwaggerResponse.getData(),
-                "Unlimited,Gold,Bronze");
-
-        apiManageBean.setAuthorizationHeader(customAuth);
-        HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
-        verifyResponse(apiManageResponse);
-
-        org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
-                new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest("PhoneVerifyAPI-1",
-                        API_DEVELOPER_USERNAME, APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishResponse);
+    @Test(description = "3.1.1.18")
+    public void testModifyCustomAuthHeaderByUserWithCreatorRole() throws Exception {
+        apiPublisher.login(CREATOR_USERNAME, CREATOR_PASSWORD);
+        HttpResponse updateCustomHeaderResponse = changeCustomAuthorizationHeaderInAPI(TEST_API_1_NAME, CUSTOM_AUTH_HEADER);
+        JSONObject responseData = new JSONObject(updateCustomHeaderResponse.getData());
+        Assert.assertTrue(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
+                "Error message received " + updateCustomHeaderResponse.getData());
     }
 
     public void createApplication(String applicationName) throws Exception {
@@ -212,6 +265,20 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         if (log.isDebugEnabled()) {
             log.debug("Application - " + applicationName + "is created successfully");
         }
+    }
+
+    public void updateAPIWithCustomHeader(String apiName, String customAuthHeader) throws Exception {
+        HttpResponse response = changeCustomAuthorizationHeaderInAPI(TEST_API_1_NAME, CUSTOM_AUTH_HEADER);
+        verifyResponse(response);
+        publishAPI(TEST_API_1_NAME);
+    }
+
+    public void publishAPI(String apiName) throws Exception {
+        org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
+                new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
+                        API_DEVELOPER_USERNAME, APILifeCycleState.PUBLISHED);
+        HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
+        verifyResponse(apiPublishResponse);
     }
 
     public String generateAppKeys() throws Exception {
@@ -227,7 +294,6 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 .get("accessToken").toString();
         consumerKey = keyGenerationRespData.getJSONObject("data").getJSONObject("key").
                 getString("consumerKey");
-
         consumerSecret = keyGenerationRespData.getJSONObject("data").getJSONObject("key").
                 getString("consumerSecret");
 
@@ -235,11 +301,12 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     }
 
     public String generateAccessTokenByPasswordGrantType() throws Exception {
+        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
         HttpResponse response;
         String requestBody;
         JSONObject accessTokenGenerationResponse;
-        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
 
+        //Obtain user access token for user
         requestBody = "grant_type=password" + "&username=" + ADMIN_LOGIN_USERNAME + "&password=" + ADMIN_PASSWORD;
         response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
@@ -247,11 +314,26 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         return accessTokenGenerationResponse.getString("access_token");
     }
 
+    public HttpResponse changeCustomAuthorizationHeaderInAPI(String apiName, String customAuth) throws Exception {
+
+        HttpResponse getSwaggerResponse = apiPublisher.getSwagger(apiName, TEST_API_1_VERSION, API_DEVELOPER_USERNAME);
+        APIManageBean apiManageBean = new APIManageBean(apiName, TEST_API_1_VERSION, API_DEVELOPER_USERNAME,
+                "https", "disabled", "resource_level",
+                "Production and Sandbox", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
+        apiManageBean.setAuthorizationHeader(customAuth);
+        HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
+
+        return apiManageResponse;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
         apiStore.removeApplication(TEST_APPLICATION_NAME);
+        apiStore.removeApplication(TEST_APPLICATION_NAME2);
         apiPublisher.deleteAPI(TEST_API_1_NAME, TEST_API_1_VERSION, API_DEVELOPER_USERNAME);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(API_DEVELOPER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(CREATOR_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
     }
 }
