@@ -1,11 +1,11 @@
-# 4.1.2 Deleting an application
+# 4.1.3 Deleting an application
 
 ## When to use this approach
 When an application needs to be deleted
 
 ## Sample use case
 An Application developer wants to delete an application, and to do that developer would go to the API store and delete 
-the desired application. If the application has subscriptions to APIs they will be removed.
+the desired application. Once deleted, if the application had subscriptions to APIs they will be removed.
 
 ## Supported versions
 All
