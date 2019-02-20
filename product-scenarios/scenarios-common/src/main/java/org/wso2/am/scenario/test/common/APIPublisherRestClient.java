@@ -741,7 +741,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
-                    URLEncoder.encode(creationRequestBean.generateRequestParameters("updateAPI"), "UTF-8"), requestHeaders);
+                    creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
                     "for the user in Publisher. Error: " + e.getMessage(), e);
