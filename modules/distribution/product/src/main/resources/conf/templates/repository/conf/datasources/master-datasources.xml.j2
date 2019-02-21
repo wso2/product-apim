@@ -1,0 +1,115 @@
+<datasources-configuration xmlns:svns="http://org.wso2.securevault/configuration">
+
+    <providers>
+        <provider>org.wso2.carbon.ndatasource.rdbms.RDBMSDataSourceReader</provider>
+    </providers>
+
+    <datasources>
+
+        <datasource>
+            <name>WSO2_CARBON_DB</name>
+            <description>The datasource used for registry and user manager</description>
+            <jndiConfig>
+                <name>jdbc/WSO2CarbonDB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>jdbc:h2:repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE</url>
+                    <username>wso2carbon</username>
+                    <password>wso2carbon</password>
+                    <driverClassName>org.h2.Driver</driverClassName>
+                    <maxActive>50</maxActive>
+                    <maxWait>60000</maxWait>
+                    <testOnBorrow>true</testOnBorrow>
+                    <validationQuery>SELECT 1</validationQuery>
+                    <validationInterval>30000</validationInterval>
+                    <defaultAutoCommit>true</defaultAutoCommit>
+                </configuration>
+            </definition>
+        </datasource>
+        <datasource>
+            <name>WSO2_SHARED_DB</name>
+            <description>Shared Database for user and registry data</description>
+            <jndiConfig>
+                <name>jdbc/SHARED_DB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>{{database.shared_db.url}}</url>
+                    <username>{{database.shared_db.username}}</username>
+                    <password>{{database.shared_db.password}}</password>
+                    <driverClassName>{{database.shared_db.driver}}</driverClassName>
+                    <validationQuery>{database.apim_db.validationQuery}</validationQuery>
+                    {% for property_name,property_value in database.shared_db.pool_options.items() %}
+                    <{{property_name}}>{{property_value}}</{{property_name}}>
+                        {% endfor %}
+                 </configuration>
+            </definition>
+        </datasource>
+
+        {% for data in datasource %}
+        <datasource>
+            <name>{{data.id}}</name>
+            <description>this database is {{data.id}}</description>
+            <jndiConfig>
+                <name>jdbc/{{data.id}}</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                     <url>{{data.url}}</url>
+                     <username>{{data.username}}</username>
+                     <password>{{data.password}}</password>
+                     <driverClassName>{{data.driver}}</driverClassName>
+                    <validationQuery>{data.validationQuery}</validationQuery>
+                    {% for property_name,property_value in data.pool_options.items() %}
+                     <{{property_name}}>{{property_value}}</{{property_name}}>
+                    {% endfor %}
+                </configuration>
+            </definition>
+        </datasource>
+        {% endfor %}
+        <datasource>
+            <name>WSO2AM_DB</name>
+            <description>The datasource used for API Manager database</description>
+            <jndiConfig>
+                <name>jdbc/WSO2AM_DB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>{{database.apim_db.url}}</url>
+                    <username>{{database.apim_db.username}}</username>
+                    <password>{{database.apim_db.password}}</password>
+                    <driverClassName>{{database.apim_db.driver}}</driverClassName>
+                    <validationQuery>{database.apim_db.validationQuery}</validationQuery>
+                    {% for property_name,property_value in database.shared_db.pool_options.items() %}
+                    <{{property_name}}>{{property_value}}</{{property_name}}>
+                        {% endfor %}
+            </configuration>
+            </definition>
+        </datasource>
+
+
+        <datasource>
+            <name>WSO2_MB_STORE_DB</name>
+            <description>The datasource used for message broker database</description>
+            <jndiConfig>
+                <name>WSO2MBStoreDB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>jdbc:h2:repository/database/WSO2MB_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000;MVCC=TRUE</url>
+                    <username>wso2carbon</username>
+                    <password>wso2carbon</password>
+                    <driverClassName>org.h2.Driver</driverClassName>
+                    <maxActive>50</maxActive>
+                    <maxWait>60000</maxWait>
+                    <testOnBorrow>true</testOnBorrow>
+                    <validationQuery>SELECT 1</validationQuery>
+                    <validationInterval>30000</validationInterval>
+                    <defaultAutoCommit>false</defaultAutoCommit>
+                </configuration>
+            </definition>
+        </datasource>
+    </datasources>
+
+</datasources-configuration>

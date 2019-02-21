@@ -449,6 +449,7 @@
                         <configuration>
                             <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</file>
                             <replacements>
+
                                 <replacement>
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
                                     <token>(jdbc/WSO2CarbonDB)</token>
@@ -672,6 +673,32 @@
                 <configuration>
                        <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>jsonmerge</groupId>
+                <artifactId>jsonmerge</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <list>
+                                    <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</input>
+                                    <output>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</output>
+                                    <config>${basedir}/src/main/resources/conf/default.json</config>
+                                </list>
+                                <list>
+                                    <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</input>
+                                    <output>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</output>
+                                    <config>${basedir}/src/main/resources/conf/infer.json</config>
+                                </list>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

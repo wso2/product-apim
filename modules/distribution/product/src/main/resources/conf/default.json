@@ -1,0 +1,165 @@
+{
+  "database.apim_db.driver": "org.h2.Driver",
+  "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
+  "database.apim_db.validationQuery": "SELECT 1",
+  "database.apim_db.username": "wso2carbon",
+  "database.apim_db.password": "wso2carbon",
+  "database.apim_db.pool_options.maxActive": "5",
+  "apim.gateway.gateway_environments": [
+    "dev"
+  ],
+  "apim.gateway.environment.dev.name": "Sandbox",
+  "apim.gateway.environment.dev.type": "hybrid",
+  "apim.gateway.environment.dev.display_in_api_console": true,
+  "apim.gateway.environment.dev.description": "Sandbox",
+  "apim.gateway.environment.dev.isDefault": true,
+  "apim.gateway.environment.dev.management_endpoint": "localhost.9443",
+  "apim.gateway.environment.dev.http_loadbalance_endpoint": "localhost:8280",
+  "apim.gateway.environment.dev.https_loadbalance_endpoint": "localhost:8243",
+  "apim.gateway.environment.dev.ws_loadbalance_endpoint": "api.gateway:9091",
+  "apim.store.endpoint": "https://store.abc.com:443/store",
+  "apim.store.revoke_api_endpoint": "https://localhost:8243/revoke",
+  "apim.traffic_manager.publisher_nodes": "{tcp://localhost:9611}",
+  "apim.traffic_manager.authentication_nodes": "{ssl://localhost:9711}",
+  "apim.traffic_manager.throttle_decision_endpoints": "amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'",
+  "apim.traffic_manager.mgt_endpoint": "tm.wso2.com:9443",
+  "apim.analytics.nodes": "{tcp://localhost:7611}",
+  "apim.analytics.management_endpoint": "localhost:7444",
+  "apim.key_mgr_node.endpoint": "localhost:9443",
+  "message_formatters": [
+    {
+      "content_type": "text/html",
+      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+    },
+    {
+      "content_type": "text/plain",
+      "class": "org.apache.axis2.format.PlainTextFormatter"
+    },
+    {
+      "content_type": "application/json",
+      "class": "org.apache.synapse.commons.json.JsonStreamFormatter"
+    },
+    {
+      "content_type": "text/javascript",
+      "class": "org.apache.axis2.json.JSONMessageFormatter"
+    },
+    {
+      "content_type": "application/octet-stream",
+      "class": "org.wso2.carbon.relay.ExpandingMessageFormatter"
+    },
+    {
+      "content_type": "application/x-www-form-urlencoded",
+      "class": "org.apache.axis2.transport.http.XFormURLEncodedFormatter"
+    },
+    {
+      "content_type": "multipart/form-data",
+      "class": "org.apache.axis2.transport.http.MultipartFormDataFormatter"
+    },
+    {
+      "content_type": "application/xml",
+      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+    },
+    {
+      "content_type": "text/xml",
+      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
+    },
+    {
+      "content_type": "application/soap+xml",
+      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
+    },
+    {
+      "content_type": "application/json/badgerfish",
+      "class": "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
+    }
+  ],
+  "message_builders": [
+    {
+      "content_type": "text/html",
+      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
+    },
+    {
+      "content_type": "application/x-www-form-urlencoded",
+      "class": "org.apache.synapse.commons.builders.XFormURLEncodedBuilder"
+    },
+    {
+      "content_type": "text/plain",
+      "class": "org.apache.axis2.format.PlainTextBuilder"
+    },
+    {
+      "content_type": "application/json",
+      "class": "org.apache.synapse.commons.json.JsonStreamBuilder"
+    },
+    {
+      "content_type": "text/javascript",
+      "class": "org.apache.axis2.json.JSONBuilder"
+    },
+    {
+      "content_type": "application/octet-stream",
+      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
+    },
+    {
+      "content_type": "application/xml",
+      "class": "org.apache.axis2.builder.ApplicationXMLBuilder"
+    },
+    {
+      "content_type": "multipart/form-data",
+      "class": "org.apache.axis2.builder.MultipartFormDataBuilder"
+    },
+    {
+      "content_type": "application/json/badgerfish",
+      "class": "org.apache.axis2.json.JSONBadgerfishOMBuilder"
+    }
+  ],
+  "transport.passthru_http.listener.class": "org.apache.synapse.transport.passthru.PassThroughHttpListener",
+  "transport.passthru_http.parameters": {
+    "port": "8280",
+    "non-blocking": true,
+    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor"
+  },
+  "transport.passthru_https.listener.class": "org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener",
+  "transport.passthru_https.listener.parameters": {
+    "port": "8243",
+    "non-blocking": true,
+    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
+    "SSLVerifyClient": "optional"
+  },
+  "transport.passthru_https.listener.key_store.location": "repository/resources/security/$conf{keystore.tls.file_name}",
+  "transport.passthru_https.listener.key_store.type": "$conf{keystore.tls.type}",
+  "transport.passthru_https.listener.key_store.password": "$conf{keystore.tls.password}",
+  "transport.passthru_https.listener.key_store.key_password": "$conf{keystore.tls.key_password}",
+  "transport.passthru_https.listener.trust_store.location": "repository/resources/security/$conf{truststore.file_name}",
+  "transport.passthru_https.listener.trust_store.type": "$conf{truststore.type}",
+  "transport.passthru_https.listener.trust_store.password": "$conf{truststore.password}",
+  "transport.passthru_https.listener.ssl_profile.file_path": "repository/resources/security/listenerprofiles.xml",
+  "transport.passthru_https.listener.ssl_profile.interval": "600000",
+  "transport.passthru_http.sender.class": "org.apache.synapse.transport.passthru.PassThroughHttpSender",
+  "transport.passthru_http.sender.parameters": {
+    "non-blocking": true
+  },
+  "transport.passthru_https.sender.class": "org.apache.synapse.transport.passthru.PassThroughHttpSSLSender",
+  "transport.passthru_https.sender.parameters": {
+    "non-blocking": true
+  },
+  "transport.passthru_https.sender.key_store.location": "repository/resources/security/$conf{keystore.tls.file_name}",
+  "transport.passthru_https.sender.key_store.type": "$conf{keystore.tls.type}",
+  "transport.passthru_https.sender.key_store.password": "$conf{keystore.tls.password}",
+  "transport.passthru_https.sender.key_store.key_password": "$conf{keystore.tls.key_password}",
+  "transport.passthru_https.sender.trust_store.location": "repository/resources/security/$conf{truststore.file_name}",
+  "transport.passthru_https.sender.trust_store.type": "$conf{truststore.type}",
+  "transport.passthru_https.sender.trust_store.password": "$conf{truststore.password}",
+  "transport.passthru_https.sender.ssl_profile.file_path": "repository/resources/security/sslprofiles.xml",
+  "transport.passthru_https.sender.ssl_profile.interval": "600000",
+  "transport.jms.sender.class": "org.apache.axis2.transport.jms.JMSSender",
+  "transport.ws.sender.class": "org.wso2.carbon.websocket.transport.WebsocketTransportSender",
+  "transport.ws.sender.parameters": {
+    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
+  },
+  "transport.wss.sender.class": "org.wso2.carbon.websocket.transport.WebsocketTransportSender",
+  "transport.wss.sender.parameters": {
+    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
+  },
+  "transport.wss.sender.trust_store.location": "repository/resources/security/$conf{truststore.file_name}",
+  "transport.wss.sender.trust_store.password": "$conf{truststore.password}"
+}

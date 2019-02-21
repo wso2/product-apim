@@ -1,0 +1,39 @@
+{
+  "deployment.server_role": {
+    "gw": {
+      "apim.traffic_manager.enable_publishing": true,
+      "apim.traffic_manager.enable_deployer": false,
+      "apim.traffic_manager.enable_blocking_conditions": true,
+      "apim.traffic_manager.enable_decision_receiver": true,
+      "apim.analytics.enable": true
+    },
+    "km": {
+      "apim.traffic_manager.enable_publishing": false,
+      "apim.traffic_manager.enable_deployer": false,
+      "apim.traffic_manager.enable_blocking_conditions": false,
+      "apim.traffic_manager.enable_decision_receiver": false,
+      "apim.analytics.enable": false
+    },
+    "publisher": {
+      "apim.traffic_manager.enable_publishing": true,
+      "apim.traffic_manager.enable_deployer": true,
+      "apim.traffic_manager.enable_blocking_conditions": false,
+      "apim.traffic_manager.enable_decision_receiver": false,
+      "apim.analytics.enable": true
+    },
+    "store": {
+      "apim.traffic_manager.enable_publishing": false,
+      "apim.traffic_manager.enable_deployer": false,
+      "apim.traffic_manager.enable_blocking_conditions": false,
+      "apim.traffic_manager.enable_decision_receiver": false,
+      "apim.analytics.enable": true
+    },
+    "tm": {
+      "apim.traffic_manager.enable_publishing": false,
+      "apim.traffic_manager.enable_deployer": false,
+      "apim.traffic_manager.enable_blocking_conditions": false,
+      "apim.traffic_manager.enable_decision_receiver": false,
+      "apim.analytics.enable": false
+    }
+  }
+}
