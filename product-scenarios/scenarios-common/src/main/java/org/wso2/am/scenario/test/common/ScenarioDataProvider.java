@@ -41,6 +41,14 @@ public class ScenarioDataProvider {
                 {"http://localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http://localhost:8083/swaggerFiles/OAS3Document.yaml"}};
     }
 
+    @DataProvider(name = "OASDocsWithInvalidURL")
+    public static Object[][] OASDocInvalidURLProvide() {
+
+        return new Object[][]{
+                {"localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http:localhost:8083/swaggerFiles/OAS3Document.yaml"}
+                , {"http:localhost:8083/swaggerFiles/xxx.jpg"}};
+    }
+
     @DataProvider(name = "ValidApplicationNameAndTierDataProvider")
     public static Object[][] validApplicationNameAndTiersDataProvider() {
         return new Object[][]{
