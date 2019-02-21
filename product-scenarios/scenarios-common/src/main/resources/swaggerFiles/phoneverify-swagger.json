@@ -63,19 +63,32 @@
                   "description":""
                }
             },
-            "x-auth-type":"Application User",
+            "x-auth-type":"None",
             "x-throttling-tier":"Unlimited"
          },
          "get":{
+            "x-auth-type":"Application User",
             "parameters":[
-
+               {
+                  "name":"PhoneNumber",
+                  "in":"query",
+                  "required":true,
+                  "type":"string",
+                  "description":"Give the phone number to be validated"
+               },
+               {
+                  "name":"LicenseKey",
+                  "in":"query",
+                  "required":true,
+                  "type":"string",
+                  "description":"Give the license key as 0 for testing purpose"
+               }
             ],
             "responses":{
                "200":{
                   "description":""
                }
             },
-            "x-auth-type":"Application User",
             "x-throttling-tier":"Unlimited"
          }
       }
