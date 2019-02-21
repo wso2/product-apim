@@ -67,8 +67,8 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     private final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
     private final String TEST_API_1_CONTEXT = "/phone";
     private final String TEST_API_1_VERSION = "1.0.0";
-    private final String TEST_APPLICATION_NAME = "TestApp1";
-    private final String TEST_APPLICATION_NAME2 = "TestApp3";
+    private final String TEST_APPLICATION_NAME_1 = "TestApp1";
+    private final String TEST_APPLICATION_NAME_2 = "TestApp2";
     private final String INVALID_TOKEN = "Bear !23sqsAe%2@4&~";
     private final String REVOKE_TOKEN = "revoke";
     private final String CUSTOM_AUTH_HEADER = "foo";
@@ -97,7 +97,7 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         JSONObject swaggerJson = new JSONObject(swaggerContent);
 
         apiPublisher.developSampleAPI(swaggerJson, API_DEVELOPER_USERNAME, backendEndPoint, true, "public");
-        createApplication(TEST_APPLICATION_NAME);
+        createApplication(TEST_APPLICATION_NAME_1);
 
         // Check the visibility of the API in API store
         isAPIVisibleInStore(TEST_API_1_NAME, apiStore);
@@ -105,13 +105,13 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         // Add subscription to API
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEST_API_1_NAME, TEST_API_1_VERSION,
                 API_DEVELOPER_USERNAME,
-                TEST_APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+                TEST_APPLICATION_NAME_1, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(addSubscriptionResponse);
         if (log.isDebugEnabled()) {
-            log.debug(TEST_APPLICATION_NAME + " is subscribed to " + TEST_API_1_NAME);
+            log.debug(TEST_APPLICATION_NAME_1 + " is subscribed to " + TEST_API_1_NAME);
         }
-        accessToken = generateAppKeys();
+        accessToken = generateAppKeys(TEST_APPLICATION_NAME_1,36000);
     }
 
     @Test(description = "3.1.1.8")
@@ -141,6 +141,36 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         if (log.isDebugEnabled()) {
             log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
         }
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
+        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
+    }
+
+    @Test(description = "3.1.1.10")
+    public void testResourceInvokedByExpiredToken() throws Exception {
+
+        createApplication(TEST_APPLICATION_NAME_2);
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEST_API_1_NAME, TEST_API_1_VERSION,
+                API_DEVELOPER_USERNAME,
+                TEST_APPLICATION_NAME_2, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(addSubscriptionResponse);
+        if (log.isDebugEnabled()) {
+            log.debug(TEST_APPLICATION_NAME_1 + " is subscribed to " + TEST_API_1_NAME);
+        }
+
+        accessToken = generateAppKeys(TEST_APPLICATION_NAME_2, 0);
+        Map<String, String> requestHeaders = new HashMap<>();
+
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "/CheckPhoneNumber");
+
         List<NameValuePair> urlParameters = new ArrayList<>();
         urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
         urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
@@ -281,11 +311,12 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         verifyResponse(apiPublishResponse);
     }
 
-    public String generateAppKeys() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(TEST_APPLICATION_NAME);
+    public String generateAppKeys(String applicationName,int validateTime) throws Exception {
+        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
+        appKeyRequestGenerator.setValidityTime(validateTime);
         HttpResponse keyGenerationResponse = null;
         keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
-        log.info("Key generation response for application \'" + TEST_APPLICATION_NAME + "\' response data :"
+        log.info("Key generation response for application \'" + applicationName + "\' response data :"
                 + keyGenerationResponse.getData());
         verifyResponse(keyGenerationResponse);
         JSONObject keyGenerationRespData = new JSONObject(keyGenerationResponse.getData());
@@ -329,8 +360,8 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        apiStore.removeApplication(TEST_APPLICATION_NAME);
-        apiStore.removeApplication(TEST_APPLICATION_NAME2);
+        apiStore.removeApplication(TEST_APPLICATION_NAME_1);
+        apiStore.removeApplication(TEST_APPLICATION_NAME_2);
         apiPublisher.deleteAPI(TEST_API_1_NAME, TEST_API_1_VERSION, API_DEVELOPER_USERNAME);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(API_DEVELOPER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
