@@ -76,6 +76,8 @@ public class APIManageBean extends AbstractRequest {
         addParameter("techOwner", "techowsam");
         addParameter("techOwnerMail", "ttt@gmail.com");
         addParameter("tiersCollection", tiersCollection);
+        addParameter("tiersCollection", tiersCollection);
+        addParameter("authorizationHeader", authorizationHeader);
     }
 
     public String getName() {
