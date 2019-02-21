@@ -29,6 +29,7 @@
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
                 <exclude>**/bin/wso2server.bat</exclude>
+                <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
                 <exclude>**/conf/axis2/axis2.xml_NHTTP</exclude>
                 <exclude>**/conf/axis2/axis2.xml_PT</exclude>
@@ -39,7 +40,8 @@
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
                 <exclude>**/conf/tomcat/web.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml</exclude>
-		        <exclude>**/log4j.properties</exclude>
+                <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
+                <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -48,12 +50,15 @@
                 <exclude>**/INSTALL.txt</exclude>
                 <exclude>**/release-notes.html</exclude>
                 <exclude>**/carbon.xml</exclude>
+                <exclude>**/carbon.xml.j2</exclude>
                 <exclude>**/registry.xml</exclude>
+                <exclude>**/registry.xml.j2</exclude>
                 <exclude>**/identity.xml</exclude>
                 <exclude>**/user-mgt.xml</exclude>
                 <exclude>**/metrics.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
-        	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
+                <exclude>**/master-datasources.xml.j2</exclude>
+                <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
@@ -115,6 +120,8 @@
                 <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
+                <exclude>**/repository/resources/conf/default.json</exclude>
+                <exclude>**/repository/resources/conf/infer.json</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -156,6 +163,11 @@
             <includes>
                 <include>**/*.h2.db</include>
             </includes>
+        </fileSet>
+        <!-- Add templates-->
+        <fileSet>
+            <directory>src/main/resources/conf/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates</outputDirectory>
         </fileSet>
         <!--fileSet>
             <directory>./src/main/resources</directory>
@@ -1061,6 +1073,13 @@
 	    <fileMode>644</fileMode>
         </file>
         <file>
+            <source>target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/carbon.xml.j2</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/repository/conf/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+
+        <file>
             <source>../resources/updates/product.txt</source>
             <outputDirectory>wso2am-${pom.version}/updates/</outputDirectory>
             <filtered>true</filtered>
@@ -1096,6 +1115,16 @@
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
 	    <file>
@@ -1227,7 +1256,8 @@
         </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/input-event-adapters.xml</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/
+                conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>

@@ -189,6 +189,11 @@
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>2.5</version>
                 </plugin>
+                <plugin>
+                    <groupId>jsonmerge</groupId>
+                    <artifactId>jsonmerge</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -1062,7 +1067,7 @@
         <carbon.governance.version>4.7.27</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.35</carbon.kernel.version>
+        <carbon.kernel.version>4.4.37-SNAPSHOT</carbon.kernel.version>
         <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
