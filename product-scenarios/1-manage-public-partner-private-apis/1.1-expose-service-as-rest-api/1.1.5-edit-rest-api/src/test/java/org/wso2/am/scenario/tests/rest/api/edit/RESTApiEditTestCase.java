@@ -46,7 +46,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -81,6 +84,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
+
         apiPublisher = new APIPublisherRestClient(publisherURL);
         createUsers();
         apiPublisher.login(APICreator, pw);
@@ -236,15 +240,65 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
                 "Resources of the " + apiName + " is not updated");
     }
 
+    @Test(description = "1.1.5.8", dataProvider = "APITags", dataProviderClass = ScenarioDataProvider.class)
+    public void testRESTAPIEditTags(String tags) throws Exception {
+
+        String apiName = "TestTagsUpdateAPI";
+        String apiContext = "/ctx";
+        String apiVersion = "1.0.0";
+        APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
+                apiVersion, APICreator, new URL(backendEndPoint));
+        apiCreationRequestBeanObj.setTags(tag);
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when creating the API");
+        verifyResponse(apiCreationResponse);
+
+        //Check availability of the API in publisher
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI
+                (apiName, APICreator, apiVersion);
+        verifyResponse(apiResponsePublisher);
+        assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
+
+        //remove tags from the API and update with new tags
+        apiCreationRequestBeanObj.setTags(tags);
+
+        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBeanObj);
+        verifyResponse(apiUpdateResponse);
+
+        //Check whether API is updated from the above request
+        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
+                (apiName, APICreator, apiVersion);
+        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
+                .get("tags").toString();
+        List<String> tagsList = Arrays.asList(tags.split(","));
+        if (updatedTags != null) {
+            if (updatedTags.contains(",")) {
+                String[] updatedTagsArray = updatedTags.split(",");
+                for (String t : updatedTagsArray) {
+                    assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
+                }
+            } else {
+                assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
+            }
+        }
+
+        //todo add more tags
+        apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        verifyResponse(serviceResponse);
+    }
+
     /*
      *  Create Users that can be used in each test case in this class
      *  @throws APIManagerIntegrationTestException
      * */
     private void createUsers() throws APIManagerIntegrationTestException {
+
         try {
             createUser("APICreator", "wso2123$",
                     new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, admin);
-        } catch ( APIManagementException e) {
+        } catch (APIManagementException e) {
             throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
         }
     }
@@ -268,7 +322,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.login(APICreator,pw);
+
+        apiPublisher.login(APICreator, pw);
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
         verifyResponse(serviceResponse);
         deleteUser(APICreator, admin, admin);

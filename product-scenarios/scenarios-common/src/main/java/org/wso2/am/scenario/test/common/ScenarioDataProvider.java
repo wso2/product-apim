@@ -243,5 +243,13 @@ public class ScenarioDataProvider {
                 {"Bearer " , "tokenDuplicated"}
         };
     }
+
+    @DataProvider(name = "APITags")
+    public static Object[][] APITagsDataProvider() {
+        return new Object[][]{
+                {""},
+                {"newTag1,newTag2"}
+        };
+    }
 }
 
