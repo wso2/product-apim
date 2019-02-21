@@ -233,7 +233,6 @@ public class ScenarioDataProvider {
                 {"Basic su18eaodd; Bearer", "tokenVal"},
                 {"",""},
                 {"Bearer " , "tokenDuplicated"}
-
         };
     }
 }
