@@ -27,6 +27,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -197,9 +198,9 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
         verifyResponse(apiManageResponse);
 
-        org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
-                new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest("PhoneVerifyAPI-1",
-                        API_DEVELOPER_USERNAME, APILifeCycleState.PUBLISHED);
+        APILifeCycleStateRequest updateLifeCycle =
+                new APILifeCycleStateRequest("PhoneVerifyAPI-1", API_DEVELOPER_USERNAME,
+                        APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
         verifyResponse(apiPublishResponse);
     }
