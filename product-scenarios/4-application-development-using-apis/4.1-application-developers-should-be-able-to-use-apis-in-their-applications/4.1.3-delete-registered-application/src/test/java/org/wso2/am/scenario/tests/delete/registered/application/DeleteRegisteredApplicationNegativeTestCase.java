@@ -17,14 +17,14 @@ import static org.testng.Assert.assertFalse;
 
 public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
-    private static final Log log = LogFactory.getLog(DeleteRegisteredApplicationNegativeTestCase.class);
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String APPLICATION_NAME = "DeleteUnownedApplication";
-    private static final String SUBSCRIBER_USERNAME = "deleteAppSubscriber1";
-    private static final String SUBSCRIBER_PW = "deleteAppSubscriber1";
-    private static final String SUBSCRIBER2_USERNAME = "deleteAppSubscriber2";
-    private static final String SUBSCRIBER2_PW = "deleteAppSubscriber2";
+    private final Log log = LogFactory.getLog(DeleteRegisteredApplicationNegativeTestCase.class);
+    private final String ADMIN_LOGIN_USERNAME = "admin";
+    private final String ADMIN_LOGIN_PW = "admin";
+    private final String APPLICATION_NAME = "DeleteUnownedApplication";
+    private final String SUBSCRIBER_USERNAME = "deleteAppSubscriber1";
+    private final String SUBSCRIBER_PW = "deleteAppSubscriber1";
+    private final String SUBSCRIBER2_USERNAME = "deleteAppSubscriber2";
+    private final String SUBSCRIBER2_PW = "deleteAppSubscriber2";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
