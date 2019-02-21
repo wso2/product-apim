@@ -4,7 +4,7 @@
 When an application needs to be secure using the OAuth2 protocol
 
 ## Sample use case
-API developers and publishers want to make their APIs secure using the OAuth2 protocol to enable modern applications (mobiles, IoT devices, etc) to gain secure access to the APIs.
+API developers and publishers want to make their APIs secure the OAuth2 protocol to enable modern applications (mobiles, IoT devices, etc) to gain secure access to the APIs.
 
 ## Supported versions
 All
@@ -14,7 +14,7 @@ User can use API store and API publisher web application to implement the flow
 
 ## Development guidelines
 Start wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat
-Then user will need to login to API store. Once logged in, user can delete applications owned by him.
+Then user will need to login to API store. Once logged in, user can invoke the APIs secure using the OAuth2 protocol
 
 ## Sample Configuration
 No additional configuration or data to be added to servers.
