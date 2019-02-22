@@ -30,7 +30,6 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URLEncoder;
@@ -71,7 +70,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private static final String APPLICATION_DESCRIPTION = "Application description";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException, APIManagementException {
+    public void init() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1,
                 ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
