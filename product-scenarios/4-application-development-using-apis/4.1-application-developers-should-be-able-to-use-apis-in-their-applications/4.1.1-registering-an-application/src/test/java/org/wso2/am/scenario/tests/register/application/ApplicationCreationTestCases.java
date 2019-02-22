@@ -28,13 +28,11 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
@@ -44,37 +42,37 @@ import static org.testng.Assert.assertNotNull;
 public class ApplicationCreationTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private List<String> applicationsList = new ArrayList<>();
-    private static final Log log = LogFactory.getLog(ApplicationCreationTestCases.class);
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String SUBSCRIBER_LOGIN_USERNAME = "AppCreationPosSubscriber";
-    private static final String SUBSCRIBER_LOGIN_PW = "AppCreationPosSubscriber";
-    private static final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
-    private static final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
+    private final Log log = LogFactory.getLog(ApplicationCreationTestCases.class);
+    private final String ADMIN_LOGIN_USERNAME = "admin";
+    private final String ADMIN_LOGIN_PW = "admin";
+    private final String SUBSCRIBER_LOGIN_USERNAME = "AppCreationPosSubscriber";
+    private final String SUBSCRIBER_LOGIN_PW = "AppCreationPosSubscriber";
+    private final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
+    private final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
             " for application: ";
-    private static final String ERROR_APPLICATION_TOKEN_TYPE_MISMATCH = "Application token type value mismatch" +
+    private final String ERROR_APPLICATION_TOKEN_TYPE_MISMATCH = "Application token type value mismatch" +
             " for application: ";
-    private static final String ERROR_GENERATING_KEY = " key generation failed for application:  ";
-    private static final String ERROR = "error";
-    private static final String STATUS = "status";
-    private static final String STATUS_APPROVED = "APPROVED";
-    private static final String NAME = "name";
-    private static final String TIER = "tier";
-    private static final String DESCRIPTION = "description";
-    private static final String TOKEN_TYPE = "tokenType";
-    private static final String APPLICATIONS = "applications";
-    private static final String DATA = "data";
-    private static final String KEY = "key";
-    private static final String KEY_STATE = "keyState";
-    private static final String APP_DETAILS = "appDetails";
-    private static final String KEY_TYPE = "key_type";
-    private static final String CONSUMER_KEY = "consumerKey";
-    private static final String CONSUMER_SECRET = "consumerSecret";
-    private static final String ACCESS_TOKEN = "accessToken";
-    private static final String PRODUCTION = "PRODUCTION";
-    private static final String SANDBOX = "SANDBOX";
-    private static final String APPLICATION_NAME = "Application";
-    private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
+    private final String ERROR_GENERATING_KEY = " key generation failed for application:  ";
+    private final String ERROR = "error";
+    private final String STATUS = "status";
+    private final String STATUS_APPROVED = "APPROVED";
+    private final String NAME = "name";
+    private final String TIER = "tier";
+    private final String DESCRIPTION = "description";
+    private final String TOKEN_TYPE = "tokenType";
+    private final String APPLICATIONS = "applications";
+    private final String DATA = "data";
+    private final String KEY = "key";
+    private final String KEY_STATE = "keyState";
+    private final String APP_DETAILS = "appDetails";
+    private final String KEY_TYPE = "key_type";
+    private final String CONSUMER_KEY = "consumerKey";
+    private final String CONSUMER_SECRET = "consumerSecret";
+    private final String ACCESS_TOKEN = "accessToken";
+    private final String PRODUCTION = "PRODUCTION";
+    private final String SANDBOX = "SANDBOX";
+    private final String APPLICATION_NAME = "Application";
+    private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {

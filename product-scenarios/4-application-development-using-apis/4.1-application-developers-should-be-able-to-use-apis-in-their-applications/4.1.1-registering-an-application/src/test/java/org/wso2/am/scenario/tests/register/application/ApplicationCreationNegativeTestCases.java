@@ -42,32 +42,32 @@ import static org.testng.Assert.assertTrue;
 public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private APIStoreRestClient apiStore;
     private List<String> applicationsList = new ArrayList<>();
-    private static final Log log = LogFactory.getLog(ApplicationCreationNegativeTestCases.class);
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String SUBSCRIBER_LOGIN_USERNAME_1 = "AppCreationNegSubscriberA";
-    private static final String SUBSCRIBER_LOGIN_PW_1 = "AppCreationNegSubscriberA";
-    private static final String SUBSCRIBER_LOGIN_USERNAME_2 = "AppCreationNegSubscriberB";
-    private static final String SUBSCRIBER_LOGIN_PW_2= "AppCreationNegSubscriberB"
+    private final Log log = LogFactory.getLog(ApplicationCreationNegativeTestCases.class);
+    private final String ADMIN_LOGIN_USERNAME = "admin";
+    private final String ADMIN_LOGIN_PW = "admin";
+    private final String SUBSCRIBER_LOGIN_USERNAME_1 = "AppCreationNegSubscriberA";
+    private final String SUBSCRIBER_LOGIN_PW_1 = "AppCreationNegSubscriberA";
+    private final String SUBSCRIBER_LOGIN_USERNAME_2 = "AppCreationNegSubscriberB";
+    private final String SUBSCRIBER_LOGIN_PW_2= "AppCreationNegSubscriberB"
             ;    private static final String UTF_8 = "UTF-8";
-    private static final String ERROR_APP_CREATION_FAILED = "Application creation failed for application: ";
-    private static final String ERROR_APP_CREATION_NEGATIVE_TEST = "Error in application creation" +
+    private final String ERROR_APP_CREATION_FAILED = "Application creation failed for application: ";
+    private final String ERROR_APP_CREATION_NEGATIVE_TEST = "Error in application creation" +
             " negative test cases. Application: ";
-    private static final String ERROR_APPLICATION_NAME_LONGER_THAN_70_CHARACTERS
+    private final String ERROR_APPLICATION_NAME_LONGER_THAN_70_CHARACTERS
             = "Application name longer than 70 characters. Application: ";
-    private static final String ERROR_DUPLICATE_APPLICATION_EXIST = "A duplicate application already exists" +
+    private final String ERROR_DUPLICATE_APPLICATION_EXIST = "A duplicate application already exists" +
             " by the name - ";
-    private static final String ERROR_GENERATING_KEY = " key generated for unowned application:  ";
-    private static final String PRODUCTION = "PRODUCTION";
-    private static final String SANDBOX = "SANDBOX";
-    private static final String ERROR = "error";
-    private static final String MESSAGE = "message";
-    private static final String STATUS = "status";
-    private static final String STATUS_APPROVED = "APPROVED";
-    private static final String APPLICATION_NAME_PREFIX = "Application_";
-    private static final String APPLICATION_NAME_LONGER_THAN_70_CHARS =
+    private final String ERROR_GENERATING_KEY = " key generated for unowned application:  ";
+    private final String PRODUCTION = "PRODUCTION";
+    private final String SANDBOX = "SANDBOX";
+    private final String ERROR = "error";
+    private final String MESSAGE = "message";
+    private final String STATUS = "status";
+    private final String STATUS_APPROVED = "APPROVED";
+    private final String APPLICATION_NAME_PREFIX = "Application_";
+    private final String APPLICATION_NAME_LONGER_THAN_70_CHARS =
             "ApplicationNameLongerThan70CharactersApplicationNameLongerThan70Characters";
-    private static final String APPLICATION_DESCRIPTION = "Application description";
+    private final String APPLICATION_DESCRIPTION = "Application description";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
