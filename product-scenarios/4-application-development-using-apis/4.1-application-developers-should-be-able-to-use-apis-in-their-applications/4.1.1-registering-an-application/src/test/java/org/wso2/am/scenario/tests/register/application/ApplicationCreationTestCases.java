@@ -114,25 +114,13 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, APPLICATION_DESCRIPTION, tokenType);
     }
 
-    @Test(description = "4.1.1.3", dataProvider = "ValidApplicationNameAndTierDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
-    public void testApplicationCreationWithValidNameAndTier(String applicationName, String tier) throws Exception {
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier,
-                "", APPLICATION_DESCRIPTION);
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                "Error in application creation with valid name and tier. Application: " + applicationName);
-        validateApplicationWithValidMandatoryValues(applicationName, tier, APPLICATION_DESCRIPTION);
-    }
-
-    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    @Test(description = "4.1.1.3", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateProductionKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
         verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator), PRODUCTION);
     }
 
-    @Test(description = "4.1.1.5", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateSandboxKeysForApplication() throws Exception {
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
         appKeyRequestGenerator.setKeyType(SANDBOX);

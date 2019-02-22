@@ -77,7 +77,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         apiStore.login(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1);
     }
 
-    @Test(description = "4.1.1.6", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
+    @Test(description = "4.1.1.5", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithMissingMandatoryValues(String applicationName,
                                                                   String url, String errorMessage) throws Exception {
@@ -85,7 +85,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
-    @Test(description = "4.1.1.7", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
+    @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
                                                                   String errorMessage) throws Exception {
@@ -95,7 +95,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
     }
 
-    @Test(description = "4.1.1.8")
+    @Test(description = "4.1.1.7")
     public void testDuplicateApplicationName() throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(URLEncoder.encode(APPLICATION_NAME_PREFIX + "duplicate" , UTF_8),
@@ -113,19 +113,10 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         verifyApplicationNotCreated(addApplicationResponse,
                 ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_NAME_PREFIX + "duplicate",
                 APPLICATION_NAME_PREFIX + "duplicate");
-//        todo uncomment if duplicate name check should be case insensitive
-////        add duplicate application - case insensitive
-//        addApplicationResponse = apiStore
-//                .addApplication(URLEncoder.encode((APPLICATION_NAME_PREFIX + "duplicate").toLowerCase(), UTF_8),
-//                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-//                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
-//        verifyApplicationNotCreated(addApplicationResponse,
-//                ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_NAME_PREFIX + "duplicate",
-//                APPLICATION_NAME_PREFIX + "duplicate");
     }
 
 //    todo uncomment once jappery api validation is fixed
-//    @Test(description = "4.1.1.9")
+//    @Test(description = "4.1.1.8")
 //    public void testApplicationNameLongerThan70CharactersDataProvider() throws Exception {
 //        HttpResponse addApplicationResponse = apiStore
 //                .addApplication(URLEncoder.encode(APPLICATION_NAME_LONGER_THAN_70_CHARS, UTF_8),
@@ -142,7 +133,20 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
 //                ERROR_APPLICATION_NAME_LONGER_THAN_70_CHARACTERS + APPLICATION_NAME_LONGER_THAN_70_CHARS);
 //    }
 
-    @Test(description = "4.1.1.11")
+//    todo uncomment once prohibiting case insensitive duplicate app names is supported
+/*    @Test(description = "4.1.1.9", dependsOnMethods = {"testDuplicateApplicationName"})
+    public void testCaseInsensitiveDuplicateApplicationName() throws Exception {
+//        add duplicate application - case insensitive
+        HttpResponse addApplicationResponse = apiStore
+                .addApplication(URLEncoder.encode((APPLICATION_NAME_PREFIX + "duplicate").toLowerCase(), UTF_8),
+                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
+                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
+        verifyApplicationNotCreated(addApplicationResponse,
+                ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_NAME_PREFIX + "duplicate",
+                APPLICATION_NAME_PREFIX + "duplicate");
+    }*/
+
+    @Test(description = "4.1.1.10")
     public void testTokenGenerationForOthersApplications() throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(URLEncoder.encode(APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications",
