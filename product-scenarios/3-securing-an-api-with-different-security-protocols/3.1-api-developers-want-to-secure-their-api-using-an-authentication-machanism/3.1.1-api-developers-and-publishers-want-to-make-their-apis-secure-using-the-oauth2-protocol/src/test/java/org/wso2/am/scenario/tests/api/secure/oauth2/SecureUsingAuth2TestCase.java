@@ -60,6 +60,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     private final String ADMIN_PASSWORD = "admin";
     private final String API_DEVELOPER_USERNAME = "3.1.1-developer";
     private final String API_DEVELOPER_PASSWORD = "password@123";
+    private final String CUSTOMER_ROLE = "customerRole";
     private final String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
     private final String TEST_API_1_CONTEXT = "/phone";
