@@ -57,7 +57,7 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
                 "Application not available in store:" + APPLICATION_NAME);
     }
 
-    @Test(description = "4.1.3.5", dependsOnMethods = {"testUnownedDeleteApplication"})
+    @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
     public void testDeleteApplicationWithSameName() throws Exception {
         apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
         addApplication(APPLICATION_NAME);
