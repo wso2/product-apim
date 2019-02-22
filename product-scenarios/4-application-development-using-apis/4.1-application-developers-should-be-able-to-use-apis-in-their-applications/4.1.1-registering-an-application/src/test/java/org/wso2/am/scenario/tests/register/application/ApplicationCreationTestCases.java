@@ -162,38 +162,22 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         }
     }
 
-    private void verifyKeyGeneration(HttpResponse response, String keyType) throws Exception {
+    private void verifyKeyGeneration(HttpResponse response, String keyType) {
         JSONObject responseStringJson = new JSONObject(response.getData());
         log.info(keyType + " key generation response for application \'" + APPLICATION_NAME + "\' response data :"
                 + response.getData());
-        if (!responseStringJson.getBoolean(ERROR)) {
-            assertFalse(responseStringJson.getBoolean(ERROR),
-                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-            assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-            assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                    .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
-                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
-                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-            assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
-                    keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        } else {
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Basic ZHVtbXk6ZHVtbXk=");
-            headers.put("Content-Type", "application/x-www-form-urlencoded");
-            HttpResponse keyManagerURLResponse = HttpClient.doPost(keyManagerURL.replace("services/",
-                    "") + "oauth2/token", headers,
-                    "grant_type=password&username=admin&password=admin");
-            log.info("key manager url token endpoint response code :" + keyManagerURLResponse.getResponseCode());
-            log.info("key manager url token endpoint response data :" + keyManagerURLResponse.getData());
-            HttpResponse gatewayResponse = HttpClient.doPost(gatewayHttpsURL + "/token", headers,
-                    "grant_type=password&username=admin&password=admin");
-            log.info("Gateway url token endpoint response code  :" + gatewayResponse.getResponseCode());
-            log.info("Gateway url token endpoint response data  :" + gatewayResponse.getData());
-            Thread.sleep(3600000);
-        }
+        assertFalse(responseStringJson.getBoolean(ERROR),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
+                .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
+                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
     }
 
     @AfterClass(alwaysRun = true)
