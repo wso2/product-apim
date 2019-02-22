@@ -152,9 +152,9 @@
     <!-- for different message format serializations in Axis2. These message formats are -->
     <!-- expected to be resolved based on the content type. -->
     <messageFormatters>
-        {% for message_builder in message_formatters %}
-        <messageFormatter contentType="{{message_builder.content_type}}"
-                          class="{{message_builder.class}}"/>
+        {% for message_formatter in message_formatters %}
+        <messageFormatter contentType="{{message_formatter.content_type}}"
+                          class="{{message_formatter.class}}"/>
         {% endfor %}
     </messageFormatters>
 
