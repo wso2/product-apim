@@ -48,8 +48,8 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private final String SUBSCRIBER_LOGIN_USERNAME_1 = "AppCreationNegSubscriberA";
     private final String SUBSCRIBER_LOGIN_PW_1 = "AppCreationNegSubscriberA";
     private final String SUBSCRIBER_LOGIN_USERNAME_2 = "AppCreationNegSubscriberB";
-    private final String SUBSCRIBER_LOGIN_PW_2= "AppCreationNegSubscriberB"
-            ;    private static final String UTF_8 = "UTF-8";
+    private final String SUBSCRIBER_LOGIN_PW_2= "AppCreationNegSubscriberB";
+    private static final String UTF_8 = "UTF-8";
     private final String ERROR_APP_CREATION_FAILED = "Application creation failed for application: ";
     private final String ERROR_APP_CREATION_NEGATIVE_TEST = "Error in application creation" +
             " negative test cases. Application: ";
