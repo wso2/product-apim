@@ -190,6 +190,15 @@ public class ScenarioTestBase {
                 "Error message received " + httpResponse.getData());
     }
 
+    public void verifyNegativeResponse(HttpResponse httpResponse) throws JSONException {
+
+        Assert.assertNotNull(httpResponse, "Response object is null");
+        log.info("Response Code : " + httpResponse.getResponseCode());
+        log.info("Response Message : " + httpResponse.getData());
+        JSONObject responseData = new JSONObject(httpResponse.getData());
+        Assert.assertTrue(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
+                "Error message received " + httpResponse.getData());
+    }
 
     public static void createUserWithCreatorRole(String username, String password,
             String adminUsername, String adminPassword) throws APIManagementException {

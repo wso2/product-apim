@@ -226,5 +226,22 @@ public class ScenarioDataProvider {
                 {"Bearer " , "tokenDuplicated"}
         };
     }
+
+    @DataProvider(name = "OASDocsWithInvalidURL")
+    public static Object[][] OASDocInvalidURLProvide() {
+
+        return new Object[][]{
+                {"localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http:localhost:8083/swaggerFiles/OAS3Document.yaml"}
+                , {"http:localhost:8083/swaggerFiles/xxx.jpg"}};
+    }
+
+
+    @DataProvider(name = "APITags")
+    public static Object[][] APITagsDataProvider() {
+        return new Object[][]{
+                {""},
+                {"newTag1,newTag2"}
+        };
+    }
 }
 
