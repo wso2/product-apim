@@ -1,0 +1,5 @@
+<handlers>
+{% for handler_key in enabled_global_handlers %}
+    <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
+{% endfor %}
+</handlers>
