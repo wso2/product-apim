@@ -214,20 +214,20 @@
                      class="{{transport.blocking_http.sender.class}}">
         {% for parameter_name,parameter_value in transport.blocking_http.sender.parameters.items() %}
         <parameter name="{{parameter_name}}">{{parameter_value}}</parameter>
-        {% end for %}
+        {% endfor %}
     </transportSender>
 
     <transportSender name="https"
                      class="{{transport.blocking_https.sender.class}}">
                              {% for parameter_name,parameter_value in transport.blocking_https.sender.parameters.items() %}
                              <parameter name="{{parameter_name}}">{{parameter_value}}</parameter>
-                             {% end for %}
+                             {% endfor %}
     </transportSender>
     <transportSender name="jms"
                      class="org.apache.axis2.transport.jms.JMSSender"/>
 
     <!-- configure the SMTP server information
-    check com.sun.mail.smtp package documentation for descriptions of properties-->
+    check com.sun.mail.smtp package documentati;on for descriptions of properties-->
     <transportSender name="mailto" class="org.apache.axis2.transport.mail.MailTransportSender">
         <parameter name="mail.smtp.host">smtp.gmail.com</parameter>
         <parameter name="mail.smtp.port">587</parameter>

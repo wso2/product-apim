@@ -175,5 +175,10 @@
     "Transfer-Encoding": "chunked",
     "cacheHttpClient": true,
     "defaultMaxConnectionsPerHost": "200"
-  }
+  },
+  "enabled_global_handlers": [
+    "external_call_logger"
+  ],
+  "synapse_handlers.external_call_logger.name": "externalCallLogger",
+  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
 }
