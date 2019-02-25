@@ -59,9 +59,9 @@ public class APIRequest extends AbstractRequest {
     private String resourceMethodThrottlingTier;
     private String uriTemplate;
 
-    private String import_definition;
-    private String swagger_filename;
-    private String swagger_url;
+    private String importDefinition;
+    private String swaggerFilename;
+    private String swaggerUrl;
     private String type;
     private String accessControl;
     private String visibilityType;
@@ -235,9 +235,9 @@ public class APIRequest extends AbstractRequest {
     }
 
     public APIRequest(String definition, String filename, String url, String type) {
-        this.import_definition = definition;
-        this.swagger_filename = filename;
-        this.swagger_url = url;
+        this.importDefinition = definition;
+        this.swaggerFilename = filename;
+        this.swaggerUrl = url;
         this.type = type;
     }
 
@@ -353,6 +353,18 @@ public class APIRequest extends AbstractRequest {
         }
         if (this.uriTemplate != null) {
             this.addParameter("uriTemplate-0", uriTemplate);
+        }
+        if (this.type != null) {
+            this.addParameter("type", type);
+        }
+        if (this.type != null) {
+            this.addParameter("swagger-url", swaggerUrl);
+        }
+        if (this.importDefinition != null) {
+            this.addParameter("import-definition", importDefinition);
+        }
+        if (this.swaggerFilename != null) {
+            this.addParameter("swagger-file", swaggerFilename);
         }
 
     }

@@ -91,7 +91,7 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
         swaggerUrl = url;
         apiRequest = new APIRequest(importDefinitionUrl, "", swaggerUrl, type);
 
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOASURL(apiRequest);
         verifyNegativeResponse(serviceResponse);
 
     }

@@ -49,6 +49,7 @@ public class APIPublisherRestClient {
     private static final String ADD_API_ACTION = "addAPI";
     private static final String DESIGN_API_ACTION = "design";
     private static final String START_API_ACTION = "start";
+    private static final String SESSION_API_ACTION = "session";
     private static final String URL_SUFFIX = "/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     ScenarioTestBase scenarioTestBase = new ScenarioTestBase();
@@ -168,6 +169,14 @@ public class APIPublisherRestClient {
         }
     }
 
+    public HttpResponse designAPIWithOASURL(APIRequest apiRequest) throws Exception {
+
+        checkAuthentication();
+        return HttpClient.doPost(
+                new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
+                apiRequest.generateRequestParameters(START_API_ACTION), requestHeaders);
+
+    }
     /**
      * copy API from existing API
      *

@@ -29,6 +29,7 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
@@ -62,12 +63,16 @@ import static org.testng.Assert.assertTrue;
 public class RESTApiEditTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
     private final String admin = "admin";
     private String APICreator = "APICreator";
     private String pw = "wso2123$";
+    private String APISubscriber = "APISubscriber";
+    private String subscriberPw = "wso2123$";
     private String description = "This is a API creation description";
     private String tag = "APICreationTag";
     private String tierCollection = "Gold,Bronze";
@@ -88,6 +93,9 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         createUsers();
         apiPublisher.login(APICreator, pw);
+
+        apiStore = new APIStoreRestClient(storeURL);
+        apiStore.login(APISubscriber, subscriberPw);
 
         //Create an API
         try {
@@ -254,7 +262,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
                 "Response Code miss matched when creating the API");
         verifyResponse(apiCreationResponse);
 
-        //Check availability of the API in publisher
+        //Check availability of the API and the tag in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI
                 (apiName, APICreator, apiVersion);
         verifyResponse(apiResponsePublisher);
@@ -269,21 +277,44 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
                 (apiName, APICreator, apiVersion);
-        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
-                .get("tags").toString();
-        List<String> tagsList = Arrays.asList(tags.split(","));
-        if (updatedTags != null) {
-            if (updatedTags.contains(",")) {
-                String[] updatedTagsArray = updatedTags.split(",");
-                for (String t : updatedTagsArray) {
-                    assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
-                }
-            } else {
-                assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
-            }
-        }
+        verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher, apiName, tags);
 
-        //todo add more tags
+        // Verify new tags are updated in the store
+        isTagsVisibleInStore(APICreator, apiName, apiVersion, tags, apiStore);
+
+        apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        verifyResponse(serviceResponse);
+    }
+
+    @Test(description = "1.1.5.7")
+    public void testRESTAPIEditAddMoreTags() throws Exception {
+
+        String apiName = "TestTagsUpdateAPI";
+        String apiContext = "/ctx";
+        String apiVersion = "1.0.0";
+        APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
+                apiVersion, APICreator, new URL(backendEndPoint));
+        apiCreationRequestBeanObj.setTags(tag);
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when creating the API");
+        verifyResponse(apiCreationResponse);
+
+        //Check availability of the API and the tag in publisher
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        verifyResponse(apiResponsePublisher);
+        assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
+
+        // add more tags
+        String newTagAdded = apiCreationRequestBeanObj.getTags() + ",additionalTag";
+        apiCreationRequestBeanObj.setTags(newTagAdded);
+        //Check whether API is updated from the above request
+        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBeanObj);
+        verifyResponse(apiUpdateResponse);
+        HttpResponse apiUpdateResponsePublisher2 = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher2, apiName, newTagAdded);
+
         apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
         verifyResponse(serviceResponse);
@@ -296,8 +327,11 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private void createUsers() throws APIManagerIntegrationTestException {
 
         try {
-            createUser("APICreator", "wso2123$",
+            createUser(APICreator, pw,
                     new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, admin);
+            createUser(APISubscriber, subscriberPw,
+                    new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, admin, admin);
+
         } catch (APIManagementException e) {
             throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
         }
@@ -327,5 +361,6 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
         verifyResponse(serviceResponse);
         deleteUser(APICreator, admin, admin);
+        deleteUser(APISubscriber, admin, admin);
     }
 }
