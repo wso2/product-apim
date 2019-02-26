@@ -52,7 +52,7 @@ public class SimpleHTTPServer implements Runnable {
         try {
             serverConnect = new ServerSocket(PORT);
             log.info("Server started.\nListening for connections on port : " + PORT + " ...\n");
-
+            isRunning = true;
         } catch (IOException e) {
             System.err.println("Server Connection error : " + e.getMessage());
         }
@@ -200,6 +200,12 @@ public class SimpleHTTPServer implements Runnable {
     public void stop() {
 
         isRunning = false;
+        closeConnection(serverConnect);
+        try {
+            connect.close();
+        } catch (IOException e) {
+            //Ignore
+        }
     }
 
     private byte[] readFileData(File file, int fileLength) throws IOException {

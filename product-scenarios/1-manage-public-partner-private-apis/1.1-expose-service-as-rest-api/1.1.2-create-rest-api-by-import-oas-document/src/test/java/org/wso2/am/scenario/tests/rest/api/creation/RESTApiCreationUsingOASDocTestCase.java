@@ -35,6 +35,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
 
 public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
@@ -281,13 +282,15 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         swagger_url = url;
 
         apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
+        SimpleHTTPServer server = new SimpleHTTPServer();
+        new Thread(server).start();
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOASURL(apiRequest);
+        server.stop();
+        Assert.assertTrue(serviceResponse.getData().contains("imported"), "Error importing swagger from : " + url);
 
-        HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains("imported"));
-
-        new Thread(new SimpleHTTPServer()).start();
-
+        new Thread( new SimpleHTTPServer()).start();
         String payload = ScenarioTestUtils.readFromURL(swagger_url);
+
         JSONObject json = new JSONObject(payload);
         String apiName = json.getJSONObject("info").get("title").toString();
         String context = json.get("basePath").toString();
@@ -304,7 +307,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
 
         Thread.sleep(1000); // To avoid connection failure in the next iteration.
-
+        server = null;
     }
 
     @Test(description = "1.1.2.6", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
@@ -314,11 +317,14 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
         apiRequest = new APIRequest(import_definition_url, "", swagger_url, type);
 
+        SimpleHTTPServer server = new SimpleHTTPServer();
+        new Thread(server).start();
+
         HttpResponse serviceResponse = apiPublisher.designAPIWithOAS(apiRequest);
+        server.stop();
         Assert.assertTrue(serviceResponse.getData().contains("imported"));
 
-        new Thread(new SimpleHTTPServer()).start();
-
+        new Thread( new SimpleHTTPServer()).start();
         String payload = ScenarioTestUtils.readFromURL(swagger_url);
 
         Yaml yaml = new Yaml();

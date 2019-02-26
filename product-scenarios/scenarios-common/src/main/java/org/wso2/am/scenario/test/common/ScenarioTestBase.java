@@ -38,12 +38,12 @@ import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -353,6 +353,86 @@ public class ScenarioTestBase {
             }
         }
         if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was not found in store at the end of wait time.");
+            Assert.assertTrue(false, "API not found in store : " + apiName);
+        }
+    }
+
+    /*
+     * This will check the tags updated in publisher API
+     *
+     * @param apiUpdateResponsePublisher Provider of the API
+     * @param apiName Name of the API
+     * @param tags newly added tags of the API
+     * @throws Exception
+     * */
+    public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags){
+        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
+                .get("tags").toString();
+        List<String> tagsList = Arrays.asList(tags.split(","));
+        if (updatedTags != null) {
+            if (updatedTags.contains(",")) {
+                String[] updatedTagsArray = updatedTags.split(",");
+                for (String t : updatedTagsArray) {
+                    Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
+                }
+            } else {
+                Assert.assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
+            }
+        }
+    }
+
+    /*
+     * This will check the tags updated in publisher is visible in the store
+     *
+     * @param provider Provider of the API
+     * @param apiName Name of the API
+     * @param version version of the API
+     * @param tags String Array of updated tags
+     * @param apiStoreRestClient REST Client for the API Store
+     * @throws Exception
+     * */
+    public void isTagsVisibleInStore(String provider, String apiName, String version, String tags, APIStoreRestClient apiStoreRestClient)
+            throws Exception {
+
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAPI(provider, apiName, version);
+            if (apiResponseStore != null) {
+                if (apiResponseStore.getData().contains(apiName)) {
+                    int tagsCount = 0;
+
+                    if (tags != null) {
+                        String[] tagsArr = tags.split(",");
+                        for (String tag : tagsArr) {
+                            if (apiResponseStore.getData().contains(tag)) {
+                                tagsCount++;
+                                if (tagsCount == tagsArr.length) {
+                                    Assert.assertTrue(true, "API tags found in store : " + tagsArr.length);
+                                }
+                            } else {
+                                //a tag is not visible in the store
+                                Assert.assertTrue(false, "API tag is not found in store : " + tag);
+                            }
+                        }
+                    }
+                    log.info("API found in store : " + apiName);
+                    log.info(apiResponseStore.getData());
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        log.info("API : " + apiName + " not found in store yet.");
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was not found in store at the end of wait time.");
             Assert.assertTrue(false, "API not found in store : " + apiName);
         }
