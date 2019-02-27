@@ -131,6 +131,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
         //Create Application for custom tier
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationNameCustomTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
