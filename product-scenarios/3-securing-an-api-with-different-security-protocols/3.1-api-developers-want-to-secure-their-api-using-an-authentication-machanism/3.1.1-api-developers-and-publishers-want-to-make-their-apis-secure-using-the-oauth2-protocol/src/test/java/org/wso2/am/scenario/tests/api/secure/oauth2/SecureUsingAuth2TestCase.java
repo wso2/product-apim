@@ -204,6 +204,9 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                         APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
         verifyResponse(apiPublishResponse);
+
+        // This is temporary solution to get the build stable. Need to an implement proper waiting mechanism
+        Thread.sleep(15000);
     }
 
     public void createApplication(String applicationName) throws Exception {
