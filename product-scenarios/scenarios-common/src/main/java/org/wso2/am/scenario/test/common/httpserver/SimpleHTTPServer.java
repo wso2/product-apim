@@ -175,7 +175,7 @@ public class SimpleHTTPServer implements Runnable {
                     out.close();
                     dataOut.close();
                     connect.close(); // close socket connection
-                    closeConnection(serverConnect);
+                    closeServerConnection(serverConnect);
                 } catch (Exception e) {
                     log.error("Error closing stream : " + e.getMessage());
                 }
@@ -186,7 +186,7 @@ public class SimpleHTTPServer implements Runnable {
 
     }
 
-    private void closeConnection(ServerSocket server) {
+    private void closeServerConnection(ServerSocket server) {
 
         if (server != null && !server.isClosed()) {
             try {
@@ -200,9 +200,11 @@ public class SimpleHTTPServer implements Runnable {
     public void stop() {
 
         isRunning = false;
-        closeConnection(serverConnect);
+        closeServerConnection(serverConnect);
         try {
-            connect.close();
+            if (connect != null && !connect.isClosed()) {
+                connect.close();
+            }
         } catch (IOException e) {
             //Ignore
         }
