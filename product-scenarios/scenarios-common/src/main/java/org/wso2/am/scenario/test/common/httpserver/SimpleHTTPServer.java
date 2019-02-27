@@ -202,7 +202,9 @@ public class SimpleHTTPServer implements Runnable {
         isRunning = false;
         closeConnection(serverConnect);
         try {
-            connect.close();
+            if (connect != null) {
+                connect.close();
+            }
         } catch (IOException e) {
             //Ignore
         }
