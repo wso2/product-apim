@@ -1,0 +1,62 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "APIScopeTestAPI",
+    "version": "1.0.0"
+  },
+  "basePath": "/contextJsonV2",
+  "paths": {
+    "/*": {
+      "put": {
+        "responses": {
+          "200": {}
+        },
+        "x-auth-type": "Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-scope": "item_view"
+      },
+      "post": {
+        "responses": {
+          "200": {}
+        },
+        "x-auth-type": "Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-scope": ""
+      },
+      "get": {
+        "responses": {
+          "200": {}
+        },
+        "x-auth-type": "Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-scope": "order_view"
+      },
+      "delete": {
+        "responses": {
+          "200": {}
+        },
+        "x-auth-type": "Application User",
+        "x-throttling-tier": "Unlimited"
+      },
+      "options": {
+        "responses": {
+          "200": {}
+        },
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      }
+    }
+  },
+  "x-wso2-security": {
+    "apim": {
+      "x-wso2-scopes": [
+        {
+          "name": "order_view",
+          "description": "",
+          "key": "order_view",
+          "roles": "customerRole,agentRole"
+        }
+      ]
+    }
+  }
+}

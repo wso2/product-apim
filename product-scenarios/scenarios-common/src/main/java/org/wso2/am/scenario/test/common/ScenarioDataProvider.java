@@ -41,15 +41,6 @@ public class ScenarioDataProvider {
                 {"http://localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http://localhost:8083/swaggerFiles/OAS3Document.yaml"}};
     }
 
-    @DataProvider(name = "ValidApplicationNameAndTierDataProvider")
-    public static Object[][] validApplicationNameAndTiersDataProvider() {
-        return new Object[][]{
-                {"App", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
-                {"Application_-.", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
-                {"1234", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED},
-        };
-    }
-
     @DataProvider(name = "InvalidMandatoryApplicationValuesDataProvider")
     public static Object[][] invalidMandatoryApplicationValuesDataProvider() {
         return new Object[][]{
@@ -215,4 +206,42 @@ public class ScenarioDataProvider {
                 {"http://localhost:8083/thumbnail/petstoreapi.jpg"}
         };
     }
+
+    @DataProvider(name = "AuthorizationHeadersDataProvider")
+    public static Object[][] authorizationHeadersDataProvider() {
+            return new Object[][]{
+                    {"Bearer "},
+                    {"Basic WXS4DASADDDSDS5; Bearer "}
+            };
+    }
+
+    @DataProvider(name = "IncorrectFormattedAuthorizationHeadersDataProvider")
+    public static Object[][] incorrectFormattedAuthorizationHeadersDataProvider() {
+        return new Object[][]{
+                {"Bearer" , "tokenVal"},
+                {"Bearer" , ""},
+                {"Basic su18eaodd" , ""},
+                {"Basic su18eaodd; Bearer", "tokenVal"},
+                {"",""},
+                {"Bearer " , "tokenDuplicated"}
+        };
+    }
+
+    @DataProvider(name = "OASDocsWithInvalidURL")
+    public static Object[][] OASDocInvalidURLProvide() {
+
+        return new Object[][]{
+                {"localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http:localhost:8083/swaggerFiles/OAS3Document.yaml"}
+                , {"http:localhost:8083/swaggerFiles/xxx.jpg"}};
+    }
+
+
+    @DataProvider(name = "APITags")
+    public static Object[][] APITagsDataProvider() {
+        return new Object[][]{
+                {""},
+                {"newTag1,newTag2"}
+        };
+    }
 }
+

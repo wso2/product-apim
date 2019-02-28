@@ -35,13 +35,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertTrue;
-import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
@@ -49,9 +49,11 @@ public class APIPublisherRestClient {
     private static final String ADD_API_ACTION = "addAPI";
     private static final String DESIGN_API_ACTION = "design";
     private static final String START_API_ACTION = "start";
+    private static final String SESSION_API_ACTION = "session";
     private static final String URL_SUFFIX = "/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     ScenarioTestBase scenarioTestBase = new ScenarioTestBase();
+
     /**
      * construct of API rest client
      *
@@ -167,6 +169,14 @@ public class APIPublisherRestClient {
         }
     }
 
+    public HttpResponse designAPIWithOASURL(APIRequest apiRequest) throws Exception {
+
+        checkAuthentication();
+        return HttpClient.doPost(
+                new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
+                apiRequest.generateRequestParameters(START_API_ACTION), requestHeaders);
+
+    }
     /**
      * copy API from existing API
      *
@@ -877,8 +887,8 @@ public class APIPublisherRestClient {
     /**
      * Get the Swagger definition of API
      *
-     * @param name API name
-     * @param version API version
+     * @param name     API name
+     * @param version  API version
      * @param provider API provider
      * @return Swagger definition of the API
      * @throws APIManagerIntegrationTestException
@@ -915,31 +925,29 @@ public class APIPublisherRestClient {
 
     /**
      * Design, Implement and Manage (and publish if required) an API via the approach that the Publisher UI is
-     * performing, by calling required Jaggery APIs. This is to be used as a common method to develop/publish APIs for
-     * scenario tests.
+     * performing, by calling required Jaggery APIs. This is to be used as a common method to develop/publish generic
+     * APIs for scenario tests. Will require to change the implementation of this method for more advanced requirements.
      *
-     * @param swaggerFileRelativePath Swagger file relative path to create API
+     * @param swaggerJson          Swagger json object that will be used to create API
      * @param apiDeveloperUsername Developer name
-     * @param backendEndPoint Backendpoint url
-     * @param publish Whether to publish APi or not
-     * @param storeVisibility Store visibility level of the API
+     * @param backendEndPoint      Backendpoint url
+     * @param publish              Whether to publish APi or not
+     * @param storeVisibility      Store visibility level of the API
      * @throws Exception
      */
-    public void developSampleAPI(String swaggerFileRelativePath,
+    public void developSampleAPI(JSONObject swaggerJson,
                                  String apiDeveloperUsername, String backendEndPoint, boolean publish,
                                  String storeVisibility) throws Exception {
-        String swaggerFileLocation = System.getProperty("user.dir") + File.separator + "src/test/resources" +
-                File.separator + swaggerFileRelativePath;
         try {
-            File swagger_file = new File(swaggerFileLocation);
-            String swaggerContent = readFromFile(swagger_file.getAbsolutePath());
-            JSONObject json = new JSONObject(swaggerContent);
-            String apiName = json.getJSONObject("info").get("title").toString();
-            String apiContext = json.get("basePath").toString();
-            String apiVersion = json.getJSONObject("info").get("version").toString();
+            if (log.isDebugEnabled()) {
+                log.debug("Creating api with below swagger definition : \n" + swaggerJson.toString());
+            }
+            String apiName = swaggerJson.getJSONObject("info").get("title").toString();
+            String apiContext = swaggerJson.get("basePath").toString();
+            String apiVersion = swaggerJson.getJSONObject("info").get("version").toString();
             APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVersion);
             apiRequest.setVisibility(storeVisibility);
-            apiRequest.setSwagger(swaggerContent);
+            apiRequest.setSwagger(URLEncoder.encode(swaggerJson.toString(), "UTF-8"));
 
             //Design API
             HttpResponse serviceResponse = designAPI(apiRequest);
@@ -949,7 +957,7 @@ public class APIPublisherRestClient {
             //implementAPI API
             APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName, apiVersion,
                     apiDeveloperUsername, new URL(backendEndPoint));
-            apiImplementationBean.setSwagger(swaggerContent);
+            apiImplementationBean.setSwagger(URLEncoder.encode(swaggerJson.toString(), "UTF-8"));
             HttpResponse implementApiResponse = implementAPI(apiImplementationBean);
             scenarioTestBase.verifyResponse(implementApiResponse);
 
@@ -964,14 +972,14 @@ public class APIPublisherRestClient {
             if (publish) {
                 //publish API
                 org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateLifeCycle =
-                        new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName, apiDeveloperUsername, APILifeCycleState.PUBLISHED);
+                        new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
+                                apiDeveloperUsername, APILifeCycleState.PUBLISHED);
                 HttpResponse apiPublishResponse = changeAPILifeCycleStatus(updateLifeCycle);
                 scenarioTestBase.verifyResponse(apiPublishResponse);
             }
+            Thread.sleep(15000);
         } catch (MalformedURLException e) {
             throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
-        } catch (IOException e) {
-            throw new IOException("Error in reading swagger file from path :" + swaggerFileLocation, e);
         }
     }
 }

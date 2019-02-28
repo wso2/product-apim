@@ -126,7 +126,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         validateOptionalFiled(serviceResponseGetApi);
     }
 
-    @Test(description = "1.1.1.3")
+    @Test(description = "1.1.1.4")
     public void testRESTAPICreationWithwildCardResource() throws Exception {
         apiName = "APIWildCard";
         apiContext = "apiwildcard";

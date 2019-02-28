@@ -981,10 +981,10 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpClient.doGet(backendURL + "/store/apis/list?tag=" + apiTag + "&tenant=carbon.super",
-                                          requestHeaders);
+            return HttpClient.doGet(backendURL + "/site/pages/list-apis.jag?tenant=carbon.super&tag=" +
+                            apiTag, requestHeaders);
         } catch (IOException ex) {
-            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+            throw new APIManagerIntegrationTestException("Exception when get API page filtered by tag"
                                                          + ". Error: " + ex.getMessage(), ex);
         }
     }
@@ -1052,7 +1052,29 @@ public class APIStoreRestClient {
         }
     }
 
+    /**
+     * Get tags of APIs in Store for an anonymous user
+     *
+     * @return HttpResponse - Response with tags of APIs visible to anonymous users
+     */
+    public HttpResponse getTagListFromStoreAsAnonymousUser() throws Exception {
+        try {
+            HttpResponse httpResponse = HttpClient.doPost(
+                    new URL(backendURL + "/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags" +
+                            "&tenant=carbon.super"), "", requestHeaders);
 
+            if (new JSONObject(httpResponse.getData()).getBoolean("error")) {
+                throw new Exception("Error when getting tag list as anonymous user");
+            }
+
+            return httpResponse;
+        } catch (IOException ioE) {
+            throw new Exception(
+                    "Exception when retrieve the tag list as anonymous user. Error: " + ioE.getMessage(), ioE);
+        } catch (JSONException e) {
+            throw new Exception("Response message is not JSON Response. Error: " + e.getMessage(), e);
+        }
+    }
 
  /**
      * API Store logout

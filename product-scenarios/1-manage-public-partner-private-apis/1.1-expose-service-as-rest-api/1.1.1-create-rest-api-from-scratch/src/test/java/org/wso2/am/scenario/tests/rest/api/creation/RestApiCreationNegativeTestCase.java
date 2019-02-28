@@ -47,7 +47,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    @Test(description = "1.1.1.6")
+    @Test(description = "1.1.1.7")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -55,9 +55,15 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         //Try to add API with same api name
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse + apiName + "-" + apiVersion));
+
+        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
+
+        //Try to add API with same api name with uppercase
+        serviceResponse = apiPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse));
     }
 
-    @Test(description = "1.1.1.7")
+    @Test(description = "1.1.1.8")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -67,7 +73,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(DuplicateContextResponse + apiContext));
     }
 
-    @Test(description = "1.1.1.8")
+    @Test(description = "1.1.1.9")
     public void testRESTAPICreationWith255CharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiName255, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -77,7 +83,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiName255 + "-" + apiVersion));
     }
 
-    @Test(description = "1.1.1.9")
+    @Test(description = "1.1.1.10")
     public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
 
         apiRequest = new APIRequest(apiNameSpecial, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -89,7 +95,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     //TODO: Remove the comment once considered environment fix for create context with 255characters
 
-//    @Test(description = "1.1.1.10")
+//    @Test(description = "1.1.1.11")
 //    public void testRESTAPICreationWith255CharactersContext() throws Exception {
 //
 //        apiRequest = new APIRequest(newApiName, apiContext255, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
@@ -101,7 +107,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     /*
      //TODO: this test should be enabled once context validation in jaggery call fixed..
-    @Test(description = "1.1.1.11")
+    @Test(description = "1.1.1.12")
     public void testRESTAPICreationWithNotAllowedCharactersContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpecial, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -112,7 +118,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.12")
+    @Test(description = "1.1.1.13")
     public void testRESTAPICreationWithSpacesContext() throws Exception{
 
         apiRequest = new APIRequest(newApiName, apiContextSpaces, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -123,7 +129,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
      //TODO: this test should be enabled once api validation in jaggery call fixed..
-    @Test(description = "1.1.1.13")
+    @Test(description = "1.1.1.14")
     public void testRESTAPICreationWithSpacesApiname() throws Exception{
 
         apiRequest = new APIRequest(apiNameSpaces, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL (endpointUrl));
@@ -134,7 +140,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 */
 
-    @Test(description = "1.1.1.14")
+    @Test(description = "1.1.1.15")
     public void testRESTAPICreationWithoutApiname() throws Exception {
 
         apiRequest = new APIRequest("", newContext, apiVisibility, apiVersion, apiResource);
@@ -149,7 +155,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.15")
+    @Test(description = "1.1.1.16")
     public void testRESTAPICreationWithoutContext() throws Exception {
 
         apiRequest = new APIRequest(newApiName, "", apiVisibility, apiVersion, apiResource);
@@ -164,7 +170,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.16")
+    @Test(description = "1.1.1.17")
     public void testRESTAPICreationWithoutVersion() throws Exception {
 
         apiRequest = new APIRequest(newApiName, newContext, apiVisibility, "", apiResource);
@@ -176,16 +182,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         } catch (NullPointerException e) {
             Assert.assertTrue(serviceResponse.getResponseMessage().contains("Error"), "false");
         }
-    }
-
-    @Test(description = "1.1.1.17")
-    public void testRESTAPICreationWithExistingNameCaseInsensitive() throws Exception {
-
-        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
-
-        //Try to add API with same api name with uppercase
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse));
     }
 
     @AfterClass(alwaysRun = true)

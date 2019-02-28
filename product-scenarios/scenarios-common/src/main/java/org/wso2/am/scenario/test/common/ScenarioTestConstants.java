@@ -19,7 +19,9 @@ public class ScenarioTestConstants {
     public static final String PUBLISHER_ROLE  = "Internal/publisher";
     public static final String CREATOR_ROLE  = "Internal/creator";
     public static final String SUBSCRIBER_ROLE  = "Internal/subscriber";
+    public static final String EVERYONE_ROLE = "Internal/everyone";
     public static final String TENANT_WSO2  = "wso2.com";
     public static final long TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH = 15000;
     public static final long TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH = 3000;
+    public static final long TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH = 15000;
 }

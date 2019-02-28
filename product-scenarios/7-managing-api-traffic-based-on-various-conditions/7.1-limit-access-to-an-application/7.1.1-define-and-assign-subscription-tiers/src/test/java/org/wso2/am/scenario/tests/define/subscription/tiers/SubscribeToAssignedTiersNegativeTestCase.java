@@ -70,7 +70,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
         apiStore.login(ADMIN_USERNAME, ADMIN_PASSWORD);
     }
 
-    @Test(description = "7.1.1.4")
+    @Test(description = "7.1.1.5")
     public void testCreateAPIWithNoSubscriptionTiers() throws Exception {
         apiRequest = new APIRequest(apiNameNoTiers, apiContextNoTiers, apiVisibility, apiVersion, apiResource, null,
                 new URL(endpointUrl));
@@ -82,7 +82,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
         Assert.assertTrue(responseData.getString("message").contains("No tier defined for the API"));
     }
 
-    @Test(description = "7.1.1.5")
+    @Test(description = "7.1.1.6")
     public void testSubscribeWithTierNotAssignedToAPI() throws Exception {
         apiRequest = new APIRequest(apiNameSubscribeToNotAssigned, apiContextSubscribeToNotAssigned, apiVisibility,
                 apiVersion, apiResource, goldTier, new URL(endpointUrl));

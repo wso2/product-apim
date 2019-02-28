@@ -38,12 +38,12 @@ import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -60,9 +60,11 @@ public class ScenarioTestBase {
     protected static String keyManagerURL;
     protected static String gatewayHttpsURL;
     protected static String serviceEndpoint;
+    protected static String adminURL;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
+    public static final String ADMIN_URL = "AdminUrl";
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
     public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
@@ -93,6 +95,10 @@ public class ScenarioTestBase {
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {
             serviceEndpoint = "https://localhost:9443/services/";
+        }
+        adminURL = infraProperties.getProperty(ADMIN_URL);
+        if (adminURL == null) {
+            adminURL = "https://localhost:9443/admin";
         }
         setKeyStoreProperties();
     }
@@ -184,6 +190,15 @@ public class ScenarioTestBase {
                 "Error message received " + httpResponse.getData());
     }
 
+    public void verifyNegativeResponse(HttpResponse httpResponse) throws JSONException {
+
+        Assert.assertNotNull(httpResponse, "Response object is null");
+        log.info("Response Code : " + httpResponse.getResponseCode());
+        log.info("Response Message : " + httpResponse.getData());
+        JSONObject responseData = new JSONObject(httpResponse.getData());
+        Assert.assertTrue(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR),
+                "Error message received " + httpResponse.getData());
+    }
 
     public static void createUserWithCreatorRole(String username, String password,
             String adminUsername, String adminPassword) throws APIManagementException {
@@ -343,6 +358,86 @@ public class ScenarioTestBase {
         }
     }
 
+    /*
+     * This will check the tags updated in publisher API
+     *
+     * @param apiUpdateResponsePublisher Provider of the API
+     * @param apiName Name of the API
+     * @param tags newly added tags of the API
+     * @throws Exception
+     * */
+    public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags){
+        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
+                .get("tags").toString();
+        List<String> tagsList = Arrays.asList(tags.split(","));
+        if (updatedTags != null) {
+            if (updatedTags.contains(",")) {
+                String[] updatedTagsArray = updatedTags.split(",");
+                for (String t : updatedTagsArray) {
+                    Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
+                }
+            } else {
+                Assert.assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
+            }
+        }
+    }
+
+    /*
+     * This will check the tags updated in publisher is visible in the store
+     *
+     * @param provider Provider of the API
+     * @param apiName Name of the API
+     * @param version version of the API
+     * @param tags String Array of updated tags
+     * @param apiStoreRestClient REST Client for the API Store
+     * @throws Exception
+     * */
+    public void isTagsVisibleInStore(String provider, String apiName, String version, String tags, APIStoreRestClient apiStoreRestClient)
+            throws Exception {
+
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse apiResponseStore = null;
+        log.info("WAIT for availability of API: " + apiName);
+        while (waitTime > System.currentTimeMillis()) {
+            apiResponseStore = apiStoreRestClient.getAPI(provider, apiName, version);
+            if (apiResponseStore != null) {
+                if (apiResponseStore.getData().contains(apiName)) {
+                    int tagsCount = 0;
+
+                    if (tags != null) {
+                        String[] tagsArr = tags.split(",");
+                        for (String tag : tagsArr) {
+                            if (apiResponseStore.getData().contains(tag)) {
+                                tagsCount++;
+                                if (tagsCount == tagsArr.length) {
+                                    Assert.assertTrue(true, "API tags found in store : " + tagsArr.length);
+                                }
+                            } else {
+                                //a tag is not visible in the store
+                                Assert.assertTrue(false, "API tag is not found in store : " + tag);
+                            }
+                        }
+                    }
+                    log.info("API found in store : " + apiName);
+                    log.info(apiResponseStore.getData());
+                    verifyResponse(apiResponseStore);
+                    break;
+                } else {
+                    try {
+                        log.info("API : " + apiName + " not found in store yet.");
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+            log.info("API :" + apiName + " was not found in store at the end of wait time.");
+            Assert.assertTrue(false, "API not found in store : " + apiName);
+        }
+    }
+
     public void isAPINotVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
             throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
@@ -404,6 +499,38 @@ public class ScenarioTestBase {
                 .contains(assertText)) {
             Assert.assertTrue(false,
                     "New changes for :" + apiName + " was not visible in store at the end of wait time.");
+        }
+    }
+
+    public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean  isAnonymousUser)
+            throws Exception{
+        long waitTime = System.currentTimeMillis() +
+                ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
+        HttpResponse tagResponse = null;
+        log.info("WAIT for tag \'" + tag +"\' to be visible in store");
+        while ((waitTime > System.currentTimeMillis())) {
+            if(isAnonymousUser) {
+                tagResponse = apiStoreRestClient.getTagListFromStoreAsAnonymousUser();
+            } else {
+                tagResponse = apiStoreRestClient.getAllTags();
+            }
+            verifyResponse(tagResponse);
+            if (tagResponse != null) {
+                if(tagResponse.getData().contains(tag)) {
+                    log.info("Tag \'" + tag +"\' visible in store");
+                    break;
+                } else {
+                    log.info("Tag \'" + tag +"\' is not visible in store");
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+//                        do nothing
+                    }
+                }
+            }
+        }
+        if (tagResponse != null && !tagResponse.getData().contains(tag)) {
+            Assert.fail("Tag \'" + tag + "\' is not visible in store");
         }
     }
 

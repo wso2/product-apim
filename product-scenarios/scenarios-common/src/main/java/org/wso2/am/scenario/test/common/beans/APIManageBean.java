@@ -20,6 +20,9 @@ package org.wso2.am.scenario.test.common.beans;
 
 import org.wso2.am.integration.test.utils.bean.AbstractRequest;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 public class APIManageBean extends AbstractRequest {
     private String name;
     private String type = "";
@@ -48,7 +51,8 @@ public class APIManageBean extends AbstractRequest {
     private String tiersCollection = "";
 
     public APIManageBean(String name, String version, String provider, String transport_https, String responseCache,
-                         String api_level_policy, String environments, String swagger, String tiersCollection) {
+                         String api_level_policy, String environments, String swagger, String tiersCollection)
+            throws UnsupportedEncodingException {
         this.name = name;
         this.version = version;
         this.provider = provider;
@@ -56,7 +60,7 @@ public class APIManageBean extends AbstractRequest {
         this.responseCache = responseCache;
         this.api_level_policy = api_level_policy;
         this.environments = environments;
-        this.swagger = swagger;
+        this.swagger = URLEncoder.encode(swagger, "UTF-8");
         this.tiersCollection = tiersCollection;
     }
 
@@ -72,6 +76,8 @@ public class APIManageBean extends AbstractRequest {
         addParameter("techOwner", "techowsam");
         addParameter("techOwnerMail", "ttt@gmail.com");
         addParameter("tiersCollection", tiersCollection);
+        addParameter("tiersCollection", tiersCollection);
+        addParameter("authorizationHeader", authorizationHeader);
     }
 
     public String getName() {

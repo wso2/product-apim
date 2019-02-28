@@ -26,27 +26,22 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
-public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
+public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
 
-    private static final Log log = LogFactory.getLog(SecureUsingUserRolesNegativeTestCases.class);
+    private static final Log log = LogFactory.getLog(SecureUsingUserRolesNegativeTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIPublisherRestClient apiPublisherAdmin;
     private static final String ADMIN_LOGIN_USERNAME = "admin";
@@ -122,22 +117,26 @@ public class SecureUsingUserRolesNegativeTestCases extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void init() throws Exception {
         setupUserData();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
         apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
         apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        // create and publish sample API
+        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
+        File swaggerFile = new File(swaggerFilePath);
+        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
+        JSONObject swaggerJson = new JSONObject(swaggerContent);
         try {
-            apiPublisher.developSampleAPI("swaggerFiles/apiScopeTest1.json",
-                    SUPER_USER, backendEndPoint, true, apiVisibility);
+            apiPublisher.developSampleAPI(swaggerJson, SUPER_USER, backendEndPoint, true, apiVisibility);
         } catch (Exception ex) {
             log.error("API publication failed", ex);
         }
     }
 
     @Test(description = "3.2.1.9", dataProvider = "ScopeAndInValidRoleDataProvider",
-            dataProviderClass = SecureUsingUserRolesNegativeTestCases.class)
+            dataProviderClass = SecureUsingUserRolesNegativeTestCase.class)
     public void testScopeCreationWithInValidRoles(String role, String scope) throws Exception {
         HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
         verifyResponse(httpResponse);
