@@ -44,8 +44,8 @@ public class SimpleHTTPServer implements Runnable {
     // Client Connection via Socket Class
     private Socket connect;
     private static final Log log = LogFactory.getLog(SimpleHTTPServer.class);
-    private static boolean isRunning = true;
-    private static ServerSocket serverConnect;
+    private boolean isRunning = true;
+    private ServerSocket serverConnect;
 
     public SimpleHTTPServer() {
 
