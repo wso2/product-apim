@@ -21,7 +21,6 @@ package org.wso2.am.scenario.test.common;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -47,14 +46,14 @@ public class AdminDashboardRestClient {
      * @param userName - username to login
      * @param password - password to login
      * @return - http response
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if login to Admin Portal
+     * @throws APIManagerIntegrationTestException - Throws if login to Admin Portal
      *                                                                               fails
      */
     public HttpResponse login(String userName, String password) throws APIManagerIntegrationTestException {
         HttpResponse response;
         log.info("Login to Admin Portal " + backendURL + " as the user " + userName);
         try {
-            response = HTTPSClientUtils.doPost(new URL(backendURL + "/site/blocks/user/login/ajax/login.jag"),
+            response = HttpClient.doPost(new URL(backendURL + "/site/blocks/user/login/ajax/login.jag"),
                     "action=login&username=" + userName + "&password=" + password + "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to login to the store app ", e);
@@ -81,7 +80,7 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(
+            return HttpClient.doPost(new URL(
                             backendURL + "/site/blocks/policy/subscription/edit/ajax/subscription-policy-edit.jag"),
                     subscriptionThrottlePolicyRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
@@ -99,7 +98,7 @@ public class AdminDashboardRestClient {
     public HttpResponse deleteSubscriptionPolicy(String policyName) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(
+            return HttpClient.doPost(new URL(
                             backendURL + "/site/blocks/policy/subscription/manage/ajax/subscription-policy-manage.jag"),
                     "action=deleteSubscriptionPolicy&policy=" + policyName, requestHeaders);
         } catch (Exception e) {
@@ -118,7 +117,7 @@ public class AdminDashboardRestClient {
     /**
      * Check whether the user is logged in
      *
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - If session cookie not found in
+     * @throws APIManagerIntegrationTestException - If session cookie not found in
      *                                                                               the request header
      */
     private void checkAuthentication() throws APIManagerIntegrationTestException {
