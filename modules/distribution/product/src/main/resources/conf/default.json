@@ -6,7 +6,15 @@
   "database.apim_db.password": "wso2carbon",
   "database.apim_db.pool_options.maxActive": "5",
   "apim.gateway.gateway_environments": [
-    "dev"
+    {
+      "type": "hybrid",
+      "display_in_api_console": true,
+      "name": "Production and Sandbox",
+      "description": "This is a hybrid gateway that handles both production and sandbox token traffic.",
+      "management_endpoint": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
+      "loadbalancer": "http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}",
+      "ws_loadbalancer": "ws://${carbon.local.ip}:9099"
+    }
   ],
   "apim.gateway.environment.dev.name": "Sandbox",
   "apim.gateway.environment.dev.type": "hybrid",
@@ -180,5 +188,74 @@
     "external_call_logger"
   ],
   "synapse_handlers.external_call_logger.name": "externalCallLogger",
-  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
+  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
+
+  "apim.datasource.name": "jdbc/WSO2AM_DB",
+  "apim.gateway_type": "Synapse",
+  "apim.secure_vault": "false",
+  "apim.mutual_tls": "false",
+
+  "apim.auth_manager.url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
+  "apim.auth_manager.username": "${admin.username}",
+  "apim.auth_manager.password": "${admin.password}",
+  "apim.auth_manager.remote_perm_check": "false",
+
+  "apim.jwt.enable": "false",
+  "apim.jwt.header": "X-JWT-Assertion",
+  "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever",
+  "apim.jwt.dialect": "http://wso2.org/claims",
+  "apim.jwt.algo": "SHA256withRSA",
+  "apim.jwt.generator": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
+
+  "apim.cache.token": "true",
+  "apim.cache.resource": "true",
+  "apim.cache.km_token": "false",
+  "apim.cache.recent_api": "false",
+  "apim.cache.scope": "true",
+  "apim.cache.publisher_role": "true",
+  "apim.cache.claim_expiry_time": "900",
+  "apim.cache.token_expiry_time": "900",
+  "apim.cache.tag_duration": "120000",
+  "apim.cache.jwt_claim": "true",
+
+  "apim.analytics.enabled": "false",
+  "apim.analytics.receiver_urls": "{tcp://localhost:7612}",
+  "apim.analytics.receiver_auth_urls": "{ssl://localhost:7712}",
+  "apim.analytics.receiver_username": "${admin.username}",
+  "apim.analytics.receiver_password": "${admin.password}",
+  "apim.analytics.provider_impl": "org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl",
+  "apim.analytics.rest_api_url": "https://localhost:7444",
+  "apim.analytics.rest_api_username": "${admin.username}",
+  "apim.analytics.rest_api_password": "${admin.password}",
+  "apim.analytics.disable_event_publishing": "false",
+  "apim.analytics.disable_wf_events": "false",
+  "apim.analytics.event_publisher_impl": "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher",
+  "apim.analytics.publish_response_size": "false",
+  "apim.analytics.streams": [
+    {
+      "type": "Request",
+      "name": "org.wso2.apimgt.statistics.request",
+      "version": "3.0.0"
+    },
+    {
+      "type": "Fault",
+      "name": "org.wso2.apimgt.statistics.fault",
+      "version": "3.0.0"
+    },
+    {
+      "type": "Throttle",
+      "name": "org.wso2.apimgt.statistics.throttle",
+      "version": "3.0.0"
+    },
+    {
+      "type": "Workflow",
+      "name": "org.wso2.apimgt.statistics.workflow",
+      "version": "1.0.0"
+    },
+    {
+      "type": "AlertTypes",
+      "name": "org.wso2.analytics.apim.alertStakeholderInfo",
+      "version": "1.0.1"
+    }
+  ]
 }
