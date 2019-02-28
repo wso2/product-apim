@@ -14,30 +14,7 @@
 #  limitations under the License.
 #
 
-#synapse.threads.core = 20
-#synapse.threads.max = 100
-#synapse.threads.keepalive = 5
-#synapse.threads.qlen = 10
-#synapse.threads.group = synapse-thread-group
-#synapse.threads.idprefix = SynapseWorker
+{% for key,value in synapse_properties.items() %}
+{{key}}={{value}}
+{% endfor %}
 
-synapse.sal.endpoints.sesssion.timeout.default=600000
-synapse.global_timeout_interval=120000
-#In memory statistics cleaning state 
-statistics.clean.enable=false
-
-# Dependency tracking Synapse observer
-# Comment out to disable dependency management
-synapse.observers=org.wso2.carbon.mediation.dependency.mgt.DependencyTracker
-
-# User defined wsdlLocator/Schema Resolver Implementations.
-# synapse.wsdl.resolver=org.wso2.carbon.mediation.initializer.RegistryWSDLLocator
-# synapse.schema.resolver=org.wso2.carbon.mediation.initializer.RegistryXmlSchemaURIResolver
-
-# Uncomment following to support fallback XPATH 2.0 support with DOM and Saxon
-#synapse.xpath.dom.failover.enabled=true
-synapse.temp_data.chunk.size=3072
-#provides custom xpath function for securevault
-synapse.xpath.func.extensions=org.wso2.carbon.mediation.security.vault.xpath.SecureVaultLookupXPathFunctionProvider
-synapse.carbon.ext.tenant.info=org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoConfigurator
-synapse.carbon.ext.tenant.info.initiator=org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoInitiator

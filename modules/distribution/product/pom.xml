@@ -675,8 +675,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>jsonmerge</groupId>
-                <artifactId>jsonmerge</artifactId>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>wso2-maven-json-merge-plugin</artifactId>
+                <version>5.2.0</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>
@@ -685,16 +686,24 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <list>
-                                    <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</input>
-                                    <output>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</output>
+                                <task>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                    </input>
+                                    <output>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                    </output>
                                     <config>${basedir}/src/main/resources/conf/default.json</config>
-                                </list>
-                                <list>
-                                    <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</input>
-                                    <output>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</output>
+                                </task>
+                                <task>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                    </input>
+                                    <output>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                    </output>
                                     <config>${basedir}/src/main/resources/conf/infer.json</config>
-                                </list>
+                                </task>
                             </tasks>
                         </configuration>
                     </execution>
