@@ -47,7 +47,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    @Test(description = "1.1.1.7")
+//    @Test(description = "1.1.1.7")
     public void testRESTAPICreationWithExistingName() throws Exception {
 
         apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
