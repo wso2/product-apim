@@ -114,14 +114,10 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
             apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("Exception when updating API URLDecoder: Incomplete trailing"));
-//            HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
-//            verifyResponse(serviceResponse);
             return;
         }
 
         verifyNegativeResponse(apiUpdateResponse);
-//        HttpResponse serviceReysponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
-//        verifyResponse(serviceResponse);
 
     }
 
