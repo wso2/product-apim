@@ -26,14 +26,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,9 +48,6 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 public class ScenarioTestBase {
 
@@ -172,6 +171,38 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
         return userManagementClient;
+    }
+
+    /**
+     * Create a Client to communicate with Web Application Admin Service
+     *
+     * @return {@link WebAppAdminClient}
+     * @throws APIManagementException If there are any errors during initializing the client
+     */
+    public WebAppAdminClient getWebAppAdminClient() throws APIManagementException {
+        try {
+
+            // using service endpoint for now. get gw services url from TG once distributed deployment is ready
+            String sessionCookie = login(serviceEndpoint, "admin", "admin");
+
+            return new WebAppAdminClient(serviceEndpoint, sessionCookie);
+        } catch (RemoteException e) {
+            throw new APIManagementException("Unable to create new WebAppAdminClient ", e);
+        }
+    }
+
+    private String login(String host, String username, String password) throws APIManagementException {
+        AuthenticatorClient authenticatorClient = null;
+
+        try {
+            authenticatorClient = new AuthenticatorClient(host);
+            URL url = new URL(host);
+            String sessionCookie = authenticatorClient.login(username, password, url.getHost());
+
+            return sessionCookie;
+        } catch (Exception e) {
+            throw new APIManagementException("Unable login to Host: " + host, e);
+        }
     }
 
     public static void setKeyStoreProperties() {
@@ -538,11 +569,11 @@ public class ScenarioTestBase {
         return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
-    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
-                                                   String webAppFileName)
-            throws RemoteException {
-
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
+    public boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
+                                            String webAppFileName)
+            throws RemoteException, APIManagementException {
+        String sessionCookie = login(serviceEndpoint, username, password);
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, sessionCookie);
 
         List<String> webAppList;
         long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
