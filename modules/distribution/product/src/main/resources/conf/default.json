@@ -6,15 +6,7 @@
   "database.apim_db.password": "wso2carbon",
   "database.apim_db.pool_options.maxActive": "5",
   "apim.gateway.gateway_environments": [
-    {
-      "type": "hybrid",
-      "display_in_api_console": true,
-      "name": "Production and Sandbox",
-      "description": "This is a hybrid gateway that handles both production and sandbox token traffic.",
-      "management_endpoint": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
-      "loadbalancer": "http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}",
-      "ws_loadbalancer": "ws://${carbon.local.ip}:9099"
-    }
+    "dev"
   ],
   "apim.gateway.environment.dev.name": "Sandbox",
   "apim.gateway.environment.dev.type": "hybrid",
@@ -189,73 +181,38 @@
   ],
   "synapse_handlers.external_call_logger.name": "externalCallLogger",
   "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
-
-  "apim.datasource.name": "jdbc/WSO2AM_DB",
-  "apim.gateway_type": "Synapse",
-  "apim.secure_vault": "false",
-  "apim.mutual_tls": "false",
-
-  "apim.auth_manager.url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
-  "apim.auth_manager.username": "${admin.username}",
-  "apim.auth_manager.password": "${admin.password}",
-  "apim.auth_manager.remote_perm_check": "false",
-
-  "apim.jwt.enable": "false",
-  "apim.jwt.header": "X-JWT-Assertion",
-  "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever",
-  "apim.jwt.dialect": "http://wso2.org/claims",
-  "apim.jwt.algo": "SHA256withRSA",
-  "apim.jwt.generator": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
-
-  "apim.cache.token": "true",
-  "apim.cache.resource": "true",
-  "apim.cache.km_token": "false",
-  "apim.cache.recent_api": "false",
-  "apim.cache.scope": "true",
-  "apim.cache.publisher_role": "true",
-  "apim.cache.claim_expiry_time": "900",
-  "apim.cache.token_expiry_time": "900",
-  "apim.cache.tag_duration": "120000",
-  "apim.cache.jwt_claim": "true",
-
-  "apim.analytics.enabled": "false",
-  "apim.analytics.receiver_urls": "{tcp://localhost:7612}",
-  "apim.analytics.receiver_auth_urls": "{ssl://localhost:7712}",
-  "apim.analytics.receiver_username": "${admin.username}",
-  "apim.analytics.receiver_password": "${admin.password}",
-  "apim.analytics.provider_impl": "org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl",
-  "apim.analytics.rest_api_url": "https://localhost:7444",
-  "apim.analytics.rest_api_username": "${admin.username}",
-  "apim.analytics.rest_api_password": "${admin.password}",
-  "apim.analytics.disable_event_publishing": "false",
-  "apim.analytics.disable_wf_events": "false",
-  "apim.analytics.event_publisher_impl": "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher",
-  "apim.analytics.publish_response_size": "false",
-  "apim.analytics.streams": [
-    {
-      "type": "Request",
-      "name": "org.wso2.apimgt.statistics.request",
-      "version": "3.0.0"
-    },
-    {
-      "type": "Fault",
-      "name": "org.wso2.apimgt.statistics.fault",
-      "version": "3.0.0"
-    },
-    {
-      "type": "Throttle",
-      "name": "org.wso2.apimgt.statistics.throttle",
-      "version": "3.0.0"
-    },
-    {
-      "type": "Workflow",
-      "name": "org.wso2.apimgt.statistics.workflow",
-      "version": "1.0.0"
-    },
-    {
-      "type": "AlertTypes",
-      "name": "org.wso2.analytics.apim.alertStakeholderInfo",
-      "version": "1.0.1"
-    }
-  ]
+  "synapse_properties.'synapse.sal.endpoints.sesssion.timeout.default'": "600000",
+  "synapse_properties.'synapse.global_timeout_interval'": "120000",
+  "synapse_properties.'statistics.clean.enable'": "false",
+  "synapse_properties.'synapse.observers'": "org.wso2.carbon.mediation.dependency.mgt.DependencyTracker",
+  "synapse_properties.'synapse.temp_data.chunk.size'": "3072",
+  "synapse_properties.'synapse.xpath.func.extensions'": "org.wso2.carbon.mediation.security.vault.xpath.SecureVaultLookupXPathFunctionProvider",
+  "synapse_properties.'synapse.carbon.ext.tenant.info'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoConfigurator",
+  "synapse_properties.'synapse.carbon.ext.tenant.info.initiator'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoInitiator",
+  "passthru_http.'http.socket.timeout'": "180000",
+  "passthru_http.'worker_pool_size_core'": "400",
+  "passthru_http.'worker_pool_size_max'": "500",
+  "passthru_http.'io_buffer_size'": "16384",
+  "passthru_http.'http.socket.reuseaddr'": "true",
+  "passthru_http.'http.headers.preserve'": "Content-Type",
+  "passthru_http.'rest_uri_api_regex'": "\\w+://.+:\\d+/t/.*|\\w+://.+\\w+/t/.*|^(/t/).*",
+  "passthru_http.'rest_uri_proxy_regex'": "\\w+://.+:\\d+/services/t/.*|\\w+://.+\\w+/services/t/.*|^(/services/t/).*",
+  "ssl_profiles.enabled_ssl_profiles" : ["profile1"],
+  "ssl_profiles.profile1.servers" : "*",
+  "ssl_profiles.profile1.key_store.location" : "$conf{transport.passthru_https.listener.key_store.location}",
+  "ssl_profiles.profile1.key_store.type" : "$conf{transport.passthru_https.listener.key_store.type}",
+  "ssl_profiles.profile1.key_store.password" : "$conf{transport.passthru_https.listener.key_store.password}",
+  "ssl_profiles.profile1.key_store.key_password" : "$conf{transport.passthru_https.listener.key_store.key_password}",
+  "ssl_profiles.profile1.trust_store.location" : "$conf{transport.passthru_https.listener.trust_store.location}",
+  "ssl_profiles.profile1.trust_store.type" : "$conf{transport.passthru_https.listener.trust_store.type}",
+  "ssl_profiles.profile1.trust_store.password" : "$conf{transport.passthru_https.listener.trust_store.password}",
+  "listener_profiles.enabled_ssl_profiles" : ["profile1"],
+  "listener_profiles.profile1.bind_address" : "0.0.0.0",
+  "listener_profiles.profile1.key_store.location" : "$conf{transport.passthru_https.listener.key_store.location}",
+  "listener_profiles.profile1.key_store.type" : "$conf{transport.passthru_https.listener.key_store.type}",
+  "listener_profiles.profile1.key_store.password" : "$conf{transport.passthru_https.listener.key_store.password}",
+  "listener_profiles.profile1.key_store.key_password" : "$conf{transport.passthru_https.listener.key_store.key_password}",
+  "listener_profiles.profile1.trust_store.location" : "$conf{transport.passthru_https.listener.trust_store.location}",
+  "listener_profiles.profile1.trust_store.type" : "$conf{transport.passthru_https.listener.trust_store.type}",
+  "listener_profiles.profile1.trust_store.password" : "$conf{transport.passthru_https.listener.trust_store.password}"
 }

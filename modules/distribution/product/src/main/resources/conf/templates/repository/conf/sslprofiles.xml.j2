@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<parameter name="customSSLProfiles">
+{% for profile_name in ssl_profiles.enabled_ssl_profiles %}
+    <profile>
+        <servers>{{ssl_profiles[profile_name].servers}}</servers>
+        <KeyStore>
+            <Location>{{ssl_profiles[profile_name].key_store.location}}</Location>
+            <Type>{{ssl_profiles[profile_name].key_Store.type}}</Type>
+            <Password>{{ssl_profiles[profile_name].key_store.password}}</Password>
+            <KeyPassword>{{ssl_profiles[profile_name].key_store.key_password}}</KeyPassword>
+        </KeyStore>
+        <TrustStore>
+            <Location>{{ssl_profiles[profile_name].trust_store.location}}</Location>
+            <Type>{{ssl_profiles[profile_name].trust_store.type}}</Type>
+            <Password>{{ssl_profiles[profile_name].trust_store.password}}</Password>
+        </TrustStore>
+    </profile>
+{% endfor %}
+</parameter>
+
