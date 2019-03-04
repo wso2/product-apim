@@ -218,20 +218,16 @@
   "apim.datasource.name": "jdbc/WSO2AM_DB",
   "apim.gateway_type": "Synapse",
   "apim.secure_vault": "false",
-  "apim.mutual_tls": "false",
+  "apim.mutual_tls": "true",
 
   "apim.auth_manager.url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "apim.auth_manager.username": "${admin.username}",
   "apim.auth_manager.password": "${admin.password}",
-  "apim.auth_manager.remote_perm_check": "false",
+  "apim.auth_manager.check_permission_remotely": "false",
 
-  "apim.jwt.enable": "false",
   "apim.jwt.header": "X-JWT-Assertion",
-  "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever",
   "apim.jwt.dialect": "http://wso2.org/claims",
   "apim.jwt.algo": "SHA256withRSA",
-  "apim.jwt.generator": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
-
   "apim.cache.token": "true",
   "apim.cache.resource": "true",
   "apim.cache.km_token": "false",

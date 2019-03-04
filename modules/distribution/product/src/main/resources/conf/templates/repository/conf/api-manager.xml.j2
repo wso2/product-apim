@@ -27,12 +27,12 @@
         <Password>{{apim.auth_manager.password}}</Password>
         <!-- Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
            via a remote service. The check will be done on the local server when false. -->
-        <CheckPermissionsRemotely>{{apim.auth_manager.remote_perm_check}}</CheckPermissionsRemotely>
+        <CheckPermissionsRemotely>{{apim.auth_manager.check_permission_remotely}}</CheckPermissionsRemotely>
     </AuthManager>
 
     <JWTConfiguration>
         <!-- Enable/Disable JWT generation. Default is false. -->
-        <!-- EnableJWTGeneration>{{apim.jwt.enable}}</EnableJWTGeneration-->
+        <EnableJWTGeneration>{{apim.jwt.generator.enable | default('false')}}</EnableJWTGeneration>
 
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>{{apim.jwt.header}}</JWTHeader>
@@ -41,20 +41,24 @@
              to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
              jwt token, he needs to enable this parameter.
              The DefaultClaimsRetriever class adds user claims from the default carbon user store. -->
-        <!--ClaimsRetrieverImplClass>{{apim.jwt.claims_extractor}}</ClaimsRetrieverImplClass-->
+        {% if apim.jwt.claims_extractor is defined %}
+        <ClaimsRetrieverImplClass>{{apim.jwt.claims_extractor}}</ClaimsRetrieverImplClass>
+        {% else %}
+        <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
+        {% endif %}
 
         <!-- The dialectURI under which the claimURIs that need to be appended to the
              JWT are defined. Not used with custom ClaimsRetriever implementations. The
              same value is used in the keys for appending the default properties to the
              JWT. -->
-        <!--ConsumerDialectURI>{{apim.jwt.dialect}}</ConsumerDialectURI-->
+        <ConsumerDialectURI>{{apim.jwt.dialect}}</ConsumerDialectURI>
 
         <!-- Signature algorithm. Accepts "SHA256withRSA" or "NONE". To disable signing explicitly specify "NONE". -->
-        <!--SignatureAlgorithm>{{apim.jwt.algo}}</SignatureAlgorithm-->
+        <SignatureAlgorithm>{{apim.jwt.algo}}</SignatureAlgorithm>
 
         <!-- This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
 	     default implementation provided. -->
-        <JWTGeneratorImpl>{{apim.jwt.generator}}</JWTGeneratorImpl>
+        <JWTGeneratorImpl>{{apim.jwt.generator.impl}}</JWTGeneratorImpl>
 
         <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
              Token generation the implementation is provided in URLSafeJWTGenerator -->
