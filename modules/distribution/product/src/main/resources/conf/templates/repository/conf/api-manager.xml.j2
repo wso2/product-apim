@@ -86,19 +86,19 @@
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
             {% for environment_name in apim.gateway.gateway_environments%}
-            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}">
-                <Name>{{environment_name.name}}</Name>
-                <Description>{{environment_name.description}}</Description>
+            <Environment type="{{apim.gateway.environment[environment_name].type}}" api-console="{{apim.gateway.environment[environment_name].display_in_api_console}}">
+                <Name>{{apim.gateway.environment[environment_name].name}}</Name>
+                <Description>{{apim.gateway.environment[environment_name].description}}</Description>
                 <!-- Server URL of the API gateway -->
-                <ServerURL>https://{{environment_name.management_endpoint}}/services/</ServerURL>
+                <ServerURL>{{apim.gateway.environment[environment_name].management_endpoint}}</ServerURL>
                 <!-- Admin username for the API gateway. -->
                 <Username>${admin.username}</Username>
                 <!-- Admin password for the API gateway.-->
                 <Password>${admin.password}</Password>
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
-                <GatewayEndpoint>{{environment_name.loadbalancer}}</GatewayEndpoint>
+                <GatewayEndpoint>{{apim.gateway.environment[environment_name].loadbalance_endpoint}}</GatewayEndpoint>
                 <!-- Endpoint of the Websocket APIs hosted in this API Gateway -->
-                <GatewayWSEndpoint>{{environment_name.ws_loadbalancer}}</GatewayWSEndpoint>
+                <GatewayWSEndpoint>{{apim.gateway.environment[environment_name].ws_loadbalance_endpoint}}</GatewayWSEndpoint>
             </Environment>
             {% endfor %}
         </Environments>
@@ -189,12 +189,26 @@
             are changed, the toolbox also needs to be changed accordingly. -->
 
         <Streams>
-            {% for stream in apim.analytics.streams%}
-            <{{stream.type}}>
-                <Name>{{stream.name}}</Name>
-                <Version>{{stream.version}}</Version>
-            </{{stream.type}}>
-            {% endfor %}
+            <Request>
+                <Name>org.wso2.apimgt.statistics.request</Name>
+                <Version>3.0.0</Version>
+            </Request>
+            <Fault>
+                <Name>org.wso2.apimgt.statistics.fault</Name>
+                <Version>3.0.0</Version>
+            </Fault>
+            <Throttle>
+                <Name>org.wso2.apimgt.statistics.throttle</Name>
+                <Version>3.0.0</Version>
+            </Throttle>
+            <Workflow>
+                <Name>org.wso2.apimgt.statistics.workflow</Name>
+                <Version>1.0.0</Version>
+            </Workflow>
+            <AlertTypes>
+                <Name>org.wso2.analytics.apim.alertStakeholderInfo</Name>
+                <Version>1.0.1</Version>
+            </AlertTypes>
         </Streams>
 
     </Analytics>
@@ -205,12 +219,12 @@
     -->
     <APIKeyValidator>
         <!-- Server URL of the API key manager -->
-        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
+        <ServerURL>{{apim.key_mgt.url}}</ServerURL>
 
         <!-- Admin username for API key manager. -->
-        <Username>${admin.username}</Username>
+        <Username>{{apim.key_mgt.username}}</Username>
         <!-- Admin password for API key manager. -->
-        <Password>${admin.password}</Password>
+        <Password>{{apim.key_mgt.password}}</Password>
 
         <!-- Configurations related to enable thrift support for key-management related communication.
              If you want to switch back to Web Service Client, change the value of "KeyValidatorClientType" to "WSClient".
@@ -219,21 +233,21 @@
              -If you need to start two API Manager instances in the same machine, you need to give different ports to "ThriftServerPort" value in two nodes.
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
-        <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
-        <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <!--ThriftClientPort>10397</ThriftClientPort-->
+        <KeyValidatorClientType>{{apim.key_mgt.client_type}}</KeyValidatorClientType>
+        <ThriftClientConnectionTimeOut>{{apim.key_mgt.thrift_timeout}}</ThriftClientConnectionTimeOut>
+        <ThriftClientPort>{{apim.key_mgt.thrift_client_port}}</ThriftClientPort>
 
-        <EnableThriftServer>true</EnableThriftServer>
-        <ThriftServerHost>localhost</ThriftServerHost>
-        <!--ThriftServerPort>10397</ThriftServerPort-->
+        <EnableThriftServer>{{apim.key_mgt.enable_thrift_server}}</EnableThriftServer>
+        <ThriftServerHost>{{apim.key_mgt.thrift_server_host}}</ThriftServerHost>
+        <ThriftServerPort>{{apim.key_mgt.thrift_server_port}}</ThriftServerPort>
 
-        <!--ConnectionPool>
-            <MaxIdle>100</MaxIdle>
-            <InitIdleCapacity>50</InitIdleCapacity>
-        </ConnectionPool-->
+        <ConnectionPool>
+            <MaxIdle>{{apim.key_mgt.pool.max_idle}}</MaxIdle>
+            <InitIdleCapacity>{{apim.key_mgt.pool.init_idle_capacity}}</InitIdleCapacity>
+        </ConnectionPool>
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
              custom KeyValidation Handler -->
-        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
+        <KeyValidationHandlerClassName>{{apim.key_mgt.validation_handler}}</KeyValidationHandlerClassName>
     </APIKeyValidator>
 
     <!-- Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
@@ -251,11 +265,11 @@
 
     <OAuthConfigurations>
         <!-- Remove OAuth headers from outgoing message. -->
-        <!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
+        <RemoveOAuthHeadersFromOutMessage>{{apim.oauth.remove_auth_header}}</RemoveOAuthHeadersFromOutMessage>
         <!--Authorization header-->
-        <!--AuthorizationHeader>Authorization</AuthorizationHeader-->
+        <AuthorizationHeader>{{apim.oauth.auth_header}}</AuthorizationHeader>
         <!-- Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens -->
-        <ApplicationTokenScope>am_application_scope</ApplicationTokenScope>
+        <ApplicationTokenScope>{{apim.oauth.default_app_scope}}</ApplicationTokenScope>
         <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
              By default ^device_.* and openid scopes have been white listed internally. -->
         <!--ScopeWhitelist>
@@ -263,77 +277,77 @@
             <Scope>openid</Scope>
         </ScopeWhitelist-->
         <!-- Name of the token API -->
-        <TokenEndPointName>/oauth2/token</TokenEndPointName>
+        <TokenEndPointName>{{apim.oauth.token_endpoint}}</TokenEndPointName>
         <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
              API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
              In distributed deployment we should configure this property in key manager node by pointing
              gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
              Also please note that we should point gateway revoke service to key manager -->
-        <RevokeAPIURL>https://localhost:${https.nio.port}/revoke</RevokeAPIURL>
+        <RevokeAPIURL>{{apim.oauth.revoke_endpoint}}</RevokeAPIURL>
         <!-- Whether to encrypt tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
-        <EncryptPersistedTokens>false</EncryptPersistedTokens>
+        <EncryptPersistedTokens>{{apim.oauth.encrypt_persisted_token}}</EncryptPersistedTokens>
         <!-- Whether to hash the tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor and change the value of
         <EnableClientSecretHash> to true in the identity.xml -->
-        <EnableTokenHashMode>false</EnableTokenHashMode>
+        <EnableTokenHashMode>{{apim.oauth.enable_token_hash_mode}}</EnableTokenHashMode>
     </OAuthConfigurations>
 
     <!-- Settings related to managing API access tiers. -->
     <TierManagement>
         <!-- Enable the providers to expose their APIs over the special 'Unlimited' tier which
              basically disables tier based throttling for the specified APIs. -->
-        <EnableUnlimitedTier>true</EnableUnlimitedTier>
+        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
     </TierManagement>
 
     <!-- API Store Related Configurations -->
     <APIStore>
-        <!--GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor-->
+        <!--GroupingExtractor>{{apim.store.group_extractor}}</GroupingExtractor-->
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
-        <CompareCaseInsensitively>true</CompareCaseInsensitively>
-        <DisplayURL>false</DisplayURL>
-        <URL>https://localhost:${mgt.transport.https.port}/store</URL>
+        <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>
+        <DisplayURL>{{apim.store.display_url}}</DisplayURL>
+        <URL>{{apim.store.url}}</URL>
 
         <!-- Server URL of the API Store. -->
-        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
+        <ServerURL>{{apim.store.service_url}}/</ServerURL>
         <!-- Admin username for API Store. -->
-        <Username>${admin.username}</Username>
+        <Username>{{apim.store.username}}</Username>
 
         <!-- Admin password for API Store. -->
-        <Password>${admin.password}</Password>
+        <Password>{{apim.store.password}}</Password>
         <!-- This parameter specifies whether to display multiple versions of same
              API or only showing the latest version of an API. -->
-        <DisplayMultipleVersions>false</DisplayMultipleVersions>
+        <DisplayMultipleVersions>{{apim.store.display_multiple_versions}}</DisplayMultipleVersions>
         <!-- This parameter specifies whether to display all the APIs
              [which are having DEPRECATED/PUBLISHED status] or only display the APIs
              with having their status is as 'PUBLISHED' -->
-        <DisplayAllAPIs>false</DisplayAllAPIs>
+        <DisplayAllAPIs>{{apim.store.display_all_apis}}</DisplayAllAPIs>
         <!-- Uncomment this to limit the number of APIs in api the API Store -->
         <!--APIsPerPage>5</APIsPerPage-->
 
         <!-- This parameter specifies whether to display the comment editing facility or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayComments>true</DisplayComments>
+        <DisplayComments>{{apim.store.enable_comments}}</DisplayComments>
 
         <!-- This parameter specifies whether to display the ratings  or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayRatings>true</DisplayRatings>
+        <DisplayRatings>{{apim.store.enable_ratings}}</DisplayRatings>
 
         <!--set isStoreForumEnabled to false for disable forum in store-->
-        <!--isStoreForumEnabled>false</isStoreForumEnabled-->
+        <isStoreForumEnabled>{{apim.store.enable_forum}}</isStoreForumEnabled>
 
         <!--
         This is an optional parameter. If this parameter has a value, it will be shown in the token generation
         cURL command under subscriptions section in API Store.
         -->
-        <!--StoreTokenDisplayURL>https://${carbon.local.ip}:${https.nio.port}</StoreTokenDisplayURL-->
+        <!--StoreTokenDisplayURL>{{apim.store.token_display_url}}</StoreTokenDisplayURL-->
     </APIStore>
 
     <APIPublisher>
-        <DisplayURL>false</DisplayURL>
-        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
+        <DisplayURL>{{apim.publisher.display_url}}</DisplayURL>
+        <URL>{{apim.publisher.url}}</URL>
         <!-- This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
              By default any document associate with an API will have the same permissions set as the API.With enabling below
              property,it will show two additional permission levels as visible only to all registered users in a particular
@@ -342,7 +356,7 @@
         <!-- Uncomment this to limit the number of APIs in api the API Publisher -->
         <!--APIsPerPage>30</APIsPerPage-->
         <!-- This property need to be enabled to enable the publisher access control support -->
-        <EnableAccessControl>true</EnableAccessControl>
+        <EnableAccessControl>{{apim.publisher.enable_access_control}}</EnableAccessControl>
     </APIPublisher>
 
     <!-- Status observers can be registered against the API Publisher to listen for
@@ -358,22 +372,22 @@
          and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
         <!-- Configuration to enable/disable sending CORS headers from the Gateway-->
-        <Enabled>true</Enabled>
+        <Enabled>{{apim.cors.enable}}</Enabled>
 
         <!-- The value of the Access-Control-Allow-Origin header. Default values are
              API Store addresses, which is needed for swagger to function. -->
-        <Access-Control-Allow-Origin>*</Access-Control-Allow-Origin>
+        <Access-Control-Allow-Origin>{{apim.cors.allow_origins}}</Access-Control-Allow-Origin>
 
         <!-- Configure Access-Control-Allow-Methods -->
-        <Access-Control-Allow-Methods>GET,PUT,POST,DELETE,PATCH,OPTIONS</Access-Control-Allow-Methods>
+        <Access-Control-Allow-Methods>{{apim.cors.allow_methods}}</Access-Control-Allow-Methods>
 
         <!-- Configure Access-Control-Allow-Headers -->
-        <Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction</Access-Control-Allow-Headers>
+        <Access-Control-Allow-Headers>{{apim.cors.allow_headers}}</Access-Control-Allow-Headers>
 
         <!-- Configure Access-Control-Allow-Credentials -->
         <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
              It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*) -->
-        <Access-Control-Allow-Credentials>false</Access-Control-Allow-Credentials>
+        <Access-Control-Allow-Credentials>{{apim.cors.allow_credentials}}</Access-Control-Allow-Credentials>
     </CORSConfiguration>
     
     <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
@@ -552,46 +566,46 @@
         </ETagSkipList>
     </RESTAPI>
     <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>true</EnableAdvanceThrottling>
+        <EnableAdvanceThrottling>{{apim.throttling.advanced_throttling}}</EnableAdvanceThrottling>
         <TrafficManager>
-            <Type>Binary</Type>
-            <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
-            <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
+            <Type>{{apim.throttling.tm.event_type}}</Type>
+            <ReceiverUrlGroup>{{apim.throttling.tm.receiver_urls}}</ReceiverUrlGroup>
+            <AuthUrlGroup>{{apim.throttling.tm.receiver_auth_urls}}</AuthUrlGroup>
+            <Username>{{apim.throttling.tm.receiver_username}}</Username>
+            <Password>{{apim.throttling.tm.receiver_password}}</Password>
         </TrafficManager>
         <DataPublisher>
-            <Enabled>true</Enabled>
+            <Enabled>{{apim.throttling.publisher.enable}}</Enabled>
             <DataPublisherPool>
-                <MaxIdle>1000</MaxIdle>
-                <InitIdleCapacity>200</InitIdleCapacity>
+                <MaxIdle>{{apim.throttling.publisher.max_idle}}</MaxIdle>
+                <InitIdleCapacity>{{apim.throttling.publisher.init_idle_size}}</InitIdleCapacity>
             </DataPublisherPool>
             <DataPublisherThreadPool>
-                <CorePoolSize>200</CorePoolSize>
-                <MaxmimumPoolSize>1000</MaxmimumPoolSize>
-                <KeepAliveTime>200</KeepAliveTime>
+                <CorePoolSize>{{apim.throttling.publisher.pool_size}}</CorePoolSize>
+                <MaxmimumPoolSize>{{apim.throttling.publisher.max_pool_size}}</MaxmimumPoolSize>
+                <KeepAliveTime>{{apim.throttling.publisher.keep_alive_time}}</KeepAliveTime>
             </DataPublisherThreadPool>
         </DataPublisher>
         <PolicyDeployer>
-            <Enabled>true</Enabled>
-            <ServiceURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServiceURL>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
+            <Enabled>{{apim.throttling.policy_deploy.enable}}</Enabled>
+            <ServiceURL>{{apim.throttling.policy_deploy.service_url}}</ServiceURL>
+            <Username>{{apim.throttling.policy_deploy.user}}</Username>
+            <Password>{{apim.throttling.policy_deploy.pass}}</Password>
         </PolicyDeployer>
         <BlockCondition>
-            <Enabled>true</Enabled>
-            <!--InitDelay>300000</InitDelay>
-            <Period>3600000</Period-->
+            <Enabled>{{apim.throttling.block_condition.enable}}</Enabled>
+            <!--InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
+            <Period>{{apim.throttling.block_condition.period}}</Period-->
         </BlockCondition>
         <JMSConnectionDetails>
-            <Enabled>true</Enabled>
-            <Destination>throttleData</Destination>
-            <!--InitDelay>300000</InitDelay-->
+            <Enabled>{{apim.throttling.jms.enable}}</Enabled>
+            <Destination>{{apim.throttling.jms.destination}}</Destination>
+            <!--InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay-->
             <JMSConnectionParameters>
-                <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
-                <transport.jms.DestinationType>topic</transport.jms.DestinationType>
-                <java.naming.factory.initial>org.wso2.andes.jndi.PropertiesFileInitialContextFactory</java.naming.factory.initial>
-                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+                <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
+                <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
+                <java.naming.factory.initial>{{apim.throttling.jms.java_naming_factory_initial}}</java.naming.factory.initial>
+                <connectionfactory.TopicConnectionFactory>{{apim.throttling.jms.topic_connection_factory}}</connectionfactory.TopicConnectionFactory>
             </JMSConnectionParameters>
         </JMSConnectionDetails>
 
@@ -613,22 +627,22 @@
                 <10KPerMin>10000</10KPerMin>
             </ResourceLevelTierLimits>
         </DefaultLimits-->
-        <EnableUnlimitedTier>true</EnableUnlimitedTier>
-        <EnableHeaderConditions>false</EnableHeaderConditions>
-        <EnableJWTClaimConditions>false</EnableJWTClaimConditions>
-        <EnableQueryParamConditions>false</EnableQueryParamConditions>
+        <EnableUnlimitedTier>{{apim.throttling.unlimited_tier}}</EnableUnlimitedTier>
+        <EnableHeaderConditions>{{apim.throttling.header_condition}}</EnableHeaderConditions>
+        <EnableJWTClaimConditions>{{apim.throttling.jwt_claim_condition}}</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>{{apim.throttling.query_param_condition}}</EnableQueryParamConditions>
     </ThrottlingConfigurations>
     
     <WorkflowConfigurations>
-        <Enabled>false</Enabled>
-    	<ServerUrl>https://localhost:9445/bpmn</ServerUrl>   		
-    	<ServerUser>${admin.username}</ServerUser>
-    	<ServerPassword>${admin.password}</ServerPassword>
-    	<WorkflowCallbackAPI>https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.14/workflows/update-workflow-status</WorkflowCallbackAPI>
-        <TokenEndPoint>https://localhost:${https.nio.port}/token</TokenEndPoint>
-        <DCREndPoint>https://localhost:${mgt.transport.https.port}/client-registration/v0.14/register</DCREndPoint>
-        <DCREndPointUser>${admin.username}</DCREndPointUser>
-        <DCREndPointPassword>${admin.password}</DCREndPointPassword>
+        <Enabled>{{apim.workflow.enabled}}</Enabled>
+    	<ServerUrl>{{apim.workflow.wf_engine_url}}</ServerUrl>
+    	<ServerUser>{{apim.workflow.wf_engine_user}}</ServerUser>
+    	<ServerPassword>{{apim.workflow.wf_engine_pass}}</ServerPassword>
+    	<WorkflowCallbackAPI>{{apim.workflow.callback_endpoint}}</WorkflowCallbackAPI>
+        <TokenEndPoint>{{apim.workflow.token_endpoint}}</TokenEndPoint>
+        <DCREndPoint>{{apim.workflow.dcr_endpoint}}</DCREndPoint>
+        <DCREndPointUser>{{apim.workflow.dcr_username}}</DCREndPointUser>
+        <DCREndPointPassword>{{apim.workflow.dcr_password}}</DCREndPointPassword>
     </WorkflowConfigurations>
 
     <SwaggerCodegen>
@@ -646,15 +660,15 @@
 
     <OpenTracer>
         <RemoteTracer>
-            <Enabled>false</Enabled>
-            <Name>zipkin</Name>
+            <Enabled>{{apim.open_tracer.remote_tracer.enable}}</Enabled>
+            <Name>{{apim.open_tracer.remote_tracer.name}}</Name>
             <Properties>
-                <HostName>localhost</HostName>
-                <Port>9411</Port>
+                <HostName>{{apim.open_tracer.remote_tracer.properties.hostname}}</HostName>
+                <Port>{{apim.open_tracer.remote_tracer.properties.port}}</Port>
             </Properties>
         </RemoteTracer>
         <LogTracer>
-            <Enabled>false</Enabled>
+            <Enabled>{{apim.open_tracer.log_tracer.enable}}</Enabled>
         </LogTracer>
     </OpenTracer>
 
