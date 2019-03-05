@@ -256,12 +256,6 @@
   "apim.key_mgt.url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "apim.key_mgt.username": "${admin.username}",
   "apim.key_mgt.password": "${admin.password}",
-  "apim.key_mgt.client_type": "WSClient",
-  "apim.key_mgt.thrift_timeout": "10000",
-  "apim.key_mgt.thrift_client_port": "10397",
-  "apim.key_mgt.thrift_server_host": "localhost",
-  "apim.key_mgt.thrift_server_port": "10397",
-  "apim.key_mgt.enable_thrift_server": "false",
   "apim.key_mgt.pool.max_idle": "100",
   "apim.key_mgt.pool.init_idle_capacity": "50",
   "apim.key_mgt.validation_handler": "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler",
@@ -273,8 +267,6 @@
   "apim.oauth.revoke_endpoint": "https://localhost:${https.nio.port}/revoke",
   "apim.oauth.encrypt_persisted_token": "false",
   "apim.oauth.enable_token_hash_mode": "false",
-
-  "apim.throttling.enable_unlimited_tier": "true",
 
   "apim.store.enable_application_share": "false",
   "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl",

@@ -237,13 +237,13 @@
              -If you need to start two API Manager instances in the same machine, you need to give different ports to "ThriftServerPort" value in two nodes.
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
-        <KeyValidatorClientType>{{apim.key_mgt.client_type}}</KeyValidatorClientType>
-        <ThriftClientConnectionTimeOut>{{apim.key_mgt.thrift_timeout}}</ThriftClientConnectionTimeOut>
-        <ThriftClientPort>{{apim.key_mgt.thrift_client_port}}</ThriftClientPort>
+        <KeyValidatorClientType>WSClient</KeyValidatorClientType>
+        <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
+        <!--ThriftClientPort>10397</ThriftClientPort-->
 
-        <EnableThriftServer>{{apim.key_mgt.enable_thrift_server}}</EnableThriftServer>
-        <ThriftServerHost>{{apim.key_mgt.thrift_server_host}}</ThriftServerHost>
-        <ThriftServerPort>{{apim.key_mgt.thrift_server_port}}</ThriftServerPort>
+        <EnableThriftServer>false</EnableThriftServer>
+        <ThriftServerHost>localhost</ThriftServerHost>
+        <!--ThriftServerPort>10397</ThriftServerPort-->
 
         <ConnectionPool>
             <MaxIdle>{{apim.key_mgt.pool.max_idle}}</MaxIdle>
@@ -303,7 +303,7 @@
     <TierManagement>
         <!-- Enable the providers to expose their APIs over the special 'Unlimited' tier which
              basically disables tier based throttling for the specified APIs. -->
-        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
+        <EnableUnlimitedTier>true</EnableUnlimitedTier>
     </TierManagement>
 
     <!-- API Store Related Configurations -->
