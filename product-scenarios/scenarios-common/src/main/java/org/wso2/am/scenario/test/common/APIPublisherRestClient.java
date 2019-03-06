@@ -978,6 +978,7 @@ public class APIPublisherRestClient {
                 HttpResponse apiPublishResponse = changeAPILifeCycleStatus(updateLifeCycle);
                 scenarioTestBase.verifyResponse(apiPublishResponse);
             }
+            Thread.sleep(15000);
         } catch (MalformedURLException e) {
             throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
         }
