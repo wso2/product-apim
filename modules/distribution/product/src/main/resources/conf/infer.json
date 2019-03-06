@@ -49,6 +49,11 @@
       "default": {
         "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
       }
+    },
+    "apim.store.app_share_impl": {
+      "default": {
+        "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+      }
     }
   }
 }
