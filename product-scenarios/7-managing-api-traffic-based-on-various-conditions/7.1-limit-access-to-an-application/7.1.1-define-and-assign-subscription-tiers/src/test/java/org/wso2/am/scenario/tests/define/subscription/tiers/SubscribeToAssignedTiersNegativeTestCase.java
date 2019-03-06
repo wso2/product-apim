@@ -94,6 +94,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
                 providerName, APILifeCycleState.PUBLISHED);
         HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        isAPIVisibleInStore(apiNameSubscribeToNotAssigned, apiStore);
         //Create Application
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",

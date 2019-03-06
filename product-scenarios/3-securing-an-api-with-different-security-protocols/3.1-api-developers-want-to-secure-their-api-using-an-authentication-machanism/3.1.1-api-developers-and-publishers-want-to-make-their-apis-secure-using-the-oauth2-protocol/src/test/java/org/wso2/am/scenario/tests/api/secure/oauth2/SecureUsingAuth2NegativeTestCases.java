@@ -309,6 +309,8 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
                         API_DEVELOPER_USERNAME, APILifeCycleState.PUBLISHED);
         HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
         verifyResponse(apiPublishResponse);
+        waitForAPIDeploymentSync(API_DEVELOPER_USERNAME, TEST_API_1_NAME, TEST_API_1_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     public String generateAppKeys(String applicationName,int validateTime) throws Exception {
