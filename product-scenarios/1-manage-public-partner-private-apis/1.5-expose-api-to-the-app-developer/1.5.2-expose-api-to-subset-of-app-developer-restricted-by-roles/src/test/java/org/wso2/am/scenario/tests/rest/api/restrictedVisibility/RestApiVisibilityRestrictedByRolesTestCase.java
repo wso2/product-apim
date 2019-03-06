@@ -200,6 +200,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         createAPI(apiRequest);
         getAPI(PUBLISHER_CREATOR_USERNAME);
         publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+        isAPIVisibleInStore(apiName, apiStoreClient);
 
         apiName = "APIVisibility_tagsDistinctRoles2";
         apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,

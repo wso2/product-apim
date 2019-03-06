@@ -22,6 +22,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
@@ -977,7 +978,9 @@ public class APIPublisherRestClient {
                 HttpResponse apiPublishResponse = changeAPILifeCycleStatus(updateLifeCycle);
                 scenarioTestBase.verifyResponse(apiPublishResponse);
             }
-            Thread.sleep(15000);
+
+            waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(), apiCreationRequestBean.getName(),
+                    apiCreationRequestBean.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
         } catch (MalformedURLException e) {
             throw new MalformedURLException("Error in creating URL from the backendpoint: " + backendEndPoint);
         }

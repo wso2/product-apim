@@ -18,6 +18,7 @@
 package org.wso2.am.scenario.test.common;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -29,6 +30,7 @@ import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
@@ -46,7 +48,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class ScenarioTestBase {
@@ -54,6 +58,7 @@ public class ScenarioTestBase {
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
+    private static final long WAIT_TIME = 45 * 1000;
     protected static String publisherURL;
     protected static String storeURL;
     protected static String keyManagerURL;
@@ -617,5 +622,62 @@ public class ScenarioTestBase {
             }
         }
         return false;
+    }
+
+
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
+     */
+    protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                            String expectedResponse)
+            throws APIManagerIntegrationTestException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        String colonSeparatedHeader = "admin" + ':' + "admin";
+        String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
+        Map headerMap = new HashMap();
+        headerMap.put("Authorization",authorizationHeader);
+        String tenantIdentifier = getTenantIdentifier(apiProvider);
+
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            try {
+                response = HttpClient.doGet(getGatewayURLHttp() +
+                        "APIStatusMonitor/apiInformation/api/" +
+                        tenantIdentifier +
+                        apiName + "/" + apiVersion, headerMap);
+            } catch (IOException ignored) {
+                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet " +
+                        "deployed " + " with provider: " + apiProvider);
+            }
+
+            log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
+                    + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
+                    + " with expected response : " + expectedResponse);
+
+            if (response != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                            " with expected response " + expectedResponse + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
     }
 }
