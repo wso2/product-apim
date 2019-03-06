@@ -18,6 +18,7 @@
 package org.wso2.am.scenario.test.common;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -26,14 +27,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.apimgt.samples.utils.Clients.WebAppAdminClient;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,17 +48,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-
-import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
+    private static final long WAIT_TIME = 45 * 1000;
     protected static String publisherURL;
     protected static String storeURL;
     protected static String keyManagerURL;
@@ -172,6 +176,38 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
         return userManagementClient;
+    }
+
+    /**
+     * Create a Client to communicate with Web Application Admin Service
+     *
+     * @return {@link WebAppAdminClient}
+     * @throws APIManagementException If there are any errors during initializing the client
+     */
+    public WebAppAdminClient getWebAppAdminClient() throws APIManagementException {
+        try {
+
+            // using service endpoint for now. get gw services url from TG once distributed deployment is ready
+            String sessionCookie = login(serviceEndpoint, "admin", "admin");
+
+            return new WebAppAdminClient(serviceEndpoint, sessionCookie);
+        } catch (RemoteException e) {
+            throw new APIManagementException("Unable to create new WebAppAdminClient ", e);
+        }
+    }
+
+    private String login(String host, String username, String password) throws APIManagementException {
+        AuthenticatorClient authenticatorClient = null;
+
+        try {
+            authenticatorClient = new AuthenticatorClient(host);
+            URL url = new URL(host);
+            String sessionCookie = authenticatorClient.login(username, password, url.getHost());
+
+            return sessionCookie;
+        } catch (Exception e) {
+            throw new APIManagementException("Unable login to Host: " + host, e);
+        }
     }
 
     public static void setKeyStoreProperties() {
@@ -538,11 +574,11 @@ public class ScenarioTestBase {
         return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
-    public static boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
-                                                   String webAppFileName)
-            throws RemoteException {
-
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, username, password);
+    public boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
+                                            String webAppFileName)
+            throws RemoteException, APIManagementException {
+        String sessionCookie = login(serviceEndpoint, username, password);
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, sessionCookie);
 
         List<String> webAppList;
         long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
@@ -586,5 +622,62 @@ public class ScenarioTestBase {
             }
         }
         return false;
+    }
+
+
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
+     */
+    protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                            String expectedResponse)
+            throws APIManagerIntegrationTestException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        String colonSeparatedHeader = "admin" + ':' + "admin";
+        String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
+        Map headerMap = new HashMap();
+        headerMap.put("Authorization",authorizationHeader);
+        String tenantIdentifier = getTenantIdentifier(apiProvider);
+
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            try {
+                response = HttpClient.doGet(getGatewayURLHttp() +
+                        "APIStatusMonitor/apiInformation/api/" +
+                        tenantIdentifier +
+                        apiName + "/" + apiVersion, headerMap);
+            } catch (IOException ignored) {
+                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet " +
+                        "deployed " + " with provider: " + apiProvider);
+            }
+
+            log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
+                    + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
+                    + " with expected response : " + expectedResponse);
+
+            if (response != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                            " with expected response " + expectedResponse + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
     }
 }
