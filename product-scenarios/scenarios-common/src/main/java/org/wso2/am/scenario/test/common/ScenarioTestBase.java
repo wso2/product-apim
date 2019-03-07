@@ -30,14 +30,12 @@ import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
@@ -686,6 +684,7 @@ public class ScenarioTestBase {
 
     /**
      * This returns "tenatDomain/tenantId/" string
+     *
      * @param apiProvider
      */
     private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
