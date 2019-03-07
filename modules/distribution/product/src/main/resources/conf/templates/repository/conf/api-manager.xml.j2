@@ -13,7 +13,7 @@
 
     <!-- This parameter is used to enable mutual tls based authentication support for APIs, when this is disabled,
     APIs will be protected with OAuth2 security-->
-    <EnableMTLSForAPIs>{{apim.mutual_tls}}</EnableMTLSForAPIs>
+    <EnableMTLSForAPIs>true</EnableMTLSForAPIs>
 
     <!-- Authentication manager configuration for API publisher and API store. This is
          a required configuration for both web applications as their user authentication
@@ -58,8 +58,9 @@
 
         <!-- This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
 	     default implementation provided. -->
+        {% if apim.jwt.generator.impl is defined %}
         <JWTGeneratorImpl>{{apim.jwt.generator.impl}}</JWTGeneratorImpl>
-
+        {% endif %}
         <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
              Token generation the implementation is provided in URLSafeJWTGenerator -->
         <!--<JWTGeneratorImpl>org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator</JWTGeneratorImpl>-->
@@ -89,20 +90,28 @@
                  An API deployed on a 'sandbox' type gateway will only support sandbox keys
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
-            {% for environment_name in apim.gateway.gateway_environments%}
-            <Environment type="{{apim.gateway.environment[environment_name].type}}" api-console="{{apim.gateway.environment[environment_name].display_in_api_console}}">
-                <Name>{{apim.gateway.environment[environment_name].name}}</Name>
-                <Description>{{apim.gateway.environment[environment_name].description}}</Description>
+            {% for environment_name in apim.gateway.environment%}
+            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}">
+                <Name>{{environment_name.name}}</Name>
+                <Description>{{environment_name.description}}</Description>
                 <!-- Server URL of the API gateway -->
-                <ServerURL>{{apim.gateway.environment[environment_name].management_endpoint}}</ServerURL>
+                <ServerURL>{{environment_name.management_endpoint}}</ServerURL>
                 <!-- Admin username for the API gateway. -->
-                <Username>${admin.username}</Username>
+                <Username>{{environment_name.username}}</Username>
                 <!-- Admin password for the API gateway.-->
-                <Password>${admin.password}</Password>
+                <Password>{{environment_name.password}}</Password>
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
-                <GatewayEndpoint>{{apim.gateway.environment[environment_name].loadbalance_endpoint}}</GatewayEndpoint>
+                {% if environment_name.http_endpoint is defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>http://{{environment_name.http_endpoint}},https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is not defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is defined and environment_name.https_endpoint is not defined %}
+                <GatewayEndpoint>http://{{environment_name.http_endpoint}}</GatewayEndpoint>
+                {% else %}
+                <GatewayEndpoint></GatewayEndpoint>
+                {% endif %}
                 <!-- Endpoint of the Websocket APIs hosted in this API Gateway -->
-                <GatewayWSEndpoint>{{apim.gateway.environment[environment_name].ws_loadbalance_endpoint}}</GatewayWSEndpoint>
+                <GatewayWSEndpoint>{{environment_name.ws_endpoint}}</GatewayWSEndpoint>
             </Environment>
             {% endfor %}
         </Environments>
@@ -149,8 +158,11 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        <Enabled>{{apim.analytics.enabled}}</Enabled>
-
+        {% if apim.analytics.receiver_urls is defined %}
+        <Enabled>true</Enabled>
+        {% else %}
+        <Enabled>false</Enabled>
+        {% endif %}
         <!-- Server URL of the remote StreamProcessor server used to collect statistics. Must
              be specified in protocol://hostname:port/ format.
 
@@ -162,26 +174,49 @@
              Ex - Multiple Receiver Groups with two receivers each
              {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} -->
         <StreamProcessorServerURL>{{apim.analytics.receiver_urls}}</StreamProcessorServerURL>
+        {% if apim.analytics.receiver_auth_urls is defined%}
         <StreamProcessorAuthServerURL>{{apim.analytics.receiver_auth_urls}}</StreamProcessorAuthServerURL>
+        {% endif %}
         <!-- Administrator username to login to the remote StreamProcessor server. -->
+        {% if apim.analytics.receiver_username is defined%}
         <StreamProcessorUsername>{{apim.analytics.receiver_username}}</StreamProcessorUsername>
+        {% else %}
+        <StreamProcessorUsername>${admin.username}</StreamProcessorUsername>
+        {% endif %}
+
         <!-- Administrator password to login to the remote StreamProcessor server. -->
+        {% if apim.analytics.receiver_password is defined %}
         <StreamProcessorPassword>{{apim.analytics.receiver_password}}</StreamProcessorPassword>
+        {% else %}
+        <StreamProcessorPassword>${admin.password}</StreamProcessorPassword>
+        {% endif %}
 
         <!-- For APIM implemented Statistic client for RDBMS -->
         <StatsProviderImpl>{{apim.analytics.provider_impl}}</StatsProviderImpl>
 
         <!-- StreamProcessor REST API configuration -->
         <StreamProcessorRestApiURL>{{apim.analytics.rest_api_url}}</StreamProcessorRestApiURL>
+        {% if apim.analytics.rest_api_username is defined %}
         <StreamProcessorRestApiUsername>{{apim.analytics.rest_api_username}}</StreamProcessorRestApiUsername>
+        {% elif apim.analytics.receiver_username is defined%}
+        <StreamProcessorRestApiUsername>{{apim.analytics.receiver_username}}</StreamProcessorRestApiUsername>
+        {% else %}
+        <StreamProcessorRestApiUsername>${admin.username}</StreamProcessorRestApiUsername>
+        {% endif %}
+        {% if apim.analytics.rest_api_password is defined %}
         <StreamProcessorRestApiPassword>{{apim.analytics.rest_api_password}}</StreamProcessorRestApiPassword>
+        {% elif apim.analytics.receiver_password is defined%}
+        <StreamProcessorRestApiPassword>{{apim.analytics.receiver_password}}</StreamProcessorRestApiPassword>
+        {% else %}
+        <StreamProcessorRestApiPassword>${admin.password}</StreamProcessorRestApiPassword>
+        {% endif %}
 
         <!-- Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true. -->
         <SkipEventReceiverConnection>{{apim.analytics.disable_event_publishing}}</SkipEventReceiverConnection>
 
         <!--Skip workflow data publisher initiation and even publishing-->
-        <SkipWorkflowEventPublisher>{{apim.analytics.disable_wf_events}}</SkipWorkflowEventPublisher>
+        <SkipWorkflowEventPublisher>true</SkipWorkflowEventPublisher>
 
         <!-- API Usage Data Publisher. -->
         <PublisherClass>{{apim.analytics.event_publisher_impl}}</PublisherClass>
@@ -308,7 +343,9 @@
 
     <!-- API Store Related Configurations -->
     <APIStore>
-        <!--GroupingExtractor>{{apim.store.group_extractor}}</GroupingExtractor-->
+        {% if apim.store.group_extractor is defined %}
+        <GroupingExtractor>{{apim.store.group_extractor}}</GroupingExtractor>
+        {% endif %}
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
         <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>
         <DisplayURL>{{apim.store.display_url}}</DisplayURL>
@@ -598,13 +635,19 @@
         </PolicyDeployer>
         <BlockCondition>
             <Enabled>{{apim.throttling.block_condition.enable}}</Enabled>
-            <!--InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
-            <Period>{{apim.throttling.block_condition.period}}</Period-->
+            {% if apim.throttling.block_condition.start_delay is defined %}
+            <InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
+            {% endif %}
+            {% if apim.throttling.block_condition.period is defined %}
+            <Period>{{apim.throttling.block_condition.period}}</Period>
+            {% endif %}
         </BlockCondition>
         <JMSConnectionDetails>
             <Enabled>{{apim.throttling.jms.enable}}</Enabled>
             <Destination>{{apim.throttling.jms.destination}}</Destination>
-            <!--InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay-->
+            {% if apim.throttling.jms.start_delay is defined %}
+            <InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay>
+            {% endif %}
             <JMSConnectionParameters>
                 <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
                 <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
@@ -651,14 +694,14 @@
 
     <SwaggerCodegen>
         <ClientGeneration>
-            <GroupId>org.wso2</GroupId>
-            <ArtifactId>org.wso2.client.</ArtifactId>
-            <ModelPackage>org.wso2.client.model.</ModelPackage>
-            <ApiPackage>org.wso2.client.api.</ApiPackage>
+            <GroupId>{{apim.sdk.group_id}}</GroupId>
+            <ArtifactId>{{apim.sdk.artifact_id}}</ArtifactId>
+            <ModelPackage>{{apim.sdk.model_package}}</ModelPackage>
+            <ApiPackage>{{apim.sdk.api_package}}</ApiPackage>
             <!-- Configure supported languages/Frameworks as comma separated values,
              Supported Languages/Frameworks : android, java, scala, csharp, dart, flash, groovy, javascript, jmeter,
              nodejs, perl, php, python, ruby, swift, clojure, asyncScala, csharpDotNet2-->
-            <SupportedLanguages>java,android</SupportedLanguages>
+            <SupportedLanguages>{{apim.sdk.supported_languages}}</SupportedLanguages>
         </ClientGeneration>
     </SwaggerCodegen>
 

@@ -1,0 +1,12 @@
+[deployment]
+hostname = "localhost"
+local_member_ip = "127.0.0.1"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[apim.gateway.environment]
+dev.http_endpoint = "http://${carbon.local.ip}:${http.nio.port}"
+dev.https_endpoint = "https://${carbon.local.ip}:${https.nio.port}"

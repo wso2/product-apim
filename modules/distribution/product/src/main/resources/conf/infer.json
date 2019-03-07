@@ -34,21 +34,26 @@
       "apim.traffic_manager.enable_blocking_conditions": false,
       "apim.traffic_manager.enable_decision_receiver": false,
       "apim.analytics.enable": false
+    }
+  },
+  "apim.jwt.generator.type": {
+    "default": {
+      "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
+      "apim.jwt.generator.enable": true
     },
-    "apim.jwt.generator.type": {
-      "default": {
-        "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
-        "apim.jwt.generator.enable": true
-      },
-      "url_safe_generator": {
-        "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
-        "apim.jwt.generator.enable": true
-      }
-    },
-    "apim.jwt.claims": {
-      "default": {
-        "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
-      }
+    "url_safe_generator": {
+      "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
+      "apim.jwt.generator.enable": true
+    }
+  },
+  "apim.jwt.claims": {
+    "default": {
+      "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+    }
+  },
+  "apim.store.app_share_impl": {
+    "default": {
+      "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
     }
   }
 }

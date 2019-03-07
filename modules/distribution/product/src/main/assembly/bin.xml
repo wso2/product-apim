@@ -122,6 +122,7 @@
                 <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
                 <exclude>**/repository/resources/conf/default.json</exclude>
                 <exclude>**/repository/resources/conf/infer.json</exclude>
+                <exclude>**/repository/conf/deployment.toml</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -979,6 +980,12 @@
             <source>src/main/conf/metrics.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>metrics.xml</destName>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>src/main/conf/deployment.toml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>deployment.toml</destName>
             <filtered>true</filtered>
         </file>
         <!--file>
