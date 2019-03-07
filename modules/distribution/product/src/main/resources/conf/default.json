@@ -216,7 +216,6 @@
   "apim.datasource.name": "jdbc/WSO2AM_DB",
   "apim.gateway_type": "Synapse",
   "apim.secure_vault": "false",
-  "apim.mutual_tls": "true",
 
   "apim.auth_manager.url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "apim.auth_manager.username": "${admin.username}",
