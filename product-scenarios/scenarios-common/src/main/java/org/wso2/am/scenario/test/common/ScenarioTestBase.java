@@ -33,11 +33,14 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
+import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -651,7 +654,7 @@ public class ScenarioTestBase {
         while (waitTime > System.currentTimeMillis()) {
             HttpResponse response = null;
             try {
-                response = HttpClient.doGet(getGatewayURLHttp() +
+                response = HttpClient.doGet(getBackendEndServiceEndPointHttps("") +
                         "APIStatusMonitor/apiInformation/api/" +
                         tenantIdentifier +
                         apiName + "/" + apiVersion, headerMap);
@@ -679,5 +682,32 @@ public class ScenarioTestBase {
                 }
             }
         }
+    }
+
+    /**
+     * This returns "tenatDomain/tenantId/" string
+     * @param apiProvider
+     */
+    private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
+        int tenantId = -1234;
+        String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
+        try{
+            if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+                String sessionCookie = login(serviceEndpoint, "admin", "admin");
+                TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
+                        serviceEndpoint, sessionCookie);
+                TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
+                if(tenant == null){
+                    log.info("tenant is null: " + providerTenantDomain);
+                } else {
+                    tenantId = tenant.getTenantId();
+                }
+                //forced tenant loading
+                login(gatewayHttpsURL, "admin", "admin");
+            }
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException(e.getMessage(), e);
+        }
+        return providerTenantDomain + "/" + tenantId + "/";
     }
 }
