@@ -90,32 +90,28 @@
                  An API deployed on a 'sandbox' type gateway will only support sandbox keys
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
-            {% for environment_name in apim.gateway.gateway_environments%}
-            <Environment type="{{apim.gateway.environment[environment_name].type}}" api-console="{{apim.gateway.environment[environment_name].display_in_api_console}}">
-                <Name>{{apim.gateway.environment[environment_name].name}}</Name>
-                <Description>{{apim.gateway.environment[environment_name].description}}</Description>
+            {% for environment_name in apim.gateway.environment%}
+            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}">
+                <Name>{{environment_name.name}}</Name>
+                <Description>{{environment_name.description}}</Description>
                 <!-- Server URL of the API gateway -->
-                <ServerURL>{{apim.gateway.environment[environment_name].management_endpoint}}</ServerURL>
+                <ServerURL>{{environment_name.management_endpoint}}</ServerURL>
                 <!-- Admin username for the API gateway. -->
-                <Username>${admin.username}</Username>
+                <Username>{{environment_name.username}}</Username>
                 <!-- Admin password for the API gateway.-->
-                <Password>${admin.password}</Password>
+                <Password>{{environment_name.password}}</Password>
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
-                {% if apim.gateway.environment[environment_name].http_endpoint is defined and apim.gateway.environment[environment_name].https_endpoint is defined %}
-                <GatewayEndpoint>http://{{apim.gateway.environment[environment_name].http_endpoint}},https://{{apim.gateway.environment[environment_name].https_endpoint}}</GatewayEndpoint>
-                {% elif apim.gateway.environment[environment_name].http_endpoint is not defined and apim.gateway.environment[environment_name].https_endpoint is defined %}
-                <GatewayEndpoint>https://{{apim.gateway.environment[environment_name].https_endpoint}}</GatewayEndpoint>
-                {% elif apim.gateway.environment[environment_name].http_endpoint is defined and apim.gateway.environment[environment_name].https_endpoint is not defined %}
-                <GatewayEndpoint>http://{{apim.gateway.environment[environment_name].http_endpoint}}</GatewayEndpoint>
+                {% if environment_name.http_endpoint is defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>http://{{environment_name.http_endpoint}},https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is not defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is defined and environment_name.https_endpoint is not defined %}
+                <GatewayEndpoint>http://{{environment_name.http_endpoint}}</GatewayEndpoint>
                 {% else %}
                 <GatewayEndpoint></GatewayEndpoint>
                 {% endif %}
                 <!-- Endpoint of the Websocket APIs hosted in this API Gateway -->
-                {% if apim.gateway.environment[environment_name].ws_endpoint is defined %}
-                <GatewayWSEndpoint>{{apim.gateway.environment[environment_name].ws_endpoint}}</GatewayWSEndpoint>
-                {% else %}
-                <GatewayWSEndpoint></GatewayWSEndpoint>
-                {% endif %}
+                <GatewayWSEndpoint>{{environment_name.ws_endpoint}}</GatewayWSEndpoint>
             </Environment>
             {% endfor %}
         </Environments>
