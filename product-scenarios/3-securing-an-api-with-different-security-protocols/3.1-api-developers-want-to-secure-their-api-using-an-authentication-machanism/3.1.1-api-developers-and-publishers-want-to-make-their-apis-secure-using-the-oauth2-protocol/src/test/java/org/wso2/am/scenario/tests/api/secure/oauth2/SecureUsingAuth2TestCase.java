@@ -129,7 +129,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    @Test(description = "3.1.1.2")
+    @Test(description = "3.1.1.2", dependsOnMethods = "testOAuth2Authorization")
     public void testResourceSetSecurityTypeAsApplicationInvokeByClientCredentials() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -142,7 +142,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    @Test(description = "3.1.1.3")
+    @Test(description = "3.1.1.3", dependsOnMethods = "testOAuth2Authorization")
     public void testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType() throws Exception {
         String accessTokenWithPasswordGrantType = generateAccessTokenByPasswordGrantType();
         Map<String, String> requestHeaders = new HashMap();
@@ -172,7 +172,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         changeCustomAuthorizationHeaderInAPI("");
     }
 
-    @Test(description = "3.1.1.7")
+    @Test(description = "3.1.1.7", dependsOnMethods = "testOAuth2Authorization")
     public void testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader() throws Exception {
         Map<String, String> requestHeaders;
         requestHeaders = new HashMap<>();
