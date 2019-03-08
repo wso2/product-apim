@@ -366,5 +366,18 @@
   "databridge.agent.binary.secure_max_transport_pool_size" : "250",
   "databridge.agent.binary.secure_max_idle_connections" : "250",
   "databridge.agent.binary.secure_eviction_time_period" : "5500",
-  "databridge.agent.binary.secure_min_idle_time_in_pool" : "5000"
+  "databridge.agent.binary.secure_min_idle_time_in_pool" : "5000",
+
+  "databridge.receiver.worker_threads" : "10",
+  "databridge.receiver.max_event_buffer_capacity" : "10",
+  "databridge.receiver.event_buffer_size" : "2000",
+  "databridge.receiver.client_timeout_min" : "30",
+  "databridge.receiver.keystore_location" : "${carbon.home}/repository/resources/security/wso2carbon.jks",
+  "databridge.receiver.keystore_password" : "wso2carbon",
+  "databridge.receiver.thrift.tcp_port" : "7611",
+  "databridge.receiver.thrift.ssl_port" : "7711",
+  "databridge.receiver.binary.tcp_port" : "9611",
+  "databridge.receiver.binary.ssl_port" : "9711",
+  "databridge.receiver.binary.ssl_receiver_threadpool_size" : "100",
+  "databridge.receiver.binary.tcp_receiver_threadpool_size" : "100"
 }
