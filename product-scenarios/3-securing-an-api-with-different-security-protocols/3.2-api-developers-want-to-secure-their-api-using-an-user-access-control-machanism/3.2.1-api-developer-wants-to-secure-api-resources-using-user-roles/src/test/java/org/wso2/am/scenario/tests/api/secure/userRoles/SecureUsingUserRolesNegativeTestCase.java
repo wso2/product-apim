@@ -132,7 +132,6 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         File swaggerFile = new File(swaggerFilePath);
         String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
         JSONObject swaggerJson = new JSONObject(swaggerContent);
-
         String apiContext = swaggerJson.get("basePath").toString();
 
         APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, "", "Gold",
