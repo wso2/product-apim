@@ -26,6 +26,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.scenario.test.common.APIRequest;
@@ -144,6 +145,8 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
                         APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
+
+        waitForAPIDeploymentSync(SUPER_USER, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
     }
 
