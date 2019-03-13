@@ -81,7 +81,7 @@
                     <password>{{database.apim_db.password}}</password>
                     <driverClassName>{{database.apim_db.driver}}</driverClassName>
                     <validationQuery>{{database.apim_db.validationQuery}}</validationQuery>
-                    {% for property_name,property_value in database.shared_db.pool_options.items() %}
+                    {% for property_name,property_value in database.apim_db.pool_options.items() %}
                     <{{property_name}}>{{property_value}}</{{property_name}}>
                         {% endfor %}
             </configuration>
