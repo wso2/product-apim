@@ -7,27 +7,37 @@ username = "admin"
 password = "admin"
 create_admin_account = true
 
-[database]
-apim_db.type = "h2"
-apim_db.url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
-apim_db.username = "wso2carbon"
-apim_db.password = "wso2carbon"
+[database.apim_db]
+type = "h2"
+url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
 
-shared_db.type = "h2"
-shared_db.url = "jdbc:h2:repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
-shared_db.username = "wso2carbon"
-shared_db.password = "wso2carbon"
+[database.shared_db]
+type = "h2"
+url = "jdbc:h2:repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
 
-[keystore]
-tls.file_name =  "wso2carbon.jks"
-tls.type =  "JKS"
-tls.password =  "wso2carbon"
-tls.alias =  "wso2carbon"
-tls.key_password =  "wso2carbon"
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
 
-[apim.gateway]
-environment.dev.http_endpoint = "http://localhost:8280/"
-environment.dev.https_endpoint = "https://localhost:8243/"
+[apim.gateway.environment]
+dev.name= "Production and Sandbox"
+dev.type= "hybrid"
+dev.display_in_api_console= true
+dev.description= "This is a hybrid gateway that handles both production and sandbox token traffic."
+dev.isDefault= true
+dev.management_endpoint= "https://localhost:${mgt.transport.https.port}${carbon.context}services/"
+dev.username= "${admin.username}"
+dev.password= "${admin.password}"
+dev.ws_endpoint= "ws://${carbon.local.ip}:9099"
+dev.http_endpoint = "http://localhost:8280/"
+dev.https_endpoint = "https://localhost:8243/"
 
 [apim.cache]
 #token
@@ -40,21 +50,27 @@ environment.dev.https_endpoint = "https://localhost:8243/"
 
 [apim.analytics]
 #receiver_urls = "tcp://localhost:7611"
-failover.group0.node0="tcp://localhost:7612"
-failover.group0.node1="tcp://localhost:7612"
-failover.group1.node0="tcp://localhost:7612"
-failover.group1.node1="tcp://localhost:7612"
-failover_auth.group0.node0="ssl://localhost:7712"
-failover_auth.group0.node1="ssl://localhost:7712"
-failover_auth.group1.node0="ssl://localhost:7712"
-failover_auth.group1.node1="ssl://localhost:7712"
+receiver_failover_url.group0.node0="tcp://localhost:7612"
+receiver_failover_url.group0.node1="tcp://localhost:7612"
+receiver_failover_url.group1.node0="tcp://localhost:7612"
+receiver_failover_url.group1.node1="tcp://localhost:7612"
+receiver_failover_auth_url.group0.node0="ssl://localhost:7712"
+receiver_failover_auth_url.group0.node1="ssl://localhost:7712"
+receiver_failover_auth_url.group1.node0="ssl://localhost:7712"
+receiver_failover_auth_url.group1.node1="ssl://localhost:7712"
 #receiver_username
 #receiver_password
 rest_api_url = "https://localhost:7444"
 
 [apim.key_manager]
 url = "https://localhost:9443/services/"
-jwt_generator_type = "default"
+
+[apim.jwt]
+generator_type = "default"
+header = "X-JWT-Assertion"
+dialect = "http://wso2.org/claims"
+algo = "SHA256withRSA"
+claims = "default"
 
 [apim.oauth_config]
 outflow_auth_header = "remove"
@@ -88,14 +104,19 @@ allow_headers = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPActi
 allow_credentials = "false"
 
 [apim.throttling]
-tm.failover.group0.node0="tcp://localhost:9611"
-tm.failover.group0.node1="tcp://localhost:9611"
-tm.failover.group1.node0="tcp://localhost:9611"
-tm.failover.group1.node1="tcp://localhost:9611"
-tm.failover_auth.group0.node0="ssl://localhost:9711"
-tm.failover_auth.group0.node1="ssl://localhost:9711"
-tm.failover_auth.group1.node0="ssl://localhost:9711"
-tm.failover_auth.group1.node1="ssl://localhost:9711"
+#receiver_url="tcp://localhost:9611"
+receiver_failover_url.group0.node0="tcp://localhost:9611"
+receiver_failover_url.group0.node1="tcp://localhost:9611"
+receiver_failover_url.group1.node0="tcp://localhost:9611"
+receiver_failover_url.group1.node1="tcp://localhost:9611"
+receiver_failover_auth_url.group0.node0="ssl://localhost:9711"
+receiver_failover_auth_url.group0.node1="ssl://localhost:9711"
+receiver_failover_auth_url.group1.node0="ssl://localhost:9711"
+receiver_failover_auth_url.group1.node1="ssl://localhost:9711"
 publisher.enable="true"
-jms.java_naming_factory_initial="org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
-jms.topic_connection_factory= "amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'"
+jms.factory.type="andes"
+jms.username = "admin"
+jms.password = "admin"
+jms.connection.node0 = "tcp://localhost:5672"
+jms.connection.node1 = "tcp://localhost:5672"
+#jms.topic_connection_factory= "amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'"

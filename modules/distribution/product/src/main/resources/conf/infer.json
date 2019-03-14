@@ -36,7 +36,7 @@
       "apim.analytics.enable": false
     }
   },
-  "apim.key_manager.jwt_generator_type": {
+  "apim.jwt.generator_type": {
     "default": {
       "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
       "apim.jwt.generator.enable": true
@@ -94,6 +94,11 @@
   "apim.oauth_config.token_hash_mode": {
     "default": {
       "apim.oauth.enable_token_hash_mode": "true"
+    }
+  },
+  "apim.throttling.jms.factory.type": {
+    "andes": {
+      "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
     }
   }
 }

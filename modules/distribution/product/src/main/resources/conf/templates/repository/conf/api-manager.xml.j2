@@ -158,7 +158,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        {% if apim.analytics.receiver_urls is defined or apim.analytics.failover is defined %}
+        {% if apim.analytics.receiver_urls is defined or apim.analytics.receiver_failover_url is defined %}
         <Enabled>true</Enabled>
         {% else %}
         <Enabled>false</Enabled>
@@ -175,9 +175,9 @@
              {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} -->
         {% if apim.analytics.receiver_urls is defined %}
         <StreamProcessorServerURL>{{apim.analytics.receiver_urls}}</StreamProcessorServerURL>
-        {% elif apim.analytics.failover is defined%}
+        {% elif apim.analytics.receiver_failover_url is defined%}
         <StreamProcessorServerURL>
-            {% for group in apim.analytics.failover %}
+            {% for group in apim.analytics.receiver_failover_url %}
             { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
             {% endfor %}
         </StreamProcessorServerURL>
@@ -188,9 +188,9 @@
 
         {% if apim.analytics.receiver_auth_urls is defined %}
         <StreamProcessorAuthServerURL>{{apim.analytics.receiver_auth_urls}}</StreamProcessorAuthServerURL>
-        {% elif apim.analytics.failover_auth is defined%}
+        {% elif apim.analytics.receiver_failover_auth_url is defined%}
         <StreamProcessorAuthServerURL>
-            {% for group in apim.analytics.failover_auth %}
+            {% for group in apim.analytics.receiver_failover_auth_url %}
             { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
             {% endfor %}
         </StreamProcessorAuthServerURL>
@@ -629,11 +629,11 @@
         <TrafficManager>
             <Type>{{apim.throttling.tm.event_type}}</Type>
 
-            {% if apim.throttling.tm.receiver_urls is defined %}
-            <ReceiverUrlGroup>{{apim.throttling.tm.receiver_urls}}</ReceiverUrlGroup>
-            {% elif apim.throttling.tm.failover is defined%}
+            {% if apim.throttling.receiver_url is defined %}
+            <ReceiverUrlGroup>{{apim.throttling.receiver_url}}</ReceiverUrlGroup>
+            {% elif apim.throttling.receiver_failover_url is defined%}
             <ReceiverUrlGroup>
-                {% for group in apim.throttling.tm.failover %}
+                {% for group in apim.throttling.receiver_failover_url %}
                 { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
                 {% endfor %}
             </ReceiverUrlGroup>
@@ -642,11 +642,11 @@
             {% endif %}
 
 
-            {% if apim.throttling.tm.receiver_auth_urls is defined %}
-            <AuthUrlGroup>{{apim.throttling.tm.receiver_auth_urls}}</AuthUrlGroup>
-            {% elif apim.throttling.tm.failover_auth is defined%}
+            {% if apim.throttling.receiver_auth_url is defined %}
+            <AuthUrlGroup>{{apim.throttling.receiver_auth_url}}</AuthUrlGroup>
+            {% elif apim.throttling.receiver_failover_auth_url is defined%}
             <AuthUrlGroup>
-                {% for group in apim.throttling.tm.failover_auth %}
+                {% for group in apim.throttling.receiver_failover_auth_url %}
                 { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
                 {% endfor %}
             </AuthUrlGroup>
@@ -693,7 +693,17 @@
                 <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
                 <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
                 <java.naming.factory.initial>{{apim.throttling.jms.java_naming_factory_initial}}</java.naming.factory.initial>
+                {% if apim.throttling.jms.topic_connection_factory is defined %}
                 <connectionfactory.TopicConnectionFactory>{{apim.throttling.jms.topic_connection_factory}}</connectionfactory.TopicConnectionFactory>
+                {% elif apim.throttling.jms.connection is defined %}
+                    {% if apim.throttling.jms.connection|length == 1 %}
+                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{ apim.throttling.jms.connection | first }}'</connectionfactory.TopicConnectionFactory>
+                    {% else %}
+                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.jms.connection %}{{url}}?retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+                    {% endif %}
+                {% else %}
+                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+                {% endif %}
             </JMSConnectionParameters>
         </JMSConnectionDetails>
 
