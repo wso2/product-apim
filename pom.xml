@@ -1135,7 +1135,7 @@
         <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
         <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
-        <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
+        <version.equinox.osgi.services>3.3.100.v20130513-1956</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
