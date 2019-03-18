@@ -89,6 +89,7 @@ public class AuthenticatorUtil {
 
         try {
             String tenantDomain = MultitenantUtils.getTenantDomain(username);
+            authenticationContext.setTenantDomain(tenantDomain);
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
 

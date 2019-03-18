@@ -92,7 +92,11 @@ public class APIService {
             }
 
             AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
-            String userName = authenticationContext.getUsername();
+            String userName = authenticationContext.getDomainAwareUsername();
+            String tenantDomain = authenticationContext.getTenantDomain();
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain)) {
+                userName = userName + "@" + tenantDomain;
+            }
             //provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
             String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
