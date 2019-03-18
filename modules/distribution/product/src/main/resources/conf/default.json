@@ -258,7 +258,10 @@
   "apim.oauth.revoke_endpoint": "https://localhost:${https.nio.port}/revoke",
   "apim.oauth.encrypt_persisted_token": "false",
   "apim.oauth.enable_token_hash_mode": "false",
-
+  "apim.oauth.white_listed_scopes": [
+    "^device_.*",
+    "openid"
+  ],
   "apim.store.login_username_case_insensitive": "true",
   "apim.store.display_url": "false",
   "apim.store.url": "https://localhost:${mgt.transport.https.port}/store",
@@ -271,10 +274,6 @@
   "apim.store.enable_ratings": "true",
   "apim.store.enable_forum": "true",
   "apim.store.token_display_url": "https://${carbon.local.ip}:${https.nio.port}",
-
-  "apim.publisher.display_url": "false",
-  "apim.publisher.url": "https://localhost:${mgt.transport.https.port}/publisher",
-  "apim.publisher.enable_access_control": "true",
 
   "apim.cors.enable": "true",
   "apim.cors.allow_origins": "*",

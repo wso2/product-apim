@@ -329,10 +329,13 @@
         <ApplicationTokenScope>{{apim.oauth.default_app_scope}}</ApplicationTokenScope>
         <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
              By default ^device_.* and openid scopes have been white listed internally. -->
-        <!--ScopeWhitelist>
-            <Scope>^device_.*</Scope>
+        <ScopeWhitelist>
+        {%for scope in apim.oauth.white_listed_scopes%}
+            <Scope>{{scope}}</Scope>
+            {% endfor %}
             <Scope>openid</Scope>
-        </ScopeWhitelist-->
+        </ScopeWhitelist>
+
         <!-- Name of the token API -->
         <TokenEndPointName>{{apim.oauth.token_endpoint}}</TokenEndPointName>
         <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
@@ -366,16 +369,16 @@
         {% endif %}
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
         <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>
-        <DisplayURL>{{apim.store.display_url}}</DisplayURL>
+        <DisplayURL>false</DisplayURL>
         <URL>{{apim.store.url}}</URL>
 
         <!-- Server URL of the API Store. -->
-        <ServerURL>{{apim.store.service_url}}/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
         <!-- Admin username for API Store. -->
-        <Username>{{apim.store.username}}</Username>
+        <Username>${admin.username}</Username>
 
         <!-- Admin password for API Store. -->
-        <Password>{{apim.store.password}}</Password>
+        <Password>${admin.password}</Password>
         <!-- This parameter specifies whether to display multiple versions of same
              API or only showing the latest version of an API. -->
         <DisplayMultipleVersions>{{apim.store.display_multiple_versions}}</DisplayMultipleVersions>
@@ -405,17 +408,17 @@
     </APIStore>
 
     <APIPublisher>
-        <DisplayURL>{{apim.publisher.display_url}}</DisplayURL>
-        <URL>{{apim.publisher.url}}</URL>
+        <DisplayURL>false</DisplayURL>
+        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
         <!-- This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
              By default any document associate with an API will have the same permissions set as the API.With enabling below
              property,it will show two additional permission levels as visible only to all registered users in a particular
              domain or only visible to API doc creator -->
-        <!--EnableAPIDocVisibilityLevels>true</EnableAPIDocVisibilityLevels-->
+        <EnableAPIDocVisibilityLevels>{{apim.publisher.enable_api_doc_visibility}}</EnableAPIDocVisibilityLevels>
         <!-- Uncomment this to limit the number of APIs in api the API Publisher -->
         <!--APIsPerPage>30</APIsPerPage-->
         <!-- This property need to be enabled to enable the publisher access control support -->
-        <EnableAccessControl>{{apim.publisher.enable_access_control}}</EnableAccessControl>
+        <EnableAccessControl>true</EnableAccessControl>
     </APIPublisher>
 
     <!-- Status observers can be registered against the API Publisher to listen for

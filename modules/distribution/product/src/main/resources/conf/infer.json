@@ -54,6 +54,9 @@
   "apim.store.app_share_impl": {
     "default": {
       "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+    },
+    "saml": {
+      "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
     }
   },
   "apim.store.version_display_level": {
@@ -99,6 +102,11 @@
   "apim.throttling.jms.factory.type": {
     "andes": {
       "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
+    }
+  },
+  "apim.publisher.doc_visibility": {
+    "enable": {
+      "apim.publisher.enable_api_doc_visibility": true
     }
   }
 }

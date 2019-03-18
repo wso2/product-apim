@@ -39,7 +39,7 @@ dev.ws_endpoint= "ws://${carbon.local.ip}:9099"
 dev.http_endpoint = "http://localhost:8280/"
 dev.https_endpoint = "https://localhost:8243/"
 
-[apim.cache]
+#[apim.cache]
 #token
 #resource
 #km_token
@@ -48,29 +48,29 @@ dev.https_endpoint = "https://localhost:8243/"
 #publisher_role
 #jwt_claim
 
-[apim.analytics]
+#[apim.analytics]
 #receiver_urls = "tcp://localhost:7611"
-receiver_failover_url.group0.node0="tcp://localhost:7612"
-receiver_failover_url.group0.node1="tcp://localhost:7612"
-receiver_failover_url.group1.node0="tcp://localhost:7612"
-receiver_failover_url.group1.node1="tcp://localhost:7612"
-receiver_failover_auth_url.group0.node0="ssl://localhost:7712"
-receiver_failover_auth_url.group0.node1="ssl://localhost:7712"
-receiver_failover_auth_url.group1.node0="ssl://localhost:7712"
-receiver_failover_auth_url.group1.node1="ssl://localhost:7712"
+#receiver_failover_url.group0.node0="tcp://localhost:7612"
+#receiver_failover_url.group0.node1="tcp://localhost:7612"
+#receiver_failover_url.group1.node0="tcp://localhost:7612"
+#receiver_failover_url.group1.node1="tcp://localhost:7612"
+#receiver_failover_auth_url.group0.node0="ssl://localhost:7712"
+#receiver_failover_auth_url.group0.node1="ssl://localhost:7712"
+#receiver_failover_auth_url.group1.node0="ssl://localhost:7712"
+#receiver_failover_auth_url.group1.node1="ssl://localhost:7712"
 #receiver_username
 #receiver_password
-rest_api_url = "https://localhost:7444"
+#rest_api_url = "https://localhost:7444"
 
 [apim.key_manager]
 url = "https://localhost:9443/services/"
 
-[apim.jwt]
-generator_type = "default"
-header = "X-JWT-Assertion"
-dialect = "http://wso2.org/claims"
-algo = "SHA256withRSA"
-claims = "default"
+#[apim.jwt]
+#generator_type = "default"
+#header = "X-JWT-Assertion"
+#dialect = "http://wso2.org/claims"
+#algo = "SHA256withRSA"
+#claims = "default"
 
 [apim.oauth_config]
 outflow_auth_header = "remove"
@@ -78,12 +78,12 @@ outflow_auth_header = "remove"
 auth_header = "Authorization"
 token_endpoint = "https://localhost:8243/token"
 revoke_endpoint = "https://localhost:8243/revoke"
-encrypt_persisted_token = "default"
-token_hash_mode = "default"
+#encrypt_persisted_token = "default"
+#token_hash_mode = "default"
 
 [apim.store]
 url = "https://localhost:9443/store"
-display_url = "https://localhost:9443/store"
+display_url = false
 app_share_impl = "default"
 service_url = "https://localhost:9443/services"
 version_display_level = "all"
@@ -106,17 +106,17 @@ allow_credentials = "false"
 [apim.throttling]
 #receiver_url="tcp://localhost:9611"
 receiver_failover_url.group0.node0="tcp://localhost:9611"
-receiver_failover_url.group0.node1="tcp://localhost:9611"
-receiver_failover_url.group1.node0="tcp://localhost:9611"
-receiver_failover_url.group1.node1="tcp://localhost:9611"
+#receiver_failover_url.group0.node1="tcp://localhost:9611"
+#receiver_failover_url.group1.node0="tcp://localhost:9611"
+#receiver_failover_url.group1.node1="tcp://localhost:9611"
 receiver_failover_auth_url.group0.node0="ssl://localhost:9711"
-receiver_failover_auth_url.group0.node1="ssl://localhost:9711"
-receiver_failover_auth_url.group1.node0="ssl://localhost:9711"
-receiver_failover_auth_url.group1.node1="ssl://localhost:9711"
+#receiver_failover_auth_url.group0.node1="ssl://localhost:9711"
+#receiver_failover_auth_url.group1.node0="ssl://localhost:9711"
+#receiver_failover_auth_url.group1.node1="ssl://localhost:9711"
 publisher.enable="true"
 jms.factory.type="andes"
 jms.username = "admin"
 jms.password = "admin"
 jms.connection.node0 = "tcp://localhost:5672"
-jms.connection.node1 = "tcp://localhost:5672"
+#jms.connection.node1 = "tcp://localhost:5672"
 #jms.topic_connection_factory= "amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'"
