@@ -1,10 +1,12 @@
 {
-  "database.apim_db.driver": "org.h2.Driver",
-  "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
   "database.apim_db.validationQuery": "SELECT 1",
   "database.apim_db.username": "wso2carbon",
   "database.apim_db.password": "wso2carbon",
-  "database.apim_db.pool_options.maxActive": "5",
+  "database.apim_db.pool_options.maxActive": "50",
+  "database.apim_db.pool_options.maxWait": "60000",
+  "database.apim_db.pool_options.testOnBorrow": "true",
+  "database.apim_db.pool_options.validationInterval": "30000",
+  "database.apim_db.pool_options.defaultAutoCommit": "true",
   "apim.gateway.environment.dev.name": "Production and Sandbox",
   "apim.gateway.environment.dev.type": "hybrid",
   "apim.gateway.environment.dev.display_in_api_console": true,
@@ -256,7 +258,10 @@
   "apim.oauth.revoke_endpoint": "https://localhost:${https.nio.port}/revoke",
   "apim.oauth.encrypt_persisted_token": "false",
   "apim.oauth.enable_token_hash_mode": "false",
-
+  "apim.oauth.white_listed_scopes": [
+    "^device_.*",
+    "openid"
+  ],
   "apim.store.login_username_case_insensitive": "true",
   "apim.store.display_url": "false",
   "apim.store.url": "https://localhost:${mgt.transport.https.port}/store",
@@ -270,10 +275,6 @@
   "apim.store.enable_forum": "true",
   "apim.store.token_display_url": "https://${carbon.local.ip}:${https.nio.port}",
 
-  "apim.publisher.display_url": "false",
-  "apim.publisher.url": "https://localhost:${mgt.transport.https.port}/publisher",
-  "apim.publisher.enable_access_control": "true",
-
   "apim.cors.enable": "true",
   "apim.cors.allow_origins": "*",
   "apim.cors.allow_methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
@@ -282,8 +283,6 @@
 
   "apim.throttling.advanced_throttling": "true",
   "apim.throttling.tm.event_type": "Binary",
-  "apim.throttling.tm.receiver_urls": "tcp://${carbon.local.ip}:${receiver.url.port}",
-  "apim.throttling.tm.receiver_auth_urls": "ssl://${carbon.local.ip}:${auth.url.port}",
   "apim.throttling.tm.receiver_username": "${admin.username}",
   "apim.throttling.tm.receiver_password": "${admin.password}",
   "apim.throttling.publisher.enable": "true",
@@ -303,8 +302,8 @@
   "apim.throttling.jms.destination": "throttleData",
   "apim.throttling.jms.conn_jndi_name": "TopicConnectionFactory",
   "apim.throttling.jms.destination_type": "topic",
-  "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory",
-  "apim.throttling.jms.topic_connection_factory": "amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'",
+  "apim.throttling.jms.username": "${admin.username}",
+  "apim.throttling.jms.password": "${admin.password}",
   "apim.throttling.unlimited_tier": "true",
   "apim.throttling.header_condition": "false",
   "apim.throttling.jwt_claim_condition": "false",
@@ -333,7 +332,7 @@
   "apim.sdk.supported_languages": "android,java,scala,csharp,dart,flash,groovy,javascript,jmeter,nodejs,perl,php,python,ruby,swift,clojure,asyncScala,csharpDotNet2",
 
   "databridge.agent.thrift.name" : "Thrift",
-  "databridge.agent.data_endpoint_class" : "org.wso2.carbon.databridge.agent.thrift.endpoint.thrift.ThriftDataEndpoint",
+  "databridge.agent.thrift.data_endpoint_class" : "org.wso2.carbon.databridge.agent.endpoint.thrift.ThriftDataEndpoint",
   "databridge.agent.thrift.queue_size" : "32768",
   "databridge.agent.thrift.batch_size" : "200",
   "databridge.agent.thrift.core_pool_size" : "1",
@@ -366,5 +365,18 @@
   "databridge.agent.binary.secure_max_transport_pool_size" : "250",
   "databridge.agent.binary.secure_max_idle_connections" : "250",
   "databridge.agent.binary.secure_eviction_time_period" : "5500",
-  "databridge.agent.binary.secure_min_idle_time_in_pool" : "5000"
+  "databridge.agent.binary.secure_min_idle_time_in_pool" : "5000",
+
+  "databridge.receiver.worker_threads" : "10",
+  "databridge.receiver.max_event_buffer_capacity" : "10",
+  "databridge.receiver.event_buffer_size" : "2000",
+  "databridge.receiver.client_timeout_min" : "30",
+  "databridge.receiver.keystore_location" : "${carbon.home}/repository/resources/security/$conf{keystore.tls.file_name}",
+  "databridge.receiver.keystore_password" : "$conf{keystore.tls.password}",
+  "databridge.receiver.thrift.tcp_port" : "7611",
+  "databridge.receiver.thrift.ssl_port" : "7711",
+  "databridge.receiver.binary.tcp_port" : "9611",
+  "databridge.receiver.binary.ssl_port" : "9711",
+  "databridge.receiver.binary.ssl_receiver_threadpool_size" : "100",
+  "databridge.receiver.binary.tcp_receiver_threadpool_size" : "100"
 }

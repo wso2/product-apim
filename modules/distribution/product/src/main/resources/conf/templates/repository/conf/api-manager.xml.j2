@@ -102,11 +102,11 @@
                 <Password>{{environment_name.password}}</Password>
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
                 {% if environment_name.http_endpoint is defined and environment_name.https_endpoint is defined %}
-                <GatewayEndpoint>http://{{environment_name.http_endpoint}},https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                <GatewayEndpoint>{{environment_name.http_endpoint}},{{environment_name.https_endpoint}}</GatewayEndpoint>
                 {% elif environment_name.http_endpoint is not defined and environment_name.https_endpoint is defined %}
-                <GatewayEndpoint>https://{{environment_name.https_endpoint}}</GatewayEndpoint>
+                <GatewayEndpoint>{{environment_name.https_endpoint}}</GatewayEndpoint>
                 {% elif environment_name.http_endpoint is defined and environment_name.https_endpoint is not defined %}
-                <GatewayEndpoint>http://{{environment_name.http_endpoint}}</GatewayEndpoint>
+                <GatewayEndpoint>{{environment_name.http_endpoint}}</GatewayEndpoint>
                 {% else %}
                 <GatewayEndpoint></GatewayEndpoint>
                 {% endif %}
@@ -158,7 +158,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        {% if apim.analytics.receiver_urls is defined %}
+        {% if apim.analytics.receiver_urls is defined or apim.analytics.receiver_failover_url is defined %}
         <Enabled>true</Enabled>
         {% else %}
         <Enabled>false</Enabled>
@@ -173,9 +173,27 @@
 
              Ex - Multiple Receiver Groups with two receivers each
              {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} -->
+        {% if apim.analytics.receiver_urls is defined %}
         <StreamProcessorServerURL>{{apim.analytics.receiver_urls}}</StreamProcessorServerURL>
-        {% if apim.analytics.receiver_auth_urls is defined%}
+        {% elif apim.analytics.receiver_failover_url is defined%}
+        <StreamProcessorServerURL>
+            {% for group in apim.analytics.receiver_failover_url %}
+            { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
+            {% endfor %}
+        </StreamProcessorServerURL>
+        {% else %}
+        <StreamProcessorServerURL>{tcp://localhost:7612}</StreamProcessorServerURL>
+        {% endif %}
+
+
+        {% if apim.analytics.receiver_auth_urls is defined %}
         <StreamProcessorAuthServerURL>{{apim.analytics.receiver_auth_urls}}</StreamProcessorAuthServerURL>
+        {% elif apim.analytics.receiver_failover_auth_url is defined%}
+        <StreamProcessorAuthServerURL>
+            {% for group in apim.analytics.receiver_failover_auth_url %}
+            { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
+            {% endfor %}
+        </StreamProcessorAuthServerURL>
         {% endif %}
         <!-- Administrator username to login to the remote StreamProcessor server. -->
         {% if apim.analytics.receiver_username is defined%}
@@ -311,10 +329,13 @@
         <ApplicationTokenScope>{{apim.oauth.default_app_scope}}</ApplicationTokenScope>
         <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
              By default ^device_.* and openid scopes have been white listed internally. -->
-        <!--ScopeWhitelist>
-            <Scope>^device_.*</Scope>
+        <ScopeWhitelist>
+        {%for scope in apim.oauth.white_listed_scopes%}
+            <Scope>{{scope}}</Scope>
+            {% endfor %}
             <Scope>openid</Scope>
-        </ScopeWhitelist-->
+        </ScopeWhitelist>
+
         <!-- Name of the token API -->
         <TokenEndPointName>{{apim.oauth.token_endpoint}}</TokenEndPointName>
         <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
@@ -348,16 +369,16 @@
         {% endif %}
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
         <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>
-        <DisplayURL>{{apim.store.display_url}}</DisplayURL>
+        <DisplayURL>false</DisplayURL>
         <URL>{{apim.store.url}}</URL>
 
         <!-- Server URL of the API Store. -->
-        <ServerURL>{{apim.store.service_url}}/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
         <!-- Admin username for API Store. -->
-        <Username>{{apim.store.username}}</Username>
+        <Username>${admin.username}</Username>
 
         <!-- Admin password for API Store. -->
-        <Password>{{apim.store.password}}</Password>
+        <Password>${admin.password}</Password>
         <!-- This parameter specifies whether to display multiple versions of same
              API or only showing the latest version of an API. -->
         <DisplayMultipleVersions>{{apim.store.display_multiple_versions}}</DisplayMultipleVersions>
@@ -387,17 +408,17 @@
     </APIStore>
 
     <APIPublisher>
-        <DisplayURL>{{apim.publisher.display_url}}</DisplayURL>
-        <URL>{{apim.publisher.url}}</URL>
+        <DisplayURL>false</DisplayURL>
+        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
         <!-- This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
              By default any document associate with an API will have the same permissions set as the API.With enabling below
              property,it will show two additional permission levels as visible only to all registered users in a particular
              domain or only visible to API doc creator -->
-        <!--EnableAPIDocVisibilityLevels>true</EnableAPIDocVisibilityLevels-->
+        <EnableAPIDocVisibilityLevels>{{apim.publisher.enable_api_doc_visibility}}</EnableAPIDocVisibilityLevels>
         <!-- Uncomment this to limit the number of APIs in api the API Publisher -->
         <!--APIsPerPage>30</APIsPerPage-->
         <!-- This property need to be enabled to enable the publisher access control support -->
-        <EnableAccessControl>{{apim.publisher.enable_access_control}}</EnableAccessControl>
+        <EnableAccessControl>true</EnableAccessControl>
     </APIPublisher>
 
     <!-- Status observers can be registered against the API Publisher to listen for
@@ -610,8 +631,31 @@
         <EnableAdvanceThrottling>{{apim.throttling.advanced_throttling}}</EnableAdvanceThrottling>
         <TrafficManager>
             <Type>{{apim.throttling.tm.event_type}}</Type>
-            <ReceiverUrlGroup>{{apim.throttling.tm.receiver_urls}}</ReceiverUrlGroup>
-            <AuthUrlGroup>{{apim.throttling.tm.receiver_auth_urls}}</AuthUrlGroup>
+
+            {% if apim.throttling.receiver_url is defined %}
+            <ReceiverUrlGroup>{{apim.throttling.receiver_url}}</ReceiverUrlGroup>
+            {% elif apim.throttling.receiver_failover_url is defined%}
+            <ReceiverUrlGroup>
+                {% for group in apim.throttling.receiver_failover_url %}
+                { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
+                {% endfor %}
+            </ReceiverUrlGroup>
+            {% else %}
+            <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
+            {% endif %}
+
+
+            {% if apim.throttling.receiver_auth_url is defined %}
+            <AuthUrlGroup>{{apim.throttling.receiver_auth_url}}</AuthUrlGroup>
+            {% elif apim.throttling.receiver_failover_auth_url is defined%}
+            <AuthUrlGroup>
+                {% for group in apim.throttling.receiver_failover_auth_url %}
+                { {% for node in group %} {{node}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
+                {% endfor %}
+            </AuthUrlGroup>
+            {% else %}
+            <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
+            {% endif %}
             <Username>{{apim.throttling.tm.receiver_username}}</Username>
             <Password>{{apim.throttling.tm.receiver_password}}</Password>
         </TrafficManager>
@@ -652,7 +696,17 @@
                 <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
                 <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
                 <java.naming.factory.initial>{{apim.throttling.jms.java_naming_factory_initial}}</java.naming.factory.initial>
+                {% if apim.throttling.jms.topic_connection_factory is defined %}
                 <connectionfactory.TopicConnectionFactory>{{apim.throttling.jms.topic_connection_factory}}</connectionfactory.TopicConnectionFactory>
+                {% elif apim.throttling.jms.connection is defined %}
+                    {% if apim.throttling.jms.connection|length == 1 %}
+                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{ apim.throttling.jms.connection | first }}'</connectionfactory.TopicConnectionFactory>
+                    {% else %}
+                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.jms.connection %}{{url}}?retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+                    {% endif %}
+                {% else %}
+                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+                {% endif %}
             </JMSConnectionParameters>
         </JMSConnectionDetails>
 
