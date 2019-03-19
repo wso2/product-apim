@@ -43,7 +43,7 @@
                 <version>2.2</version>
                 <configuration>
                     <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
-                    <warName>${project.artifactId}-${project.version}-v0</warName>
+                    <warName>${project.artifactId}-${project.version}-v1</warName>
                 </configuration>
             </plugin>
             <plugin>
@@ -59,7 +59,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <copy overwrite="true" file="${project.build.directory}/${project.artifactId}-${project.version}-v0.war" tofile="${basedir}/../../modules/integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/war/api-import-export-test.war" />
+                                <copy overwrite="true" file="${project.build.directory}/${project.artifactId}-${project.version}-v1.war" tofile="${basedir}/../../modules/integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/war/api-import-export-test.war" />
                             </target>
                         </configuration>
                     </execution>
@@ -102,7 +102,7 @@
                                     <tasks>
                                         <copy todir="${basedir}/../../../repository/deployment/server/webapps" overwrite="true">
                                             <fileset dir="${basedir}/target">
-                                                <include name="${project.artifactId}-${project.version}-v0.war" />
+                                                <include name="${project.artifactId}-${project.version}-v1.war" />
                                             </fileset>
                                         </copy>
                                     </tasks>
