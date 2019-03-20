@@ -38,35 +38,25 @@
   },
   "apim.jwt.generator_type": {
     "default": {
-      "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
       "apim.jwt.generator.enable": true
     },
-    "url_safe_generator": {
-      "apim.jwt.generator.impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
+    "url_safe": {
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
       "apim.jwt.generator.enable": true
     }
   },
   "apim.jwt.claims": {
     "default": {
-      "apim.jwt.claims_extractor": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
     }
   },
-  "apim.store.app_share_impl": {
+  "apim.store.application_sharing_type": {
     "default": {
-      "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+      "apim.store.application_sharing_impl": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
     },
     "saml": {
-      "apim.store.group_extractor": "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
-    }
-  },
-  "apim.store.version_display_level": {
-    "all": {
-      "apim.store.display_multiple_versions": "true"
-    }
-  },
-  "apim.store.lifecycle_display_level": {
-    "all": {
-      "apim.store.display_all_apis": "true"
+      "apim.store.application_sharing_impl": "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
     }
   },
   "database.apim_db.type": {
@@ -79,14 +69,6 @@
       "database.apim_db.driver": "org.h2.Driver",
       "database.apim_db.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT\u003dFALSE;LOCK_TIMEOUT\u003d60000",
       "database.apim_db.validationQuery": "SELECT 1"
-    }
-  },
-  "apim.oauth_config.outflow_auth_header": {
-    "remove" : {
-      "apim.oauth.remove_auth_header": "true"
-    },
-    "keep" : {
-      "apim.oauth.remove_auth_header": "false"
     }
   },
   "apim.oauth_config.encrypt_persisted_token": {
