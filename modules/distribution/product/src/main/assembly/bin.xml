@@ -122,6 +122,8 @@
                 <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
                 <exclude>**/repository/resources/conf/default.json</exclude>
                 <exclude>**/repository/resources/conf/infer.json</exclude>
+                <exclude>**/repository/resources/conf/validator.json</exclude>
+                <exclude>**/repository/resources/conf/key-mappings.json</exclude>
                 <exclude>**/repository/conf/deployment.toml</exclude>
             </excludes>
         </fileSet>
@@ -1131,6 +1133,16 @@
         </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/validator.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json</source>
             <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
