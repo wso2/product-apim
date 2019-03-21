@@ -713,6 +713,15 @@
                                     </output>
                                     <config>${basedir}/src/main/resources/conf/validator.json</config>
                                 </task>
+                                <task>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                    </input>
+                                    <output>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                    </output>
+                                    <config>${basedir}/src/main/resources/conf/key-mappings.json</config>
+                                </task>
                             </tasks>
                         </configuration>
                     </execution>

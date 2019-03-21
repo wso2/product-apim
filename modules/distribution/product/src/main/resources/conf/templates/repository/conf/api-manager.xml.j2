@@ -137,14 +137,20 @@
         cache will be in in-valid state.-->
         <EnablePublisherRoleCache>{{apim.cache.publisher_role.enabled}}</EnablePublisherRoleCache>
 	    <!-- JWT claims Cache expiry in seconds -->
-        <!--JWTClaimCacheExpiry>{{apim.cache.claim_expiry_time}}</JWTClaimCacheExpiry-->
+        {% if apim.cache.jwt_claim.expiry_time is defined %}
+        <JWTClaimCacheExpiry>{{apim.cache.jwt_claim.expiry_time}}</JWTClaimCacheExpiry>
+        {% endif %}
         <!-- Expiry time for the apim key mgt validation info cache -->
-        <!--TokenCacheExpiry>{{apim.cache.token_expiry_time}}</TokenCacheExpiry-->
+        {% if apim.cache.token_expiry_time is defined %}
+        <TokenCacheExpiry>{{apim.cache.token_expiry_time}}</TokenCacheExpiry>
+        {% endif %}
         <!-- This parameter specifies the expiration time of the TagCache. TagCache will
              only be created when this element is uncommented. When the specified
              time duration gets elapsed ,tag cache will get re-generated. -->
         <!--change to expiray-->
-        <!--TagCacheDuration>{{apim.cache.tag_duration}}</TagCacheDuration-->
+        {% if apim.cache.tag.expiry_time is defined %}
+        <TagCacheDuration>{{apim.cache.tag.expiry_time}}</TagCacheDuration>
+        {% endif %}
         <!-- JWT Claim cache can be disabled only if below config <EnableJWTClaimCache> is set as 'false'. The default
           value is 'true'.
           Other than this config, also <EnableGatewayTokenCache> and <EnableKeyManagerTokenCache> should have been set
@@ -674,13 +680,13 @@
             </DataPublisherThreadPool>
         </DataPublisher>
         <PolicyDeployer>
-            <Enabled>{{apim.throttling.policy_deploy.enable}}</Enabled>
+            <Enabled>{{apim.throttling.enable_policy_deployer}}</Enabled>
             <ServiceURL>{{apim.throttling.policy_deploy.service_url}}</ServiceURL>
             <Username>{{apim.throttling.policy_deploy.user}}</Username>
             <Password>{{apim.throttling.policy_deploy.pass}}</Password>
         </PolicyDeployer>
         <BlockCondition>
-            <Enabled>{{apim.throttling.block_condition.enable}}</Enabled>
+            <Enabled>{{apim.throttling.enable_block_condition}}</Enabled>
             {% if apim.throttling.block_condition.start_delay is defined %}
             <InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
             {% endif %}

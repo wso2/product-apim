@@ -46,7 +46,7 @@
       "apim.jwt.generator.enable": true
     }
   },
-  "apim.jwt.claims": {
+  "apim.jwt.user_claims": {
     "default": {
       "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
     }
