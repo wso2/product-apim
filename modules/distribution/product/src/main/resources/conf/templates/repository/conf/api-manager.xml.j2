@@ -91,7 +91,7 @@
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
             {% for environment_name in apim.gateway.environment%}
-            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}">
+            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}" isDefault="{{environment.name.isDefault}}">
                 <Name>{{environment_name.name}}</Name>
                 <Description>{{environment_name.description}}</Description>
                 <!-- Server URL of the API gateway -->
@@ -211,7 +211,7 @@
         {% endif %}
 
         <!-- For APIM implemented Statistic client for RDBMS -->
-        <StatsProviderImpl>{{apim.analytics.provider_impl}}</StatsProviderImpl>
+        <StatsProviderImpl>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatsProviderImpl>
 
         <!-- StreamProcessor REST API configuration -->
         <StreamProcessorRestApiURL>{{apim.analytics.rest_api_url}}</StreamProcessorRestApiURL>
@@ -234,7 +234,7 @@
 
         <!-- Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true. -->
-        <SkipEventReceiverConnection>{{apim.analytics.disable_event_publishing}}</SkipEventReceiverConnection>
+        <SkipEventReceiverConnection>false</SkipEventReceiverConnection>
 
         <!--Skip workflow data publisher initiation and even publishing-->
         <SkipWorkflowEventPublisher>true</SkipWorkflowEventPublisher>
@@ -407,11 +407,6 @@
         <!--set isStoreForumEnabled to false for disable forum in store-->
         <isStoreForumEnabled>{{apim.store.enable_forum}}</isStoreForumEnabled>
 
-        <!--
-        This is an optional parameter. If this parameter has a value, it will be shown in the token generation
-        cURL command under subscriptions section in API Store.
-        -->
-        <!--StoreTokenDisplayURL>{{apim.store.token_display_url}}</StoreTokenDisplayURL-->
     </APIStore>
 
     <APIPublisher>
