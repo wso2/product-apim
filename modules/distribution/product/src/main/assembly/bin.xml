@@ -99,7 +99,8 @@
 
                 <exclude>**/repository/components/plugins/netty-all_4.0.23.wso2v1.jar</exclude>
 
-                <exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_${carbon.analytics.common.version}.jar</exclude>
+		<exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_${carbon.analytics.common.version}.jar</exclude>
+		<exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_5.1.51.SNAPSHOT.jar</exclude><!-- TODO remove this . added this for snapshot only-->
                 <exclude>**/repository/components/plugins/siddhi-extension-event-table_${siddhi.version}.jar</exclude>
                 <exclude>**/repository/components/plugins/com.jayway.jsonpath.json-path_0.9.1.jar</exclude>
                 <exclude>**/repository/components/plugins/libthrift_0.9.2.wso2v1.jar</exclude>
