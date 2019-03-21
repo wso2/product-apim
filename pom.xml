@@ -1050,7 +1050,7 @@
         <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.119</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.137</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1068,15 +1068,15 @@
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
 
-        <carbon.commons.version>4.6.49</carbon.commons.version>
+        <carbon.commons.version>4.6.52</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.111</carbon.mediation.version>
+        <carbon.mediation.version>4.6.115</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.12.231</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.83</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.12.296</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.101</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.0.7</carbon.identity-local-auth-basicauth.version>
@@ -1178,7 +1178,7 @@
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
-        <google.guava.version>18.0</google.guava.version>
+        <google.guava.version>20.0</google.guava.version>
 
         <carbon.metrics.version>1.2.3</carbon.metrics.version>
         <!-- MB Features -->
@@ -1210,7 +1210,7 @@
         <!-- Forget-me tool -->
         <forgetme.tool.version>1.1.21</forgetme.tool.version>
         <!--Concent Management dependencies-->
-        <carbon.consent.mgt.version>2.0.18</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.0.19</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
     </properties>
 
