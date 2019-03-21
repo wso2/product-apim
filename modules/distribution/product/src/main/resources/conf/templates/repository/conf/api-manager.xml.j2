@@ -159,7 +159,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        {% if apim.analytics.receiver_urls is defined or apim.analytics.receiver_failover_url is defined %}
+        {% if apim.analytics.receiver_urls is defined or apim.analytics.analytics_node is defined %}
         <Enabled>true</Enabled>
         {% else %}
         <Enabled>false</Enabled>
@@ -195,6 +195,8 @@
         <!-- Administrator username to login to the remote StreamProcessor server. -->
         {% if apim.analytics.receiver_username is defined%}
         <StreamProcessorUsername>{{apim.analytics.receiver_username}}</StreamProcessorUsername>
+        {% elif apim.analytics.username is defined%}
+        <StreamProcessorUsername>{{apim.analytics.username}}</StreamProcessorUsername>
         {% else %}
         <StreamProcessorUsername>${admin.username}</StreamProcessorUsername>
         {% endif %}
@@ -202,6 +204,8 @@
         <!-- Administrator password to login to the remote StreamProcessor server. -->
         {% if apim.analytics.receiver_password is defined %}
         <StreamProcessorPassword>{{apim.analytics.receiver_password}}</StreamProcessorPassword>
+        {% elif apim.analytics.password is defined %}
+        <StreamProcessorPassword>{{apim.analytics.password}}</StreamProcessorPassword>
         {% else %}
         <StreamProcessorPassword>${admin.password}</StreamProcessorPassword>
         {% endif %}
@@ -211,17 +215,19 @@
 
         <!-- StreamProcessor REST API configuration -->
         <StreamProcessorRestApiURL>{{apim.analytics.rest_api_url}}</StreamProcessorRestApiURL>
+
         {% if apim.analytics.rest_api_username is defined %}
         <StreamProcessorRestApiUsername>{{apim.analytics.rest_api_username}}</StreamProcessorRestApiUsername>
-        {% elif apim.analytics.receiver_username is defined%}
-        <StreamProcessorRestApiUsername>{{apim.analytics.receiver_username}}</StreamProcessorRestApiUsername>
+        {% elif apim.analytics.username is defined%}
+        <StreamProcessorRestApiUsername>{{apim.analytics.username}}</StreamProcessorRestApiUsername>
         {% else %}
         <StreamProcessorRestApiUsername>${admin.username}</StreamProcessorRestApiUsername>
         {% endif %}
+
         {% if apim.analytics.rest_api_password is defined %}
         <StreamProcessorRestApiPassword>{{apim.analytics.rest_api_password}}</StreamProcessorRestApiPassword>
-        {% elif apim.analytics.receiver_password is defined%}
-        <StreamProcessorRestApiPassword>{{apim.analytics.receiver_password}}</StreamProcessorRestApiPassword>
+        {% elif apim.analytics.password is defined%}
+        <StreamProcessorRestApiPassword>{{apim.analytics.password}}</StreamProcessorRestApiPassword>
         {% else %}
         <StreamProcessorRestApiPassword>${admin.password}</StreamProcessorRestApiPassword>
         {% endif %}
@@ -635,9 +641,9 @@
 
             {% if apim.throttling.receiver_url is defined %}
             <ReceiverUrlGroup>{{apim.throttling.receiver_url}}</ReceiverUrlGroup>
-            {% elif apim.throttling.node is defined%}
+            {% elif apim.throttling.nodes is defined%}
             <ReceiverUrlGroup>
-                {% for group in apim.throttling.node %}
+                {% for group in apim.throttling.nodes %}
                 { {% for node in group %} {{node.traffic_manager_url}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
                 {% endfor %}
             </ReceiverUrlGroup>
@@ -648,9 +654,9 @@
 
             {% if apim.throttling.receiver_auth_url is defined %}
             <AuthUrlGroup>{{apim.throttling.receiver_auth_url}}</AuthUrlGroup>
-            {% elif apim.throttling.node is defined%}
+            {% elif apim.throttling.nodes is defined%}
             <AuthUrlGroup>
-                {% for group in apim.throttling.node %}
+                {% for group in apim.throttling.nodes %}
                 { {% for node in group %} {{node.traffic_manager_auth_url}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
                 {% endfor %}
             </AuthUrlGroup>
@@ -661,7 +667,7 @@
             <Password>{{apim.throttling.tm.receiver_password}}</Password>
         </TrafficManager>
         <DataPublisher>
-            <Enabled>{{apim.throttling.publisher.enable}}</Enabled>
+            <Enabled>{{apim.throttling.enable_data_publishing}}</Enabled>
             <DataPublisherPool>
                 <MaxIdle>{{apim.throttling.publisher.max_idle}}</MaxIdle>
                 <InitIdleCapacity>{{apim.throttling.publisher.init_idle_size}}</InitIdleCapacity>
@@ -699,12 +705,8 @@
                 <java.naming.factory.initial>{{apim.throttling.jms.java_naming_factory_initial}}</java.naming.factory.initial>
                 {% if apim.throttling.jms.topic_connection_factory is defined %}
                 <connectionfactory.TopicConnectionFactory>{{apim.throttling.jms.topic_connection_factory}}</connectionfactory.TopicConnectionFactory>
-                {% elif apim.throttling.jms.connection is defined %}
-                    {% if apim.throttling.jms.connection|length == 1 %}
-                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{ apim.throttling.jms.connection | first }}'</connectionfactory.TopicConnectionFactory>
-                    {% else %}
-                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.jms.connection %}{{url}}?retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
-                    {% endif %}
+                {% elif apim.throttling.throttle_decision_endpoints is defined %}
+                <connectionfactory.TopicConnectionFactory>amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.throttle_decision_endpoints %}{{url}}?retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
                 {% else %}
                 <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
                 {% endif %}
