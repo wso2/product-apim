@@ -1,0 +1,4 @@
+{
+  "apim.cache.km_token.expiry_time" : "apim.cache.token_expiry_time",
+  "apim.cache.gateway_token.expiry_time" : "apim.cache.token_expiry_time"
+}
