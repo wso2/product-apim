@@ -1178,7 +1178,7 @@
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
-        <google.guava.version>20.0</google.guava.version>
+        <google.guava.version>23.0</google.guava.version>
 
         <carbon.metrics.version>1.2.3</carbon.metrics.version>
         <!-- MB Features -->
