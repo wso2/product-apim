@@ -1,6 +1,7 @@
 [deployment]
 hostname = "km.wso2.com"
 local_member_ip = "127.0.0.1"
+server_role = "api-key-manager"
 
 [super_admin]
 username = "admin"
@@ -34,3 +35,30 @@ key_password =  "wso2carbon"
 file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
+
+# Caches
+[apim.cache.km_token]
+enabled = false
+expiry_time = 15
+
+[apim.cache.jwt_claim]
+enabled = true
+expiry_time = 900
+
+# JWT Generation
+[apim.jwt]
+generator_type = "default" # default,url_safe or custom
+#generator_type = "custom"
+#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+header = "X-JWT-Assertion"
+dialect = "http://wso2.org/claims"
+algo = "SHA256withRSA"
+user_claims = "default"
+#user_claims = "custom"
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[apim.throttling]
+enable_data_publishing = false
+enable_policy_deployer = false
+enable_block_condition = false
+enable_decision_connection = false

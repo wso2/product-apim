@@ -91,7 +91,7 @@
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
             {% for environment_name in apim.gateway.environment%}
-            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}" isDefault="{{environment.name.isDefault}}">
+            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}" isDefault="{{environment.name.show_as_token_endpoint_url}}">
                 <Name>{{environment_name.name}}</Name>
                 <Description>{{environment_name.description}}</Description>
                 <!-- Server URL of the API gateway -->
@@ -681,7 +681,7 @@
         </DataPublisher>
         <PolicyDeployer>
             <Enabled>{{apim.throttling.enable_policy_deployer}}</Enabled>
-            <ServiceURL>{{apim.throttling.policy_deploy.service_url}}</ServiceURL>
+            <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
             <Username>{{apim.throttling.policy_deploy.user}}</Username>
             <Password>{{apim.throttling.policy_deploy.pass}}</Password>
         </PolicyDeployer>
@@ -732,22 +732,22 @@
                 <10KPerMin>10000</10KPerMin>
             </ResourceLevelTierLimits>
         </DefaultLimits-->
-        <EnableUnlimitedTier>{{apim.throttling.unlimited_tier}}</EnableUnlimitedTier>
-        <EnableHeaderConditions>{{apim.throttling.header_condition}}</EnableHeaderConditions>
-        <EnableJWTClaimConditions>{{apim.throttling.jwt_claim_condition}}</EnableJWTClaimConditions>
-        <EnableQueryParamConditions>{{apim.throttling.query_param_condition}}</EnableQueryParamConditions>
+        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
+        <EnableHeaderConditions>{{apim.throttling.enable_header_condition}}</EnableHeaderConditions>
+        <EnableJWTClaimConditions>{{apim.throttling.enable_jwt_claim_condition}}</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>{{apim.throttling.enable_query_param_condition}}</EnableQueryParamConditions>
     </ThrottlingConfigurations>
     
     <WorkflowConfigurations>
         <Enabled>{{apim.workflow.enabled}}</Enabled>
-    	<ServerUrl>{{apim.workflow.wf_engine_url}}</ServerUrl>
+    	<ServerUrl>{{apim.workflow.service_url}}</ServerUrl>
     	<ServerUser>{{apim.workflow.wf_engine_user}}</ServerUser>
     	<ServerPassword>{{apim.workflow.wf_engine_pass}}</ServerPassword>
     	<WorkflowCallbackAPI>{{apim.workflow.callback_endpoint}}</WorkflowCallbackAPI>
         <TokenEndPoint>{{apim.workflow.token_endpoint}}</TokenEndPoint>
-        <DCREndPoint>{{apim.workflow.dcr_endpoint}}</DCREndPoint>
-        <DCREndPointUser>{{apim.workflow.dcr_username}}</DCREndPointUser>
-        <DCREndPointPassword>{{apim.workflow.dcr_password}}</DCREndPointPassword>
+        <DCREndPoint>{{apim.workflow.client_registration_endpoint}}</DCREndPoint>
+        <DCREndPointUser>{{apim.workflow.client_registration_username}}</DCREndPointUser>
+        <DCREndPointPassword>{{apim.workflow.client_registration_password}}</DCREndPointPassword>
     </WorkflowConfigurations>
 
     <SwaggerCodegen>
