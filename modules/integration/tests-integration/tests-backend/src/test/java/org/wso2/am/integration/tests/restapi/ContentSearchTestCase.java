@@ -469,9 +469,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         accessKeyMap.put(RESTAPITestConstants.AUTHORIZATION_KEY, "Basic " + new String(encodedKeys, "UTF-8"));
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse tokenGenerateResponse = HttpRequestUtil
                 .doPost(tokenApiUrl, messageBody, accessKeyMap);
-        JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse);
-        String accessToken = new JSONObject(tokenGenJsonObject.get(RESTAPITestConstants.DATA_SECTION).toString())
-                .get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
+        JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse.getData());
+        String accessToken = tokenGenJsonObject.get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
 
         if (accessToken != null) {
             return accessToken;
