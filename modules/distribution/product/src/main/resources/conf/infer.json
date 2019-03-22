@@ -7,7 +7,7 @@
       "apim.traffic_manager.enable_decision_receiver": true,
       "apim.analytics.enable": true
     },
-    "km": {
+    "api-key-manager": {
       "apim.traffic_manager.enable_publishing": false,
       "apim.traffic_manager.enable_deployer": false,
       "apim.traffic_manager.enable_blocking_conditions": false,

@@ -1,6 +1,7 @@
 [deployment]
 hostname = "store.wso2.com"
 local_member_ip = "127.0.0.1"
+server_role="api-store"
 
 [super_admin]
 username = "admin"
@@ -35,3 +36,66 @@ key_password =  "wso2carbon"
 file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
+
+[[apim.gateway.environment]]
+name= "Production and Sandbox"
+type= "hybrid"
+display_in_api_console= true
+description= "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url= "https://gw.mgt.wso2.com:443/services/"
+username= "$conf{super_admin.username}"
+password= "$conf{super_admin.password}"
+ws_endpoint= "ws://api.gw.wso2.com:9099"
+http_endpoint = "http://api.gw.wso2.com:8280/"
+https_endpoint = "https://api.gw.wso2.com:8243/"
+
+
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$conf{super_admin.username}"
+password= "$conf{super_admin.password}"
+
+[apim.throttling]
+enable_data_publishing = false
+enable_policy_deployer = false
+enable_block_condition = false
+enable_decision_connection = false
+
+[apim.analytics]
+store_api_url = "https://analytics.wso2.com:7444"
+username= "$conf{super_admin.username}"
+password= "$conf{super_admin.password}"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic1.local:7612"
+analytics_auth_url="ssl://analytic1.local:7712"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic2.local:7612"
+analytics_auth_url="ssl://analytic2.local:7712"
+
+
+[apim.cache.recent_api]
+enabled = false
+
+[apim.cache.scope]
+enabled = true
+
+[apim.cache.tag]
+expiry_time = 120000
+
+[apim.oauth_config]
+revoke_endpoint = "https://localhost:8243/revoke"
+enable_token_encryption = false
+enable_token_hashing = false
+
+[apim.store]
+application_sharing_type = "default" #changed to type, saml, default, custom or rest # need to check the words # validate
+#application_sharing_type = "custom"
+#application_sharing_impl = "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+display_multiple_versions = false
+display_deprecated_apis = false
+enable_comments = true
+enable_ratings = true
+enable_forum = true

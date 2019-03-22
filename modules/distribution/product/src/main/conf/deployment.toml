@@ -28,15 +28,15 @@ alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
 [[apim.gateway.environment]]
-name= "Production and Sandbox"
-type= "hybrid"
-display_in_api_console= true
-description= "This is a hybrid gateway that handles both production and sandbox token traffic."
-isDefault= true
-service_url= "https://localhost:9443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
-ws_endpoint= "ws://localhost:9099"
+name = "Production and Sandbox"
+type = "hybrid"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:9443/services/"
+username = "$conf{super_admin.username}"
+password = "$conf{super_admin.password}"
+ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:8280/"
 https_endpoint = "https://localhost:8243/"
 
@@ -69,25 +69,25 @@ expiry_time = 120000
 
 [apim.analytics]
 store_api_url = "https://localhost:7444"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username = "$conf{super_admin.username}"
+password = "$conf{super_admin.password}"
 
 [[apim.analytics.analytics_node]]
-analytics_url="tcp://localhost:7612"
-analytics_auth_url="ssl://localhost:7712"
+analytics_url ="tcp://localhost:7612"
+analytics_auth_url ="ssl://localhost:7712"
 
 [[apim.analytics.analytics_node]]
-analytics_url="tcp://localhost:7612"
-analytics_auth_url="ssl://localhost:7712"
+analytics_url = "tcp://localhost:7612"
+analytics_auth_url = "ssl://localhost:7712"
 
 
 [apim.key_manager]
 service_url = "https://localhost:9443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
-pool.init_idle_capacity=50
-max_idle=100
-custom_key_validation_handler="org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
+username = "$conf{super_admin.username}"
+password = "$conf{super_admin.password}"
+pool.init_idle_capacity = 50
+pool.max_idle = 100
+custom_key_validation_handler = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 [apim.jwt]
 generator_type = "default" # default,url_safe or custom
@@ -126,6 +126,7 @@ allow_headers = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPActi
 allow_credentials = "false"
 
 [apim.throttling]
+service_url = "https://localhost:9443/services/"
 username= "$conf{super_admin.username}"
 password= "$conf{super_admin.password}"
 
@@ -152,6 +153,13 @@ traffic_manager_auth_url="ssl://localhost:9711"
 traffic_manager_url="tcp://localhost:9611"
 traffic_manager_auth_url="ssl://localhost:9711"
 
-#receiver_url="tcp://localhost:9611"
-
-
+[apim.workflow]
+enabled = false
+service_url = "https://localhost:9445/bpmn"
+username = "$conf{super_admin.username}"
+password = "$conf{super_admin.password}"
+callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.14/workflows/update-workflow-status"
+token_endpoint = "https://localhost:${https.nio.port}/token"
+client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.14/register"
+client_registration_username = "$conf{super_admin.username}"
+client_registration_password = "$conf{super_admin.password}"
