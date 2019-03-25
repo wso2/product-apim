@@ -675,7 +675,8 @@ public class ScenarioTestBase {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
-
+                        // Exception can be ignored since we are doing this in a loop.
+                        // Worst case: Loop will request for the API status without waiting.
                     }
                 }
             }
