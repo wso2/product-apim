@@ -19,18 +19,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.12.4</version>
                 <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>framework.resource.location</name>
-                            <value>
-                                ${project.basedir}/src/main/resources/
-                            </value>
-                            <name>test.resource.location</name>
-                            <value>
-                                ${project.basedir}/src/test/resources/
-                            </value>
-                        </property>
-                    </systemProperties>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <test.resource.location>${project.basedir}/src/test/resources/</test.resource.location>
+                        <framework.resource.location>${project.basedir}/src/main/resources/</framework.resource.location>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

@@ -28,7 +28,7 @@
         <module>scenarios-common</module>
         <module>1-manage-public-partner-private-apis</module>
         <module>2-collaborative-api-development</module>
-        <module>3-securing-an-api-with-different-security-protocols</module>
+        <!--<module>3-securing-an-api-with-different-security-protocols</module>-->
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
         <module>6-rollout-api-updates-seamlessly</module>

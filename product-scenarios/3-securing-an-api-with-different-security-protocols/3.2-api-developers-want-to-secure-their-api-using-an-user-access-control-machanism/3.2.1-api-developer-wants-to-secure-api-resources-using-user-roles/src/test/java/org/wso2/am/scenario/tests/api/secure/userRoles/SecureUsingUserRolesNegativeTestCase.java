@@ -26,6 +26,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
@@ -33,6 +37,7 @@ import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,11 +133,21 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         File swaggerFile = new File(swaggerFilePath);
         String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
         JSONObject swaggerJson = new JSONObject(swaggerContent);
-        try {
-            apiPublisher.developSampleAPI(swaggerJson, SUPER_USER, backendEndPoint, true, apiVisibility);
-        } catch (Exception ex) {
-            log.error("API publication failed", ex);
-        }
+        String apiContext = swaggerJson.get("basePath").toString();
+
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, "", "Gold",
+                new URL(backendEndPoint));
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(apiName, SUPER_USER,
+                        APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        waitForAPIDeploymentSync(SUPER_USER, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
     }
 
     @Test(description = "3.2.1.9", dataProvider = "ScopeAndInValidRoleDataProvider",

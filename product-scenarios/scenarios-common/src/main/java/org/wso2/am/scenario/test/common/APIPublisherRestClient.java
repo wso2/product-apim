@@ -22,6 +22,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIImplementationBean;

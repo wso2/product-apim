@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.APIStoreRestClient;
@@ -200,6 +201,8 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         createAPI(apiRequest);
         getAPI(PUBLISHER_CREATOR_USERNAME);
         publishAPI(apiName, PUBLISHER_CREATOR_USERNAME);
+        waitForAPIDeploymentSync(PUBLISHER_CREATOR_USERNAME, apiName, apiVersion,
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         apiName = "APIVisibility_tagsDistinctRoles2";
         apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
