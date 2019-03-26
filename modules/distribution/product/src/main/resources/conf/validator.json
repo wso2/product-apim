@@ -25,5 +25,23 @@
       "match_regex": ".+",
       "error_message": "claims_extractor_impl class is required for custom claim extractor implementation"
     }
+  ],
+  "apim.analytics.event_publisher_impl": [
+    {
+      "if": {
+        "apim.analytics.event_publisher_type": "custom"
+      },
+      "match_regex": ".+",
+      "error_message": "event_publisher_impl class is required for custom event publisher implementation"
+    }
+  ],
+  "apim.key_manager.key_validation_handler_impl": [
+    {
+      "if": {
+        "apim.key_manager.key_validation_handler_type": "custom"
+      },
+      "match_regex": ".+",
+      "error_message": "key_validation_handler_impl class is required for custom key validation implementation"
+    }
   ]
 }

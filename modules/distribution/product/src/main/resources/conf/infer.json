@@ -73,15 +73,15 @@
   },
   "apim.oauth_config.encrypt_persisted_token": {
     "default": {
-      "apim.oauth.encrypt_persisted_token": "true"
+      "apim.oauth_config.encrypt_persisted_token": "true"
     }
   },
   "apim.oauth_config.token_hash_mode": {
     "default": {
-      "apim.oauth.enable_token_hash_mode": "true"
+      "apim.oauth_config.enable_token_hash_mode": "true"
     }
   },
-  "apim.throttling.jms.factory.type": {
+  "apim.throttling.decision_connection_type": {
     "andes": {
       "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
     }
@@ -89,6 +89,16 @@
   "apim.publisher.doc_visibility": {
     "enable": {
       "apim.publisher.enable_api_doc_visibility": true
+    }
+  },
+  "apim.analytics.event_publisher_type": {
+    "default": {
+      "apim.analytics.event_publisher_impl": "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
+    }
+  },
+  "apim.key_manager.key_validation_handler_type": {
+    "default": {
+      "apim.key_manager.key_validation_handler_impl": "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
     }
   }
 }

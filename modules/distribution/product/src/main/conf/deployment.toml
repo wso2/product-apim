@@ -71,6 +71,9 @@ expiry_time = 120000
 store_api_url = "https://localhost:7444"
 username = "$conf{super_admin.username}"
 password = "$conf{super_admin.password}"
+event_publisher_type = "default"
+#event_publisher_type = "custom"
+#event_publisher_impl = "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
 
 [[apim.analytics.analytics_node]]
 analytics_url ="tcp://localhost:7612"
@@ -87,7 +90,9 @@ username = "$conf{super_admin.username}"
 password = "$conf{super_admin.password}"
 pool.init_idle_capacity = 50
 pool.max_idle = 100
-custom_key_validation_handler = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
+key_validation_handler_type = "default"
+#key_validation_handler_type = "custom"
+#key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 [apim.jwt]
 generator_type = "default" # default,url_safe or custom
@@ -101,7 +106,7 @@ user_claims = "default"
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.oauth_config]
-remove_outbound_auth_header = true
+outbound_auth_header_enabled = false
 auth_header = "Authorization"
 revoke_endpoint = "https://localhost:8243/revoke"
 enable_token_encryption = false
@@ -114,16 +119,15 @@ application_sharing_type = "default" #changed to type, saml, default, custom or 
 #application_sharing_impl = "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
 display_multiple_versions = false
 display_deprecated_apis = false
-enable_comments = true
-enable_ratings = true
-enable_forum = true
+comments_enabled = true
+ratings_enabled = true
+forum_enabled = true
 
 [apim.cors]
-enable = true
 allow_origins = "*"
-allow_methods = "GET,PUT,POST,DELETE,PATCH,OPTIONS"
-allow_headers = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction"
-allow_credentials = "false"
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_credentials = false
 
 [apim.throttling]
 service_url = "https://localhost:9443/services/"
@@ -133,7 +137,6 @@ password= "$conf{super_admin.password}"
 enable_data_publishing = true
 enable_policy_deployer = true
 enable_block_condition = true
-enable_decision_connection = true
 
 throttle_decision_endpoints = ["tcp://localhost:5672","tcp://localhost:5672"]
 
