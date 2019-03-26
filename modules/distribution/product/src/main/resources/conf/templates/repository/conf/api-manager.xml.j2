@@ -20,14 +20,14 @@
          logic relies on this. -->
     <AuthManager>
         <!-- Server URL of the Authentication service -->
-        <ServerURL>{{apim.auth_manager.url}}</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
         <!-- Admin username for the Authentication manager. -->
-        <Username>{{apim.auth_manager.username}}</Username>
+        <Username>${admin.username}</Username>
         <!-- Admin password for the Authentication manager. -->
-        <Password>{{apim.auth_manager.password}}</Password>
+        <Password>${admin.password}</Password>
         <!-- Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
            via a remote service. The check will be done on the local server when false. -->
-        <CheckPermissionsRemotely>{{apim.auth_manager.check_permission_remotely}}</CheckPermissionsRemotely>
+        <CheckPermissionsRemotely>false</CheckPermissionsRemotely>
     </AuthManager>
 
     <JWTConfiguration>
@@ -199,22 +199,10 @@
         </StreamProcessorAuthServerURL>
         {% endif %}
         <!-- Administrator username to login to the remote StreamProcessor server. -->
-        {% if apim.analytics.receiver_username is defined%}
         <StreamProcessorUsername>{{apim.analytics.receiver_username}}</StreamProcessorUsername>
-        {% elif apim.analytics.username is defined%}
-        <StreamProcessorUsername>{{apim.analytics.username}}</StreamProcessorUsername>
-        {% else %}
-        <StreamProcessorUsername>${admin.username}</StreamProcessorUsername>
-        {% endif %}
 
         <!-- Administrator password to login to the remote StreamProcessor server. -->
-        {% if apim.analytics.receiver_password is defined %}
         <StreamProcessorPassword>{{apim.analytics.receiver_password}}</StreamProcessorPassword>
-        {% elif apim.analytics.password is defined %}
-        <StreamProcessorPassword>{{apim.analytics.password}}</StreamProcessorPassword>
-        {% else %}
-        <StreamProcessorPassword>${admin.password}</StreamProcessorPassword>
-        {% endif %}
 
         <!-- For APIM implemented Statistic client for RDBMS -->
         <StatsProviderImpl>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatsProviderImpl>
@@ -222,21 +210,9 @@
         <!-- StreamProcessor REST API configuration -->
         <StreamProcessorRestApiURL>{{apim.analytics.rest_api_url}}</StreamProcessorRestApiURL>
 
-        {% if apim.analytics.rest_api_username is defined %}
         <StreamProcessorRestApiUsername>{{apim.analytics.rest_api_username}}</StreamProcessorRestApiUsername>
-        {% elif apim.analytics.username is defined%}
-        <StreamProcessorRestApiUsername>{{apim.analytics.username}}</StreamProcessorRestApiUsername>
-        {% else %}
-        <StreamProcessorRestApiUsername>${admin.username}</StreamProcessorRestApiUsername>
-        {% endif %}
 
-        {% if apim.analytics.rest_api_password is defined %}
         <StreamProcessorRestApiPassword>{{apim.analytics.rest_api_password}}</StreamProcessorRestApiPassword>
-        {% elif apim.analytics.password is defined%}
-        <StreamProcessorRestApiPassword>{{apim.analytics.password}}</StreamProcessorRestApiPassword>
-        {% else %}
-        <StreamProcessorRestApiPassword>${admin.password}</StreamProcessorRestApiPassword>
-        {% endif %}
 
         <!-- Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true. -->
@@ -313,11 +289,7 @@
         </ConnectionPool>
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
              custom KeyValidation Handler -->
-        {% if apim.key_manager.custom_key_validation_handler is defined %}
-        <KeyValidationHandlerClassName>{{apim.key_manager.custom_key_validation_handler}}</KeyValidationHandlerClassName>
-        {% else %}
-        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
-        {% endif %}
+        <KeyValidationHandlerClassName>{{apim.key_manager.key_validation_handler_type}}</KeyValidationHandlerClassName>
     </APIKeyValidator>
 
     <!-- Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
@@ -335,15 +307,15 @@
 
     <OAuthConfigurations>
         <!-- Remove OAuth headers from outgoing message. -->
-        <RemoveOAuthHeadersFromOutMessage>{{apim.oauth.remove_outbound_auth_header}}</RemoveOAuthHeadersFromOutMessage>
+        <RemoveOAuthHeadersFromOutMessage>{{not apim.oauth_config.outbound_auth_header_enabled}}</RemoveOAuthHeadersFromOutMessage>
         <!--Authorization header-->
-        <AuthorizationHeader>{{apim.oauth.auth_header}}</AuthorizationHeader>
+        <AuthorizationHeader>{{apim.oauth_config.auth_header}}</AuthorizationHeader>
         <!-- Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens -->
-        <ApplicationTokenScope>{{apim.oauth.default_app_scope}}</ApplicationTokenScope>
+        <ApplicationTokenScope>{{apim.oauth_config.default_app_scope}}</ApplicationTokenScope>
         <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
              By default ^device_.* and openid scopes have been white listed internally. -->
         <ScopeWhitelist>
-        {%for scope in apim.oauth.white_listed_scopes%}
+        {%for scope in apim.oauth_config.white_listed_scopes%}
             <Scope>{{scope}}</Scope>
             {% endfor %}
             <Scope>openid</Scope>
@@ -356,16 +328,16 @@
              In distributed deployment we should configure this property in key manager node by pointing
              gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
              Also please note that we should point gateway revoke service to key manager -->
-        <RevokeAPIURL>{{apim.oauth.revoke_endpoint}}</RevokeAPIURL>
+        <RevokeAPIURL>{{apim.oauth_config.revoke_endpoint}}</RevokeAPIURL>
         <!-- Whether to encrypt tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
-        <EncryptPersistedTokens>{{apim.oauth.enable_token_encryption}}</EncryptPersistedTokens>
+        <EncryptPersistedTokens>{{apim.oauth_config.token_encryption_enabled}}</EncryptPersistedTokens>
         <!-- Whether to hash the tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor and change the value of
         <EnableClientSecretHash> to true in the identity.xml -->
-        <EnableTokenHashMode>{{apim.oauth.enable_token_hashing}}</EnableTokenHashMode>
+        <EnableTokenHashMode>{{apim.oauth_config.token_hashing_enabled}}</EnableTokenHashMode>
     </OAuthConfigurations>
 
     <!-- Settings related to managing API access tiers. -->
@@ -404,14 +376,14 @@
 
         <!-- This parameter specifies whether to display the comment editing facility or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayComments>{{apim.store.enable_comments}}</DisplayComments>
+        <DisplayComments>{{apim.store.comments_enabled}}</DisplayComments>
 
         <!-- This parameter specifies whether to display the ratings  or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayRatings>{{apim.store.enable_ratings}}</DisplayRatings>
+        <DisplayRatings>{{apim.store.ratings_enabled}}</DisplayRatings>
 
         <!--set isStoreForumEnabled to false for disable forum in store-->
-        <isStoreForumEnabled>{{apim.store.enable_forum}}</isStoreForumEnabled>
+        <isStoreForumEnabled>{{apim.store.forum_enabled}}</isStoreForumEnabled>
 
     </APIStore>
 
@@ -442,17 +414,17 @@
          and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
         <!-- Configuration to enable/disable sending CORS headers from the Gateway-->
-        <Enabled>{{apim.cors.enable}}</Enabled>
+        <Enabled>{{apim.cors.enabled}}</Enabled>
 
         <!-- The value of the Access-Control-Allow-Origin header. Default values are
              API Store addresses, which is needed for swagger to function. -->
-        <Access-Control-Allow-Origin>{{apim.cors.allow_origins}}</Access-Control-Allow-Origin>
+        <Access-Control-Allow-Origin>{% for origin in apim.cors.allow_origins %}{{origin}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Origin>
 
         <!-- Configure Access-Control-Allow-Methods -->
-        <Access-Control-Allow-Methods>{{apim.cors.allow_methods}}</Access-Control-Allow-Methods>
+        <Access-Control-Allow-Methods>{% for method in apim.cors.allow_methods %}{{method}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Methods>
 
         <!-- Configure Access-Control-Allow-Headers -->
-        <Access-Control-Allow-Headers>{{apim.cors.allow_headers}}</Access-Control-Allow-Headers>
+        <Access-Control-Allow-Headers>{% for header in apim.cors.allow_headers %}{{header}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Headers>
 
         <!-- Configure Access-Control-Allow-Credentials -->
         <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
@@ -636,7 +608,7 @@
         </ETagSkipList>
     </RESTAPI>
     <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>{{apim.throttling.advanced_throttling}}</EnableAdvanceThrottling>
+        <EnableAdvanceThrottling>{{apim.throttling.advanced_throttling_enabled}}</EnableAdvanceThrottling>
         <TrafficManager>
             <Type>{{apim.throttling.tm.event_type}}</Type>
 
@@ -668,7 +640,7 @@
             <Password>{{apim.throttling.tm.receiver_password}}</Password>
         </TrafficManager>
         <DataPublisher>
-            <Enabled>{{apim.throttling.enable_data_publishing}}</Enabled>
+            <Enabled>{{apim.throttling.data_publishing_enabled}}</Enabled>
             <DataPublisherPool>
                 <MaxIdle>{{apim.throttling.publisher.max_idle}}</MaxIdle>
                 <InitIdleCapacity>{{apim.throttling.publisher.init_idle_size}}</InitIdleCapacity>
@@ -680,13 +652,13 @@
             </DataPublisherThreadPool>
         </DataPublisher>
         <PolicyDeployer>
-            <Enabled>{{apim.throttling.enable_policy_deployer}}</Enabled>
+            <Enabled>{{apim.throttling.policy_deploy_enabled}}</Enabled>
             <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
             <Username>{{apim.throttling.policy_deploy.user}}</Username>
             <Password>{{apim.throttling.policy_deploy.pass}}</Password>
         </PolicyDeployer>
         <BlockCondition>
-            <Enabled>{{apim.throttling.enable_block_condition}}</Enabled>
+            <Enabled>{{apim.throttling.blacklist_condition_enabled}}</Enabled>
             {% if apim.throttling.block_condition.start_delay is defined %}
             <InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
             {% endif %}
@@ -695,7 +667,7 @@
             {% endif %}
         </BlockCondition>
         <JMSConnectionDetails>
-            <Enabled>{{apim.throttling.jms.enable}}</Enabled>
+            <Enabled>{{apim.throttling.throttle_decision_endpoints is defined or apim.throttling.jms.topic_connection_factory is defined}}</Enabled>
             <Destination>{{apim.throttling.jms.destination}}</Destination>
             {% if apim.throttling.jms.start_delay is defined %}
             <InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay>
@@ -732,10 +704,10 @@
                 <10KPerMin>10000</10KPerMin>
             </ResourceLevelTierLimits>
         </DefaultLimits-->
-        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
-        <EnableHeaderConditions>{{apim.throttling.enable_header_condition}}</EnableHeaderConditions>
-        <EnableJWTClaimConditions>{{apim.throttling.enable_jwt_claim_condition}}</EnableJWTClaimConditions>
-        <EnableQueryParamConditions>{{apim.throttling.enable_query_param_condition}}</EnableQueryParamConditions>
+        <EnableUnlimitedTier>{{apim.throttling.unlimited_tier_enabled}}</EnableUnlimitedTier>
+        <EnableHeaderConditions>{{apim.throttling.header_based_throttling_enabled}}</EnableHeaderConditions>
+        <EnableJWTClaimConditions>{{apim.throttling.jwt_claim_based_throttling_enabled}}</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>{{apim.throttling.query_param_based_throttling_enabled}}</EnableQueryParamConditions>
     </ThrottlingConfigurations>
     
     <WorkflowConfigurations>
