@@ -309,7 +309,7 @@ public final class APIImportUtil {
         }
 
         try {
-
+            importedApi.setAsDefaultVersion(false);
             provider.addAPI(importedApi);
 
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
