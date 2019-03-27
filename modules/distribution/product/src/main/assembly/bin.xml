@@ -172,6 +172,10 @@
             <directory>src/main/resources/conf/templates</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>src/main/resources/conf/deployment-templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/deployment-templates</outputDirectory>
+        </fileSet>
         <!--fileSet>
             <directory>./src/main/resources</directory>
             <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>

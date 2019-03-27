@@ -44,14 +44,14 @@ type= "hybrid"
 display_in_api_console= true
 description= "This is a hybrid gateway that handles both production and sandbox token traffic."
 service_url= "https://gw.mgt.wso2.com:443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 [[apim.analytics.analytics_node]]
 analytics_url="tcp://analytic1.local:7612"
@@ -65,8 +65,8 @@ analytics_auth_url="ssl://analytic2.local:7712"
 # Traffic Manager configurations
 [apim.throttling]
 service_url = "https://tm.wso2.com:443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 data_publishing_enabled = true
 policy_deploy_enabled = true
@@ -93,10 +93,10 @@ url = "https://store.wso2.com:443/store"
 [apim.workflow]
 enabled = false
 service_url = "https://localhost:9445/bpmn"
-username = "$conf{super_admin.username}"
-password = "$conf{super_admin.password}"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
 callback_endpoint = "https://localhost:9443/api/am/publisher/v0.14/workflows/update-workflow-status"
 token_endpoint = "https://localhost:8243/token"
 client_registration_endpoint = "https://localhost:9443/client-registration/v0.14/register"
-client_registration_username = "$conf{super_admin.username}"
-client_registration_password = "$conf{super_admin.password}"
+client_registration_username = "$ref{super_admin.username}"
+client_registration_password = "$ref{super_admin.password}"

@@ -32,16 +32,16 @@ password = "wso2carbon"
 # key manager implementation
 [apim.key_manager]
 service_url = "https://km.wso2.com:443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 #pool.init_idle_capacity=50
 #pool.max_idle=100
 #custom_key_validation_handler="org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 # Traffic Manager configurations
 [apim.throttling]
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 #derive based on the profile
 data_publishing_enabled = true
@@ -65,8 +65,8 @@ traffic_manager_auth_url="ssl://tm2.local:9711"
 
 
 [apim.analytics]
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 [[apim.analytics.analytics_node]]
 analytics_url="tcp://analytic1.local:7612"
