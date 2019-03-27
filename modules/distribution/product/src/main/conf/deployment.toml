@@ -95,14 +95,13 @@ key_validation_handler_type = "default"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 [apim.jwt]
-generator_type = "default" # default,url_safe or custom
-#generator_type = "custom"
+enabled = true
+encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims"
 header = "X-JWT-Assertion"
-dialect = "http://wso2.org/claims"
-algo = "SHA256withRSA"
-user_claims = "default"
-#user_claims = "custom"
+signing_algorithm = "SHA256withRSA"
+user_claims_enabled = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.oauth_config]
@@ -114,9 +113,10 @@ enable_token_hashing = false
 
 [apim.store]
 url = "https://localhost:9443/store"
-application_sharing_type = "default" #changed to type, saml, default, custom or rest # need to check the words # validate
-#application_sharing_type = "custom"
-#application_sharing_impl = "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+application_sharing_enabled = true
+#if application_sharing_type, application_sharing_impl both defined priority goes to application_sharing_impl
+application_sharing_type = "default" #changed type, saml, default #todo: check the new config for rest api
+#application_sharing_impl = "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
 display_multiple_versions = false
 display_deprecated_apis = false
 comments_enabled = true

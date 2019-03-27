@@ -10,8 +10,8 @@ create_admin_account = true
 
 [database.shared_db]
 type = "mysql"
-hostname = "apim.mysql"
-name = "apimgtdb"
+hostname = "shared_db.mysql"
+name = "shared_db"
 port = "3306"
 username = "shareduser"
 password = "shareduser"

@@ -18,8 +18,8 @@ password = "apimuser"
 
 [database.shared_db]
 type = "mysql"
-hostname = "apim.mysql"
-name = "apimgtdb"
+hostname = "shared_db.mysql"
+name = "shared_db"
 port = "3306"
 username = "shareduser"
 password = "shareduser"
@@ -43,7 +43,6 @@ name= "Production and Sandbox"
 type= "hybrid"
 display_in_api_console= true
 description= "This is a hybrid gateway that handles both production and sandbox token traffic."
-show_as_token_endpoint_url= true
 service_url= "https://gw.mgt.wso2.com:443/services/"
 username= "$conf{super_admin.username}"
 password= "$conf{super_admin.password}"
@@ -62,11 +61,6 @@ analytics_auth_url="ssl://analytic1.local:7712"
 analytics_url="tcp://analytic2.local:7612"
 analytics_auth_url="ssl://analytic2.local:7712"
 
-[apim.key_manager]
-service_url = "https://km.wso2.com:443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
-
 
 # Traffic Manager configurations
 [apim.throttling]
@@ -74,10 +68,10 @@ service_url = "https://tm.wso2.com:443/services/"
 username= "$conf{super_admin.username}"
 password= "$conf{super_admin.password}"
 
-enable_data_publishing = true
-enable_policy_deployer = true
-enable_block_condition = false
-enable_decision_connection = false
+data_publishing_enabled = true
+policy_deploy_enabled = true
+blacklist_condition_enabled = false
+# JMS connection also should be disable
 
 [[apim.throttling.nodes.group0]]
 traffic_manager_url="tcp://tm1.local:9611"
@@ -87,10 +81,10 @@ traffic_manager_auth_url="ssl://tm1.local:9711"
 traffic_manager_url="tcp://tm2.local:9611"
 traffic_manager_auth_url="ssl://tm2.local:9711"
 
-[apim.cache.scope]
+[apim.cache.scopes]
 enabled = true
 
-[apim.cache.publisher_role]
+[apim.cache.publisher_roles] #check the usage and move to dev role
 enabled = true
 
 [apim.store]
@@ -101,8 +95,8 @@ enabled = false
 service_url = "https://localhost:9445/bpmn"
 username = "$conf{super_admin.username}"
 password = "$conf{super_admin.password}"
-callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.14/workflows/update-workflow-status"
-token_endpoint = "https://localhost:${https.nio.port}/token"
-client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.14/register"
+callback_endpoint = "https://localhost:9443/api/am/publisher/v0.14/workflows/update-workflow-status"
+token_endpoint = "https://localhost:8243/token"
+client_registration_endpoint = "https://localhost:9443/client-registration/v0.14/register"
 client_registration_username = "$conf{super_admin.username}"
 client_registration_password = "$conf{super_admin.password}"

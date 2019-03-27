@@ -18,8 +18,8 @@ password = "apimuser"
 
 [database.shared_db]
 type = "mysql"
-hostname = "apim.mysql"
-name = "apimgtdb"
+hostname = "shared_db.mysql"
+name = "shared_db"
 port = "3306"
 username = "shareduser"
 password = "shareduser"
@@ -47,18 +47,17 @@ expiry_time = 900
 
 # JWT Generation
 [apim.jwt]
-generator_type = "default" # default,url_safe or custom
-#generator_type = "custom"
+enabled = true
+encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims"
 header = "X-JWT-Assertion"
-dialect = "http://wso2.org/claims"
-algo = "SHA256withRSA"
-user_claims = "default"
-#user_claims = "custom"
-#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+signing_algorithm = "SHA256withRSA"
+user_claims_enabled = true
+claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.throttling]
-enable_data_publishing = false
-enable_policy_deployer = false
-enable_block_condition = false
-enable_decision_connection = false
+data_publishing_enabled = false
+policy_deploy_enabled = false
+blacklist_condition_enabled = false
+# JMS connection also should be disable
