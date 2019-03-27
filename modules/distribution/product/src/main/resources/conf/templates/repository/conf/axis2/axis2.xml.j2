@@ -283,12 +283,14 @@
       </transportSender>
 {% endif %}
 
+{% if transport.ws.sender.enable %}
     <transportSender name="ws" class="{{transport.ws.sender.class}}">
              {% for name,value in transport.ws.sender.parameters.items() %}
                      <parameter name="{{name}}" locked="false">{{value}}</parameter>
               {% endfor %}
     </transportSender>
-
+{%endif%}
+{%if transport.wss.sender.enable %}
     <transportSender name="wss" class="{{transport.wss.sender.class}}">
   {% for name,value in transport.wss.sender.parameters.items() %}
         <parameter name="{{name}}" locked="false">{{value}}</parameter>
@@ -298,7 +300,7 @@
             <ws.trust.store.Password>{{transport.wss.sender.trust_store.password}}</ws.trust.store.Password>
         </parameter>
     </transportSender>
-
+{%endif%}
 
     <!-- ================================================= -->
     <!--             Global Engaged Modules                -->
@@ -391,6 +393,10 @@
         contact this member
          -->
         <parameter name="localMemberPort">{{clustering.local_member_port | default('4000')}}</parameter>
+
+        {% for property_name,property_value in clustering.properties.items() %}
+        <parameter name="{{property_name}}">{{property_value}}</parameter>
+        {% endfor %}
 
         <!--
             The bind port of this member. The difference between localMemberPort & localMemberBindPort

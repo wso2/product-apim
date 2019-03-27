@@ -1,4 +1,22 @@
 {
   "apim.cache.km_token.expiry_time" : "apim.cache.token_expiry_time",
-  "apim.cache.gateway_token.expiry_time" : "apim.cache.token_expiry_time"
+  "apim.cache.gateway_token.expiry_time" : "apim.cache.token_expiry_time",
+  "transport.thrift.receiver.parameters.tcp_port": "transport.thrift.receiver.parameters.tcpPort",
+  "transport.thrift.receiver.parameters.ssl_port": "transport.thrift.receiver.parameters.sslPort",
+  "transport.thrift.receiver.parameters.ssl_enabled_protocols": "transport.thrift.receiver.parameters.sslEnabledProtocols",
+  "transport.thrift.receiver.parameters.ciphers": "transport.thrift.receiver.parameters.ciphers",
+  "transport.thrift.receiver.parameters.tcp_max_worker_threads": "transport.thrift.receiver.parameters.tcpMaxWorkerThreads",
+  "transport.thrift.receiver.parameters.tcp_min_worker_threads": "transport.thrift.receiver.parameters.tcpMinWorkerThreads",
+  "transport.thrift.receiver.parameters.tcp_request_timeout": "transport.thrift.receiver.parameters.tcpRequestTimeout",
+  "transport.thrift.receiver.parameters.tcp_stop_timeout": "transport.thrift.receiver.parameters.tcpStopTimeoutVal",
+  "transport.thrift.receiver.parameters.ssl_max_worker_threads": "transport.thrift.receiver.parameters.sslMaxWorkerThreads",
+  "transport.thrift.receiver.parameters.ssl_min_worker_threads": "transport.thrift.receiver.parameters.sslMinWorkerThreads",
+  "transport.thrift.receiver.parameters.ssl_request_timeout": "transport.thrift.receiver.parameters.sslRequestTimeout",
+  "transport.thrift.receiver.parameters.ssl_stop_timeout": "transport.thrift.receiver.parameters.sslStopTimeoutVal",
+  "transport.binary.receiver.parameters.tcp_port": "transport.binary.receiver.parameters.tcpPort",
+  "transport.binary.receiver.parameters.ssl_port": "transport.binary.receiver.parameters.sslPort",
+  "transport.binary.receiver.parameters.ssl_receiver_thread_pool_size": "transport.binary.receiver.parameters.sslReceiverThreadPoolSize",
+  "transport.binary.receiver.parameters.tcp_receiver_thread_pool_size": "transport.binary.receiver.parameters.tcpReceiverThreadPoolSize",
+  "transport.binary.receiver.parameters.ssl_enabled_protocols": "transport.binary.receiver.parameters.sslEnabledProtocols",
+  "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers"
 }

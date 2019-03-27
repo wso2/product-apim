@@ -236,16 +236,20 @@
 
     <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
-        <startIndexing>true</startIndexing>
+        <startIndexing>{{indexing.enable}}</startIndexing>
         <skipCache>true</skipCache>
-        <startingDelayInSeconds>35</startingDelayInSeconds>
-        <indexingFrequencyInSeconds>3</indexingFrequencyInSeconds>
+        <startingDelayInSeconds>{{indexing.starting_delay}}</startingDelayInSeconds>
+        <indexingFrequencyInSeconds>{{indexing.frequency}}</indexingFrequencyInSeconds>
         <!--number of resources submit for given indexing thread -->
-        <batchSize>40</batchSize>
+        <batchSize>{{indexing.bach_size}}</batchSize>
         <!--number of worker threads for indexing -->
-        <indexerPoolSize>40</indexerPoolSize>
+        <indexerPoolSize>{{indexing.pool_size}}</indexerPoolSize>
         <!-- location storing the time the indexing took place-->
+        {% if indexing.re_indexing is defined %}
+        <lastAccessTimeLocation>/_system/local/repository/components/org.wso2.carbon.registry/indexing/lastaccesstime_{{indexing.re_indexing}}</lastAccessTimeLocation>
+        {%else%}
         <lastAccessTimeLocation>/_system/local/repository/components/org.wso2.carbon.registry/indexing/lastaccesstime</lastAccessTimeLocation>
+        {%endif%}
         <!-- the indexers that implement the indexer interface for a relevant media type/(s) -->
         <indexers>
             <!--indexer class="org.wso2.carbon.registry.indexing.indexer.MSExcelIndexer" mediaTypeRegEx="application/vnd.ms-excel"/>
