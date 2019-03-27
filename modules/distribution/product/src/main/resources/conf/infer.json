@@ -36,18 +36,16 @@
       "apim.analytics.enable": false
     }
   },
-  "apim.jwt.generator_type": {
-    "default": {
-      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
-      "apim.jwt.generator.enable": true
+  "apim.jwt.encoding": {
+    "base64": {
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
     },
-    "url_safe": {
-      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
-      "apim.jwt.generator.enable": true
+    "base64url": {
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator"
     }
   },
-  "apim.jwt.user_claims": {
-    "default": {
+  "apim.jwt.user_claims_enabled": {
+    true: {
       "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
     }
   },

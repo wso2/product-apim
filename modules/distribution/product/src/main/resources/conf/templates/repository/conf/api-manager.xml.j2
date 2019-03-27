@@ -32,7 +32,7 @@
 
     <JWTConfiguration>
         <!-- Enable/Disable JWT generation. Default is false. -->
-        <EnableJWTGeneration>{{apim.jwt.generator.enable | default('false')}}</EnableJWTGeneration>
+        <EnableJWTGeneration>{{apim.jwt.enabled}}</EnableJWTGeneration>
 
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>{{apim.jwt.header}}</JWTHeader>
@@ -41,7 +41,7 @@
              to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
              jwt token, he needs to enable this parameter.
              The DefaultClaimsRetriever class adds user claims from the default carbon user store. -->
-        {% if apim.jwt.claims_extractor_impl is defined %}
+        {% if apim.jwt.user_claims_enabled %}
         <ClaimsRetrieverImplClass>{{apim.jwt.claims_extractor_impl}}</ClaimsRetrieverImplClass>
         {% else %}
         <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
@@ -51,15 +51,17 @@
              JWT are defined. Not used with custom ClaimsRetriever implementations. The
              same value is used in the keys for appending the default properties to the
              JWT. -->
-        <ConsumerDialectURI>{{apim.jwt.dialect}}</ConsumerDialectURI>
+        <ConsumerDialectURI>{{apim.jwt.claim_dialect}}</ConsumerDialectURI>
 
         <!-- Signature algorithm. Accepts "SHA256withRSA" or "NONE". To disable signing explicitly specify "NONE". -->
-        <SignatureAlgorithm>{{apim.jwt.algo}}</SignatureAlgorithm>
+        <SignatureAlgorithm>{{apim.jwt.signing_algorithm}}</SignatureAlgorithm>
 
         <!-- This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
 	     default implementation provided. -->
         {% if apim.jwt.generator_impl is defined %}
         <JWTGeneratorImpl>{{apim.jwt.generator_impl}}</JWTGeneratorImpl>
+        {% else %}
+        <JWTGeneratorImpl>org.wso2.carbon.apimgt.keymgt.token.JWTGenerator</JWTGeneratorImpl>
         {% endif %}
         <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
              Token generation the implementation is provided in URLSafeJWTGenerator -->
@@ -349,8 +351,12 @@
 
     <!-- API Store Related Configurations -->
     <APIStore>
-        {% if apim.store.application_sharing_impl is defined %}
+        {% if apim.store.application_sharing_enabled%}
+            {% if apim.store.application_sharing_impl is defined %}
         <GroupingExtractor>{{apim.store.application_sharing_impl}}</GroupingExtractor>
+            {% else %}
+        <GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor>
+            {% endif %}
         {% endif %}
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
         <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>

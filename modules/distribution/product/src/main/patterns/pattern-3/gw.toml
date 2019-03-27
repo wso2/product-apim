@@ -10,8 +10,8 @@ create_admin_account = true
 
 [database.shared_db]
 type = "mysql"
-hostname = "apim.mysql"
-name = "apimgtdb"
+hostname = "shared_db.mysql"
+name = "shared_db"
 port = "3306"
 username = "shareduser"
 password = "shareduser"
@@ -34,8 +34,8 @@ password = "wso2carbon"
 service_url = "https://km.wso2.com:443/services/"
 username= "$conf{super_admin.username}"
 password= "$conf{super_admin.password}"
-pool.init_idle_capacity=50
-pool.max_idle=100
+#pool.init_idle_capacity=50
+#pool.max_idle=100
 #custom_key_validation_handler="org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 # Traffic Manager configurations
@@ -43,14 +43,15 @@ pool.max_idle=100
 username= "$conf{super_admin.username}"
 password= "$conf{super_admin.password}"
 
-enable_data_publishing = true
-enable_policy_deployer = false
-enable_block_condition = true
-enable_decision_connection = true
-enable_unlimited_tier = true
-enable_header_condition = false
-enable_jwt_claim_condition = false
-enable_query_param_condition = false
+#derive based on the profile
+data_publishing_enabled = true
+policy_deploy_enabled = false
+blacklist_condition_enabled = true
+
+unlimited_tier_enabled = true
+header_based_throttling_enabled = false
+jwt_claim_based_throttling_enabled = false
+query_param_based_throttling_enabled = false
 
 throttle_decision_endpoints = ["tcp://tm1.local:5672","tcp://tm2.local:5672"]
 
@@ -80,6 +81,7 @@ analytics_auth_url="ssl://analytic2.local:7712"
 enabled = true
 expiry_time = 15
 
+#todo: remove the cache config. infer form dev mode
 [apim.cache.resource]
 enabled = true
 
@@ -89,9 +91,8 @@ remove_outbound_auth_header = true
 auth_header = "Authorization"
 
 [apim.cors]
-enable = true
 allow_origins = "*"
-allow_methods = "GET,PUT,POST,DELETE,PATCH,OPTIONS"
-allow_headers = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction"
-allow_credentials = "false"
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_credentials = false
 
