@@ -218,9 +218,9 @@
   "apim.cache.gateway_token.enabled": true,
   "apim.cache.resource.enabled": true,
   "apim.cache.km_token.enabled": false,
-  "apim.cache.recent_api.enabled": false,
-  "apim.cache.scope.enabled": true,
-  "apim.cache.publisher_role.enabled": true,
+  "apim.cache.recent_apis.enabled": false,
+  "apim.cache.scopes.enabled": true,
+  "apim.cache.publisher_roles.enabled": true,
   "apim.cache.jwt_claim.enabled": true,
 
   "apim.analytics.provider_impl": "org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl",
