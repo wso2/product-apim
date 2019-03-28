@@ -167,11 +167,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        {% if apim.analytics.receiver_urls is defined or apim.analytics.analytics_node is defined %}
-        <Enabled>true</Enabled>
-        {% else %}
-        <Enabled>false</Enabled>
-        {% endif %}
+        <Enabled>{{apim.analytics.enabled}}</Enabled>
         <!-- Server URL of the remote StreamProcessor server used to collect statistics. Must
              be specified in protocol://hostname:port/ format.
 

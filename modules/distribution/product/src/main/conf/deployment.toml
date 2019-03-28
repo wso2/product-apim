@@ -34,8 +34,8 @@ display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."
 show_as_token_endpoint_url = true
 service_url = "https://localhost:9443/services/"
-username = "$conf{super_admin.username}"
-password = "$conf{super_admin.password}"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
 ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:8280/"
 https_endpoint = "https://localhost:8243/"
@@ -68,9 +68,10 @@ expiry_time = 900
 expiry_time = 120000
 
 [apim.analytics]
+enabled = false
 store_api_url = "https://localhost:7444"
-username = "$conf{super_admin.username}"
-password = "$conf{super_admin.password}"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
 event_publisher_type = "default"
 #event_publisher_type = "custom"
 #event_publisher_impl = "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
@@ -86,8 +87,8 @@ analytics_auth_url = "ssl://localhost:7712"
 
 [apim.key_manager]
 service_url = "https://localhost:9443/services/"
-username = "$conf{super_admin.username}"
-password = "$conf{super_admin.password}"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
 pool.init_idle_capacity = 50
 pool.max_idle = 100
 key_validation_handler_type = "default"
@@ -131,8 +132,8 @@ allow_credentials = false
 
 [apim.throttling]
 service_url = "https://localhost:9443/services/"
-username= "$conf{super_admin.username}"
-password= "$conf{super_admin.password}"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
 
 enable_data_publishing = true
 enable_policy_deployer = true
@@ -159,10 +160,10 @@ traffic_manager_auth_url="ssl://localhost:9711"
 [apim.workflow]
 enabled = false
 service_url = "https://localhost:9445/bpmn"
-username = "$conf{super_admin.username}"
-password = "$conf{super_admin.password}"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
 callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.14/workflows/update-workflow-status"
 token_endpoint = "https://localhost:${https.nio.port}/token"
 client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.14/register"
-client_registration_username = "$conf{super_admin.username}"
-client_registration_password = "$conf{super_admin.password}"
+client_registration_username = "$ref{super_admin.username}"
+client_registration_password = "$ref{super_admin.password}"
