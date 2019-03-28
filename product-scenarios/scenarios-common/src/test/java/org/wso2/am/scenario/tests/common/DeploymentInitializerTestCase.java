@@ -19,6 +19,7 @@ package org.wso2.am.scenario.tests.common;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
@@ -39,7 +40,7 @@ public class DeploymentInitializerTestCase extends ScenarioTestBase {
     private WebAppAdminClient webAppAdminClient;
     private String resourceLocation = System.getProperty("test.resource.location");
 
-    @BeforeTest(alwaysRun = true)
+    @Test
     public void deployingWebAPPs() throws Exception {
         log.info(System.getProperty("test.resource.location"));
         log.info("Start deploying Web Apps");
