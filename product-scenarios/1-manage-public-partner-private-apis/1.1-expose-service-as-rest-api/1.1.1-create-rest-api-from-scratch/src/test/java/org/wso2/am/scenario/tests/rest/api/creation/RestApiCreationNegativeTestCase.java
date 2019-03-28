@@ -1,16 +1,15 @@
 package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.testng.annotations.AfterClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.util.Properties;
 import java.net.URL;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
