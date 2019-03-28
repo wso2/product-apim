@@ -287,7 +287,7 @@
         </ConnectionPool>
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
              custom KeyValidation Handler -->
-        <KeyValidationHandlerClassName>{{apim.key_manager.key_validation_handler_type}}</KeyValidationHandlerClassName>
+        <KeyValidationHandlerClassName>{{apim.key_manager.key_validation_handler_impl}}</KeyValidationHandlerClassName>
     </APIKeyValidator>
 
     <!-- Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
@@ -614,26 +614,35 @@
         <TrafficManager>
             <Type>{{apim.throttling.tm.event_type}}</Type>
 
+
             {% if apim.throttling.receiver_url is defined %}
             <ReceiverUrlGroup>{{apim.throttling.receiver_url}}</ReceiverUrlGroup>
-            {% elif apim.throttling.nodes is defined%}
+            {% elif apim.throttling.url_group is defined%}
             <ReceiverUrlGroup>
-                {% for group in apim.throttling.nodes %}
-                { {% for node in group %} {{node.traffic_manager_url}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
-                {% endfor %}
+            {%- for group in apim.throttling.url_group -%}
+                {%- if group.type == "loadbalance" -%}
+            { {{- group.traffic_manager_urls.toList()|join(',') -}} }
+                {%- else -%}{ {{- group.traffic_manager_urls.toList()|join('|') -}} }
+                {%- endif -%}
+                {{- "," if not loop.last -}}
+            {%- endfor -%}
             </ReceiverUrlGroup>
-            {% else %}
+            {%- else -%}
             <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
             {% endif %}
 
 
             {% if apim.throttling.receiver_auth_url is defined %}
             <AuthUrlGroup>{{apim.throttling.receiver_auth_url}}</AuthUrlGroup>
-            {% elif apim.throttling.nodes is defined%}
+            {% elif apim.throttling.url_group is defined%}
             <AuthUrlGroup>
-                {% for group in apim.throttling.nodes %}
-                { {% for node in group %} {{node.traffic_manager_auth_url}} {{ "|" if not loop.last }} {% endfor %} } {{ "," if not loop.last }}
-                {% endfor %}
+                {%- for group in apim.throttling.url_group -%}
+                {%- if group.type == "loadbalance" -%}
+                { {{- group.traffic_manager_auth_urls.toList()|join(',') -}} }
+                {%- else -%}{ {{- group.traffic_manager_urls.toList()|join('|') -}} }
+                {%- endif -%}
+                {{- "," if not loop.last -}}
+                {%- endfor -%}
             </AuthUrlGroup>
             {% else %}
             <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>

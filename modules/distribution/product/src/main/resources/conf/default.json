@@ -362,5 +362,12 @@
   "indexing.starting_delay": "35",
   "indexing.frequency": "3",
   "indexing.bach_size": "40",
-  "indexing.pool_size": "40"
+  "indexing.pool_size": "40",
+  "realm_manager": {
+    "data_source": "jdbc/SHARED_DB",
+    "properties": {
+      "isCascadeDeleteEnabled": true,
+      "initializeNewClaimManager": true
+    }
+  }
 }
