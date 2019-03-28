@@ -29,13 +29,13 @@
     <keyStorePassword>{{databridge.receiver.keystore_password}}</keyStorePassword>
 
     <dataReceiver name="Thrift">
-    {% for configuration_key,configuration_value in transport.thrift.receiver.items() %}
+    {% for configuration_key,configuration_value in transport.thrift.receiver.parameters.items() %}
             <config name="{{configuration_key}}">{{configuration_value}}</config>
     {% endfor %}
     </dataReceiver>
 
     <dataReceiver name="Binary">
-    {% for configuration_key,configuration_value in transport.binary.receiver.items() %}
+    {% for configuration_key,configuration_value in transport.binary.receiver.parameters.items() %}
                 <config name="{{configuration_key}}">{{configuration_value}}</config>
         {% endfor %}
     </dataReceiver>

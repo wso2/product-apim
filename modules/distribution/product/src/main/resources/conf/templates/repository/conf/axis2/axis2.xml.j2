@@ -178,7 +178,7 @@
     <!-- ================================================= -->
 
     <transportReceiver name="http" class="{{transport.passthru_http.listener.class}}">
-     {% for parameter_key,parameter_value in transport.passthru_http.parameters.items() %}
+     {% for parameter_key,parameter_value in transport.passthru_http.listener.parameters.items() %}
         <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
     {% endfor %}
     </transportReceiver>

@@ -178,8 +178,8 @@
   "passthru_http.'io_buffer_size'": "16384",
   "passthru_http.'http.socket.reuseaddr'": "true",
   "passthru_http.'http.headers.preserve'": "Content-Type",
-  "passthru_http.'rest_uri_api_regex'": "\\w+://.+:\\d+/t/.*|\\w+://.+\\w+/t/.*|^(/t/).*",
-  "passthru_http.'rest_uri_proxy_regex'": "\\w+://.+:\\d+/services/t/.*|\\w+://.+\\w+/services/t/.*|^(/services/t/).*",
+  "passthru_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
+  "passthru_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "ssl_profiles.enabled_ssl_profiles" : ["profile1"],
   "ssl_profiles.profile1.servers" : "*",
   "ssl_profiles.profile1.key_store.location" : "$ref{transport.passthru_https.listener.key_store.location}",
@@ -217,6 +217,7 @@
   "apim.cache.publisher_roles.enabled": true,
   "apim.cache.jwt_claim.enabled": true,
 
+  "apim.analytics.enabled": false,
   "apim.analytics.provider_impl": "org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl",
   "apim.analytics.rest_api_url": "https://localhost:7444",
   "apim.analytics.disable_event_publishing": "false",
