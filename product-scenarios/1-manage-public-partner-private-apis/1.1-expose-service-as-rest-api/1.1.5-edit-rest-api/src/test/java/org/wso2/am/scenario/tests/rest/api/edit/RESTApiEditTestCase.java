@@ -69,7 +69,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
     private final String admin = "admin";
-    private String APICreator = "APICreator";
+    private String APICreator = "APICreatorEdit";
     private String pw = "wso2123$";
     private String APISubscriber = "APISubscriber";
     private String subscriberPw = "wso2123$";
@@ -156,7 +156,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      *  Tests for Edit api using OAS JSON
      *
      * */
-    @Test(description = "1.1.5.3.1", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.5.3", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
@@ -203,7 +203,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      *  Tests for Edit api using OAS YAML
      *
      * */
-    @Test(description = "1.1.5.3.2", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.5.7", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPIEditUsingOASYAML(String fileName) throws Exception {
 
         //Check availability of the API in publisher
@@ -287,7 +287,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    @Test(description = "1.1.5.7")
+    @Test(description = "1.1.5.9")
     public void testRESTAPIEditAddMoreTags() throws Exception {
 
         String apiName = "TestTagsUpdateAPI";

@@ -15,6 +15,7 @@
  */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -85,7 +86,28 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
 //
 //    }
 
-    @Test(description = "1.1.2.17 and 1.1.2.16", dataProvider = "OASDocsWithInvalidURL", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.2.8", dataProvider = "InvaidOASDocs", dataProviderClass = ScenarioDataProvider.class)
+    public void testCreateApiUsingInvalidOASDocumentFromJsonURL(String url) throws Exception {
+
+        swaggerUrl = url;
+
+        apiRequest = new APIRequest(importDefinitionUrl, "", swaggerUrl, type);
+        SimpleHTTPServer server = new SimpleHTTPServer();
+        new Thread(server).start();
+        HttpResponse serviceResponse = apiPublisher.designAPIWithOASURL(apiRequest);
+        server.stop();
+        Assert.assertTrue(serviceResponse.getData().contains("imported"), "Error importing swagger from : " + url);
+
+        //Save the API with imported values
+        new Thread( new SimpleHTTPServer()).start();
+        String payload = ScenarioTestUtils.readFromURL(swaggerUrl);
+        JSONObject json = new JSONObject(payload);
+        int paths = json.getJSONObject("paths").length();
+        //UI prevents creating the API when there are no resources added from the swagger or manually.
+        Assert.assertTrue(paths == 0, "Swagger doc contains resource paths.");
+    }
+
+    @Test(description = "1.1.2.10", dataProvider = "OASDocsWithInvalidURL", dataProviderClass = ScenarioDataProvider.class)
     public void createApiWithInvalidOAS3DocumentURL(String url) throws Exception {
 
         swaggerUrl = url;
