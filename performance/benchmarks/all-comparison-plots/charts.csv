@@ -1,0 +1,199 @@
+Filename,Title
+average_time_0ms_10KiB.png,Average Response Time (ms) vs Concurrent Users for 10KiB messages with 0ms backend delay
+average_time_0ms_1KiB.png,Average Response Time (ms) vs Concurrent Users for 1KiB messages with 0ms backend delay
+average_time_0ms_50B.png,Average Response Time (ms) vs Concurrent Users for 50B messages with 0ms backend delay
+average_time_1s_10KiB.png,Average Response Time (ms) vs Concurrent Users for 10KiB messages with 1s backend delay
+average_time_1s_1KiB.png,Average Response Time (ms) vs Concurrent Users for 1KiB messages with 1s backend delay
+average_time_1s_50B.png,Average Response Time (ms) vs Concurrent Users for 50B messages with 1s backend delay
+average_time_30ms_10KiB.png,Average Response Time (ms) vs Concurrent Users for 10KiB messages with 30ms backend delay
+average_time_30ms_1KiB.png,Average Response Time (ms) vs Concurrent Users for 1KiB messages with 30ms backend delay
+average_time_30ms_50B.png,Average Response Time (ms) vs Concurrent Users for 50B messages with 30ms backend delay
+average_time_500ms_10KiB.png,Average Response Time (ms) vs Concurrent Users for 10KiB messages with 500ms backend delay
+average_time_500ms_1KiB.png,Average Response Time (ms) vs Concurrent Users for 1KiB messages with 500ms backend delay
+average_time_500ms_50B.png,Average Response Time (ms) vs Concurrent Users for 50B messages with 500ms backend delay
+comparison_avgt.png,Average Response Time vs Concurrent Users
+comparison_avgt_0ms.png,Average Response Time vs Concurrent Users for 0ms backend delay
+comparison_avgt_1000ms.png,Average Response Time vs Concurrent Users for 1000ms backend delay
+comparison_avgt_30ms.png,Average Response Time vs Concurrent Users for 30ms backend delay
+comparison_avgt_500ms.png,Average Response Time vs Concurrent Users for 500ms backend delay
+comparison_gc.png,GC Throughput vs Concurrent Users
+comparison_gc0ms.png,GC Throughput with 0ms backend delay
+comparison_gc1000ms.png,GC Throughput with 1000ms backend delay
+comparison_gc30ms.png,GC Throughput with 30ms backend delay
+comparison_gc500ms.png,GC Throughput with 500ms backend delay
+comparison_loadavg.png,Load Average vs Concurrent Users
+comparison_loadavg_0ms.png,Load Average with 0ms backend delay
+comparison_loadavg_1000ms.png,Load Average with 1000ms backend delay
+comparison_loadavg_30ms.png,Load Average with 30ms backend delay
+comparison_loadavg_500ms.png,Load Average with 500ms backend delay
+comparison_network.png,Network Throughput vs Concurrent Users
+comparison_network0ms.png,Network Throughput with 0ms backend delay
+comparison_network1000ms.png,Network Throughput with 1000ms backend delay
+comparison_network30ms.png,Network Throughput with 30ms backend delay
+comparison_network500ms.png,Network Throughput with 500ms backend delay
+comparison_response_time.png,Response Time Percentiles vs Concurrent Users
+comparison_response_time_0ms.png,Response Time Percentiles for 0ms backend delay
+comparison_response_time_1000ms.png,Response Time Percentiles for 1000ms backend delay
+comparison_response_time_30ms.png,Response Time Percentiles for 30ms backend delay
+comparison_response_time_500ms.png,Response Time Percentiles for 500ms backend delay
+comparison_thrpt.png,Throughput vs Concurrent Users
+comparison_thrpt_0ms.png,Throughput vs Concurrent Users for 0ms backend delay
+comparison_thrpt_1000ms.png,Throughput vs Concurrent Users for 1000ms backend delay
+comparison_thrpt_30ms.png,Throughput vs Concurrent Users for 30ms backend delay
+comparison_thrpt_500ms.png,Throughput vs Concurrent Users for 500ms backend delay
+gc_throughput_0ms_10KiB.png,GC Throughput (%) vs Concurrent Users for 10KiB messages with 0ms backend delay
+gc_throughput_0ms_1KiB.png,GC Throughput (%) vs Concurrent Users for 1KiB messages with 0ms backend delay
+gc_throughput_0ms_50B.png,GC Throughput (%) vs Concurrent Users for 50B messages with 0ms backend delay
+gc_throughput_1s_10KiB.png,GC Throughput (%) vs Concurrent Users for 10KiB messages with 1s backend delay
+gc_throughput_1s_1KiB.png,GC Throughput (%) vs Concurrent Users for 1KiB messages with 1s backend delay
+gc_throughput_1s_50B.png,GC Throughput (%) vs Concurrent Users for 50B messages with 1s backend delay
+gc_throughput_30ms_10KiB.png,GC Throughput (%) vs Concurrent Users for 10KiB messages with 30ms backend delay
+gc_throughput_30ms_1KiB.png,GC Throughput (%) vs Concurrent Users for 1KiB messages with 30ms backend delay
+gc_throughput_30ms_50B.png,GC Throughput (%) vs Concurrent Users for 50B messages with 30ms backend delay
+gc_throughput_500ms_10KiB.png,GC Throughput (%) vs Concurrent Users for 10KiB messages with 500ms backend delay
+gc_throughput_500ms_1KiB.png,GC Throughput (%) vs Concurrent Users for 1KiB messages with 500ms backend delay
+gc_throughput_500ms_50B.png,GC Throughput (%) vs Concurrent Users for 50B messages with 500ms backend delay
+lmplot_average_time_vs_concurrent_users.png,Average Response Time (ms) vs Concurrent Users
+lmplot_average_time_vs_concurrent_users_with_hue.png,Average Response Time (ms) vs Concurrent Users
+lmplot_average_time_vs_message_size.png,Average Response Time (ms) vs Message Size (Bytes)
+lmplot_average_time_vs_message_size_with_hue.png,Average Response Time (ms) vs Message Size (Bytes)
+lmplot_average_time_vs_sleep_time.png,Average Response Time (ms) vs Back-end Service Delay (ms)
+lmplot_average_time_vs_sleep_time_with_hue.png,Average Response Time (ms) vs Back-end Service Delay (ms)
+lmplot_gc_throughput_vs_concurrent_users.png,GC Throughput (%) vs Concurrent Users
+lmplot_gc_throughput_vs_concurrent_users_with_hue.png,GC Throughput (%) vs Concurrent Users
+lmplot_gc_throughput_vs_message_size.png,GC Throughput (%) vs Message Size (Bytes)
+lmplot_gc_throughput_vs_message_size_with_hue.png,GC Throughput (%) vs Message Size (Bytes)
+lmplot_gc_throughput_vs_sleep_time.png,GC Throughput (%) vs Back-end Service Delay (ms)
+lmplot_gc_throughput_vs_sleep_time_with_hue.png,GC Throughput (%) vs Back-end Service Delay (ms)
+lmplot_loadavg_15_vs_concurrent_users.png,Load Average - Last 15 minutes vs Concurrent Users
+lmplot_loadavg_15_vs_concurrent_users_with_hue.png,Load Average - Last 15 minutes vs Concurrent Users
+lmplot_loadavg_15_vs_message_size.png,Load Average - Last 15 minutes vs Message Size (Bytes)
+lmplot_loadavg_15_vs_message_size_with_hue.png,Load Average - Last 15 minutes vs Message Size (Bytes)
+lmplot_loadavg_15_vs_sleep_time.png,Load Average - Last 15 minutes vs Back-end Service Delay (ms)
+lmplot_loadavg_15_vs_sleep_time_with_hue.png,Load Average - Last 15 minutes vs Back-end Service Delay (ms)
+lmplot_loadavg_1_vs_concurrent_users.png,Load Average - Last 1 minute vs Concurrent Users
+lmplot_loadavg_1_vs_concurrent_users_with_hue.png,Load Average - Last 1 minute vs Concurrent Users
+lmplot_loadavg_1_vs_message_size.png,Load Average - Last 1 minute vs Message Size (Bytes)
+lmplot_loadavg_1_vs_message_size_with_hue.png,Load Average - Last 1 minute vs Message Size (Bytes)
+lmplot_loadavg_1_vs_sleep_time.png,Load Average - Last 1 minute vs Back-end Service Delay (ms)
+lmplot_loadavg_1_vs_sleep_time_with_hue.png,Load Average - Last 1 minute vs Back-end Service Delay (ms)
+lmplot_loadavg_5_vs_concurrent_users.png,Load Average - Last 5 minutes vs Concurrent Users
+lmplot_loadavg_5_vs_concurrent_users_with_hue.png,Load Average - Last 5 minutes vs Concurrent Users
+lmplot_loadavg_5_vs_message_size.png,Load Average - Last 5 minutes vs Message Size (Bytes)
+lmplot_loadavg_5_vs_message_size_with_hue.png,Load Average - Last 5 minutes vs Message Size (Bytes)
+lmplot_loadavg_5_vs_sleep_time.png,Load Average - Last 5 minutes vs Back-end Service Delay (ms)
+lmplot_loadavg_5_vs_sleep_time_with_hue.png,Load Average - Last 5 minutes vs Back-end Service Delay (ms)
+lmplot_max_time_vs_concurrent_users.png,Maximum Response Time (ms) vs Concurrent Users
+lmplot_max_time_vs_concurrent_users_with_hue.png,Maximum Response Time (ms) vs Concurrent Users
+lmplot_max_time_vs_message_size.png,Maximum Response Time (ms) vs Message Size (Bytes)
+lmplot_max_time_vs_message_size_with_hue.png,Maximum Response Time (ms) vs Message Size (Bytes)
+lmplot_max_time_vs_sleep_time.png,Maximum Response Time (ms) vs Back-end Service Delay (ms)
+lmplot_max_time_vs_sleep_time_with_hue.png,Maximum Response Time (ms) vs Back-end Service Delay (ms)
+lmplot_p90_vs_concurrent_users.png,90th Percentile (ms) vs Concurrent Users
+lmplot_p90_vs_concurrent_users_with_hue.png,90th Percentile (ms) vs Concurrent Users
+lmplot_p90_vs_message_size.png,90th Percentile (ms) vs Message Size (Bytes)
+lmplot_p90_vs_message_size_with_hue.png,90th Percentile (ms) vs Message Size (Bytes)
+lmplot_p90_vs_sleep_time.png,90th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_p90_vs_sleep_time_with_hue.png,90th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_p95_vs_concurrent_users.png,95th Percentile (ms) vs Concurrent Users
+lmplot_p95_vs_concurrent_users_with_hue.png,95th Percentile (ms) vs Concurrent Users
+lmplot_p95_vs_message_size.png,95th Percentile (ms) vs Message Size (Bytes)
+lmplot_p95_vs_message_size_with_hue.png,95th Percentile (ms) vs Message Size (Bytes)
+lmplot_p95_vs_sleep_time.png,95th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_p95_vs_sleep_time_with_hue.png,95th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_p99_vs_concurrent_users.png,99th Percentile (ms) vs Concurrent Users
+lmplot_p99_vs_concurrent_users_with_hue.png,99th Percentile (ms) vs Concurrent Users
+lmplot_p99_vs_message_size.png,99th Percentile (ms) vs Message Size (Bytes)
+lmplot_p99_vs_message_size_with_hue.png,99th Percentile (ms) vs Message Size (Bytes)
+lmplot_p99_vs_sleep_time.png,99th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_p99_vs_sleep_time_with_hue.png,99th Percentile (ms) vs Back-end Service Delay (ms)
+lmplot_throughput_vs_concurrent_users.png,Throughput (Requests/sec) vs Concurrent Users
+lmplot_throughput_vs_concurrent_users_with_hue.png,Throughput (Requests/sec) vs Concurrent Users
+lmplot_throughput_vs_message_size.png,Throughput (Requests/sec) vs Message Size (Bytes)
+lmplot_throughput_vs_message_size_with_hue.png,Throughput (Requests/sec) vs Message Size (Bytes)
+lmplot_throughput_vs_sleep_time.png,Throughput (Requests/sec) vs Back-end Service Delay (ms)
+lmplot_throughput_vs_sleep_time_with_hue.png,Throughput (Requests/sec) vs Back-end Service Delay (ms)
+loadavg_0ms_10KiB.png,Load Average for 10KiB messages with 0ms backend delay
+loadavg_0ms_1KiB.png,Load Average for 1KiB messages with 0ms backend delay
+loadavg_0ms_50B.png,Load Average for 50B messages with 0ms backend delay
+loadavg_1s_10KiB.png,Load Average for 10KiB messages with 1s backend delay
+loadavg_1s_1KiB.png,Load Average for 1KiB messages with 1s backend delay
+loadavg_1s_50B.png,Load Average for 50B messages with 1s backend delay
+loadavg_30ms_10KiB.png,Load Average for 10KiB messages with 30ms backend delay
+loadavg_30ms_1KiB.png,Load Average for 1KiB messages with 30ms backend delay
+loadavg_30ms_50B.png,Load Average for 50B messages with 30ms backend delay
+loadavg_500ms_10KiB.png,Load Average for 10KiB messages with 500ms backend delay
+loadavg_500ms_1KiB.png,Load Average for 1KiB messages with 500ms backend delay
+loadavg_500ms_50B.png,Load Average for 50B messages with 500ms backend delay
+max_time_0ms_10KiB.png,Maximum Response Time (ms) vs Concurrent Users for 10KiB messages with 0ms backend delay
+max_time_0ms_1KiB.png,Maximum Response Time (ms) vs Concurrent Users for 1KiB messages with 0ms backend delay
+max_time_0ms_50B.png,Maximum Response Time (ms) vs Concurrent Users for 50B messages with 0ms backend delay
+max_time_1s_10KiB.png,Maximum Response Time (ms) vs Concurrent Users for 10KiB messages with 1s backend delay
+max_time_1s_1KiB.png,Maximum Response Time (ms) vs Concurrent Users for 1KiB messages with 1s backend delay
+max_time_1s_50B.png,Maximum Response Time (ms) vs Concurrent Users for 50B messages with 1s backend delay
+max_time_30ms_10KiB.png,Maximum Response Time (ms) vs Concurrent Users for 10KiB messages with 30ms backend delay
+max_time_30ms_1KiB.png,Maximum Response Time (ms) vs Concurrent Users for 1KiB messages with 30ms backend delay
+max_time_30ms_50B.png,Maximum Response Time (ms) vs Concurrent Users for 50B messages with 30ms backend delay
+max_time_500ms_10KiB.png,Maximum Response Time (ms) vs Concurrent Users for 10KiB messages with 500ms backend delay
+max_time_500ms_1KiB.png,Maximum Response Time (ms) vs Concurrent Users for 1KiB messages with 500ms backend delay
+max_time_500ms_50B.png,Maximum Response Time (ms) vs Concurrent Users for 50B messages with 500ms backend delay
+p90_0ms_10KiB.png,90th Percentile (ms) vs Concurrent Users for 10KiB messages with 0ms backend delay
+p90_0ms_1KiB.png,90th Percentile (ms) vs Concurrent Users for 1KiB messages with 0ms backend delay
+p90_0ms_50B.png,90th Percentile (ms) vs Concurrent Users for 50B messages with 0ms backend delay
+p90_1s_10KiB.png,90th Percentile (ms) vs Concurrent Users for 10KiB messages with 1s backend delay
+p90_1s_1KiB.png,90th Percentile (ms) vs Concurrent Users for 1KiB messages with 1s backend delay
+p90_1s_50B.png,90th Percentile (ms) vs Concurrent Users for 50B messages with 1s backend delay
+p90_30ms_10KiB.png,90th Percentile (ms) vs Concurrent Users for 10KiB messages with 30ms backend delay
+p90_30ms_1KiB.png,90th Percentile (ms) vs Concurrent Users for 1KiB messages with 30ms backend delay
+p90_30ms_50B.png,90th Percentile (ms) vs Concurrent Users for 50B messages with 30ms backend delay
+p90_500ms_10KiB.png,90th Percentile (ms) vs Concurrent Users for 10KiB messages with 500ms backend delay
+p90_500ms_1KiB.png,90th Percentile (ms) vs Concurrent Users for 1KiB messages with 500ms backend delay
+p90_500ms_50B.png,90th Percentile (ms) vs Concurrent Users for 50B messages with 500ms backend delay
+p95_0ms_10KiB.png,95th Percentile (ms) vs Concurrent Users for 10KiB messages with 0ms backend delay
+p95_0ms_1KiB.png,95th Percentile (ms) vs Concurrent Users for 1KiB messages with 0ms backend delay
+p95_0ms_50B.png,95th Percentile (ms) vs Concurrent Users for 50B messages with 0ms backend delay
+p95_1s_10KiB.png,95th Percentile (ms) vs Concurrent Users for 10KiB messages with 1s backend delay
+p95_1s_1KiB.png,95th Percentile (ms) vs Concurrent Users for 1KiB messages with 1s backend delay
+p95_1s_50B.png,95th Percentile (ms) vs Concurrent Users for 50B messages with 1s backend delay
+p95_30ms_10KiB.png,95th Percentile (ms) vs Concurrent Users for 10KiB messages with 30ms backend delay
+p95_30ms_1KiB.png,95th Percentile (ms) vs Concurrent Users for 1KiB messages with 30ms backend delay
+p95_30ms_50B.png,95th Percentile (ms) vs Concurrent Users for 50B messages with 30ms backend delay
+p95_500ms_10KiB.png,95th Percentile (ms) vs Concurrent Users for 10KiB messages with 500ms backend delay
+p95_500ms_1KiB.png,95th Percentile (ms) vs Concurrent Users for 1KiB messages with 500ms backend delay
+p95_500ms_50B.png,95th Percentile (ms) vs Concurrent Users for 50B messages with 500ms backend delay
+p99_0ms_10KiB.png,99th Percentile (ms) vs Concurrent Users for 10KiB messages with 0ms backend delay
+p99_0ms_1KiB.png,99th Percentile (ms) vs Concurrent Users for 1KiB messages with 0ms backend delay
+p99_0ms_50B.png,99th Percentile (ms) vs Concurrent Users for 50B messages with 0ms backend delay
+p99_1s_10KiB.png,99th Percentile (ms) vs Concurrent Users for 10KiB messages with 1s backend delay
+p99_1s_1KiB.png,99th Percentile (ms) vs Concurrent Users for 1KiB messages with 1s backend delay
+p99_1s_50B.png,99th Percentile (ms) vs Concurrent Users for 50B messages with 1s backend delay
+p99_30ms_10KiB.png,99th Percentile (ms) vs Concurrent Users for 10KiB messages with 30ms backend delay
+p99_30ms_1KiB.png,99th Percentile (ms) vs Concurrent Users for 1KiB messages with 30ms backend delay
+p99_30ms_50B.png,99th Percentile (ms) vs Concurrent Users for 50B messages with 30ms backend delay
+p99_500ms_10KiB.png,99th Percentile (ms) vs Concurrent Users for 10KiB messages with 500ms backend delay
+p99_500ms_1KiB.png,99th Percentile (ms) vs Concurrent Users for 1KiB messages with 500ms backend delay
+p99_500ms_50B.png,99th Percentile (ms) vs Concurrent Users for 50B messages with 500ms backend delay
+response_time_0ms_10KiB.png,Response Time Percentiles for 10KiB messages with 0ms backend delay
+response_time_0ms_1KiB.png,Response Time Percentiles for 1KiB messages with 0ms backend delay
+response_time_0ms_50B.png,Response Time Percentiles for 50B messages with 0ms backend delay
+response_time_1s_10KiB.png,Response Time Percentiles for 10KiB messages with 1s backend delay
+response_time_1s_1KiB.png,Response Time Percentiles for 1KiB messages with 1s backend delay
+response_time_1s_50B.png,Response Time Percentiles for 50B messages with 1s backend delay
+response_time_30ms_10KiB.png,Response Time Percentiles for 10KiB messages with 30ms backend delay
+response_time_30ms_1KiB.png,Response Time Percentiles for 1KiB messages with 30ms backend delay
+response_time_30ms_50B.png,Response Time Percentiles for 50B messages with 30ms backend delay
+response_time_500ms_10KiB.png,Response Time Percentiles for 10KiB messages with 500ms backend delay
+response_time_500ms_1KiB.png,Response Time Percentiles for 1KiB messages with 500ms backend delay
+response_time_500ms_50B.png,Response Time Percentiles for 50B messages with 500ms backend delay
+throughput_0ms_10KiB.png,Throughput (Requests/sec) vs Concurrent Users for 10KiB messages with 0ms backend delay
+throughput_0ms_1KiB.png,Throughput (Requests/sec) vs Concurrent Users for 1KiB messages with 0ms backend delay
+throughput_0ms_50B.png,Throughput (Requests/sec) vs Concurrent Users for 50B messages with 0ms backend delay
+throughput_1s_10KiB.png,Throughput (Requests/sec) vs Concurrent Users for 10KiB messages with 1s backend delay
+throughput_1s_1KiB.png,Throughput (Requests/sec) vs Concurrent Users for 1KiB messages with 1s backend delay
+throughput_1s_50B.png,Throughput (Requests/sec) vs Concurrent Users for 50B messages with 1s backend delay
+throughput_30ms_10KiB.png,Throughput (Requests/sec) vs Concurrent Users for 10KiB messages with 30ms backend delay
+throughput_30ms_1KiB.png,Throughput (Requests/sec) vs Concurrent Users for 1KiB messages with 30ms backend delay
+throughput_30ms_50B.png,Throughput (Requests/sec) vs Concurrent Users for 50B messages with 30ms backend delay
+throughput_500ms_10KiB.png,Throughput (Requests/sec) vs Concurrent Users for 10KiB messages with 500ms backend delay
+throughput_500ms_1KiB.png,Throughput (Requests/sec) vs Concurrent Users for 1KiB messages with 500ms backend delay
+throughput_500ms_50B.png,Throughput (Requests/sec) vs Concurrent Users for 50B messages with 500ms backend delay
