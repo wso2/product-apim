@@ -1175,7 +1175,7 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
+        <ws.seccurity.version>1.5.11.wso2v17</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
         <google.guava.version>20.0</google.guava.version>
