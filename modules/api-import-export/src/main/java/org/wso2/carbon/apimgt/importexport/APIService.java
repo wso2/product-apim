@@ -36,19 +36,14 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.File;
 import java.io.InputStream;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-/**
+/**@QueryParam("preserveProvider") String defaultProviderStatus
  * This class provides JAX-RS services for exporting and importing APIs.
  * These services provides functionality for exporting and importing single API at a time.
  */
@@ -175,7 +170,7 @@ public class APIService {
 
     /**
      * This is the service which is used to import an API. All relevant API data will be included upon the creation of
-     * the API. Depending on the choice of the user, provider of the imported API will be preserved or modified.
+     * the API. Depending ohttp://localhost:n the choice of the user, provider of the imported API will be preserved or modified.
      *
      * @param uploadedInputStream uploadedInputStream input stream from the REST request
      * @param defaultProviderStatus     user choice to keep or replace the API provider
@@ -253,6 +248,93 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        } finally {
+            if (isTenantFlowStarted) {
+                PrivilegedCarbonContext.endTenantFlow();
+            }
+        }
+    }
+
+    /**
+     * This service will update an existing API given by the ID. It will preserve state of the API during the update
+     *
+     * @param apiID       ID for the API
+     * @param httpHeaders HTTP headers for authentication mechanism
+     * @return A JSON response indicating the status of the update
+     */
+    @PUT
+    @Path("/{apiID}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateAPI(@Multipart("file") InputStream uploadedInputStream, @PathParam("apiID") String apiID,
+                              @QueryParam("preserveProvider") String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
+        boolean isTenantFlowStarted = false;
+        boolean isProviderPreserved = true;
+
+        //Check if the URL parameter value is specified, otherwise the default value "true" is used
+        if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(defaultProviderStatus)) {
+            isProviderPreserved = false;
+        }
+
+        try {
+            Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
+
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
+                return authorizationResponse;
+            }
+
+            AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
+            String tenantDomain = MultitenantUtils.getTenantDomain(authenticationContext.getUsername());
+            String currentUser = authenticationContext.getDomainAwareUsername();
+
+            if (!tenantDomain.equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+                currentUser = currentUser + "@" + tenantDomain;
+            }
+            APIImportUtil.initializeProvider(currentUser);
+
+            //Temporary directory is used to create the required folders
+            String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
+            String createdFolders = File.separator +
+                    RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
+                    File.separator;
+            File importFolder = new File(currentDirectory + createdFolders);
+            boolean folderCreateStatus = importFolder.mkdirs();
+
+            //API import process starts only if the required folder is created successfully
+            if (folderCreateStatus) {
+                String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
+                String absolutePath = currentDirectory + createdFolders;
+                APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
+
+                String extractedFolderName;
+                try {
+                    extractedFolderName = APIImportUtil.extractArchive(
+                            new File(absolutePath + uploadFileName), absolutePath);
+                } catch (APIImportException e) {
+                    return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+                }
+
+                if (tenantDomain != null &&
+                        !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
+                                .equals(tenantDomain)) {
+                    PrivilegedCarbonContext.startTenantFlow();
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+                    isTenantFlowStarted = true;
+                }
+
+                APIImportUtil.updateAPI(apiID, absolutePath + extractedFolderName, currentUser, isProviderPreserved);
+
+                importFolder.deleteOnExit();
+                return Response.status(Status.CREATED).entity("API updated successfully.\n").build();
+            } else {
+                return Response.serverError().entity("Failed to create temporary directory.\n").build();
+            }
+        } catch (APIExportException e) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
+        } catch (APIImportException e) {
+            https:
+//www.nvidia.com/en-us/geforce/ron-ai-personal-assistant/?nvid=nv-int-pr-79934
             return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {
