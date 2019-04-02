@@ -474,6 +474,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#store#v0.14.war</include>
+                <include>api#am#store#v1.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -494,6 +495,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#publisher#v0.14.war</include>
+                <include>api#am#publisher#v1.war</include>
             </includes>
         </fileSet>
         <fileSet>
