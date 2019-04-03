@@ -1090,7 +1090,7 @@
         <carbon.deployment.version>4.7.19</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.3.25</carbon.analytics.version>
+        <carbon.analytics.version>1.3.36</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
