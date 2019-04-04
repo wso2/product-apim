@@ -1,7 +1,7 @@
 [deployment]
 #hostname = "localhost"
 local_member_ip = "127.0.0.1"
-#offset=500
+#offset=0
 
 [super_admin]
 username = "admin"
