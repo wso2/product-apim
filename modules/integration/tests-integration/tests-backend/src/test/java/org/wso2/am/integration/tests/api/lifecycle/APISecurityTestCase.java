@@ -126,7 +126,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
             NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
         String expectedResponseData = "<id>123</id><name>John</name></Customer>";
         // We need to wait till the relevant listener reloads.
-        Thread.sleep(60000);
+        Thread.sleep(120000);
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "text/xml");
         // Check with the correct client certificate for an API that is only protected with mutual ssl.
@@ -184,17 +184,17 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
      */
     private void startServerWithConfigChanges() throws AutomationUtilException, XPathExpressionException, IOException {
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "api-manager.xml"));
-        String axis2SourceFile =
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "axis2.xml";
-        String axis2TargetFile =
-                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "axis2"
-                        + File.separator + "axis2.xml";
-        serverConfigurationManager
-                .applyConfigurationWithoutRestart(new File(axis2SourceFile), new File(axis2TargetFile), true);
+//        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
+//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+//                        + File.separator + "api-manager.xml"));
+//        String axis2SourceFile =
+//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+//                        + File.separator + "axis2.xml";
+//        String axis2TargetFile =
+//                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "axis2"
+//                        + File.separator + "axis2.xml";
+//        serverConfigurationManager
+//                .applyConfigurationWithoutRestart(new File(axis2SourceFile), new File(axis2TargetFile), true);
         serverConfigurationManager.restartGracefully();
     }
 

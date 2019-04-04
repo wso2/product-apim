@@ -112,7 +112,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "deployment.toml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                     + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
             subscriberUserWithTenantDomain = subscriberUsername;

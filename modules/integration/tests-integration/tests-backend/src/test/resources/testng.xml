@@ -257,9 +257,10 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <!--class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+            <!--Disable following test cases, since old throttling engine is deprecated -->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
         </classes>
     </test>
 

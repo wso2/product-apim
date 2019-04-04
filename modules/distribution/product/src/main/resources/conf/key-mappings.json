@@ -18,5 +18,7 @@
   "transport.binary.receiver.parameters.ssl_receiver_thread_pool_size": "transport.binary.receiver.parameters.sslReceiverThreadPoolSize",
   "transport.binary.receiver.parameters.tcp_receiver_thread_pool_size": "transport.binary.receiver.parameters.tcpReceiverThreadPoolSize",
   "transport.binary.receiver.parameters.ssl_enabled_protocols": "transport.binary.receiver.parameters.sslEnabledProtocols",
-  "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers"
+  "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers",
+  "passthru_http.http_socket_timeout": "passthru_http.'http.socket.timeout'",
+  "synapse_properties.synapse_commons_json_buildValidNCNames": "synapse_properties.'synapse.commons.json.buildValidNCNames'"
 }

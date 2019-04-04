@@ -82,17 +82,7 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "api-manager.xml"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "axis2.xml"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "passthru-http.properties"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "synapse.properties"));
-
+                File.separator + "deployment.toml"));
         serverConfigurationManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
 
         serverConfigurationManager.restartGracefully();
