@@ -53,7 +53,7 @@ http_endpoint = "http://localhost:8282"
 https_endpoint = "https://localhost:8245"
 
 [apim.analytics]
-enabled = true
+enable = true
 store_api_url = "https://localhost:9446"
 username = "$ref{super_admin.username}"
 password = "$ref{super_admin.password}"
@@ -64,9 +64,9 @@ analytics_auth_url ="ssl://localhost:7714"
 type = "failover"
 
 [apim.jwt]
-enabled = true
+enable = true
 encoding = "base64" # base64,base64url
-user_claims_enabled = true
+enable_user_claims = true
 [apim.store]
 display_multiple_versions = true
 display_all_apis = true
@@ -78,7 +78,7 @@ allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","S
 allow_credentials = false
 
 [apim.workflow]
-enabled = false
+enable = false
 service_url = "http://localhost:10263/BPMNProcessServerApp-1.0.0"
 [passthru_http]
 http_socket_timeout=20000

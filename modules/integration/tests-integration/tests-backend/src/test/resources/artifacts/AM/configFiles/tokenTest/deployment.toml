@@ -40,9 +40,9 @@ http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
 [apim.jwt]
-enabled = true
+enable = true
 encoding = "base64" # base64,base64url
-user_claims_enabled = true
+enable_user_claims = true
 
 [apim.cors]
 allow_origins = "*"

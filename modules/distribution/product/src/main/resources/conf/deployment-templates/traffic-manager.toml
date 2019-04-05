@@ -5,7 +5,7 @@ server_role = "traffic-manager"
 
 [super_admin]
 username = "admin"
-password = "admin"
+password = "admin"git
 create_admin_account = true
 
 [database.shared_db]

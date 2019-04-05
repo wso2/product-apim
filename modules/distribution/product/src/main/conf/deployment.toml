@@ -41,34 +41,34 @@ http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
 #[apim.cache.gateway_token]
-#enabled = true
+#enable = true
 #expiry_time = 15
 
 #[apim.cache.resource]
-#enabled = true
+#enable = true
 
 #[apim.cache.km_token]
-#enabled = false
+#enable = false
 #expiry_time = 15
 
 #[apim.cache.recent_apis]
-#enabled = false
+#enable = false
 
 #[apim.cache.scopes]
-#enabled = true
+#enable = true
 
 #[apim.cache.publisher_roles]
-#enabled = true
+#enable = true
 
 #[apim.cache.jwt_claim]
-#enabled = true
+#enable = true
 #expiry_time = 900
 
 #[apim.cache.tags]
 #expiry_time = 120000
 
 #[apim.analytics]
-#enabled = false
+#enable = false
 #store_api_url = "https://localhost:7444"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
@@ -96,17 +96,17 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 #[apim.jwt]
-#enabled = true
+#enable = true
 #encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
 #claim_dialect = "http://wso2.org/claims"
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
-#user_claims_enabled = true
+#enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 #[apim.oauth_config]
-#outbound_auth_header_enabled = false
+#enable_outbound_auth_header = false
 #auth_header = "Authorization"
 #revoke_endpoint = "https://localhost:${https.nio.port}/revoke"
 #enable_token_encryption = false
@@ -114,15 +114,15 @@ https_endpoint = "https://localhost:${https.nio.port}"
 
 #[apim.store]
 #url = "https://localhost:${mgt.transport.https.port}/store"
-#application_sharing_enabled = false
+#enable_application_sharing = false
 #if application_sharing_type, application_sharing_impl both defined priority goes to application_sharing_impl
 #application_sharing_type = "default" #changed type, saml, default #todo: check the new config for rest api
 #application_sharing_impl = "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
 #display_multiple_versions = false
 #display_deprecated_apis = false
-#comments_enabled = true
-#ratings_enabled = true
-#forum_enabled = true
+#enable_comments = true
+#enable_ratings = true
+#enable_forum = true
 
 [apim.cors]
 allow_origins = "*"
@@ -152,7 +152,7 @@ allow_credentials = false
 #type = "failover"
 
 #[apim.workflow]
-#enabled = false
+#enable = false
 #service_url = "https://localhost:9445/bpmn"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
