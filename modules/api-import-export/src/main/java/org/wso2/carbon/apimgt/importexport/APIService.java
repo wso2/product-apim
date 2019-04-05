@@ -36,14 +36,21 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.File;
 import java.io.InputStream;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-/**@QueryParam("preserveProvider") String defaultProviderStatus
+/**
  * This class provides JAX-RS services for exporting and importing APIs.
  * These services provides functionality for exporting and importing single API at a time.
  */
@@ -170,7 +177,7 @@ public class APIService {
 
     /**
      * This is the service which is used to import an API. All relevant API data will be included upon the creation of
-     * the API. Depending ohttp://localhost:n the choice of the user, provider of the imported API will be preserved or modified.
+     * the API. Depending on the choice of the user, provider of the imported API will be preserved or modified.
      *
      * @param uploadedInputStream uploadedInputStream input stream from the REST request
      * @param defaultProviderStatus     user choice to keep or replace the API provider
