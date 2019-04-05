@@ -6,14 +6,16 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.14//tiers/api",
-                    "query-parameters": "",
-                    "request-headers": {
-                        "Authorization": "Bearer"
-                    },
-                    "request-payload": "{\n   \"name\": \"PlatinumTier\",\n   \"attributes\": {},\n
-                    \"requestCount\": 20,\n   \"description\": \"Allows 20 requests per minute.\",\n
-                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                   "url": "api/am/admin/v0.14/throttling/policies/subscription",
+                   "query-parameters": "",
+                   "request-headers": {
+                       "Authorization": "Bearer"
+                   },
+                   "request-payload": "{\"policyName\": \"PlatinumTier\",\"displayName\": \"PlatinumTier\", \n
+                   \"description\": \"Allows 20 requests per minute\",\"defaultLimit\": {\"type\": \n
+                   \"RequestCountLimit\",\"timeUnit\": \"min\",\"unitTime\": 1,\"requestCount\": 20}, \n
+                   \"rateLimitCount\": -1,\"rateLimitTimeUnit\": \"NA\",\"customAttributes\": [], \n
+                   \"stopOnQuotaReach\": true,\"billingPlan\": \"FREE\"}",
                     "response-headers": "",
                     "response-payload": ""
                 },
@@ -22,7 +24,13 @@
                         "status-code": "201"
                     },
                     "body-asserts": []
-                }
+                },
+                  "preserve-list":[
+                       {
+                           "attribute-name":"policyId",
+                           "response-location":"policyId"
+                       }
+                  ]
             },
             {
                 "init": {
@@ -241,10 +249,8 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.14//tiers/api/PlatinumTier",
-                    "query-parameters": {
-                        "tierName": "PlatinumTier"
-                    },
+                    "url": "api/am/admin/v0.14/throttling/policies/subscription/{policyId}",
+                    "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
                     },

@@ -104,7 +104,7 @@
                 <Password>{{environment_name.password}}</Password>
                 <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
                 {% if environment_name.http_endpoint is defined and environment_name.https_endpoint is defined %}
-                <GatewayEndpoint>{{environment_name.http_endpoint}},{{environment_name.https_endpoint}}</GatewayEndpoint>
+                <GatewayEndpoint>{{environment_name.https_endpoint}},{{environment_name.http_endpoint}}</GatewayEndpoint>
                 {% elif environment_name.http_endpoint is not defined and environment_name.https_endpoint is defined %}
                 <GatewayEndpoint>{{environment_name.https_endpoint}}</GatewayEndpoint>
                 {% elif environment_name.http_endpoint is defined and environment_name.https_endpoint is not defined %}
@@ -113,7 +113,9 @@
                 <GatewayEndpoint></GatewayEndpoint>
                 {% endif %}
                 <!-- Endpoint of the Websocket APIs hosted in this API Gateway -->
+                {% if environment_name.ws_endpoint %}
                 <GatewayWSEndpoint>{{environment_name.ws_endpoint}}</GatewayWSEndpoint>
+                {% endif %}
             </Environment>
             {% endfor %}
         </Environments>
@@ -182,7 +184,13 @@
         <StreamProcessorServerURL>{{apim.analytics.receiver_urls}}</StreamProcessorServerURL>
         {% elif apim.analytics.analytics_node is defined%}
         <StreamProcessorServerURL>
-            { {% for aNode in apim.analytics.analytics_node %} {{aNode.analytics_url}} {{ "|" if not loop.last }} {% endfor %} }
+            {%- for group in apim.analytics.url_group -%}
+            {%- if group.type == "loadbalance" -%}
+            { {{- group.analytics_url.toList()|join(',') -}} }
+            {%- else -%}{ {{- group.analytics_url.toList()|join('|') -}} }
+            {%- endif -%}
+            {{- "," if not loop.last -}}
+            {%- endfor -%}
         </StreamProcessorServerURL>
         {% else %}
         <StreamProcessorServerURL>{tcp://localhost:7612}</StreamProcessorServerURL>
@@ -193,7 +201,13 @@
         <StreamProcessorAuthServerURL>{{apim.analytics.receiver_auth_urls}}</StreamProcessorAuthServerURL>
         {% elif apim.analytics.analytics_node is defined%}
         <StreamProcessorAuthServerURL>
-            { {% for aNode in apim.analytics.analytics_node %} {{aNode.analytics_auth_url}} {{ "|" if not loop.last }} {% endfor %} }
+            {%- for group in apim.analytics.url_group -%}
+            {%- if group.type == "loadbalance" -%}
+            { {{- group.analytics_auth_url.toList()|join(',') -}} }
+            {%- else -%}{ {{- group.analytics_auth_url.toList()|join('|') -}} }
+            {%- endif -%}
+            {{- "," if not loop.last -}}
+            {%- endfor -%}
         </StreamProcessorAuthServerURL>
         {% endif %}
         <!-- Administrator username to login to the remote StreamProcessor server. -->
@@ -206,11 +220,11 @@
         <StatsProviderImpl>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatsProviderImpl>
 
         <!-- StreamProcessor REST API configuration -->
-        <StreamProcessorRestApiURL>{{apim.analytics.rest_api_url}}</StreamProcessorRestApiURL>
+        <StreamProcessorRestApiURL>{{apim.analytics.store_api_url}}</StreamProcessorRestApiURL>
 
-        <StreamProcessorRestApiUsername>{{apim.analytics.rest_api_username}}</StreamProcessorRestApiUsername>
+        <StreamProcessorRestApiUsername>{{apim.analytics.store_api_username}}</StreamProcessorRestApiUsername>
 
-        <StreamProcessorRestApiPassword>{{apim.analytics.rest_api_password}}</StreamProcessorRestApiPassword>
+        <StreamProcessorRestApiPassword>{{apim.analytics.store_api_password}}</StreamProcessorRestApiPassword>
 
         <!-- Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true. -->
@@ -307,7 +321,9 @@
         <!-- Remove OAuth headers from outgoing message. -->
         <RemoveOAuthHeadersFromOutMessage>{{not apim.oauth_config.outbound_auth_header_enabled}}</RemoveOAuthHeadersFromOutMessage>
         <!--Authorization header-->
+        {% if apim.oauth_config.auth_header is defined %}
         <AuthorizationHeader>{{apim.oauth_config.auth_header}}</AuthorizationHeader>
+        {% endif %}
         <!-- Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens -->
         <ApplicationTokenScope>{{apim.oauth_config.default_app_scope}}</ApplicationTokenScope>
         <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
@@ -647,8 +663,8 @@
             {% else %}
             <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
             {% endif %}
-            <Username>{{apim.throttling.tm.receiver_username}}</Username>
-            <Password>{{apim.throttling.tm.receiver_password}}</Password>
+            <Username>{{apim.throttling.receiver_username}}</Username>
+            <Password>{{apim.throttling.receiver_password}}</Password>
         </TrafficManager>
         <DataPublisher>
             <Enabled>{{apim.throttling.data_publishing_enabled}}</Enabled>
@@ -665,20 +681,20 @@
         <PolicyDeployer>
             <Enabled>{{apim.throttling.policy_deploy_enabled}}</Enabled>
             <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
-            <Username>{{apim.throttling.policy_deploy.user}}</Username>
-            <Password>{{apim.throttling.policy_deploy.pass}}</Password>
+            <Username>{{apim.throttling.policy_deploy.username}}</Username>
+            <Password>{{apim.throttling.policy_deploy.password}}</Password>
         </PolicyDeployer>
         <BlockCondition>
             <Enabled>{{apim.throttling.blacklist_condition_enabled}}</Enabled>
-            {% if apim.throttling.block_condition.start_delay is defined %}
-            <InitDelay>{{apim.throttling.block_condition.start_delay}}</InitDelay>
+            {% if apim.throttling.blacklist_condition.start_delay is defined %}
+            <InitDelay>{{apim.throttling.blacklist_condition.start_delay}}</InitDelay>
             {% endif %}
-            {% if apim.throttling.block_condition.period is defined %}
-            <Period>{{apim.throttling.block_condition.period}}</Period>
+            {% if apim.throttling.blacklist_condition.period is defined %}
+            <Period>{{apim.throttling.blacklist_condition.period}}</Period>
             {% endif %}
         </BlockCondition>
         <JMSConnectionDetails>
-            <Enabled>{{apim.throttling.throttle_decision_endpoints is defined or apim.throttling.jms.topic_connection_factory is defined}}</Enabled>
+            <Enabled>{{apim.throttling.enable_decision_connection}}</Enabled>
             <Destination>{{apim.throttling.jms.destination}}</Destination>
             {% if apim.throttling.jms.start_delay is defined %}
             <InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay>
