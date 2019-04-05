@@ -403,7 +403,6 @@ public final class APIImportUtil {
                 if (!StringUtils.equals(prevTenantDomain, currentTenantDomain)) {
                     String errorMessage = "Tenant mismatch! Please enable preserveProvider property " +
                             "for cross tenant API Import ";
-                    log.error(errorMessage);
                     throw new APIImportException(errorMessage);
                 }
                 importedApi = new Gson().fromJson(configElement, API.class);
