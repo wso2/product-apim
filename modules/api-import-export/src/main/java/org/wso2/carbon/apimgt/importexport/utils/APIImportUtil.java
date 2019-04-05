@@ -358,6 +358,15 @@ public final class APIImportUtil {
 
     }
 
+    /**
+     * This method updates an existing API. The state of the API is preserved in the update process
+     *
+     * @param apiID                    UUID of the API to be updated
+     * @param pathToArchive            Archive used to update the API
+     * @param currentUser              User for update operation
+     * @param isDefaultProviderAllowed Is default provider allowed to do the operation
+     * @throws APIImportException If there is an error the exception is thrown
+     */
     public static void updateAPI(String apiID, String pathToArchive, String currentUser, boolean isDefaultProviderAllowed)
             throws APIImportException {
 
@@ -365,7 +374,6 @@ public final class APIImportUtil {
         API targetApi = null;
         String prevProvider;
         APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
-        String apiTargetStatus;
 
         String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
 
@@ -409,8 +417,7 @@ public final class APIImportUtil {
             // Checking whether the API exists
             // If API exists set the imported API status to the target one
             targetApi = provider.getAPIbyUUID(apiID, currentTenantDomain);
-            apiTargetStatus = targetApi.getStatus();
-            importedApi.setStatus(apiTargetStatus);
+            importedApi.setStatus(targetApi.getStatus());
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
             log.error(errorMessage, e);
