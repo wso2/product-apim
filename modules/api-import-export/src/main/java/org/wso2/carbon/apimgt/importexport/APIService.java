@@ -302,23 +302,23 @@ public class APIService {
             }
             APIImportUtil.initializeProvider(currentUser);
 
-            //Temporary directory is used to create the required folders
+            //Temporary directory is used to create the required directories
             String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
-            String createdFolders = File.separator +
+            String createdDirectories = File.separator +
                     RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
                     File.separator;
-            File importFolder = new File(currentDirectory + createdFolders);
-            boolean isImportDirCrated = importFolder.mkdirs();
+            File importDirectory = new File(currentDirectory + createdDirectories);
+            boolean isImportDirectoryCreated = importDirectory.mkdirs();
 
-            //API import process starts only if the required folder is created successfully
-            if (isImportDirCrated) {
+            //API import process starts only if the required directory is created successfully
+            if (isImportDirectoryCreated) {
                 String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
-                String absolutePath = currentDirectory + createdFolders;
+                String absolutePath = currentDirectory + createdDirectories;
                 APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
 
-                String extractedFolderName;
+                String extractedDirName;
                 try {
-                    extractedFolderName = APIImportUtil.extractArchive(
+                    extractedDirName = APIImportUtil.extractArchive(
                             new File(absolutePath + uploadFileName), absolutePath);
                 } catch (APIImportException e) {
                     return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -330,8 +330,8 @@ public class APIService {
                     isTenantFlowStarted = true;
                 }
 
-                APIImportUtil.updateAPI(apiID, absolutePath + extractedFolderName, currentUser, isProviderPreserved);
-                importFolder.deleteOnExit();
+                APIImportUtil.updateAPI(apiID, absolutePath + extractedDirName, currentUser, isProviderPreserved);
+                importDirectory.deleteOnExit();
 
                 return Response.status(Status.CREATED).entity("API updated successfully.").build();
             } else {
