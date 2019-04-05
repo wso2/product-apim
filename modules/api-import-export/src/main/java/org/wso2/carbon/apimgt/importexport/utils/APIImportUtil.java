@@ -365,7 +365,6 @@ public final class APIImportUtil {
         API targetApi = null;
         String prevProvider;
         APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
-        List<API> allMatchedApis;
         String apiTargetStatus;
 
         String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
@@ -407,12 +406,11 @@ public final class APIImportUtil {
                 importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
 
-            //Checking whether the API exists
+            // Checking whether the API exists
+            // If API exists set the imported API status to the target one
             targetApi = provider.getAPIbyUUID(apiID, currentTenantDomain);
             apiTargetStatus = targetApi.getStatus();
-
             importedApi.setStatus(apiTargetStatus);
-            importedApi.setUUID(targetApi.getUUID());
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
             log.error(errorMessage, e);
@@ -478,9 +476,9 @@ public final class APIImportUtil {
                         }
                     }
                 }
-                // This is required to make url templates and scopes get effected.
-                provider.updateAPI(importedApi);
             }
+
+            provider.updateAPI(importedApi);
         } catch (APIManagementException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             String errorMessage = "Error in adding API to the provider. ";
