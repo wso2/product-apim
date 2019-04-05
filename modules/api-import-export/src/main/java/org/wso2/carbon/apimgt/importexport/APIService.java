@@ -266,9 +266,11 @@ public class APIService {
     /**
      * This service will update an existing API given by the ID. It will preserve state of the API during the update
      *
-     * @param apiID       ID for the API
-     * @param httpHeaders HTTP headers for authentication mechanism
-     * @return A JSON response indicating the status of the update
+     * @param uploadedInputStream       Input stream from the REST request
+     * @param apiID                     ID of the API to be updated
+     * @param defaultProviderStatus     User choice to keep or replace the API provider
+     * @param httpHeaders               HTTP headers of the request
+     * @return Status of the API update
      */
     @PUT
     @Path("/{apiID}")
@@ -295,7 +297,7 @@ public class APIService {
             String tenantDomain = MultitenantUtils.getTenantDomain(authenticationContext.getUsername());
             String currentUser = authenticationContext.getDomainAwareUsername();
 
-            if (!tenantDomain.equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
                 currentUser = currentUser + "@" + tenantDomain;
             }
             APIImportUtil.initializeProvider(currentUser);
@@ -322,24 +324,24 @@ public class APIService {
                     return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
                 }
 
-                if (tenantDomain != null &&
-                        !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
-                                .equals(tenantDomain)) {
+                if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
                     PrivilegedCarbonContext.startTenantFlow();
                     PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
                     isTenantFlowStarted = true;
                 }
 
                 APIImportUtil.updateAPI(apiID, absolutePath + extractedFolderName, currentUser, isProviderPreserved);
-
                 importFolder.deleteOnExit();
-                return Response.status(Status.CREATED).entity("API updated successfully.\n").build();
+
+                return Response.status(Status.CREATED).entity("API updated successfully.").build();
             } else {
-                return Response.serverError().entity("Failed to create temporary directory.\n").build();
+                return Response.serverError().entity("Failed to create temporary directory.").build();
             }
         } catch (APIExportException e) {
-            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
+            log.error(e.getMessage(), e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.").build();
         } catch (APIImportException e) {
+            log.error(e.getMessage(), e);
             return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {

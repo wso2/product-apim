@@ -243,7 +243,7 @@ public final class APIImportUtil {
 
                 importedApi = new Gson().fromJson(configElement, API.class);
                 //Replace context to match with current provider
-                importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
+                importedApi = setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
 
             //Checking whether this is a duplicate API
@@ -379,12 +379,10 @@ public final class APIImportUtil {
      */
     public static void updateAPI(String apiID, String pathToArchive, String currentUser, boolean isDefaultProviderAllowed)
             throws APIImportException {
-
-        API importedApi = null;
-        API targetApi = null;
+        API importedApi;
+        API targetApi;
         String prevProvider;
         APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
-
         String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
 
         try {
@@ -421,7 +419,7 @@ public final class APIImportUtil {
 
                 importedApi = new Gson().fromJson(configElement, API.class);
                 //Replace context to match with current provider
-                importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
+                setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
 
             // Checking whether the API exists
@@ -430,11 +428,9 @@ public final class APIImportUtil {
             importedApi.setStatus(targetApi.getStatus());
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         } catch (APIManagementException e) {
             String errorMessage = "Error in checking API existence. ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }
 
@@ -445,7 +441,6 @@ public final class APIImportUtil {
             allowedTiers = provider.getTiers();
         } catch (APIManagementException e) {
             String errorMessage = "Error in retrieving tiers of the provider. ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }
 
@@ -455,11 +450,9 @@ public final class APIImportUtil {
             //If at least one unsupported tier is found, it should be removed before adding API
             if (!(unsupportedTiersList.isEmpty())) {
                 for (Tier unsupportedTier : unsupportedTiersList) {
-
                     //Process is continued with a warning and only supported tiers are added to the importer API
                     log.warn("Tier name : " + unsupportedTier.getName() + " is not supported.");
                 }
-
                 //Remove the unsupported tiers before adding the API
                 importedApi.removeAvailableTiers(unsupportedTiersList);
             }
@@ -468,7 +461,6 @@ public final class APIImportUtil {
         try {
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
-
                 String swaggerContent = FileUtils.readFileToString(
                         new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
 
@@ -480,35 +472,31 @@ public final class APIImportUtil {
                 Set<Scope> scopes = definitionFromOpenAPISpec.getScopes(swaggerContent);
                 importedApi.setScopes(scopes);
 
+                int tenantID = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true);
                 for (URITemplate uriTemplate : uriTemplates) {
                     Scope scope = uriTemplate.getScope();
                     if (scope != null && !(APIUtil.isWhiteListedScope(scope.getKey()))) {
-                        if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(),
-                                PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true))) {
+                        if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(), tenantID)) {
                             String errorMessage =
                                     "Error in adding API. Scope " + scope.getKey() + " is already assigned " +
-                                            "by another API \n";
-                            log.error(errorMessage);
+                                            "by another API";
                             throw new APIImportException(errorMessage);
                         }
                     }
                 }
             }
-
+            // update the API
             provider.updateAPI(importedApi);
         } catch (APIManagementException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             String errorMessage = "Error in adding API to the provider. ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         } catch (IOException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             String errorMessage = "Error in reading Swagger definition ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         } catch (FaultGatewaysException e) {
             String errorMessage = "Error in updating API ";
-            log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }
 
@@ -529,7 +517,7 @@ public final class APIImportUtil {
      * @param previousDomain original domain name
      * @return API after changing provider details to match with imported environment
      */
-    private static API SetCurrentProvidertoAPIProperties(API importedApi, String currentDomain, String previousDomain) {
+    private static API setCurrentProviderToAPIProperties(API importedApi, String currentDomain, String previousDomain) {
         if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(currentDomain) &&
                 !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(previousDomain)) {
             importedApi.setContext(importedApi.getContext().replace("/t/" + previousDomain, ""));
@@ -544,9 +532,7 @@ public final class APIImportUtil {
             importedApi.setContextTemplate(importedApi.getContextTemplate().replace
                     (previousDomain, currentDomain));
         }
-
         return importedApi;
-
     }
 
     /**
