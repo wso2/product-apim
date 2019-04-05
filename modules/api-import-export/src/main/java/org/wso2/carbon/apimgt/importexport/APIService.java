@@ -333,8 +333,6 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
-            https:
-//www.nvidia.com/en-us/geforce/ron-ai-personal-assistant/?nvid=nv-int-pr-79934
             return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {
