@@ -308,10 +308,10 @@ public class APIService {
                     RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
                     File.separator;
             File importFolder = new File(currentDirectory + createdFolders);
-            boolean folderCreateStatus = importFolder.mkdirs();
+            boolean isImportDirCrated = importFolder.mkdirs();
 
             //API import process starts only if the required folder is created successfully
-            if (folderCreateStatus) {
+            if (isImportDirCrated) {
                 String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
                 String absolutePath = currentDirectory + createdFolders;
                 APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
