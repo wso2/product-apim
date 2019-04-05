@@ -243,7 +243,7 @@ public final class APIImportUtil {
 
                 importedApi = new Gson().fromJson(configElement, API.class);
                 //Replace context to match with current provider
-                importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
+                importedApi = setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
 
             //Checking whether this is a duplicate API
@@ -369,6 +369,144 @@ public final class APIImportUtil {
     }
 
     /**
+     * This method updates an existing API. The state of the API is preserved in the update process
+     *
+     * @param apiID                    UUID of the API to be updated
+     * @param pathToArchive            Archive used to update the API
+     * @param currentUser              User for update operation
+     * @param isDefaultProviderAllowed Is default provider allowed to do the operation
+     * @throws APIImportException If there is an error the exception is thrown
+     */
+    public static void updateAPI(String apiID, String pathToArchive, String currentUser, boolean isDefaultProviderAllowed)
+            throws APIImportException {
+        API importedApi;
+        API targetApi;
+        String prevProvider;
+        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
+        String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
+
+        try {
+            String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
+            JsonElement configElement = new JsonParser().parse(jsonContent);
+            JsonObject configObject = configElement.getAsJsonObject();
+
+            //locate the "providerName" within the "id" and set it as the current user
+            JsonObject apiId = configObject.getAsJsonObject(APIImportExportConstants.ID_ELEMENT);
+            prevProvider = apiId.get(APIImportExportConstants.PROVIDER_ELEMENT).getAsString();
+            String prevTenantDomain = MultitenantUtils
+                    .getTenantDomain(APIUtil.replaceEmailDomainBack(prevProvider));
+            String currentTenantDomain = MultitenantUtils
+                    .getTenantDomain(APIUtil.replaceEmailDomainBack(currentUser));
+
+            // If the original provider is preserved,
+            if (isDefaultProviderAllowed) {
+                if (!StringUtils.equals(prevTenantDomain, currentTenantDomain)) {
+                    String errorMessage = "Tenant mismatch! Please enable preserveProvider property " +
+                            "for cross tenant API Import ";
+                    throw new APIImportException(errorMessage);
+                }
+                importedApi = new Gson().fromJson(configElement, API.class);
+            } else {
+                String prevProviderWithDomain = APIUtil.replaceEmailDomain(prevProvider);
+                String currentUserWithDomain = APIUtil.replaceEmailDomain(currentUser);
+                apiId.addProperty(APIImportExportConstants.PROVIDER_ELEMENT, currentUserWithDomain);
+                if (configObject.get(APIImportExportConstants.WSDL_URL) != null) {
+                    configObject.addProperty(APIImportExportConstants.WSDL_URL,
+                            configObject.get(APIImportExportConstants.WSDL_URL).getAsString()
+                                    .replace(prevProviderWithDomain, currentUserWithDomain));
+                }
+
+                importedApi = new Gson().fromJson(configElement, API.class);
+                //Replace context to match with current provider
+                setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
+            }
+
+            // Checking whether the API exists
+            // If API exists set the imported API status to the target one
+            targetApi = provider.getAPIbyUUID(apiID, currentTenantDomain);
+            importedApi.setStatus(targetApi.getStatus());
+        } catch (IOException e) {
+            String errorMessage = "Error in reading API definition. ";
+            throw new APIImportException(errorMessage, e);
+        } catch (APIManagementException e) {
+            String errorMessage = "Error in checking API existence. ";
+            throw new APIImportException(errorMessage, e);
+        }
+
+        Set<Tier> allowedTiers;
+        Set<Tier> unsupportedTiersList;
+
+        try {
+            allowedTiers = provider.getTiers();
+        } catch (APIManagementException e) {
+            String errorMessage = "Error in retrieving tiers of the provider. ";
+            throw new APIImportException(errorMessage, e);
+        }
+
+        if (!(allowedTiers.isEmpty())) {
+            unsupportedTiersList = Sets.difference(importedApi.getAvailableTiers(), allowedTiers);
+
+            //If at least one unsupported tier is found, it should be removed before adding API
+            if (!(unsupportedTiersList.isEmpty())) {
+                for (Tier unsupportedTier : unsupportedTiersList) {
+                    //Process is continued with a warning and only supported tiers are added to the importer API
+                    log.warn("Tier name : " + unsupportedTier.getName() + " is not supported.");
+                }
+                //Remove the unsupported tiers before adding the API
+                importedApi.removeAvailableTiers(unsupportedTiersList);
+            }
+        }
+
+        try {
+            //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
+            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
+                String swaggerContent = FileUtils.readFileToString(
+                        new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
+                addSwaggerDefinition(importedApi.getId(), swaggerContent);
+
+                //Load required properties from swagger to the API
+                Set<URITemplate> uriTemplates = definitionFromOpenAPISpec.getURITemplates(importedApi, swaggerContent);
+                importedApi.setUriTemplates(uriTemplates);
+                Set<Scope> scopes = definitionFromOpenAPISpec.getScopes(swaggerContent);
+                importedApi.setScopes(scopes);
+
+                int tenantID = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true);
+                for (URITemplate uriTemplate : uriTemplates) {
+                    Scope scope = uriTemplate.getScope();
+                    if (scope != null && !(APIUtil.isWhiteListedScope(scope.getKey()))) {
+                        if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(), tenantID)) {
+                            String errorMessage =
+                                    "Error in adding API. Scope " + scope.getKey() + " is already assigned " +
+                                            "by another API";
+                            throw new APIImportException(errorMessage);
+                        }
+                    }
+                }
+            }
+            // update the API
+            provider.updateAPI(importedApi);
+        } catch (APIManagementException e) {
+            //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
+            String errorMessage = "Error in adding API to the provider. ";
+            throw new APIImportException(errorMessage, e);
+        } catch (IOException e) {
+            //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
+            String errorMessage = "Error in reading Swagger definition ";
+            throw new APIImportException(errorMessage, e);
+        } catch (FaultGatewaysException e) {
+            String errorMessage = "Error in updating API ";
+            throw new APIImportException(errorMessage, e);
+        }
+
+        //Since Image, documents, sequences and WSDL are optional, exceptions are logged and ignored in implementation
+        addAPIImage(pathToArchive, importedApi);
+        addAPIDocuments(pathToArchive, importedApi);
+        addAPISequences(pathToArchive, importedApi);
+        addAPISpecificSequences(pathToArchive, importedApi);
+        addAPIWsdl(pathToArchive, importedApi);
+    }
+
+    /**
      * Replace original provider name from imported API properties with the logged in username
      * This method is used when "preserveProvider" property is set to false
      *
@@ -377,7 +515,7 @@ public final class APIImportUtil {
      * @param previousDomain original domain name
      * @return API after changing provider details to match with imported environment
      */
-    private static API SetCurrentProvidertoAPIProperties(API importedApi, String currentDomain, String previousDomain) {
+    private static API setCurrentProviderToAPIProperties(API importedApi, String currentDomain, String previousDomain) {
         if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(currentDomain) &&
                 !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(previousDomain)) {
             importedApi.setContext(importedApi.getContext().replace("/t/" + previousDomain, ""));
@@ -392,9 +530,7 @@ public final class APIImportUtil {
             importedApi.setContextTemplate(importedApi.getContextTemplate().replace
                     (previousDomain, currentDomain));
         }
-
         return importedApi;
-
     }
 
     /**
