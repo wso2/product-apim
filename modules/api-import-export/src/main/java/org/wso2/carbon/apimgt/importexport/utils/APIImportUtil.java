@@ -463,7 +463,6 @@ public final class APIImportUtil {
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
                 String swaggerContent = FileUtils.readFileToString(
                         new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
-
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
                 //Load required properties from swagger to the API

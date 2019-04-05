@@ -288,7 +288,6 @@ public class APIService {
 
         try {
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
-
             if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
             }
