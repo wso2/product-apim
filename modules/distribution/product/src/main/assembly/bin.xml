@@ -59,7 +59,6 @@
                 <exclude>**/master-datasources.xml</exclude>
                 <exclude>**/master-datasources.xml.j2</exclude>
                 <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
-                <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
 

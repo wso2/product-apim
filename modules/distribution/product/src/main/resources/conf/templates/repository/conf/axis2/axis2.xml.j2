@@ -29,9 +29,9 @@
     <parameter name="hotupdate" locked="false">true</parameter>
 
     <!-- Change this to true if you want to enable MTOM -->
-    <parameter name="enableMTOM" locked="false">false</parameter>
+    <parameter name="enableMTOM" locked="false">{{server.enableMTOM}}</parameter>
     <!-- Change this to true if you want to enable SwA -->
-    <parameter name="enableSwA" locked="false">false</parameter>
+    <parameter name="enableSwA" locked="false">{{server.enableSwA}}</parameter>
 
     <!-- If you want to enable file caching for attachments change this to true -->
     <parameter name="cacheAttachments" locked="false">false</parameter>
@@ -58,8 +58,8 @@
     <parameter name="ModulesDirectory">axis2modules</parameter>
 
     <!-- User agent and the server details to be used in the http communication -->
-    <parameter name="userAgent" locked="true">WSO2 AM 2.1.0</parameter>
-    <parameter name="server" locked="true">WSO2 AM 2.1.0</parameter>
+    <parameter name="userAgent" locked="true">{{server.userAgent}}</parameter>
+    <parameter name="server" locked="true">{{server.serverDetails}}</parameter>
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
@@ -177,13 +177,13 @@
     <!--             Transport Ins (Listeners)             -->
     <!-- ================================================= -->
 
-    <transportReceiver name="http" class="{{transport.passthru_http.listener.class}}">
+    <transportReceiver name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpListener">
      {% for parameter_key,parameter_value in transport.passthru_http.listener.parameters.items() %}
         <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
     {% endfor %}
     </transportReceiver>
 
-   <transportReceiver name="https" class="{{transport.passthru_https.listener.class}}">
+   <transportReceiver name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener">
      {% for parameter_key,parameter_value in transport.passthru_https.listener.parameters.items() %}
         <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
     {% endfor %}
@@ -207,7 +207,7 @@
        <!-- Configured for 10 mins. -->
        <!-- ============================================== -->
        <parameter name="dynamicSSLProfilesConfig">
-           <filePath>{{transport.passthru_https.listener.ssl_profile.file_path}}</filePath>
+           <filePath>repository/resources/security/listenerprofiles.xml</filePath>
            <fileReadInterval>{{transport.passthru_https.listener.ssl_profile.interval}}</fileReadInterval>
        </parameter>
     </transportReceiver>
@@ -217,7 +217,7 @@
 
     <!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)-->
     {% if transport.jms.listener.connection_factories is defined %}
-    <transportReceiver name="jms" class="{{transport.jms.listener.class}}">
+    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener">
     {% for connection_factory in transport.jms.listener.connection_factories %}
         <parameter name="{{transport.jms.listener[connection_factory].name}}" locked="false">
         {% for name,value in transport.jms.listener[connection_factory].parameters.items() %}
@@ -233,7 +233,7 @@
     <!--             Transport Outs (Senders)              -->
     <!-- ================================================= -->
 
-    <transportSender name="http" class="{{transport.passthru_http.sender.class}}">
+    <transportSender name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpSender">
          {% for parameter_key,parameter_value in transport.passthru_http.sender.parameters.items() %}
             <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
         {% endfor %}
@@ -242,7 +242,7 @@
     <transportSender name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportSender"/>
 
 
-    <transportSender name="https" class="{{transport.passthru_https.sender.class}}">
+    <transportSender name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpSSLSender">
          {% for parameter_key,parameter_value in transport.passthru_https.sender.parameters.items() %}
             <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
         {% endfor %}
@@ -272,7 +272,7 @@
     </transportSender>
 
 {% if transport.jms.sender.connection_factories is defined %}
-     <transportSender name="jms" class="{{transport.jms.sender.class}}">
+     <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
          {% for connection_factory in transport.jms.sender.connection_factories %}
              <parameter name="{{transport.jms.sender[connection_factory].name}}" locked="false">
              {% for name,value in transport.jms.sender[connection_factory].parameters.items() %}
@@ -284,14 +284,14 @@
 {% endif %}
 
 {% if transport.ws.sender.enable %}
-    <transportSender name="ws" class="{{transport.ws.sender.class}}">
+    <transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
              {% for name,value in transport.ws.sender.parameters.items() %}
                      <parameter name="{{name}}" locked="false">{{value}}</parameter>
               {% endfor %}
     </transportSender>
 {%endif%}
 {%if transport.wss.sender.enable %}
-    <transportSender name="wss" class="{{transport.wss.sender.class}}">
+    <transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
   {% for name,value in transport.wss.sender.parameters.items() %}
         <parameter name="{{name}}" locked="false">{{value}}</parameter>
    {% endfor %}

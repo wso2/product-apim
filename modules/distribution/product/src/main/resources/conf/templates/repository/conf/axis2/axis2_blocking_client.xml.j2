@@ -211,14 +211,14 @@
     <transportSender name="local"
                      class="org.apache.axis2.transport.local.LocalTransportSender"/ -->
 	<transportSender name="http"
-                     class="{{transport.blocking_http.sender.class}}">
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
         {% for parameter_name,parameter_value in transport.blocking_http.sender.parameters.items() %}
         <parameter name="{{parameter_name}}">{{parameter_value}}</parameter>
         {% endfor %}
     </transportSender>
 
     <transportSender name="https"
-                     class="{{transport.blocking_https.sender.class}}">
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
                              {% for parameter_name,parameter_value in transport.blocking_https.sender.parameters.items() %}
                              <parameter name="{{parameter_name}}">{{parameter_value}}</parameter>
                              {% endfor %}

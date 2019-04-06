@@ -91,17 +91,15 @@
       "class": "org.apache.axis2.json.JSONBadgerfishOMBuilder"
     }
   ],
-  "transport.passthru_http.listener.class": "org.apache.synapse.transport.passthru.PassThroughHttpListener",
   "transport.passthru_http.listener.parameters": {
     "port": "8280",
     "non-blocking": true,
     "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor"
   },
-  "transport.passthru_https.listener.class": "org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener",
   "transport.passthru_https.listener.parameters": {
     "port": "8243",
     "non-blocking": true,
-    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
+    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",,
     "SSLVerifyClient": "optional"
   },
   "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
@@ -113,11 +111,9 @@
   "transport.passthru_https.listener.trust_store.password": "$ref{truststore.password}",
   "transport.passthru_https.listener.ssl_profile.file_path": "repository/resources/security/listenerprofiles.xml",
   "transport.passthru_https.listener.ssl_profile.interval": "600000",
-  "transport.passthru_http.sender.class": "org.apache.synapse.transport.passthru.PassThroughHttpSender",
   "transport.passthru_http.sender.parameters": {
     "non-blocking": true
   },
-  "transport.passthru_https.sender.class": "org.apache.synapse.transport.passthru.PassThroughHttpSSLSender",
   "transport.passthru_https.sender.parameters": {
     "non-blocking": true
   },
@@ -130,14 +126,11 @@
   "transport.passthru_https.sender.trust_store.password": "$ref{truststore.password}",
   "transport.passthru_https.sender.ssl_profile.file_path": "repository/resources/security/sslprofiles.xml",
   "transport.passthru_https.sender.ssl_profile.interval": "600000",
-  "transport.jms.sender.class": "org.apache.axis2.transport.jms.JMSSender",
   "transport.ws.sender.enable": true,
-  "transport.ws.sender.class": "org.wso2.carbon.websocket.transport.WebsocketTransportSender",
   "transport.ws.sender.parameters": {
     "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
     "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
   },
-  "transport.wss.sender.class": "org.wso2.carbon.websocket.transport.WebsocketTransportSender",
   "transport.wss.sender.enable": true,
   "transport.wss.sender.parameters": {
     "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
@@ -145,14 +138,12 @@
   },
   "transport.wss.sender.trust_store.location": "repository/resources/security/$ref{truststore.file_name}",
   "transport.wss.sender.trust_store.password": "$ref{truststore.password}",
-  "transport.blocking_http.sender.class": "org.apache.axis2.transport.http.CommonsHTTPTransportSender",
   "transport.blocking_http.sender.parameters": {
     "PROTOCOL": "HTTP/1.1",
     "Transfer-Encoding": "chunked",
     "cacheHttpClient": true,
     "defaultMaxConnectionsPerHost": "200"
   },
-  "transport.blocking_https.sender.class": "org.apache.axis2.transport.http.CommonsHTTPTransportSender",
   "transport.blocking_https.sender.parameters": {
     "PROTOCOL": "HTTP/1.1",
     "Transfer-Encoding": "chunked",

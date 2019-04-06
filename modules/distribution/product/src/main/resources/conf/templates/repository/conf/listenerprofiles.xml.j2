@@ -20,22 +20,20 @@
 <parameter name="SSLProfiles">
 
 
-{% for profile_name in listener_profiles.enabled_ssl_profiles %}
 <profile>
-        <bindAddress>{{listener_profiles[profile_name].bind_address}}</bindAddress>
-        <KeyStore>
-            <Location>{{listener_profiles[profile_name].key_store.location}}</Location>
-            <Type>{{listener_profiles[profile_name].key_Store.type}}</Type>
-            <Password>{{listener_profiles[profile_name].key_store.password}}</Password>
-            <KeyPassword>{{listener_profiles[profile_name].key_store.key_password}}</KeyPassword>
+        <bindAddress>0.0.0.0</bindAddress>
+         <KeyStore>
+            <Location>repository/resources/security/{{keystore.tls.file_name}}</Location>
+            <Type>{{keystore.tls.type}}</Type>
+            <Password>{{keystore.tls.password}}</Password>
+            <KeyPassword>{{keystore.tls.key_password}}</KeyPassword>
         </KeyStore>
         <TrustStore>
-            <Location>{{listener_profiles[profile_name].trust_store.location}}</Location>
-            <Type>{{listener_profiles[profile_name].trust_store.type}}</Type>
-            <Password>{{listener_profiles[profile_name].trust_store.password}}</Password>
+            <Location>repository/resources/security/{{truststore.file_name}}</Location>
+            <Type>{{truststore.type}}</Type>
+            <Password>{{truststore.password}}</Password>
         </TrustStore>
-        <SSLVerifyClient>{{listener_profiles[profile_name].ssl_verifying_client}}</SSLVerifyClient>
+        <SSLVerifyClient>optional</SSLVerifyClient>
     </profile>
-    {% endfor %}
 </parameter>
 
