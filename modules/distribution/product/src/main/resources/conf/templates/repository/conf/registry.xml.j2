@@ -30,25 +30,41 @@
         <dataSource>jdbc/WSO2CarbonDB</dataSource>
     </dbConfig>
     <dbConfig name="govregistry">
-        <dataSource>{{governance.data_source}}</dataSource>
+        <dataSource>jdbc/SHARED_DB</dataSource>
     </dbConfig>
+    <dbConfig name="configregistry">
+    {% if database.config is defined%}
+        <dataSource>jdbc/WSO2CONFIG_DB</dataSource>
+    {% else %}
+        <dataSource>jdbc/SHARED_DB</dataSource>
+    {% endif %}
+    </dbConfig>
+
     <remoteInstance url="https://{{deployment.hostname}}">
         <id>gov</id>
-        <cacheId>{{governance.cache_id}}</cacheId>
+        <cacheId>{{governance_data.cache_id}}</cacheId>
         <dbConfig>govregistry</dbConfig>
         <readOnly>false</readOnly>
-        <enableCache>{{governance.enable_cache}}</enableCache>
+        <enableCache>{{governance_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
 
+    <remoteInstance url="https://{{deployment.hostname}}">
+        <id>conf</id>
+        <cacheId>{{config_data.cache_id}}</cacheId>
+        <dbConfig>configregistry</dbConfig>
+        <readOnly>false</readOnly>
+        <enableCache>{{config_data.enable_cache}}</enableCache>
+        <registryRoot>/</registryRoot>
+    </remoteInstance>
 
     <mount path="/_system/governance" overwrite="true">
         <instanceId>gov</instanceId>
-        <targetPath>/_system/governance</targetPath>
+        <targetPath>{{governance_data.path}}</targetPath>
     </mount>
     <mount path="/_system/config" overwrite="true">
-        <instanceId>gov</instanceId>
-        <targetPath>/_system/config</targetPath>
+        <instanceId>conf</instanceId>
+        <targetPath>{{config_data.path}}</targetPath>
     </mount>
 
     <!-- This handler provides the feature to add a simlink to a given resource -->
