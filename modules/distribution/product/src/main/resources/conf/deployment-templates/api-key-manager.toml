@@ -38,26 +38,26 @@ password = "wso2carbon"
 
 # Caches
 [apim.cache.km_token]
-enabled = false
+enable = false
 expiry_time = 15
 
 [apim.cache.jwt_claim]
-enabled = true
+enable = true
 expiry_time = 900
 
 # JWT Generation
 [apim.jwt]
-enabled = true
+enable = true
 encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
 claim_dialect = "http://wso2.org/claims"
 header = "X-JWT-Assertion"
 signing_algorithm = "SHA256withRSA"
-user_claims_enabled = true
+enable_user_claims = true
 claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.throttling]
-data_publishing_enabled = false
-policy_deploy_enabled = false
-blacklist_condition_enabled = false
+enable_data_publishing = false
+enable_policy_deploy = false
+enable_blacklist_condition = false
 # JMS connection also should be disable

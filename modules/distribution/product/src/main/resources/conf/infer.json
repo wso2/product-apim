@@ -36,7 +36,7 @@
       "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator"
     }
   },
-  "apim.jwt.user_claims_enabled": {
+  "apim.jwt.enable_user_claims": {
     true: {
       "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
     }

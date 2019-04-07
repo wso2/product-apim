@@ -32,7 +32,7 @@
 
     <JWTConfiguration>
         <!-- Enable/Disable JWT generation. Default is false. -->
-        <EnableJWTGeneration>{{apim.jwt.enabled}}</EnableJWTGeneration>
+        <EnableJWTGeneration>{{apim.jwt.enable}}</EnableJWTGeneration>
 
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>{{apim.jwt.header}}</JWTHeader>
@@ -41,7 +41,7 @@
              to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
              jwt token, he needs to enable this parameter.
              The DefaultClaimsRetriever class adds user claims from the default carbon user store. -->
-        {% if apim.jwt.user_claims_enabled %}
+        {% if apim.jwt.enable_user_claims %}
         <ClaimsRetrieverImplClass>{{apim.jwt.claims_extractor_impl}}</ClaimsRetrieverImplClass>
         {% else %}
         <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
@@ -123,23 +123,23 @@
 
     <CacheConfigurations>
 	    <!-- Enable/Disable token caching at the Gateway-->
-        <EnableGatewayTokenCache>{{apim.cache.gateway_token.enabled}}</EnableGatewayTokenCache>
+        <EnableGatewayTokenCache>{{apim.cache.gateway_token.enable}}</EnableGatewayTokenCache>
 	    <!-- Enable/Disable API resource caching at the Gateway-->
-        <EnableGatewayResourceCache>{{apim.cache.resource.enabled}}</EnableGatewayResourceCache>
+        <EnableGatewayResourceCache>{{apim.cache.resource.enable}}</EnableGatewayResourceCache>
         <!-- Enable/Disable API key validation information caching at key-management server -->
-        <EnableKeyManagerTokenCache>{{apim.cache.km_token.enabled}}</EnableKeyManagerTokenCache>
+        <EnableKeyManagerTokenCache>{{apim.cache.km_token.enable}}</EnableKeyManagerTokenCache>
         <!-- This parameter specifies whether Recently Added APIs will be loaded from the cache or not.
              If there are multiple API modification during a short time period, better to disable cache. -->
-        <EnableRecentlyAddedAPICache>{{apim.cache.recent_apis.enabled}}</EnableRecentlyAddedAPICache>
+        <EnableRecentlyAddedAPICache>{{apim.cache.recent_apis.enable}}</EnableRecentlyAddedAPICache>
         <!-- This parameter specifies whether scopes are taken from cache or not. If you are modifying application
         subscriptions frequently, modifying the user roles frequently or updating the subscribed APIs frequently, it
         is better to turn-off this cache-->
-        <EnableScopeCache>{{apim.cache.scopes.enabled}}</EnableScopeCache>
+        <EnableScopeCache>{{apim.cache.scopes.enable}}</EnableScopeCache>
         <!-- This indicates whether the role cache need to enabled in the publisher. If this is disabled, there will
         be a call to key manager to all the calls to API publisher APIs. It is highly recommended to enable this
         cache. However, if the system is in a state, where the role addition and deletion happens seamlessly, the
         cache will be in in-valid state.-->
-        <EnablePublisherRoleCache>{{apim.cache.publisher_roles.enabled}}</EnablePublisherRoleCache>
+        <EnablePublisherRoleCache>{{apim.cache.publisher_roles.enable}}</EnablePublisherRoleCache>
 	    <!-- JWT claims Cache expiry in seconds -->
         {% if apim.cache.jwt_claim.expiry_time is defined %}
         <JWTClaimCacheExpiry>{{apim.cache.jwt_claim.expiry_time}}</JWTClaimCacheExpiry>
@@ -160,7 +160,7 @@
           Other than this config, also <EnableGatewayTokenCache> and <EnableKeyManagerTokenCache> should have been set
           as 'false' to completely disable JWTClaimCache.
          -->
-        <EnableJWTClaimCache>{{apim.cache.jwt_claim.enabled}}</EnableJWTClaimCache>
+        <EnableJWTClaimCache>{{apim.cache.jwt_claim.enable}}</EnableJWTClaimCache>
     </CacheConfigurations>
 
     <!--
@@ -169,7 +169,7 @@
     -->
     <Analytics>
         <!-- Enable Analytics for API Manager -->
-        <Enabled>{{apim.analytics.enabled}}</Enabled>
+        <Enabled>{{apim.analytics.enable}}</Enabled>
         <!-- Server URL of the remote StreamProcessor server used to collect statistics. Must
              be specified in protocol://hostname:port/ format.
 
@@ -319,7 +319,7 @@
 
     <OAuthConfigurations>
         <!-- Remove OAuth headers from outgoing message. -->
-        <RemoveOAuthHeadersFromOutMessage>{{not apim.oauth_config.outbound_auth_header_enabled}}</RemoveOAuthHeadersFromOutMessage>
+        <RemoveOAuthHeadersFromOutMessage>{{not apim.oauth_config.enable_outbound_auth_header}}</RemoveOAuthHeadersFromOutMessage>
         <!--Authorization header-->
         {% if apim.oauth_config.auth_header is defined %}
         <AuthorizationHeader>{{apim.oauth_config.auth_header}}</AuthorizationHeader>
@@ -346,12 +346,12 @@
         <!-- Whether to encrypt tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
-        <EncryptPersistedTokens>{{apim.oauth_config.token_encryption_enabled}}</EncryptPersistedTokens>
+        <EncryptPersistedTokens>{{apim.oauth_config.enable_token_encryption}}</EncryptPersistedTokens>
         <!-- Whether to hash the tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
         org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor and change the value of
         <EnableClientSecretHash> to true in the identity.xml -->
-        <EnableTokenHashMode>{{apim.oauth_config.token_hashing_enabled}}</EnableTokenHashMode>
+        <EnableTokenHashMode>{{apim.oauth_config.enable_token_hashing}}</EnableTokenHashMode>
     </OAuthConfigurations>
 
     <!-- Settings related to managing API access tiers. -->
@@ -363,7 +363,7 @@
 
     <!-- API Store Related Configurations -->
     <APIStore>
-        {% if apim.store.application_sharing_enabled%}
+        {% if apim.store.enable_application_sharing%}
             {% if apim.store.application_sharing_impl is defined %}
         <GroupingExtractor>{{apim.store.application_sharing_impl}}</GroupingExtractor>
             {% else %}
@@ -394,14 +394,14 @@
 
         <!-- This parameter specifies whether to display the comment editing facility or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayComments>{{apim.store.comments_enabled}}</DisplayComments>
+        <DisplayComments>{{apim.store.enable_comments}}</DisplayComments>
 
         <!-- This parameter specifies whether to display the ratings  or not.
              Default is "true". If user wants to disable, he must set this param as "false" -->
-        <DisplayRatings>{{apim.store.ratings_enabled}}</DisplayRatings>
+        <DisplayRatings>{{apim.store.enable_ratings}}</DisplayRatings>
 
         <!--set isStoreForumEnabled to false for disable forum in store-->
-        <isStoreForumEnabled>{{apim.store.forum_enabled}}</isStoreForumEnabled>
+        <isStoreForumEnabled>{{apim.store.enable_forum}}</isStoreForumEnabled>
 
     </APIStore>
 
@@ -432,7 +432,7 @@
          and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
         <!-- Configuration to enable/disable sending CORS headers from the Gateway-->
-        <Enabled>{{apim.cors.enabled}}</Enabled>
+        <Enabled>{{apim.cors.enable}}</Enabled>
 
         <!-- The value of the Access-Control-Allow-Origin header. Default values are
              API Store addresses, which is needed for swagger to function. -->
@@ -626,7 +626,7 @@
         </ETagSkipList>
     </RESTAPI>
     <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>{{apim.throttling.advanced_throttling_enabled}}</EnableAdvanceThrottling>
+        <EnableAdvanceThrottling>{{apim.throttling.enable_advanced_throttling}}</EnableAdvanceThrottling>
         <TrafficManager>
             <Type>{{apim.throttling.tm.event_type}}</Type>
 
@@ -667,7 +667,7 @@
             <Password>{{apim.throttling.receiver_password}}</Password>
         </TrafficManager>
         <DataPublisher>
-            <Enabled>{{apim.throttling.data_publishing_enabled}}</Enabled>
+            <Enabled>{{apim.throttling.enable_data_publishing}}</Enabled>
             <DataPublisherPool>
                 <MaxIdle>{{apim.throttling.publisher.max_idle}}</MaxIdle>
                 <InitIdleCapacity>{{apim.throttling.publisher.init_idle_size}}</InitIdleCapacity>
@@ -679,13 +679,13 @@
             </DataPublisherThreadPool>
         </DataPublisher>
         <PolicyDeployer>
-            <Enabled>{{apim.throttling.policy_deploy_enabled}}</Enabled>
+            <Enabled>{{apim.throttling.enable_policy_deploy}}</Enabled>
             <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
             <Username>{{apim.throttling.policy_deploy.username}}</Username>
             <Password>{{apim.throttling.policy_deploy.password}}</Password>
         </PolicyDeployer>
         <BlockCondition>
-            <Enabled>{{apim.throttling.blacklist_condition_enabled}}</Enabled>
+            <Enabled>{{apim.throttling.enable_blacklist_condition}}</Enabled>
             {% if apim.throttling.blacklist_condition.start_delay is defined %}
             <InitDelay>{{apim.throttling.blacklist_condition.start_delay}}</InitDelay>
             {% endif %}
@@ -731,14 +731,14 @@
                 <10KPerMin>10000</10KPerMin>
             </ResourceLevelTierLimits>
         </DefaultLimits-->
-        <EnableUnlimitedTier>{{apim.throttling.unlimited_tier_enabled}}</EnableUnlimitedTier>
-        <EnableHeaderConditions>{{apim.throttling.header_based_throttling_enabled}}</EnableHeaderConditions>
-        <EnableJWTClaimConditions>{{apim.throttling.jwt_claim_based_throttling_enabled}}</EnableJWTClaimConditions>
-        <EnableQueryParamConditions>{{apim.throttling.query_param_based_throttling_enabled}}</EnableQueryParamConditions>
+        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
+        <EnableHeaderConditions>{{apim.throttling.enable_header_based_throttling}}</EnableHeaderConditions>
+        <EnableJWTClaimConditions>{{apim.throttling.enable_jwt_claim_based_throttling}}</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>{{apim.throttling.enable_query_param_based_throttling}}</EnableQueryParamConditions>
     </ThrottlingConfigurations>
     
     <WorkflowConfigurations>
-        <Enabled>{{apim.workflow.enabled}}</Enabled>
+        <Enabled>{{apim.workflow.enable}}</Enabled>
     	<ServerUrl>{{apim.workflow.service_url}}</ServerUrl>
     	<ServerUser>{{apim.workflow.wf_engine_user}}</ServerUser>
     	<ServerPassword>{{apim.workflow.wf_engine_pass}}</ServerPassword>

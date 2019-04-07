@@ -40,7 +40,7 @@ http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
 [apim.store]
-application_sharing_enabled = false
+enable_application_sharing = false
 application_sharing_type = "default"
 
 [apim.cors]
