@@ -1189,7 +1189,7 @@
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
         <product.cep.version>4.1.0</product.cep.version>
-        <version.snake.yaml>1.19</version.snake.yaml>
+        <version.snake.yaml>1.24</version.snake.yaml>
 
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.0</swagger-annotations-version>
