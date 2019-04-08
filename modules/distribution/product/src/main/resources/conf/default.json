@@ -255,6 +255,19 @@
   "apim.throttling.enable_jwt_claim_based_throttling": "false",
   "apim.throttling.enable_query_param_based_throttling": "false",
   "apim.throttling.decision_connection_type": "andes",
+  "apim.throttling.enable_persistence": false,
+  "apim.throttling.event_sync.hostname" : "0.0.0.0",
+  "apim.throttling.event_sync.port" : "11224",
+  "apim.throttling.event_management.hostname" : "0.0.0.0",
+  "apim.throttling.event_management.port" : "10005",
+  "event_processor.enable_persistence": false,
+  "event_processor.event_sync.hostname" : "0.0.0.0",
+  "event_processor.event_sync.port" : "11224",
+  "event_processor.event_management.hostname" : "0.0.0.0",
+  "event_processor.event_management.port" : "10005",
+  "server.mode" : "single",
+  "event_processor.enable_single_mode" : true,
+  "event_processor.enable_ha_mode" : false,
   "apim.workflow.enable": "false",
   "apim.workflow.service_url": "https://localhost:9445/bpmn",
   "apim.workflow.wf_engine_user": "${admin.username}",
@@ -304,22 +317,17 @@
   "transport.binary.agent.secure_max_idle_connections": "250",
   "transport.binary.agent.secure_eviction_time_period": "5500",
   "transport.binary.agent.secure_min_idle_time_in_pool": "5000",
-  "databridge.receiver.worker_threads": "10",
-  "databridge.receiver.max_event_buffer_capacity": "10",
-  "databridge.receiver.event_buffer_size": "2000",
-  "databridge.receiver.client_timeout_min": "30",
-  "databridge.receiver.keystore_location": "${carbon.home}/repository/resources/security/$ref{keystore.tls.file_name}",
-  "databridge.receiver.keystore_password": "$ref{keystore.tls.password}",
-  "transport.thrift.receiver.parameters": {
-    "tcpPort": "7611",
-    "sslPort": "7711"
-  },
-  "transport.binary.receiver.parameters": {
-    "tcpPort": "9611",
-    "sslPort": "9711",
-    "sslReceiverThreadPoolSize": "100",
-    "tcpReceiverThreadPoolSize": "100"
-  },
+  "transport.receiver.worker_threads" : "10",
+  "transport.receiver.session_timeout" : "30",
+  "transport.receiver.keystore_location" : "${carbon.home}/repository/resources/security/$ref{keystore.tls.file_name}",
+  "transport.receiver.keystore_password" : "$ref{keystore.tls.password}",
+  "transport.receiver.tcp_port" : "9611",
+  "transport.receiver.ssl_port" : "9711",
+  "transport.receiver.ssl_receiver_thread_pool_size" : "100",
+  "transport.receiver.tcp_receiver_thread_pool_size" : "100",
+  "output_adapter.jms.min_thread" : "8",
+  "output_adapter.jms.max_thread" : "100",
+  "output_adapter.jms.keep_alive_time" : "20000",
   "indexing.enable": true,
   "indexing.starting_delay": "35",
   "indexing.frequency": "3",
@@ -331,5 +339,14 @@
       "isCascadeDeleteEnabled": true,
       "initializeNewClaimManager": true
     }
-  }
+  },
+
+  "output_adapter.email.from_address" : "abcd@gmail.com",
+  "output_adapter.email.username" : "abcd",
+  "output_adapter.email.password" : "xxxx",
+  "output_adapter.email.hostname" : "smtp.gmail.com",
+  "output_adapter.email.port" : "587",
+  "output_adapter.email.enable_start_tls" : true,
+  "output_adapter.email.enable_authentication" : true
+
 }

@@ -1,0 +1,168 @@
+<!--
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<eventProcessorConfiguration>
+
+    <!-- Single Mode Config -->
+    <mode name="Single" enable="{{event_processor.enable_single_mode}}">
+        <persistence enable="{{event_processor.enable_persistence}}">
+            <persistenceIntervalInMinutes>15</persistenceIntervalInMinutes>
+            <persisterSchedulerPoolSize>10</persisterSchedulerPoolSize>
+            <persister class="org.wso2.carbon.event.processor.core.internal.persistence.FileSystemPersistenceStore">
+                <property key="persistenceLocation">cep_persistence</property>
+            </persister>
+        </persistence>
+    </mode>
+
+    <!-- HA Mode Config -->
+    <mode name="HA" enable="{{event_processor.enable_ha_mode}}">
+        <nodeType>
+            <worker enable="true"/>
+            <presenter enable="false"/>
+        </nodeType>
+        <checkMemberUpdateInterval>10000</checkMemberUpdateInterval>
+        <eventSync>
+            <hostName>{{event_processor.event_sync.hostname}}</hostName>
+            <port>{{event_processor.event_sync.port}}</port>
+            <reconnectionInterval>20000</reconnectionInterval>
+            <serverThreads>20000</serverThreads>
+            <!--Size of TCP event publishing client's send buffer in bytes-->
+            <publisherTcpSendBufferSize>5242880</publisherTcpSendBufferSize>
+            <!--Character encoding of TCP event publishing client-->
+            <publisherCharSet>UTF-8</publisherCharSet>
+            <publisherBufferSize>1024</publisherBufferSize>
+            <publisherConnectionStatusCheckInterval>30000</publisherConnectionStatusCheckInterval>
+            <!--Number of events that could be queued at receiver before they are synced between CEP/DAS nodes-->
+            <receiverQueueSize>1000000</receiverQueueSize>
+            <!--Max total size of events that could be queued at receiver before they are synced between CEP/DAS nodes-->
+            <receiverQueueMaxSizeMb>10</receiverQueueMaxSizeMb>
+            <!--Number of events that could be queued at publisher to sync output between CEP/DAS nodes-->
+            <publisherQueueSize>1000000</publisherQueueSize>
+            <!--Max total size of events that could be queued at publisher to sync output between CEP/DAS nodes-->
+            <publisherQueueMaxSizeMb>10</publisherQueueMaxSizeMb>
+        </eventSync>
+        <management>
+            <hostName>{{event_processor.event_management.hostname}}</hostName>
+            <port>{{event_processor.event_management.port}}</port>
+            <tryStateChangeInterval>15000</tryStateChangeInterval>
+            <stateSyncRetryInterval>10000</stateSyncRetryInterval>
+        </management>
+        <presentation>
+            <hostName>0.0.0.0</hostName>
+            <port>11000</port>
+            <!--Size of TCP event publishing client's send buffer in bytes-->
+            <publisherTcpSendBufferSize>5242880</publisherTcpSendBufferSize>
+            <!--Character encoding of TCP event publishing client-->
+            <publisherCharSet>UTF-8</publisherCharSet>
+            <publisherBufferSize>1024</publisherBufferSize>
+            <publisherConnectionStatusCheckInterval>30000</publisherConnectionStatusCheckInterval>
+        </presentation>
+        <persistence enable="{{event_processor.enable_persistence}}">
+            <persistenceIntervalInMinutes>15</persistenceIntervalInMinutes>
+            <persisterSchedulerPoolSize>10</persisterSchedulerPoolSize>
+            <persister class="org.wso2.carbon.event.processor.core.internal.persistence.FileSystemPersistenceStore">
+                <property key="persistenceLocation">cep_persistence</property>
+            </persister>
+        </persistence>
+    </mode>
+
+
+    <!-- Distributed Mode Config -->
+    <mode name="Distributed" enable="false">
+        <nodeType>
+            <worker enable="true"/>
+            <manager enable="true">
+                <hostName>0.0.0.0</hostName>
+                <port>8904</port>
+            </manager>
+            <presenter enable="false">
+                <hostName>0.0.0.0</hostName>
+                <port>11000</port>
+            </presenter>
+        </nodeType>
+
+        <management>
+            <managers>
+                <manager>
+                    <hostName>localhost</hostName>
+                    <port>8904</port>
+                </manager>
+                <manager>
+                    <hostName>localhost</hostName>
+                    <port>8905</port>
+                </manager>
+            </managers>
+            <!--Connection re-try interval to connect to Storm Manager service in case of a connection failure-->
+            <reconnectionInterval>20000</reconnectionInterval>
+            <!--Heart beat interval (in ms) for event listeners in "Storm Receivers" and "CEP Publishers" to acknowledge their
+            availability for receiving events"-->
+            <heartbeatInterval>5000</heartbeatInterval>
+            <!--Storm topology re-submit interval in case of a topology submission failure-->
+            <topologyResubmitInterval>10000</topologyResubmitInterval>
+        </management>
+
+        <transport>
+            <!--Port range to be used for events listener servers in "Storm Receiver Spouts" and "CEP Publishers"-->
+            <portRange>
+                <min>15000</min>
+                <max>15100</max>
+            </portRange>
+            <!--Connection re-try interval (in ms) for connection failures between "CEP Receiver" to "Storm Receiver" connections
+            and "Storm Publisher" to "CEP Publisher" connections-->
+            <reconnectionInterval>20000</reconnectionInterval>
+            <!--Size of the output queue of each "CEP Receiver" which stores events to be published into "Storm Receivers" .
+            This must be a power of two-->
+            <cepReceiverOutputQueueSize>8192</cepReceiverOutputQueueSize>
+            <!--Size of the output queue of each "Storm Publisher" which stores events to be published into "CEP Publisher" .
+            This must be a power of two-->
+            <stormPublisherOutputQueueSize>8192</stormPublisherOutputQueueSize>
+            <!--Size of TCP event publishing client's send buffer in bytes-->
+            <tcpEventPublisherSendBufferSize>5242880</tcpEventPublisherSendBufferSize>
+            <!--Character encoding of TCP event publishing client-->
+            <tcpEventPublisherCharSet>UTF-8</tcpEventPublisherCharSet>
+            <!--Size of the event queue in each storm spout which stores events to be processed by storm bolts -->
+            <stormSpoutBufferSize>10000</stormSpoutBufferSize>
+
+            <connectionStatusCheckInterval>20000</connectionStatusCheckInterval>
+        </transport>
+
+        <presentation>
+            <presentationOutputQueueSize>1024</presentationOutputQueueSize>
+            <!--Size of TCP event publishing client's send buffer in bytes-->
+            <tcpEventPublisherSendBufferSize>5242880</tcpEventPublisherSendBufferSize>
+            <!--Character encoding of TCP event publishing client-->
+            <tcpEventPublisherCharSet>UTF-8</tcpEventPublisherCharSet>
+
+            <connectionStatusCheckInterval>20000</connectionStatusCheckInterval>
+        </presentation>
+
+        <statusMonitor>
+            <lockTimeout>60000</lockTimeout>
+            <updateRate>60000</updateRate>
+        </statusMonitor>
+
+        <stormJar>org.wso2.cep.storm.dependencies.jar</stormJar>
+
+        <distributedUIUrl></distributedUIUrl>
+
+        <memberUpdateCheckInterval>20000</memberUpdateCheckInterval>
+
+    </mode>
+
+</eventProcessorConfiguration>
+

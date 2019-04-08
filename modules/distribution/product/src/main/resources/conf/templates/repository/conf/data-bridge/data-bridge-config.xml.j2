@@ -16,28 +16,35 @@
 
 <dataBridgeConfiguration>
 
-    <workerThreads>{{databridge.receiver.worker_threads}}</workerThreads>
+    <workerThreads>{{transport.receiver.worker_threads}}</workerThreads>
 
     <!--Maximum amount of messages that can be queued internally in MB-->
-    <maxEventBufferCapacity>{{databridge.receiver.max_event_buffer_capacity}}</maxEventBufferCapacity>
+    <maxEventBufferCapacity>10</maxEventBufferCapacity>
 
     <!-- Queue size; the maximum number of events that can be stored in the queue -->
-    <eventBufferSize>{{databridge.receiver.event_buffer_size}}</eventBufferSize>
-    <clientTimeoutMin>{{databridge.receiver.client_timeout_min}}</clientTimeoutMin>
+    <eventBufferSize>2000</eventBufferSize>
+    <clientTimeoutMin>{{transport.receiver.session_timeout}}</clientTimeoutMin>
 
-    <keyStoreLocation>{{databridge.receiver.keystore_location}}</keyStoreLocation>
-    <keyStorePassword>{{databridge.receiver.keystore_password}}</keyStorePassword>
+    <keyStoreLocation>{{transport.receiver.keystore_location}}</keyStoreLocation>
+    <keyStorePassword>{{transport.receiver.keystore_password}}</keyStorePassword>
 
+    <!--todo: need to remove and fix the code-->
     <dataReceiver name="Thrift">
-    {% for configuration_key,configuration_value in transport.thrift.receiver.parameters.items() %}
-            <config name="{{configuration_key}}">{{configuration_value}}</config>
-    {% endfor %}
+        <config name="tcpPort">7611</config>
+        <config name="sslPort">7711</config>
     </dataReceiver>
 
     <dataReceiver name="Binary">
-    {% for configuration_key,configuration_value in transport.binary.receiver.parameters.items() %}
-                <config name="{{configuration_key}}">{{configuration_value}}</config>
-        {% endfor %}
+        <config name="tcpPort">{{transport.receiver.tcp_port}}</config>
+        <config name="sslPort">{{transport.receiver.ssl_port}}</config>
+        <config name="sslReceiverThreadPoolSize">{{transport.receiver.ssl_receiver_thread_pool_size}}</config>
+        <config name="tcpReceiverThreadPoolSize">{{transport.receiver.tcp_receiver_thread_pool_size}}</config>
+        {% if transport.receiver.ssl_enabled_protocols is defined %}
+        <config name="sslEnabledProtocols">{% for protocol in transport.receiver.ssl_enabled_protocols %}{{protocol}}{{- "," if not loop.last -}}{% endfor %}</config>
+        {% endif %}
+        {% if transport.receiver.ciphers is defined %}
+        <config name="ciphers">{% for cipher in transport.receiver.ciphers %}{{cipher}}{{- "," if not loop.last -}}{% endfor %}</config>
+        {% endif %}
     </dataReceiver>
 
 </dataBridgeConfiguration>
