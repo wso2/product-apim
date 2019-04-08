@@ -85,5 +85,17 @@
   "transport.blocking_sender.so_timeout": [
     "transport.blocking_https.sender.parameters.SO_TIMEOUT",
     "transport.blocking_http.sender.parameters.SO_TIMEOUT"
-  ]
+  ],
+  "apim.throttling.enable_persistence": "event_processor.enable_persistence",
+  "apim.throttling.event_sync.hostname" : "event_processor.event_sync.hostname",
+  "apim.throttling.event_sync.port" : "event_processor.event_sync.port",
+  "apim.throttling.event_management.hostname" : "event_processor.event_management.hostname",
+  "apim.throttling.event_management.port" : "event_processor.event_management.port",
+  "apim.notification.from_address" : "output_adapter.email.from_address",
+  "apim.notification.username" : "output_adapter.email.username",
+  "apim.notification.password" : "output_adapter.email.password",
+  "apim.notification.hostname" : "output_adapter.email.hostname",
+  "apim.notification.port" : "output_adapter.email.port",
+  "apim.notification.enable_start_tls" : "output_adapter.email.enable_start_tls",
+  "apim.notification.enable_authentication" : "output_adapter.email.enable_authentication"
 }
