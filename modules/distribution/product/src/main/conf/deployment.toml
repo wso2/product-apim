@@ -1,4 +1,4 @@
-[deployment]
+[server]
 #hostname = "localhost"
 local_member_ip = "127.0.0.1"
 #offset=0

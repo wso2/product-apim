@@ -1,5 +1,5 @@
 {
-  "deployment.server_role": {
+  "server.server_role": {
     "gateway-worker": {
       "apim.throttling.enable_policy_deployer": false,
       "indexing.enable": false

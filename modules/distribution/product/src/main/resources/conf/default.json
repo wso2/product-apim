@@ -326,7 +326,7 @@
   "indexing.bach_size": "40",
   "indexing.pool_size": "40",
   "realm_manager": {
-    "data_source": "jdbc/SHARED_DB",
+    "data_source": "SHARED_DB",
     "properties": {
       "isCascadeDeleteEnabled": true,
       "initializeNewClaimManager": true
