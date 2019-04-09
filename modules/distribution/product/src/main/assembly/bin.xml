@@ -100,6 +100,7 @@
 
                 <exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_${carbon.analytics.common.version}.jar</exclude>
                 <exclude>**/repository/components/plugins/siddhi-extension-event-table_${siddhi.version}.jar</exclude>
+                <exclude>**/repository/components/plugins/com.jayway.jsonpath.json-path_0.9.1.jar</exclude>
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
@@ -578,7 +579,7 @@
                 <include>*/**</include>
             </includes>
 	        <excludes>
-                <exclude>**/cxf/spring-asm-3.1.4.RELEASE.jar</exclude>
+                <exclude>**/cxf3/spring-asm-3.1.4.RELEASE.jar</exclude>
 	        </excludes>
         </fileSet>
 
@@ -720,7 +721,7 @@
         <!-- copy cxf filter extensions -->
         <fileSet>
             <directory>../../oauth2-client-authentication-filter/target/cxfFilters/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/lib/runtimes/cxf</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/lib/runtimes/cxf3</outputDirectory>
             <includes>
                 <include>**/*.jar</include>
             </includes>
