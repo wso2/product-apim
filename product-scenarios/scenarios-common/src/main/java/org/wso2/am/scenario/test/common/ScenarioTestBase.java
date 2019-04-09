@@ -603,8 +603,11 @@ public class ScenarioTestBase {
     }
 
     public String getBackendEndServiceEndPointHttps(String serviceName) {
-        String webAppURL = serviceEndpoint.replace("/services", "");
-        return webAppURL + "/" + serviceName;
+        String webAppURL = serviceEndpoint.replaceFirst("/services.*", "");
+
+        // Avoid adding extra '/' at the end
+        webAppURL = StringUtils.isEmpty(serviceName) ? webAppURL : webAppURL + '/' + serviceName;
+        return webAppURL;
     }
 
     /**
