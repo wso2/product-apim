@@ -228,7 +228,7 @@ public class ScenarioDataProvider {
     }
 
     @DataProvider(name = "OASDocsWithInvalidURL")
-    public static Object[][] OASDocInvalidURLDataProvide() {
+    public static Object[][] OASDocInvalidURLProvide() {
 
         return new Object[][]{
                 {"localhost:8083/swaggerFiles/OAS2Document.yaml"}, {"http:localhost:8083/swaggerFiles/OAS3Document.yaml"}
@@ -241,48 +241,6 @@ public class ScenarioDataProvider {
         return new Object[][]{
                 {""},
                 {"newTag1,newTag2"}
-        };
-    }
-    @DataProvider(name = "InvalidAPITags")
-    public static Object[][] InvalidAPITagsDataProvider() {
-        return new Object[][]{
-                {"!"},
-                {"@"},
-                {"#"},
-//                {"$"},allowed
-                {"%"},
-                {"^"},
-//                {"&"}, //need to fix https://github.com/wso2/product-apim/issues/4390
-                {"*"},
-//                {"("}, // this is allowed. but search fails
-//                {")"},
-//                {","},
-//                {"/"},
-//                {";"},
-//                {"'"},
-//                {"["}, // this is allowed. but search fails
-//                {"]"},
-//                {"\\"},
-//                {"`"},
-//                {"~"},
-//                {"<"},
-//                {">"},
-//                {"\""},
-//                {"{"},
-//                {"}"},
-//                {"|"},
-//                {"="},
-//                {"+"},
-//                {" "}
-
-        };
-    }
-
-    @DataProvider(name = "InvaidOASDocs")
-    public static Object[][] InvaidOASDocsDataProvide() {
-
-        return new Object[][]{
-                {"http://localhost:8083/swaggerFiles/InvalidOAS3Document.json"}
         };
     }
 }

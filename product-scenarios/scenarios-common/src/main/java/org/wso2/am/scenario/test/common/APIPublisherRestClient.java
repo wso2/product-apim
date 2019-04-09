@@ -743,18 +743,18 @@ public class APIPublisherRestClient {
      *
      * @param creationRequestBean - Instance of APICreationRequestBean object with all needed information to Update the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
-     * @throws Exception - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HTTPSClientUtils.doPost() method call
      */
-    public HttpResponse updateAPI(APICreationRequestBean creationRequestBean) throws Exception {
-
+    public HttpResponse updateAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpClient.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
-            throw new Exception("Exception when updating API " + e.getMessage(), e);
+            throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
+                    "for the user in Publisher. Error: " + e.getMessage(), e);
         }
     }
 
@@ -892,18 +892,17 @@ public class APIPublisherRestClient {
      * @param version  API version
      * @param provider API provider
      * @return Swagger definition of the API
-     * @throws Exception
+     * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse getSwagger(String name, String version, String provider) throws Exception {
-
+    public HttpResponse getSwagger(String name, String version, String provider) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpClient.doGet(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag?name=" + name + "&version=" +
                             version + "&provider=" + provider + "&action=swagger",
                     requestHeaders);
         } catch (Exception e) {
-            throw new Exception("Exception when Retrieving the swagger definition of the API : " + name
-                    + e.getMessage(), e);
+            throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for " +
+                    "the user in Publisher. Error: " + e.getMessage(), e);
         }
     }
 

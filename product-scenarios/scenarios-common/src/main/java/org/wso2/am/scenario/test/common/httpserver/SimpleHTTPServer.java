@@ -44,8 +44,8 @@ public class SimpleHTTPServer implements Runnable {
     // Client Connection via Socket Class
     private Socket connect;
     private static final Log log = LogFactory.getLog(SimpleHTTPServer.class);
-    private boolean isRunning = true;
-    private ServerSocket serverConnect;
+    private static boolean isRunning = true;
+    private static ServerSocket serverConnect;
 
     public SimpleHTTPServer() {
 
@@ -75,7 +75,7 @@ public class SimpleHTTPServer implements Runnable {
         try {
             connect = serverConnect.accept();
         } catch (IOException e) {
-            log.error("Exception at serverConnect accept", e);
+            e.printStackTrace();
         }
 
         // we manage our particular client connection
@@ -175,24 +175,22 @@ public class SimpleHTTPServer implements Runnable {
                     out.close();
                     dataOut.close();
                     connect.close(); // close socket connection
-                    log.info("closeServerConnection invoked from finally block.");
                     closeServerConnection(serverConnect);
                 } catch (Exception e) {
                     log.error("Error closing stream : " + e.getMessage());
                 }
 
-                log.info("Connection closed.\n");
+                log.debug("Connection closed.\n");
             }
         }
 
     }
 
     private void closeServerConnection(ServerSocket server) {
-log.info("closing server connection.");
+
         if (server != null && !server.isClosed()) {
             try {
                 server.close();
-                log.info("server connection closed.");
             } catch (IOException e) {
                 log.error(System.err);
             }
