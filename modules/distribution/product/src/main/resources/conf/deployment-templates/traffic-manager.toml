@@ -1,6 +1,6 @@
 [server]
 hostname = "tm.wso2.com"
-local_member_ip = "127.0.0.1"
+node_ip = "127.0.0.1"
 server_role = "traffic-manager"
 
 [super_admin]

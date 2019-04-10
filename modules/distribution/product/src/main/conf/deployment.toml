@@ -1,6 +1,5 @@
 [server]
 #hostname = "localhost"
-local_member_ip = "127.0.0.1"
 node_ip = "127.0.0.1"
 #offset=0
 mode = "single" #single or ha
@@ -139,15 +138,12 @@ allow_credentials = false
 
 #[apim.throttling]
 #enable_data_publishing = true
-#enable_policy_deployer = true
-#enable_block_condition = true
+#enable_policy_deploy = true
+#enable_blacklist_condition = true
 
 #throttle_decision_endpoints = ["tcp://localhost:5672","tcp://localhost:5672"]
 #
 #enable_persistence = true
-
-#[apim.throttling.publisher]
-#keep_alive_time = "200s"
 
 #[apim.throttling.blacklist_condition]
 #start_delay = "5m"
@@ -198,11 +194,6 @@ allow_credentials = false
 #tcp_receiver_thread_pool_size = 100
 #ssl_enabled_protocols = ["TLSv1","TLSv1.1","TLSv1.2"]
 #ciphers = ["SSL_RSA_WITH_RC4_128_MD5","SSL_RSA_WITH_RC4_128_SHA"]
-
-#[output_adapter.jms]
-#min_thread = 8
-#max_thread = 100
-#keep_alive_time = "20000ms"
 
 #[apim.notification]
 #from_address = "APIM.com"
