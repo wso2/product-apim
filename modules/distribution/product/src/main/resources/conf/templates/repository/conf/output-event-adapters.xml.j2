@@ -68,8 +68,7 @@
         <property key="minThread">{{output_adapter.jms.min_thread}}</property>
         <property key="maxThread">{{output_adapter.jms.max_thread}}</property>
         <property key="keepAliveTimeInMillis">{{output_adapter.jms.keep_alive_time}}</property>
-        <!-- todo check optimized value-->
-        <property key="jobQueueSize">15000</property>
+        <property key="jobQueueSize">{{output_adapter.jms.job_queue_size}}</property>
     </adapterConfig>
 
     <adapterConfig type="mqtt">

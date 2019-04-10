@@ -40,7 +40,7 @@
     {% endif %}
     </dbConfig>
 
-    <remoteInstance url="https://{{deployment.hostname}}">
+    <remoteInstance url="https://{{server.hostname}}">
         <id>gov</id>
         <cacheId>{{governance_data.cache_id}}</cacheId>
         <dbConfig>govregistry</dbConfig>
@@ -49,7 +49,7 @@
         <registryRoot>/</registryRoot>
     </remoteInstance>
 
-    <remoteInstance url="https://{{deployment.hostname}}">
+    <remoteInstance url="https://{{server.hostname}}">
         <id>conf</id>
         <cacheId>{{config_data.cache_id}}</cacheId>
         <dbConfig>configregistry</dbConfig>

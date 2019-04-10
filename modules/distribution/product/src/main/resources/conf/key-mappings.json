@@ -1,23 +1,24 @@
 {
   "apim.cache.km_token.expiry_time": "apim.cache.token_expiry_time",
   "apim.cache.gateway_token.expiry_time": "apim.cache.token_expiry_time",
-  "transport.thrift.receiver.parameters.tcp_port": "transport.thrift.receiver.parameters.tcpPort",
-  "transport.thrift.receiver.parameters.ssl_port": "transport.thrift.receiver.parameters.sslPort",
-  "transport.thrift.receiver.parameters.ssl_enabled_protocols": "transport.thrift.receiver.parameters.sslEnabledProtocols",
-  "transport.thrift.receiver.parameters.ciphers": "transport.thrift.receiver.parameters.ciphers",
-  "transport.thrift.receiver.parameters.tcp_max_worker_threads": "transport.thrift.receiver.parameters.tcpMaxWorkerThreads",
-  "transport.thrift.receiver.parameters.tcp_min_worker_threads": "transport.thrift.receiver.parameters.tcpMinWorkerThreads",
-  "transport.thrift.receiver.parameters.tcp_request_timeout": "transport.thrift.receiver.parameters.tcpRequestTimeout",
-  "transport.thrift.receiver.parameters.tcp_stop_timeout": "transport.thrift.receiver.parameters.tcpStopTimeoutVal",
-  "transport.thrift.receiver.parameters.ssl_max_worker_threads": "transport.thrift.receiver.parameters.sslMaxWorkerThreads",
-  "transport.thrift.receiver.parameters.ssl_min_worker_threads": "transport.thrift.receiver.parameters.sslMinWorkerThreads",
-  "transport.thrift.receiver.parameters.ssl_request_timeout": "transport.thrift.receiver.parameters.sslRequestTimeout",
-  "transport.thrift.receiver.parameters.ssl_stop_timeout": "transport.thrift.receiver.parameters.sslStopTimeoutVal",
-  "transport.binary.receiver.parameters.tcp_port": "transport.binary.receiver.parameters.tcpPort",
-  "transport.binary.receiver.parameters.ssl_port": "transport.binary.receiver.parameters.sslPort",
-  "transport.binary.receiver.parameters.ssl_receiver_thread_pool_size": "transport.binary.receiver.parameters.sslReceiverThreadPoolSize",
-  "transport.binary.receiver.parameters.tcp_receiver_thread_pool_size": "transport.binary.receiver.parameters.tcpReceiverThreadPoolSize",
-  "transport.binary.receiver.parameters.ssl_enabled_protocols": "transport.binary.receiver.parameters.sslEnabledProtocols",
+  "transport.receiver.tcp_port": [
+    "transport.thrift.receiver.tcpPort",
+    "transport.binary.receiver.tcpPort"
+  ],
+  "transport.receiver.ssl_port": [
+    "transport.thrift.receiver.sslPort",
+    "transport.binary.receiver.sslPort"
+  ],
+  "transport.receiver.ssl_enabled_protocols": [
+    "transport.thrift.receiver.sslEnabledProtocols",
+    "transport.binary.receiver.sslEnabledProtocols"
+  ],
+  "transport.receiver.ciphers": [
+    "transport.binary.receiver.ciphers",
+    "transport.thrift.receiver.ciphers"
+  ],
+  "transport.receiver.ssl_receiver_thread_pool_size": "transport.binary.receiver.sslReceiverThreadPoolSize",
+  "transport.receiver.tcp_receiver_thread_pool_size": "transport.binary.receiver.tcpReceiverThreadPoolSize",
   "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers",
   "synapse_properties.synapse_commons_json_buildValidNCNames": "synapse_properties.'synapse.commons.json.buildValidNCNames'",
   "transport.http.socket_timeout": "passthru_http.'http.socket.timeout'",
@@ -87,15 +88,15 @@
     "transport.blocking_http.sender.parameters.SO_TIMEOUT"
   ],
   "apim.throttling.enable_persistence": "event_processor.enable_persistence",
-  "apim.throttling.event_sync.hostname" : "event_processor.event_sync.hostname",
-  "apim.throttling.event_sync.port" : "event_processor.event_sync.port",
-  "apim.throttling.event_management.hostname" : "event_processor.event_management.hostname",
-  "apim.throttling.event_management.port" : "event_processor.event_management.port",
-  "apim.notification.from_address" : "output_adapter.email.from_address",
-  "apim.notification.username" : "output_adapter.email.username",
-  "apim.notification.password" : "output_adapter.email.password",
-  "apim.notification.hostname" : "output_adapter.email.hostname",
-  "apim.notification.port" : "output_adapter.email.port",
-  "apim.notification.enable_start_tls" : "output_adapter.email.enable_start_tls",
-  "apim.notification.enable_authentication" : "output_adapter.email.enable_authentication"
+  "apim.throttling.event_sync.hostname": "event_processor.event_sync.hostname",
+  "apim.throttling.event_sync.port": "event_processor.event_sync.port",
+  "apim.throttling.event_management.hostname": "event_processor.event_management.hostname",
+  "apim.throttling.event_management.port": "event_processor.event_management.port",
+  "apim.notification.from_address": "output_adapter.email.from_address",
+  "apim.notification.username": "output_adapter.email.username",
+  "apim.notification.password": "output_adapter.email.password",
+  "apim.notification.hostname": "output_adapter.email.hostname",
+  "apim.notification.port": "output_adapter.email.port",
+  "apim.notification.enable_start_tls": "output_adapter.email.enable_start_tls",
+  "apim.notification.enable_authentication": "output_adapter.email.enable_authentication"
 }

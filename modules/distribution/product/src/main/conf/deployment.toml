@@ -1,9 +1,7 @@
-[deployment]
+[server]
 #hostname = "localhost"
 local_member_ip = "127.0.0.1"
 #offset=0
-
-[server]
 mode = "single" #single or ha
 
 [super_admin]
@@ -178,22 +176,16 @@ allow_credentials = false
 
 #data bridge config
 #[transport.receiver]
+#type = "binary"
 #worker_threads = 10
 #session_timeout = "30m"
-#keystore_location = "$ref{keystore.tls.file_name}"
-#keystore_password = "$ref{keystore.tls.password}"
-
+#keystore.file_name = "$ref{keystore.tls.file_name}"
+#keystore.password = "$ref{keystore.tls.password}"
 #tcp_port = 9611
 #ssl_port = 9711
 #ssl_receiver_thread_pool_size = 100
 #tcp_receiver_thread_pool_size = 100
-#ssl_enabled_protocols = ["TLSv1","TLSv1.1","TLSv1.2"]
-#ciphers = ["SSL_RSA_WITH_RC4_128_MD5","SSL_RSA_WITH_RC4_128_SHA"]
 
-#[output_adapter.jms]
-#min_thread = 8
-#max_thread = 100
-#keep_alive_time = "20000ms"
 
 #[apim.notification]
 #from_address = "APIM.com"

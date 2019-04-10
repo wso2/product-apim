@@ -1,4 +1,4 @@
-[deployment]
+[server]
 hostname = "store.wso2.com"
 local_member_ip = "127.0.0.1"
 server_role="api-store"
