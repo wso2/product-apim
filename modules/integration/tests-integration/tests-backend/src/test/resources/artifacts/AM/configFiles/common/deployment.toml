@@ -129,3 +129,12 @@ class = "org.apache.axis2.transport.http.SOAPMessageFormatter"
 [[message_formatters]]
 content_type = "application/json/badgerfish"
 class = "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
+
+[apim.notification]
+from_address = "APIM.com"
+username = "APIM"
+password = "APIM+123"
+hostname = "localhost"
+port = 3025
+enable_start_tls = false
+enable_authentication = true
