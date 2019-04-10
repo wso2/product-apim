@@ -1,6 +1,6 @@
 [server]
 hostname = "gw.wso2.com"
-local_member_ip = "127.0.0.1"
+node_ip = "127.0.0.1"
 server_role = "gateway-worker"
 
 [super_admin]

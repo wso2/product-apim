@@ -1,0 +1,12 @@
+{
+  "time": {
+  	"apim.cache.jwt_claim.expiry_time" : "s",
+  	"apim.cache.token_expiry_time" : "s",
+  	"apim.cache.tags.expiry_time" : "ms",
+  	"apim.throttling.publisher.keep_alive_time" : "s",
+  	"apim.throttling.blacklist_condition.start_delay" : "ms",
+  	"apim.throttling.blacklist_condition.period" : "ms",
+  	"apim.throttling.jms.start_delay" : "ms"
+  }
+}
+	

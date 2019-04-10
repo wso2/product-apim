@@ -1,29 +1,29 @@
 {
   "server.server_role": {
     "gateway-worker": {
-      "apim.throttling.enable_policy_deployer": false,
+      "apim.throttling.enable_policy_deploy": false,
       "indexing.enable": false
     },
     "api-key-manager": {
-      "apim.throttling.enable_policy_deployer": false,
+      "apim.throttling.enable_policy_deploy": false,
       "apim.throttling.enable_data_publishing": false,
       "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_block_condition": false,
+      "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "indexing.enable": false
     },
     "api-publisher": {
       "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_block_condition": false,
+      "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false
     },
     "api-store": {
-      "apim.throttling.enable_policy_deployer": false,
+      "apim.throttling.enable_policy_deploy": false,
       "apim.throttling.enable_data_publishing": false,
       "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_block_condition": false,
+      "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false
     }
