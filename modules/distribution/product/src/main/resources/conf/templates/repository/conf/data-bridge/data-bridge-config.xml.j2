@@ -25,26 +25,27 @@
     <eventBufferSize>2000</eventBufferSize>
     <clientTimeoutMin>{{transport.receiver.session_timeout}}</clientTimeoutMin>
 
-    <keyStoreLocation>{{transport.receiver.keystore_location}}</keyStoreLocation>
-    <keyStorePassword>{{transport.receiver.keystore_password}}</keyStorePassword>
+    <keyStoreLocation>${carbon.home}/repository/resources/security/{{transport.receiver.keystore.file_name}}</keyStoreLocation>
+    <keyStorePassword>{{transport.receiver.keystore.password}}</keyStorePassword>
 
-    <!--todo: need to remove and fix the code-->
     <dataReceiver name="Thrift">
-        <config name="tcpPort">7611</config>
-        <config name="sslPort">7711</config>
+    {% for configuration_key,configuration_value in transport.thrift.receiver.items() %}
+      {% if configuration_key == "sslEnabledProtocols" || configuration_key == "ciphers" %}
+      <config name="configuration_key">{{configuration_value | join(',')}}</config>
+      {%else%}
+      <config name="{{configuration_key}}">{{configuration_value}}</config>
+      {% endif %}
+    {% endfor %}
     </dataReceiver>
 
     <dataReceiver name="Binary">
-        <config name="tcpPort">{{transport.receiver.tcp_port}}</config>
-        <config name="sslPort">{{transport.receiver.ssl_port}}</config>
-        <config name="sslReceiverThreadPoolSize">{{transport.receiver.ssl_receiver_thread_pool_size}}</config>
-        <config name="tcpReceiverThreadPoolSize">{{transport.receiver.tcp_receiver_thread_pool_size}}</config>
-        {% if transport.receiver.ssl_enabled_protocols is defined %}
-        <config name="sslEnabledProtocols">{% for protocol in transport.receiver.ssl_enabled_protocols %}{{protocol}}{{- "," if not loop.last -}}{% endfor %}</config>
-        {% endif %}
-        {% if transport.receiver.ciphers is defined %}
-        <config name="ciphers">{% for cipher in transport.receiver.ciphers %}{{cipher}}{{- "," if not loop.last -}}{% endfor %}</config>
-        {% endif %}
+    {% for configuration_key,configuration_value in transport.binary.receiver.items() %}
+      {% if configuration_key == "sslEnabledProtocols" || configuration_key == "ciphers" %}
+      <config name="configuration_key">{{configuration_value | join(',')}}</config>
+      {%else%}
+      <config name="{{configuration_key}}">{{configuration_value}}</config>
+      {% endif %}
+    {% endfor %}
     </dataReceiver>
 
 </dataBridgeConfiguration>

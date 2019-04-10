@@ -37,7 +37,7 @@
     }
   },
   "apim.jwt.enable_user_claims": {
-    true: {
+    "true": {
       "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
     }
   },
@@ -91,14 +91,24 @@
       "apim.key_manager.key_validation_handler_impl": "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
     }
   },
-  "server.mode" : {
-    "single" : {
-      "event_processor.enable_single_mode" : true,
-      "event_processor.enable_ha_mode" : false
+  "server.mode": {
+    "single": {
+      "event_processor.enable_single_mode": true,
+      "event_processor.enable_ha_mode": false
     },
-    "ha" : {
-      "event_processor.enable_single_mode" : false,
-      "event_processor.enable_ha_mode" : true
+    "ha": {
+      "event_processor.enable_single_mode": false,
+      "event_processor.enable_ha_mode": true
+    }
+  },
+  "transport.receiver.type": {
+    "binary": {
+      "transport.thrift.receiver.enable": false,
+      "transport.binary.receiver.enable": true
+    },
+    "thrift": {
+      "transport.binary.receiver.enable": false,
+      "transport.thrift.receiver.enable": true
     }
   }
 }

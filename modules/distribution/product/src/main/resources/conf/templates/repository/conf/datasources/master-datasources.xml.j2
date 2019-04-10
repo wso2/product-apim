@@ -39,13 +39,54 @@
                     <username>{{database.shared_db.username}}</username>
                     <password>{{database.shared_db.password}}</password>
                     <driverClassName>{{database.shared_db.driver}}</driverClassName>
-                    <validationQuery>{{database.shared_db.validationQuery}}</validationQuery>
                     {% for property_name,property_value in database.shared_db.pool_options.items() %}
                     <{{property_name}}>{{property_value}}</{{property_name}}>
                         {% endfor %}
                  </configuration>
             </definition>
         </datasource>
+
+{% if database.user is defined %}
+        <datasource>
+            <name>WSO2USER_DB</name>
+            <description>Shared Database for user and registry data</description>
+            <jndiConfig>
+                <name>jdbc/WSO2USER_DB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>{{database.user.url}}</url>
+                    <username>{{database.user.username}}</username>
+                    <password>{{database.user.password}}</password>
+                    <driverClassName>{{database.user.driver}}</driverClassName>
+                    {% for property_name,property_value in database.user.pool_options.items() %}
+                    <{{property_name}}>{{property_value}}</{{property_name}}>
+                        {% endfor %}
+                 </configuration>
+            </definition>
+        </datasource>
+{% endif%}
+
+{% if database.config is defined %}
+        <datasource>
+            <name>WSO2CONFIG_DB</name>
+            <description>Shared Database for user and registry data</description>
+            <jndiConfig>
+                <name>jdbc/WSO2CONFIG_DB</name>
+            </jndiConfig>
+            <definition type="RDBMS">
+                <configuration>
+                    <url>{{database.config.url}}</url>
+                    <username>{{database.config.username}}</username>
+                    <password>{{database.config.password}}</password>
+                    <driverClassName>{{database.config.driver}}</driverClassName>
+                    {% for property_name,property_value in database.config.pool_options.items() %}
+                    <{{property_name}}>{{property_value}}</{{property_name}}>
+                        {% endfor %}
+                 </configuration>
+            </definition>
+        </datasource>
+{% endif%}
 
         {% for data in datasource %}
         <datasource>
