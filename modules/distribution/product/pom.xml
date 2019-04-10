@@ -722,6 +722,15 @@
                                     </output>
                                     <config>${basedir}/src/main/resources/conf/key-mappings.json</config>
                                 </task>
+                                <task>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                    </input>
+                                    <output>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                    </output>
+                                    <config>${basedir}/src/main/resources/conf/unit-resolve.json</config>
+                                </task>
                             </tasks>
                         </configuration>
                     </execution>

@@ -1,6 +1,7 @@
 [server]
 #hostname = "localhost"
 local_member_ip = "127.0.0.1"
+node_ip = "127.0.0.1"
 #offset=0
 mode = "single" #single or ha
 
@@ -43,14 +44,14 @@ https_endpoint = "https://localhost:${https.nio.port}"
 
 #[apim.cache.gateway_token]
 #enable = true
-#expiry_time = 15
+#expiry_time = "15m"
 
 #[apim.cache.resource]
 #enable = true
 
 #[apim.cache.km_token]
 #enable = false
-#expiry_time = 15
+#expiry_time = "15m"
 
 #[apim.cache.recent_apis]
 #enable = false
@@ -63,10 +64,10 @@ https_endpoint = "https://localhost:${https.nio.port}"
 
 #[apim.cache.jwt_claim]
 #enable = true
-#expiry_time = 900
+#expiry_time = "15m"
 
 #[apim.cache.tags]
-#expiry_time = 120000
+#expiry_time = "2m"
 
 #[apim.analytics]
 #enable = false
@@ -145,6 +146,16 @@ allow_credentials = false
 #
 #enable_persistence = true
 
+#[apim.throttling.publisher]
+#keep_alive_time = "200s"
+
+#[apim.throttling.blacklist_condition]
+#start_delay = "5m"
+#period = "1h"
+
+#[apim.throttling.jms]
+#start_delay = "5m"
+
 #[apim.throttling.event_sync]
 #hostName = "0.0.0.0"
 #port = 11224
@@ -185,7 +196,13 @@ allow_credentials = false
 #ssl_port = 9711
 #ssl_receiver_thread_pool_size = 100
 #tcp_receiver_thread_pool_size = 100
+#ssl_enabled_protocols = ["TLSv1","TLSv1.1","TLSv1.2"]
+#ciphers = ["SSL_RSA_WITH_RC4_128_MD5","SSL_RSA_WITH_RC4_128_SHA"]
 
+#[output_adapter.jms]
+#min_thread = 8
+#max_thread = 100
+#keep_alive_time = "20000ms"
 
 #[apim.notification]
 #from_address = "APIM.com"

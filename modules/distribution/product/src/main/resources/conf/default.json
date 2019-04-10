@@ -238,7 +238,7 @@
   "apim.throttling.publisher.init_idle_size": "200",
   "apim.throttling.publisher.pool_size": "200",
   "apim.throttling.publisher.max_pool_size": "1000",
-  "apim.throttling.publisher.keep_alive_time": "200",
+  "apim.throttling.publisher.keep_alive_time": "200s",
   "apim.throttling.enable_policy_deploy": "true",
   "apim.throttling.service_url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "apim.throttling.policy_deploy.username": "$ref{apim.throttling.username}",
