@@ -18,5 +18,5 @@
 
 <Classloading xmlns="http://wso2.org/projects/as/classloading">
     <ParentFirst>false</ParentFirst>
-    <Environments>CXF,Carbon</Environments>
+    <Environments>CXF3,Carbon</Environments>
 </Classloading>
