@@ -1,6 +1,6 @@
 [server]
 #hostname = "localhost"
-local_member_ip = "127.0.0.1"
+node_ip = "127.0.0.1"
 
 [super_admin]
 username = "admin"
