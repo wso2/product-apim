@@ -29,5 +29,5 @@
 	Tomcat environment is the default and every webapps gets it even if they didn't specify it.
 	e.g. If a webapps requires CXF, they will get both Tomcat and CXF.
      -->
-    <Environments>CXF,Carbon</Environments>
+    <Environments>CXF3,Carbon</Environments>
 </Classloading>
