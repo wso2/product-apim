@@ -18,37 +18,36 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import org.apache.axiom.om.OMElement;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
-import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
-import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
-import org.wso2.carbon.apimgt.impl.utils.SelfSignUpUtil;
-import org.wso2.carbon.apimgt.importexport.APIExportException;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.apache.axiom.om.OMElement;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
+import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
+import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
+import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.impl.utils.SelfSignUpUtil;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.apimgt.importexport.CertificateDetail;
 import org.wso2.carbon.context.CarbonContext;
@@ -67,23 +66,16 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
-import waffle.util.Base64;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.AbstractMap;
@@ -94,6 +86,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the util class which consists of all the functions for exporting API
@@ -1049,7 +1045,7 @@ public class APIExportUtil {
                     certificate = apiProvider.getCertificateContent(metadataDTO.getAlias());
                     certificate.close();
                     byte[] certificateContent = IOUtils.toByteArray(certificate);
-                    String encodedCertificate = Base64.encode(certificateContent);
+                    String encodedCertificate = new String(Base64.encodeBase64(certificateContent));
                     CertificateDetail certificateDetail = new CertificateDetail();
                     certificateDetail.setHostName(hostname);
                     certificateDetail.setAlias(metadataDTO.getAlias());
