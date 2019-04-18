@@ -403,6 +403,26 @@ under the License.
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.nextgen.config</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.dblock.waffle.wso2</groupId>
             <artifactId>waffle-jna</artifactId>
         </dependency>
