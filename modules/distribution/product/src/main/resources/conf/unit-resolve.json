@@ -6,7 +6,8 @@
   	"apim.throttling.publisher.keep_alive_time" : "s",
   	"apim.throttling.blacklist_condition.start_delay" : "ms",
   	"apim.throttling.blacklist_condition.period" : "ms",
-  	"apim.throttling.jms.start_delay" : "ms"
+  	"apim.throttling.jms.start_delay" : "ms",
+	"output_adapter.jms.keep_alive_time": "ms"
   }
 }
 	

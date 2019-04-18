@@ -9,6 +9,9 @@ username = "admin"
 password = "admin"
 create_admin_account = true
 
+[user_store]
+type = "database"
+
 [database.apim_db]
 type = "h2"
 url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"

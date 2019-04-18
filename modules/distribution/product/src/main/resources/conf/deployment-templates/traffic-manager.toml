@@ -3,9 +3,12 @@ hostname = "tm.wso2.com"
 node_ip = "127.0.0.1"
 server_role = "traffic-manager"
 
+[user_store]
+type = "database"
+
 [super_admin]
 username = "admin"
-password = "admin"git
+password = "admin"
 create_admin_account = true
 
 [database.shared_db]

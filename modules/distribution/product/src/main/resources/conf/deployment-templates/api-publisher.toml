@@ -3,6 +3,9 @@ hostname = "publisher.wso2.com"
 node_ip = "127.0.0.1"
 server_role = "api-publisher"
 
+[user_store]
+type = "database"
+
 [super_admin]
 username = "admin"
 password = "admin"
