@@ -67,10 +67,15 @@ public class TomlBasedConfigurationTestCase {
 
         String configuration = FileUtils.getFile(homeDir, "repository", "resources", "conf").getAbsolutePath();
         ConfigParser configParser =
-                new ConfigParser.ConfigParserBuilder().withDeploymentConfigurationPath(deploymentConfiguration)
-                        .withInferConfigurationFilePath(configuration).withMappingFilePath(configuration)
-                        .withValidatorFilePath(configuration).withTemplateFilePath(configuration)
-                        .withDefaultValueFilePath(configuration).withUnitResolverFilePath(configuration).build();
+                new ConfigParser.ConfigParserBuilder()
+                        .withDeploymentConfigurationPath(deploymentConfiguration)
+                        .withInferConfigurationFilePath(configuration)
+                        .withMappingFilePath(configuration)
+                        .withValidatorFilePath(configuration)
+                        .withTemplateFilePath(configuration)
+                        .withDefaultValueFilePath(configuration)
+                        .withUnitResolverFilePath(configuration)
+                        .build();
 
         Map<String, String> outputFileContentMap;
         outputFileContentMap = configParser.parse();
@@ -187,6 +192,10 @@ public class TomlBasedConfigurationTestCase {
         String storeConfigXpathPrefix = "//APIStore";
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/GroupingExtractor")
                 .isEqualTo("org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl");
+        assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/RESTApiGroupingExtractor")
+                .isEqualTo("org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl");
+        assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DefaultGroupExtractorClaimUri")
+                .isEqualTo("http://wso2.org/claims/organization");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/CompareCaseInsensitively").isEqualTo("false");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/URL").isEqualTo("https://localhost:9443/store");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayMultipleVersions").isEqualTo("true");
@@ -194,6 +203,16 @@ public class TomlBasedConfigurationTestCase {
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayComments").isEqualTo("false");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayRatings").isEqualTo("false");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/isStoreForumEnabled").isEqualTo("false");
+
+        String appConfigExternalAttrXPath = storeConfigXpathPrefix + "/ApplicationConfiguration/ApplicationAttributes/Attribute[Name=\"External Reference Id\"]";
+        assertThat(apim).valueByXPath(appConfigExternalAttrXPath + "/Name").isEqualTo("External Reference Id");
+        assertThat(apim).valueByXPath(appConfigExternalAttrXPath + "/Description").isEqualTo("Sample description of the attribute");
+        assertThat(apim).nodesByXPath(appConfigExternalAttrXPath).haveAttribute("required", "true");
+
+        String appConfigInternalAttrXPath = storeConfigXpathPrefix + "/ApplicationConfiguration/ApplicationAttributes/Attribute[Name=\"Internal Reference Id\"]";
+        assertThat(apim).valueByXPath(appConfigInternalAttrXPath + "/Name").isEqualTo("Internal Reference Id");
+        assertThat(apim).valueByXPath(appConfigInternalAttrXPath + "/Description").isEqualTo("Sample description of the internal attribute");
+        assertThat(apim).nodesByXPath(appConfigInternalAttrXPath).haveAttribute("required", "false");
 
         //APIStore
         String publisherConfigXpathPrefix = "//APIPublisher";

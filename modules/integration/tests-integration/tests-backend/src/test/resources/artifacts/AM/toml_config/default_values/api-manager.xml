@@ -303,6 +303,7 @@
     <!-- API Store Related Configurations -->
     <APIStore>
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
+        <DefaultGroupExtractorClaimUri>http://wso2.org/claims/organization</DefaultGroupExtractorClaimUri>
         <CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://localhost:${mgt.transport.https.port}/store</URL>

@@ -221,6 +221,7 @@
   "apim.store.enable_comments": true,
   "apim.store.enable_ratings": true,
   "apim.store.enable_forum": true,
+  "apim.store.application_sharing_claim": "http://wso2.org/claims/organization",
   "apim.publisher.enable_api_doc_visibility": false,
   "apim.cors.enable": "true",
   "apim.cors.allow_origins": "*",

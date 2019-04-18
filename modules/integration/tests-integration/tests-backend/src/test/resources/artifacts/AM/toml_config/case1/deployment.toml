@@ -144,6 +144,15 @@ enable_comments = false
 enable_ratings = false
 enable_forum = false
 
+[[apim.store.application_attributes]]
+name = "External Reference Id"
+description = "Sample description of the attribute"
+required = true
+[[apim.store.application_attributes]]
+name = "Internal Reference Id"
+description = "Sample description of the internal attribute"
+required = false
+
 [apim.publisher]
 enable_api_doc_visibility = true
 

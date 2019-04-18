@@ -365,10 +365,13 @@
         {% if apim.store.enable_application_sharing%}
             {% if apim.store.application_sharing_impl is defined %}
         <GroupingExtractor>{{apim.store.application_sharing_impl}}</GroupingExtractor>
+        <RESTApiGroupingExtractor>{{apim.store.application_sharing_impl}}</RESTApiGroupingExtractor>
             {% else %}
         <GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor>
+        <RESTApiGroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</RESTApiGroupingExtractor>
             {% endif %}
         {% endif %}
+        <DefaultGroupExtractorClaimUri>{{apim.store.application_sharing_claim}}</DefaultGroupExtractorClaimUri>
         <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
         <CompareCaseInsensitively>{{apim.store.login_username_case_insensitive}}</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
@@ -402,6 +405,18 @@
         <!--set isStoreForumEnabled to false for disable forum in store-->
         <isStoreForumEnabled>{{apim.store.enable_forum}}</isStoreForumEnabled>
 
+        {% if apim.store.application_attributes is defined %}
+        <ApplicationConfiguration>
+            <ApplicationAttributes>
+                {% for attribute in apim.store.application_attributes %}
+                <Attribute required="{{attribute.required}}">
+                    <Name>{{attribute.name}}</Name>
+                    <Description>{{attribute.description}}</Description>
+                </Attribute>
+                {% endfor %}
+            </ApplicationAttributes>
+        </ApplicationConfiguration>
+        {% endif %}
     </APIStore>
 
     <APIPublisher>
