@@ -15,56 +15,84 @@
  *   specific language governing permissions and limitations
  *   under the License.
  */
+
 package org.wso2.am.integration.tests.config;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.nextgen.config.ConfigParser;
+import org.wso2.carbon.nextgen.config.model.Context;
+import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
-import org.xmlunit.matchers.CompareMatcher;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.ElementSelectors;
 
 import java.io.File;
 import java.util.Map;
 
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
+/**
+ * New Deployment Configuration Base Test
+ */
 public class TomlBasedConfigurationTestCase {
 
-    @Test
-    public void testDefaultValuesOfApiManagerXml() throws Exception {
-        String carbonHome = System.getProperty("carbon.home");
-        File homeDir = new File(carbonHome);
-        String deploymentConfiguration = FileUtils.getFile(homeDir, "repository", "conf").getAbsolutePath();
-        String configuration = FileUtils.getFile(homeDir, "repository", "resources", "conf").getAbsolutePath();
+    String carbonHome;
 
-        ConfigParser configParser =
-                new ConfigParser.ConfigParserBuilder()
-                        .withDeploymentConfigurationPath(deploymentConfiguration)
-                        .withInferConfigurationFilePath(configuration)
-                        .withMappingFilePath(configuration)
-                        .withValidatorFilePath(configuration)
-                        .withTemplateFilePath(configuration)
-                        .withDefaultValueFilePath(configuration)
-                        .withUnitResolverFilePath(configuration)
-                        .build();
+    @BeforeClass
+    public void setup() {
 
-        Map<String, String> outputFileContentMap;
-        outputFileContentMap = configParser.parse();
-        String apim = outputFileContentMap.get("repository/conf/api-manager.xml");
-        ClassLoader classLoader = getClass().getClassLoader();
-        String testPath = classLoader.getResource("artifacts/AM/toml_config/default_values/api-manager.xml").getPath();
-        Assert.assertThat(apim,
-                CompareMatcher.isIdenticalTo(Input.fromFile(testPath)).ignoreComments().ignoreWhitespace());
+        carbonHome = System.getProperty("carbon.home");
+
     }
 
-    @Test
-    public void testIndividualValuesOfApiManagerXml() throws Exception {
-        String carbonHome = System.getProperty("carbon.home");
-        File homeDir = new File(carbonHome);
-        ClassLoader classLoader = getClass().getClassLoader();
-        String deploymentConfiguration = classLoader.getResource("artifacts/AM/toml_config/case1").getPath();
+    @Test(dataProvider = "fullConfigScenarios")
+    public void testDefaultValuesOfApiManagerXml(String scenario) throws Exception {
 
+        File homeDir = new File(carbonHome);
+        String deploymentConfiguration = FileUtils.getFile(getAMResourceLocation(), "fullConfigurations",
+                scenario).getAbsolutePath();
+        String configuration = FileUtils.getFile(homeDir, "repository", "resources", "conf").getAbsolutePath();
+
+        ConfigParser configParser =
+                new ConfigParser.ConfigParserBuilder()
+                        .withDeploymentConfigurationPath(deploymentConfiguration)
+                        .withInferConfigurationFilePath(configuration)
+                        .withMappingFilePath(configuration)
+                        .withValidatorFilePath(configuration)
+                        .withTemplateFilePath(configuration)
+                        .withDefaultValueFilePath(configuration)
+                        .withUnitResolverFilePath(configuration)
+                        .build();
+
+        Context context = new Context();
+        Map<String, String> outputFileContentMap = configParser.parse(context);
+        outputFileContentMap.forEach((path, content) -> {
+            String actualFilePath = getAMResourceLocation() + File.separator + "fullConfigurarions" + File.separator
+                    + scenario + File.separator + path;
+            if (new File(actualFilePath).exists()) {
+                Diff difference = DiffBuilder.compare(content).withTest(Input.fromFile(actualFilePath)).ignoreComments()
+                        .ignoreWhitespace().withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
+                        .checkForSimilar().build();
+                if (difference.hasDifferences()) {
+                    Assert.fail(difference.toString());
+                }
+            }
+        });
+
+    }
+
+    @Test(dataProvider = "individualConfigScenarios")
+    public void testIndividualValuesOfApiManagerXml(String scenario) throws Exception {
+
+        File homeDir = new File(carbonHome);
+        String deploymentConfiguration = getAMResourceLocation() + File.separator + "individualConfigurations"
+                + File.separator + scenario;
         String configuration = FileUtils.getFile(homeDir, "repository", "resources", "conf").getAbsolutePath();
         ConfigParser configParser =
                 new ConfigParser.ConfigParserBuilder()
@@ -78,7 +106,8 @@ public class TomlBasedConfigurationTestCase {
                         .build();
 
         Map<String, String> outputFileContentMap;
-        outputFileContentMap = configParser.parse();
+        Context context = new Context();
+        outputFileContentMap = configParser.parse(context);
         String apim = outputFileContentMap.get("repository/conf/api-manager.xml");
 
         //Check 'Production and Sandbox' environment
@@ -317,4 +346,24 @@ public class TomlBasedConfigurationTestCase {
         assertThat(apim).valueByXPath(tracingConfigXpathPrefix + "/LogTracer/Enabled").isEqualTo("true");
     }
 
+    private String getAMResourceLocation() {
+
+        return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" + File.separator + "AM";
+    }
+
+    @DataProvider(name = "fullConfigScenarios")
+    public Object[][] getFullConfigurationScenarios() {
+
+        return new Object[][]{
+                {"scenario1"}
+        };
+    }
+
+    @DataProvider(name = "individualConfigScenarios")
+    public Object[][] getIndividualConfigurationScenarios() {
+
+        return new Object[][]{
+                {"scenario1"}
+        };
+    }
 }
