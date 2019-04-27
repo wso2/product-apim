@@ -15,6 +15,7 @@
  */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
+import com.sun.deploy.net.HttpResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;

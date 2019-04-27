@@ -295,7 +295,10 @@ public class ScenarioTestBase {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addUser(username, password, roleList, username);
         } catch (Exception e) {
-            throw new APIManagementException("Unable to create user with the provided role list " + roleList, e);
+            for(String s : roleList) {
+                log.error("Unable to create user with the provided role : " + s);
+                throw new APIManagementException("Unable to create user with the provided role list : " + roleList, e);
+            }
         }
     }
 
@@ -604,8 +607,11 @@ public class ScenarioTestBase {
     }
 
     public String getBackendEndServiceEndPointHttps(String serviceName) {
-        String webAppURL = serviceEndpoint.replace("/services", "");
-        return webAppURL + "/" + serviceName;
+        String webAppURL = serviceEndpoint.replaceFirst("/services.*", "");
+
+        // Avoid adding extra '/' at the end
+        webAppURL = StringUtils.isEmpty(serviceName) ? webAppURL : webAppURL + '/' + serviceName;
+        return webAppURL;
     }
 
     /**
