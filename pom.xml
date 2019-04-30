@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.172</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.174</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1069,7 +1069,7 @@
         <carbon.mediation.version>4.6.130</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.12.361</carbon.identity.version>
+        <carbon.identity.version>5.12.368</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>6.0.157</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.13</carbon.identity-inbound-auth-openid.version>
