@@ -33,7 +33,10 @@ import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.ElementSelectors;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.StringReader;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
@@ -72,18 +75,28 @@ public class TomlBasedConfigurationTestCase {
 
         Context context = new Context();
         Map<String, String> outputFileContentMap = configParser.parse(context);
-        outputFileContentMap.forEach((path, content) -> {
+        for (Map.Entry<String, String> entry : outputFileContentMap.entrySet()) {
+            String path = entry.getKey();
+            String content = entry.getValue();
             String actualFilePath = getAMResourceLocation() + File.separator + "fullConfigurarions" + File.separator
                     + scenario + File.separator + path;
             if (new File(actualFilePath).exists()) {
-                Diff difference = DiffBuilder.compare(content).withTest(Input.fromFile(actualFilePath)).ignoreComments()
-                        .ignoreWhitespace().withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
-                        .checkForSimilar().build();
-                if (difference.hasDifferences()) {
-                    Assert.fail(difference.toString());
+                if (actualFilePath.endsWith(".xml")) {
+                    Diff difference = DiffBuilder.compare(content).withTest(Input.fromFile(actualFilePath)).ignoreComments()
+                            .ignoreWhitespace().withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
+                            .checkForSimilar().build();
+                    if (difference.hasDifferences()) {
+                        Assert.fail(difference.toString());
+                    }
+                } else if (actualFilePath.endsWith(".properties")) {
+                    Properties actual = new Properties();
+                    actual.load(new StringReader(content));
+                    Properties expected = new Properties();
+                    expected.load(new FileInputStream(actualFilePath));
+                    Assert.assertEquals(actual, expected);
                 }
             }
-        });
+        }
 
     }
 

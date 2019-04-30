@@ -1072,10 +1072,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.57-SNAPSHOT</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.119</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.120-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1136,7 +1136,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v80</synapse.version>
+        <synapse.version>2.1.7-wso2v104-SNAPSHOT</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v28</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
@@ -1151,7 +1151,7 @@
         <asm.version>1.5.3.wso2v1</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
-        <axis2.jaxb.version>1.6.1-wso2v26</axis2.jaxb.version>
+        <axis2.jaxb.version>1.6.1-wso2v35-SNAPSHOT</axis2.jaxb.version>
         <jaxb.version>2.2.5.wso2v1</jaxb.version>
         <stratos.version>2.2.0</stratos.version>
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
