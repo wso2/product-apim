@@ -24,7 +24,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.6.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>http://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.174</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.175-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1057,7 +1057,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.40</carbon.kernel.version>
-        <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
+        <apimserver.version>3.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
