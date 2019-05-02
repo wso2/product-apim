@@ -3,7 +3,10 @@
    causes several scope validator elements to be added--> 	
    <remove>
         <name>//s:Server/s:OAuth/s:OAuthScopeValidator</name>
-   </remove>	   
+   </remove>
+   <remove>
+      <name>//s:Server/s:OAuth/s:SupportedGrantTypes/s:SupportedGrantType[s:GrantTypeName='urn:ietf:params:oauth:grant-type:uma-ticket']</name>
+   </remove>
    <!-- Add the scope validator config element -->
    <add> 
       <after>//s:Server/s:OAuth/s:OAuthCallbackHandlers</after>
