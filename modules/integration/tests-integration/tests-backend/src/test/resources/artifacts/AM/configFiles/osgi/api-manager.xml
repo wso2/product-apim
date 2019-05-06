@@ -213,19 +213,7 @@
         <!-- Admin password for API key manager. -->
         <Password>${admin.password}</Password>
         
-        <!-- Configurations related to enable thrift support for key-management related communication.
-             If you want to switch back to Web Service Client, change the value of "KeyValidatorClientType" to "WSClient".
-             In a distributed environment;
-             -If you are at the Gateway node, you need to point "ThriftClientPort" value to the "ThriftServerPort" value given at KeyManager node.
-             -If you need to start two API Manager instances in the same machine, you need to give different ports to "ThriftServerPort" value in two nodes.
-             -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
-	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
-        <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
-        <ThriftClientPort>10907</ThriftClientPort>
-        <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <ThriftServerPort>10907</ThriftServerPort>
-        <ThriftServerHost>localhost</ThriftServerHost>
-        <EnableThriftServer>true</EnableThriftServer>        
+        <KeyValidatorClientType>WSClient</KeyValidatorClientType>
 
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
              custom KeyValidation Handler -->
