@@ -85,9 +85,6 @@
                 <exclude>**/repository/components/plugins/httpclient_4.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_5.0.8.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.ui.menu.stratos_2.2.0.jar</exclude>
-                <exclude>**/repository/components/plugins/org.wso2.carbon.identity.entitlement.stub_5.12.356.jar</exclude>
-                <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_6.0.103.jar</exclude>
-                <exclude>**/repository/components/plugins/opensaml_2.6.4.wso2v3.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
 		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
