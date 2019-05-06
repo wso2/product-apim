@@ -83,6 +83,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         log.info("Basic Content Search");
         String contentSearchTestAPI = "contentSearchTestAPI";
         String description = "Unified Search Feature";
+        String responseString;
         APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
                 user.getUserName(), description);
         apiPublisher.login(user.getUserName(), user.getPassword());
@@ -100,15 +101,16 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                             .encode(description, "UTF-8"));
             getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse publisherResponse = client.execute(getPublisherAPIs);
-            if (getResultCount(publisherResponse) == 1) {
+            responseString = getResponseBody(publisherResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Basic content search in publisher failed. Received response : " + publisherResponse);
+                    Assert.fail("Basic content search in publisher failed. Received response : " + responseString);
                 } else {
-                    log.warn("Basic content search in publisher failed. Received response : " + publisherResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Basic content search in publisher failed. Received response : " + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -123,15 +125,16 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             //search term : UnifiedSearchFeature, created api has this in description filed
             getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse storeResponse = client.execute(getStoreAPIs);
-            if (getResultCount(storeResponse) == 1) {
+            responseString = getResponseBody(storeResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Basic content search in store failed. Received response : " + storeResponse);
+                    Assert.fail("Basic content search in store failed. Received response : " + responseString);
                 } else {
-                    log.warn("Basic content search in store failed. Received response : " + storeResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Basic content search in store failed. Received response : " + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -150,15 +153,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             //search term : UnifiedSearchFeature, created api has this in description filed
             getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse storeResponse = client.execute(getStoreAPIs);
-            if (getResultCount(storeResponse) == 0) {
+            responseString = getResponseBody(storeResponse);
+            if (getResultCount(responseString) == 0) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Basic content search in store failed. 0 results expected. Received response : " + storeResponse);
+                    Assert.fail("Basic content search in store failed. 0 results expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Basic content search in store failed. 0 results expected. Received response : " + storeResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Basic content search in store failed. 0 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -176,6 +182,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         String provider = user.getUserName();
         String documentName = "Test-Document";
         String documentContent = "This is a sample API to test unified search feature - github4156";
+        String responseString;
         APIRequest apiRequest = createAPIRequest(apiName, apiContext, endpointURL, version, provider, "");
         apiPublisher.login(user.getUserName(), user.getPassword());
         apiPublisher.addAPI(apiRequest);
@@ -195,15 +202,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                     getPublisherURLHttps() + publisherRestAPIBasePath + "search?query=github4156");
             getPublisherAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse publisherResponse = client.execute(getPublisherAPIs);
-            if (getResultCount(publisherResponse) == 1) {
+            responseString = getResponseBody(publisherResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Document content search in store failed. 1 result expected. Received response : " + publisherResponse);
+                    Assert.fail("Document content search in store failed. 1 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Document content search in store failed. 1 results expected. Received response : " + publisherResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Document content search in store failed. 1 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -216,15 +226,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             }
             getStoreAPIs.setHeader("Authorization", "Bearer " + accessToken);
             HttpResponse storeResponse = client.execute(getStoreAPIs);
-            if (getResultCount(storeResponse) == 1) {
+            responseString = getResponseBody(storeResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Document content search in store failed. 1 result expected. Received response : " + storeResponse);
+                    Assert.fail("Document content search in store failed. 1 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Document content search in store failed. 1 results expected. Received response : " + storeResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Document content search in store failed. 1 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -247,6 +260,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         String role1 = "creator_publisher_role";
         String role2 = "publisher_role";
         String description = "UnifiedSearchFeatureWithAccessControl";
+        String responseString;
 
         userManagementClient.addRole(role1, new String[] {},
                 new String[] { loginPermission, apiCreatePermission, apiPublishPermission });
@@ -277,15 +291,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
             getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
             HttpResponse publisherResponse = client.execute(getAPIsForUser1);
-            if (getResultCount(publisherResponse) == 1) {
+            responseString = getResponseBody(publisherResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with access control failed. 1 result expected. Received response : " + publisherResponse);
+                    Assert.fail("Content search with access control failed. 1 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Content search with access control failed. 1 results expected. Received response : " + publisherResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Content search with access control failed. 1 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -300,15 +317,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
             getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
             HttpResponse publisherResponse = client.execute(getAPIsForUser2);
-            if (getResultCount(publisherResponse) == 0) {
+            responseString = getResponseBody(publisherResponse);
+            if (getResultCount(responseString) == 0) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with access control failed. 0 result expected. Received response : " + publisherResponse);
+                    Assert.fail("Content search with access control failed. 0 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Content search with access control failed. 0 results expected. Received response : " + publisherResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Content search with access control failed. 0 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -335,6 +355,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         String role1 = "subscriber1_role";
         String role2 = "subscriber2_role";
         String description = "UnifiedSearchFeatureWithAccessControl";
+        String responseString;
 
         userManagementClient.addRole(role1, new String[] {}, new String[] { loginPermission, apiSubscribePermission });
         userManagementClient.addRole(role2, new String[] {}, new String[] { loginPermission, apiSubscribePermission });
@@ -365,15 +386,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             String user1AccessToken = getAccessToken(user1.replace("@", "_"), user1, password);
             getAPIsForUser1.setHeader("Authorization", "Bearer " + user1AccessToken);
             HttpResponse storeResponse = client.execute(getAPIsForUser1);
-            if (getResultCount(storeResponse) == 1) {
+            responseString = getResponseBody(storeResponse);
+            if (getResultCount(responseString) == 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with access control failed. 1 result expected. Received response : " + storeResponse);
+                    Assert.fail("Content search with access control failed. 1 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Content search with access control failed. 1 results expected. Received response : " + storeResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Content search with access control failed. 1 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -389,15 +413,18 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
             String user2AccessToken = getAccessToken(user2.replace("@", "_"), user2, password);
             getAPIsForUser2.setHeader("Authorization", "Bearer " + user2AccessToken);
             HttpResponse storeResponse = client.execute(getAPIsForUser2);
-            if (getResultCount(storeResponse) == 0) {
+            responseString = getResponseBody(storeResponse);
+            if (getResultCount(responseString) == 0) {
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with access control failed. 0 result expected. Received response : " + storeResponse);
+                    Assert.fail("Content search with access control failed. 0 result expected. Received response : "
+                            + responseString);
                 } else {
-                    log.warn("Content search with access control failed. 0 results expected. Received response : " + storeResponse + " Retrying...");
-                    Thread.sleep(3000);
+                    log.warn("Content search with access control failed. 0 results expected. Received response : "
+                            + responseString + " Retrying...");
+                    Thread.sleep(5000);
                 }
             }
         }
@@ -420,7 +447,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         return apiRequest;
     }
 
-    private int getResultCount(HttpResponse response) throws IOException, JSONException {
+    private String getResponseBody(HttpResponse response) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
         String jsonString = "";
         String line;
@@ -428,6 +455,10 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         while ((line = reader.readLine()) != null) {
             jsonString = jsonString + line;
         }
+        return jsonString;
+    }
+
+    private int getResultCount(String jsonString) throws JSONException {
         JSONObject responseJSON = new JSONObject(jsonString);
         log.info(responseJSON);
         return responseJSON.getInt("count");
@@ -455,6 +486,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         }
 
         JSONObject clientSecretResponseJSON = new JSONObject(jsonString);
+        log.info("DCR Response: " + clientSecretResponseJSON.toString());
         String clientId = clientSecretResponseJSON.getString("clientId");
         String clientSecret = clientSecretResponseJSON.getString("clientSecret");
         String idColonSecret = clientId + ":" + clientSecret;
@@ -470,6 +502,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse tokenGenerateResponse = HttpRequestUtil
                 .doPost(tokenApiUrl, messageBody, accessKeyMap);
         JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse);
+        log.info("Token Response: " + tokenGenJsonObject.toString());
         String accessToken = new JSONObject(tokenGenJsonObject.get(RESTAPITestConstants.DATA_SECTION).toString())
                 .get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
 
