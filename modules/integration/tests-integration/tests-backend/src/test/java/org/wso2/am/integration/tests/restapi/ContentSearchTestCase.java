@@ -502,7 +502,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse tokenGenerateResponse = HttpRequestUtil
                 .doPost(tokenApiUrl, messageBody, accessKeyMap);
         JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse);
-        log.info("Token Response: " + tokenGenJsonObject.toString());
+        log.info("Token Response: " + tokenGenerateResponse.getData());
         String accessToken = new JSONObject(tokenGenJsonObject.get(RESTAPITestConstants.DATA_SECTION).toString())
                 .get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
 
