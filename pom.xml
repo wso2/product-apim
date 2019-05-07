@@ -1117,7 +1117,7 @@
         <apache.derby.version>10.3.2.1wso2v1</apache.derby.version>
         <hibernate.version>3.2.5.ga-wso2v1</hibernate.version>
         <bcel.version>5.2.0.wso2v1</bcel.version>
-        <asm.version>5.2</asm.version>
+        <asm.version>6.0_BETA</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
         <axis2.jaxb.version>1.6.1-wso2v26</axis2.jaxb.version>
