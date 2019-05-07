@@ -1,6 +1,10 @@
 [server]
 #hostname = "localhost"
 node_ip = "127.0.0.1"
+base_path = "localhost:9443"
+
+[user_store]
+type = "database"
 
 [super_admin]
 username = "admin"

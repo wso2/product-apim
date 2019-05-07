@@ -118,14 +118,13 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         String uri = "customers/{id}/";
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uri));
-        String endpointProduction = "/services/customers/customerservice";
-        String endpointSandbox = "/services/customers/customerservice";
+        String apiEndPointUrl = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice/";
 
         List<String> prodEndpointList = new ArrayList<String>();
-        prodEndpointList.add(endpointProduction);
+        prodEndpointList.add(apiEndPointUrl);
 
         List<String> sandboxEndpointList = new ArrayList<String>();
-        sandboxEndpointList.add(endpointSandbox);
+        sandboxEndpointList.add(apiEndPointUrl);
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
                                                                                    apiProvider, prodEndpointList, sandboxEndpointList);

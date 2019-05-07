@@ -39,7 +39,9 @@ import java.io.InputStream;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -92,7 +94,11 @@ public class APIService {
             }
 
             AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
-            String userName = authenticationContext.getUsername();
+            String userName = authenticationContext.getDomainAwareUsername();
+            String tenantDomain = authenticationContext.getTenantDomain();
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain)) {
+                userName = userName + "@" + tenantDomain;
+            }
             //provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
             String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
@@ -249,6 +255,92 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        } finally {
+            if (isTenantFlowStarted) {
+                PrivilegedCarbonContext.endTenantFlow();
+            }
+        }
+    }
+
+    /**
+     * This service will update an existing API given by the ID. It will preserve state of the API during the update
+     *
+     * @param uploadedInputStream       Input stream from the REST request
+     * @param apiID                     ID of the API to be updated
+     * @param defaultProviderStatus     User choice to keep or replace the API provider
+     * @param httpHeaders               HTTP headers of the request
+     * @return Status of the API update
+     */
+    @PUT
+    @Path("/{apiID}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateAPI(@Multipart("file") InputStream uploadedInputStream, @PathParam("apiID") String apiID,
+                              @QueryParam("preserveProvider") String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
+        boolean isTenantFlowStarted = false;
+        boolean isProviderPreserved = true;
+
+        //Check if the URL parameter value is specified, otherwise the default value "true" is used
+        if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(defaultProviderStatus)) {
+            isProviderPreserved = false;
+        }
+
+        try {
+            Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
+            if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
+                return authorizationResponse;
+            }
+
+            AuthenticationContext authenticationContext = (AuthenticationContext) authorizationResponse.getEntity();
+            String tenantDomain = MultitenantUtils.getTenantDomain(authenticationContext.getUsername());
+            String currentUser = authenticationContext.getDomainAwareUsername();
+
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
+                currentUser = currentUser + "@" + tenantDomain;
+            }
+            APIImportUtil.initializeProvider(currentUser);
+
+            //Temporary directory is used to create the required directories
+            String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
+            String createdDirectories = File.separator +
+                    RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
+                    File.separator;
+            File importDirectory = new File(currentDirectory + createdDirectories);
+            boolean isImportDirectoryCreated = importDirectory.mkdirs();
+
+            //API import process starts only if the required directory is created successfully
+            if (isImportDirectoryCreated) {
+                String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
+                String absolutePath = currentDirectory + createdDirectories;
+                APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
+
+                String extractedDirName;
+                try {
+                    extractedDirName = APIImportUtil.extractArchive(
+                            new File(absolutePath + uploadFileName), absolutePath);
+                } catch (APIImportException e) {
+                    return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+                }
+
+                if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
+                    PrivilegedCarbonContext.startTenantFlow();
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+                    isTenantFlowStarted = true;
+                }
+
+                APIImportUtil.updateAPI(apiID, absolutePath + extractedDirName, currentUser, isProviderPreserved);
+                importDirectory.deleteOnExit();
+
+                return Response.status(Status.CREATED).entity("API updated successfully.").build();
+            } else {
+                return Response.serverError().entity("Failed to create temporary directory.").build();
+            }
+        } catch (APIExportException e) {
+            log.error(e.getMessage(), e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.").build();
+        } catch (APIImportException e) {
+            log.error(e.getMessage(), e);
             return Response.serverError().entity(e.getMessage()).build();
         } finally {
             if (isTenantFlowStarted) {

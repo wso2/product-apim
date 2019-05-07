@@ -25,6 +25,7 @@ public class AuthenticationContext {
     private String username;
     private String password;
     private String domainAwareUsername;
+    private String tenantDomain;
 
     public String getUsername() {
         return username;
@@ -48,5 +49,13 @@ public class AuthenticationContext {
 
     public void setDomainAwareUsername(String domainAwareUsername) {
         this.domainAwareUsername = domainAwareUsername;
+    }
+
+    public String getTenantDomain() {
+        return tenantDomain;
+    }
+
+    public void setTenantDomain(String tenantDomain) {
+        this.tenantDomain = tenantDomain;
     }
 }

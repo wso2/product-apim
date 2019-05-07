@@ -61,16 +61,6 @@
       "database.apim_db.validationQuery": "SELECT 1"
     }
   },
-  "apim.oauth_config.encrypt_persisted_token": {
-    "default": {
-      "apim.oauth_config.encrypt_persisted_token": "true"
-    }
-  },
-  "apim.oauth_config.token_hash_mode": {
-    "default": {
-      "apim.oauth_config.enable_token_hash_mode": "true"
-    }
-  },
   "apim.throttling.decision_connection_type": {
     "andes": {
       "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"

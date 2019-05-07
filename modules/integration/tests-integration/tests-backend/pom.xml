@@ -403,11 +403,6 @@ under the License.
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.nextgen.config</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
             <scope>test</scope>
@@ -424,6 +419,7 @@ under the License.
         </dependency>
         <dependency>
             <groupId>com.github.dblock.waffle.wso2</groupId>
+<!--            <groupId>org.wso2.orbit.com.github.dblock.waffle</groupId>-->
             <artifactId>waffle-jna</artifactId>
         </dependency>
         <dependency>
@@ -468,10 +464,6 @@ under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.analytics</groupId>
-            <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
             <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
         </dependency>
@@ -504,22 +496,27 @@ under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
         </dependency>
         <dependency>
             <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
             <version>2.0.0.wso2v1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
         </dependency>
         <!--Jetty dependencies end -->
 

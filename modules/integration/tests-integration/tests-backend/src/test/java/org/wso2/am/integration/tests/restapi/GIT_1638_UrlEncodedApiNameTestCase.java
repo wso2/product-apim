@@ -78,7 +78,7 @@ public class GIT_1638_UrlEncodedApiNameTestCase extends APIMIntegrationBaseTest 
         storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/" + APIMIntegrationConstants.REST_API_VERSION + "/";
         publisherRestApiBaseUrl = getStoreURLHttps() + "api/am/publisher/" + APIMIntegrationConstants.REST_API_VERSION + "/";
         tokenApiUrl = new URL(getKeyManagerURLHttps() + "oauth2/token");
-        Map<String, String> dataMap = RESTAPITestUtil.registerOAuthApplication(getKeyManagerURLHttps());
+        Map<String, String> dataMap = RESTAPITestUtil.registerOAuthApplication(getKeyManagerURLHttps(), user.getUserName(), user.getPassword());
         String accessToken = generateOAuthAccessToken(user.getUserName(), user.getPassword(),
                 dataMap.get(RESTAPITestConstants.CONSUMER_KEY),
                 dataMap.get(RESTAPITestConstants.CONSUMER_SECRET));

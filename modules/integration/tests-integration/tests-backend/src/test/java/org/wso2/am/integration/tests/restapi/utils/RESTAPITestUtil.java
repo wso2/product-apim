@@ -87,6 +87,9 @@ public class RESTAPITestUtil {
             for (int i = 0; i < arrayLength; i++) {
 
                 JSONObject configObject = (JSONObject) array.get(i);
+                if(configObject.has("test-name")) {
+                    log.info("Executing test case: " + configObject.has("test-name"));
+                }
                 JSONObject initializationConfigurationObject =
                         configObject.getJSONObject(RESTAPITestConstants.INITIALIZATION_SECTION);
                 String scope = initializationConfigurationObject.get(RESTAPITestConstants.SCOPE_ELEMENT).toString();
@@ -435,6 +438,18 @@ public class RESTAPITestUtil {
      */
     public static Map<String, String> registerOAuthApplication(String keyMangerUrl)
             throws APIManagerIntegrationTestException {
+        return registerOAuthApplication(keyMangerUrl, "admin", "admin");
+    }
+    /**
+     * This method is used to register OAuth Application
+     *
+     * @param keyMangerUrl url of the key manger
+     * @appOwner appOwner application owner
+     * @return map which contains the consumer key and secret
+     * @throws APIManagerIntegrationTestException if it fails to register OAuth Application
+     */
+    public static Map<String, String> registerOAuthApplication(String keyMangerUrl, String appOwner, String pass)
+            throws APIManagerIntegrationTestException {
 
         String dcrEndpointURL = keyMangerUrl + RESTAPITestConstants.CLIENT_REGISTRATION_URL;
 
@@ -444,7 +459,7 @@ public class RESTAPITestUtil {
                 "\"callbackUrl\": \"www.google.lk\",\n" +
                 "\"clientName\": \"" + randomClientName + "\",\n" +
                 "\"tokenScope\": \"Production\",\n" +
-                "\"owner\": \"admin\",\n" +
+                "\"owner\": \"" + appOwner + "\",\n" +
                 "\"grantType\": \"password refresh_token\",\n" +
                 "\"saasApp\": true\n" +
                 "}";
@@ -455,7 +470,7 @@ public class RESTAPITestUtil {
         try {
 
             //Basic Auth header is used for only to get token
-            byte[] encodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER.getBytes("UTF-8"));
+            byte[] encodedBytes = Base64.encodeBase64((appOwner + ":" + pass).getBytes("UTF-8"));
             dcrRequestHeaders.put(RESTAPITestConstants.AUTHORIZATION_KEY, "Basic " + new String(encodedBytes, "UTF-8"));
 
             //Set content type as its mandatory

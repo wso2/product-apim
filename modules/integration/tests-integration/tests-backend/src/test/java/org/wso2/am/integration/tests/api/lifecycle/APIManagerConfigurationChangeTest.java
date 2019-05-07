@@ -99,7 +99,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     public void unDeployWebApps() throws Exception {
         //TODO remove webAPPS
         List<String> webAppList = new ArrayList<String>();
-        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+//        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);

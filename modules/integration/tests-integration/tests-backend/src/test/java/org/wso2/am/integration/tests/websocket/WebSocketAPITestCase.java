@@ -356,7 +356,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param accessToken API accessToken
      */
     private void testThrottling(String accessToken) throws Exception {
-        int limit = 10;
+        int limit = 20;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();

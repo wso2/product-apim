@@ -1,6 +1,7 @@
 {
 	"testCase": [
             {
+                "test-name": "test1",
                 "init": {
                     "scope": "apim:subscribe"
                 },

@@ -16,8 +16,15 @@
 
 # register some connection factories
 # connectionfactory.[jndiname] = [ConnectionURL]
-connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{apim.throttling.throttle_decision_endpoints | join("?retries='5'%26connectdelay='50';")}}?retries='5'%26connectdelay='50';'
+#connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{apim.throttling.throttle_decision_endpoints | join("?retries='5'%26connectdelay='50';")}}?retries='5'%26connectdelay='50';'
 
+        {% if apim.throttling.jms.topic_connection_factory is defined %}
+connectionfactory.TopicConnectionFactory = {{apim.throttling.jms.topic_connection_factory}}
+        {% elif apim.throttling.throttle_decision_endpoints is defined %}
+connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.throttle_decision_endpoints %}{{url}}?retries='5'%26connectdelay='50';{% endfor %}'
+        {% else %}
+connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'
+        {% endif %}
 
 # register some queues in JNDI using the form
 # queue.[jndiName] = [physicalName]
