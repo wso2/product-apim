@@ -25,6 +25,15 @@
                </filter>
             </then>
          </filter>
+         <filter source="boolean($trp:Access-Control-Expose-Headers)" regex="false">
+            <then>
+               <filter source="boolean($ctx:Access-Control-Expose-Headers)" regex="true">
+                  <then>
+                     <property name="Access-Control-Expose-Headers" value="Content-Length" scope="transport" type="STRING"/>
+                  </then>
+               </filter>
+            </then>
+         </filter>
       </then>
    </filter>
 </sequence>
