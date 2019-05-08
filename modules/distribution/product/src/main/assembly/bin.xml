@@ -334,6 +334,15 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher-new/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher-new</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/store-new/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store-new</outputDirectory>
+        </fileSet>
 	    <!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/modules</directory>
@@ -483,6 +492,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#store#v0.14.war</include>
+                <include>api#am#store#v1.0.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -503,6 +513,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#publisher#v0.14.war</include>
+                <include>api#am#publisher#v1.0.war</include>
             </includes>
         </fileSet>
         <fileSet>
