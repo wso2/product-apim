@@ -112,7 +112,7 @@
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_6.0.103.jar</exclude>
                 <exclude>**/repository/components/plugins/org.antlr.antlr4-runtime-osgi_4.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_2.6.4.wso2v3.jar</exclude>
-
+                <exclude>**/repository/components/plugins/org.objectweb.asm_5.2.0.jar</exclude>
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
