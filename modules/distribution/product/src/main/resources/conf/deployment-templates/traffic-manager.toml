@@ -1,0 +1,33 @@
+[server]
+hostname = "tm.wso2.com"
+node_ip = "127.0.0.1"
+server_role = "traffic-manager"
+
+[user_store]
+type = "database"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[database.shared_db]
+type = "mysql"
+hostname = "shared_db.mysql"
+name = "shared_db"
+port = "3306"
+username = "shareduser"
+password = "shareduser"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+
+[truststore]
+file_name = "client-truststore.jks"
+type = "JKS"
+password = "wso2carbon"

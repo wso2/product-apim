@@ -189,6 +189,11 @@
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>2.5</version>
                 </plugin>
+                <plugin>
+                    <groupId>jsonmerge</groupId>
+                    <artifactId>jsonmerge</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -1034,6 +1039,26 @@
                 <artifactId>org.wso2.carbon.identity.functions.library.mgt</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.nextgen.config</artifactId>
+                <version>${carbon.kernel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-core</artifactId>
+                <version>${xml.unit.verions}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-matchers</artifactId>
+                <version>${xml.unit.verions}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-assertj</artifactId>
+                <version>${xml.unit.verions}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1041,10 +1066,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.58-SNAPSHOT</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.182</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.183-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1056,7 +1081,7 @@
         <carbon.governance.version>4.7.27</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.40</carbon.kernel.version>
+        <carbon.kernel.version>4.4.41-SNAPSHOT</carbon.kernel.version>
         <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
@@ -1206,6 +1231,9 @@
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.0.19</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
+
+        <!-- xml testing library -->
+        <xml.unit.verions>2.6.2</xml.unit.verions>
     </properties>
 
 </project>

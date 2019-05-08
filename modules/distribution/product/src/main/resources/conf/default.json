@@ -1,0 +1,187 @@
+{
+  "server.userAgent": "WSO2 AM 3.0.0",
+  "server.serverDetails": "WSO2 AM 3.0.0",
+  "message_formatters": [
+    {
+      "content_type": "text/html",
+      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+    },
+    {
+      "content_type": "text/plain",
+      "class": "org.apache.axis2.format.PlainTextFormatter"
+    },
+    {
+      "content_type": "application/json",
+      "class": "org.apache.synapse.commons.json.JsonStreamFormatter"
+    },
+    {
+      "content_type": "text/javascript",
+      "class": "org.apache.axis2.json.JSONMessageFormatter"
+    },
+    {
+      "content_type": "application/octet-stream",
+      "class": "org.wso2.carbon.relay.ExpandingMessageFormatter"
+    },
+    {
+      "content_type": "application/x-www-form-urlencoded",
+      "class": "org.apache.axis2.transport.http.XFormURLEncodedFormatter"
+    },
+    {
+      "content_type": "multipart/form-data",
+      "class": "org.apache.axis2.transport.http.MultipartFormDataFormatter"
+    },
+    {
+      "content_type": "application/xml",
+      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+    },
+    {
+      "content_type": "text/xml",
+      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
+    },
+    {
+      "content_type": "application/soap+xml",
+      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
+    },
+    {
+      "content_type": "application/json/badgerfish",
+      "class": "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
+    }
+  ],
+  "message_builders": [
+    {
+      "content_type": "text/html",
+      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
+    },
+    {
+      "content_type": "application/x-www-form-urlencoded",
+      "class": "org.apache.synapse.commons.builders.XFormURLEncodedBuilder"
+    },
+    {
+      "content_type": "text/plain",
+      "class": "org.apache.axis2.format.PlainTextBuilder"
+    },
+    {
+      "content_type": "application/json",
+      "class": "org.apache.synapse.commons.json.JsonStreamBuilder"
+    },
+    {
+      "content_type": "text/javascript",
+      "class": "org.apache.axis2.json.JSONBuilder"
+    },
+    {
+      "content_type": "application/octet-stream",
+      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
+    },
+    {
+      "content_type": "application/xml",
+      "class": "org.apache.axis2.builder.ApplicationXMLBuilder"
+    },
+    {
+      "content_type": "multipart/form-data",
+      "class": "org.apache.axis2.builder.MultipartFormDataBuilder"
+    },
+    {
+      "content_type": "application/json/badgerfish",
+      "class": "org.apache.axis2.json.JSONBadgerfishOMBuilder"
+    }
+  ],
+  "transport.passthru_http.listener.parameters": {
+    "port": "8280",
+    "non-blocking": true,
+    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor"
+  },
+  "transport.passthru_https.listener.parameters": {
+    "port": "8243",
+    "non-blocking": true,
+    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
+    "SSLVerifyClient": "optional"
+  },
+  "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
+  "transport.passthru_https.listener.key_store.type": "$ref{keystore.tls.type}",
+  "transport.passthru_https.listener.key_store.password": "$ref{keystore.tls.password}",
+  "transport.passthru_https.listener.key_store.key_password": "$ref{keystore.tls.key_password}",
+  "transport.passthru_https.listener.trust_store.location": "repository/resources/security/$ref{truststore.file_name}",
+  "transport.passthru_https.listener.trust_store.type": "$ref{truststore.type}",
+  "transport.passthru_https.listener.trust_store.password": "$ref{truststore.password}",
+  "transport.passthru_https.listener.ssl_profile.file_path": "repository/resources/security/listenerprofiles.xml",
+  "transport.passthru_https.listener.ssl_profile_interval": "600000",
+  "transport.passthru_http.sender.parameters": {
+    "non-blocking": true
+  },
+  "transport.passthru_https.sender.parameters": {
+    "non-blocking": true
+  },
+  "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
+  "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
+  "transport.passthru_https.sender.key_store.password": "$ref{keystore.tls.password}",
+  "transport.passthru_https.sender.key_store.key_password": "$ref{keystore.tls.key_password}",
+  "transport.passthru_https.sender.trust_store.location": "repository/resources/security/$ref{truststore.file_name}",
+  "transport.passthru_https.sender.trust_store.type": "$ref{truststore.type}",
+  "transport.passthru_https.sender.trust_store.password": "$ref{truststore.password}",
+  "transport.passthru_https.sender.ssl_profile.file_path": "repository/resources/security/sslprofiles.xml",
+  "transport.passthru_https.sender.ssl_profile.interval": "600000",
+  "transport.ws.sender.enable": true,
+  "transport.ws.sender.parameters": {
+    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
+  },
+  "transport.wss.sender.enable": true,
+  "transport.wss.sender.parameters": {
+    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
+  },
+  "transport.wss.sender.trust_store.location": "repository/resources/security/$ref{truststore.file_name}",
+  "transport.wss.sender.trust_store.password": "$ref{truststore.password}",
+  "transport.blocking_http.sender.parameters": {
+    "PROTOCOL": "HTTP/1.1",
+    "Transfer-Encoding": "chunked",
+    "cacheHttpClient": true,
+    "defaultMaxConnectionsPerHost": "200"
+  },
+  "transport.blocking_https.sender.parameters": {
+    "PROTOCOL": "HTTP/1.1",
+    "Transfer-Encoding": "chunked",
+    "cacheHttpClient": true,
+    "defaultMaxConnectionsPerHost": "200"
+  },
+  "enabled_global_handlers": [
+    "external_call_logger"
+  ],
+  "synapse_handlers.external_call_logger.name": "externalCallLogger",
+  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
+  "synapse_properties.'synapse.sal.endpoints.sesssion.timeout.default'": "600000",
+  "synapse_properties.'synapse.global_timeout_interval'": "120000",
+  "synapse_properties.'statistics.clean.enable'": "false",
+  "synapse_properties.'synapse.observers'": "org.wso2.carbon.mediation.dependency.mgt.DependencyTracker",
+  "synapse_properties.'synapse.temp_data.chunk.size'": "3072",
+  "synapse_properties.'synapse.xpath.func.extensions'": "org.wso2.carbon.mediation.security.vault.xpath.SecureVaultLookupXPathFunctionProvider",
+  "synapse_properties.'synapse.carbon.ext.tenant.info'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoConfigurator",
+  "synapse_properties.'synapse.carbon.ext.tenant.info.initiator'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoInitiator",
+  "passthru_http.'http.socket.timeout'": "180000",
+  "passthru_http.'worker_pool_size_core'": "400",
+  "passthru_http.'worker_pool_size_max'": "500",
+  "passthru_http.'io_buffer_size'": "16384",
+  "passthru_http.'http.socket.reuseaddr'": "true",
+  "passthru_http.'http.headers.preserve'": "Content-Type",
+  "passthru_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
+  "passthru_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
+
+  "transport.receiver.max_event_buffer_capacity": "10",
+  "transport.receiver.type": "binary",
+  "transport.thrift.receiver.enable": false,
+  "transport.thrift.receiver.tcpPort" : "7611",
+  "transport.thrift.receiver.sslPort" : "7711",
+
+  "indexing.enable": true,
+  "indexing.starting_delay": "35",
+  "indexing.frequency": "3",
+  "indexing.bach_size": "40",
+  "indexing.pool_size": "40",
+  "realm_manager": {
+    "data_source": "SHARED_DB",
+    "properties": {
+      "isCascadeDeleteEnabled": true,
+      "initializeNewClaimManager": true
+    }
+  }
+}

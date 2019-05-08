@@ -326,6 +326,7 @@ do
     -Dorg.opensaml.httpclient.https.disableHostnameVerification=true \
     -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
+    -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done

@@ -406,7 +406,7 @@ public class APICreationRequestBean extends AbstractRequest {
 
                 this.endpoint = new JSONObject("{"+prodEndpoints +
                         "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
-                        "\"failOver\":\"True\"," +
+                        "\"failOver\":\"False\"," +
                         "\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
                         "\"sessionManagement\":\"none\"," +
                         "\"sandbox_endpoints\":[" +

@@ -1,0 +1,140 @@
+[server]
+#hostname = "localhost"
+node_ip = "127.0.0.1"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[database.apim_db]
+type = "h2"
+url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[database.shared_db]
+type = "h2"
+url = "jdbc:h2:repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+[[apim.gateway.environment]]
+name = "Production and Sandbox"
+type = "hybrid"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+
+[[apim.gateway.environment]]
+name = "Hybrid 2"
+type = "hybrid"
+display_in_api_console = true
+description = "This is a hybrid gateway 2 that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:9445/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:8282"
+https_endpoint = "https://localhost:8245"
+
+[apim.analytics]
+enable = true
+store_api_url = "https://localhost:9446"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
+
+[[apim.analytics.analytics_node]]
+analytics_url ="tcp://localhost:7614"
+analytics_auth_url ="ssl://localhost:7714"
+type = "failover"
+
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+enable_user_claims = true
+[apim.store]
+display_multiple_versions = true
+display_deprecated_apis = true
+
+[apim.cors]
+allow_origins = "*"
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_credentials = false
+
+[apim.workflow]
+enable = false
+service_url = "http://localhost:10263/BPMNProcessServerApp-1.0.0"
+[passthru_http]
+http_socket_timeout=20000
+
+[synapse_properties]
+synapse_commons_json_buildValidNCNames=true
+
+[[message_formatters]]
+content_type = "text/html"
+class = "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+
+[[message_formatters]]
+content_type = "text/plain"
+class = "org.apache.axis2.format.PlainTextFormatter"
+
+[[message_formatters]]
+content_type = "application/json"
+class = "org.apache.synapse.commons.json.JsonFormatter"
+
+[[message_formatters]]
+content_type = "text/javascript"
+class = "org.apache.axis2.json.JSONMessageFormatter"
+
+[[message_formatters]]
+content_type = "application/octet-stream"
+class = "org.wso2.carbon.relay.ExpandingMessageFormatter"
+
+[[message_formatters]]
+content_type = "application/x-www-form-urlencoded"
+class = "org.apache.axis2.transport.http.XFormURLEncodedFormatter"
+
+[[message_formatters]]
+content_type = "multipart/form-data"
+class = "org.apache.axis2.transport.http.MultipartFormDataFormatter"
+
+[[message_formatters]]
+content_type = "application/xml"
+class = "org.apache.axis2.transport.http.ApplicationXMLFormatter"
+
+[[message_formatters]]
+content_type = "text/xml"
+class = "org.apache.axis2.transport.http.SOAPMessageFormatter"
+
+[[message_formatters]]
+content_type = "application/soap+xml"
+class = "org.apache.axis2.transport.http.SOAPMessageFormatter"
+
+[[message_formatters]]
+content_type = "application/json/badgerfish"
+class = "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
+
+[apim.notification]
+from_address = "APIM.com"
+username = "APIM"
+password = "APIM+123"
+hostname = "localhost"
+port = 3025
+enable_start_tls = false
+enable_authentication = true
