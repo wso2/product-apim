@@ -257,6 +257,18 @@ StreamProcessor<APIManager>
         <EncryptPersistedTokens>false</EncryptPersistedTokens>
     </OAuthConfigurations>
 
+    <TokenRevocationNotifiers class="org.wso2.carbon.apimgt.keymgt.events.TokenRevocationNotifierImpl">
+        <RealtimeNotifier>
+            <Property name="ttl">5000</Property>
+        </RealtimeNotifier>
+        <PersistentNotifier>
+            <Property name="hostname">https://localhost:2379/v2/keys/jti/</Property>
+            <Property name="ttl">5000</Property>
+            <Property name="username">root</Property>
+            <Property name="password">root</Property>
+        </PersistentNotifier>
+    </TokenRevocationNotifiers>
+
     <!-- Settings related to managing API access tiers. -->
     <TierManagement>
         <!-- Enable the providers to expose their APIs over the special 'Unlimited' tier which
