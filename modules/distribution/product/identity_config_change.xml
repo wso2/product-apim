@@ -12,6 +12,11 @@
       <after>//s:Server/s:OAuth/s:OAuthCallbackHandlers</after>
       <value><![CDATA[<OAuthScopeValidator class="org.wso2.carbon.identity.oauth2.validators.JDBCScopeValidator"/>]]></value>
    </add>
+
+    <remove>
+        <name>//s:Server/s:OAuth/s:ScopeValidators</name>
+    </remove>
+
    <!-- Add the ntlm grant type validator config element -->
    <add>
       <after>//s:Server/s:OAuth/s:SupportedGrantTypes/s:SupportedGrantType[s:GrantTypeName='iwa:ntlm']/s:GrantTypeName</after>
