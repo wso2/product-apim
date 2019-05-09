@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.175-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.183-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1062,7 +1062,7 @@
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
 
-        <carbon.commons.version>4.6.64</carbon.commons.version>
+        <carbon.commons.version>4.6.65</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -1127,7 +1127,7 @@
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
         <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
         <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
-        <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
+        <version.equinox.jsp.jasper>1.0.400.v20130327-1442</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
         <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
@@ -1145,14 +1145,14 @@
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>1.1.1-wso2v2</org.apache.axis2.transport.version>
-        <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
+        <org.springframework.version>5.1.1.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v18</rampart.wso2.version>
         <slf4j.api.version>1.7.26</slf4j.api.version>
         <org.slf4j.version>1.7.26</org.slf4j.version>
-        <google.code.gson.version>2.7</google.code.gson.version>
+        <google.code.gson.version>2.8.5</google.code.gson.version>
 
         <!-- Store -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
@@ -1169,7 +1169,7 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <ws.seccurity.version>1.5.11.wso2v17</ws.seccurity.version>
+        <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
@@ -1202,7 +1202,7 @@
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
-        <forgetme.tool.version>1.1.21</forgetme.tool.version>
+        <forgetme.tool.version>1.1.23</forgetme.tool.version>
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.0.19</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
