@@ -104,7 +104,8 @@
                 <exclude>**/repository/components/plugins/com.google.gson_2.7.0.jar</exclude>
                 <exclude>**/repository/components/plugins/libthrift_0.9.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/org.yaml.snakeyaml_1.11.0.jar</exclude>
-                <exclude>**/repository/components/plugins/wsdl4j_1.6.2.wso2v4.jar</exclude>                               <exclude>**/repository/components/plugins/org.wso2.carbon.identity.entitlement.stub_5.12.356.jar</exclude>
+                <exclude>**/repository/components/plugins/wsdl4j_1.6.2.wso2v4.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.identity.entitlement.stub_5.12.356.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_6.0.103.jar</exclude>
                 <exclude>**/repository/components/plugins/org.antlr.antlr4-runtime-osgi_4.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_2.6.4.wso2v3.jar</exclude>
