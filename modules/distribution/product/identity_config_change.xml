@@ -8,7 +8,6 @@
       <name>//s:Server/s:OAuth/s:SupportedGrantTypes/s:SupportedGrantType[s:GrantTypeName='urn:ietf:params:oauth:grant-type:uma-ticket']</name>
    </remove>
 
-
    <add>
       <after>//s:Server/s:OAuth/s:EnableAssertions</after>
       <value>

@@ -484,7 +484,6 @@
                                     <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
                                     <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
                                 </replacement>
-
                             </replacements>
                         </configuration>
                     </execution>
