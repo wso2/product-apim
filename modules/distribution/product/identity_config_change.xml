@@ -7,8 +7,15 @@
    <remove>
       <name>//s:Server/s:OAuth/s:SupportedGrantTypes/s:SupportedGrantType[s:GrantTypeName='urn:ietf:params:oauth:grant-type:uma-ticket']</name>
    </remove>
+
+   <add>
+      <after>//s:Server/s:OAuth/s:EnableAssertions</after>
+      <value>
+         <![CDATA[<BuildSubjectIdentifierFromSPConfig>false</BuildSubjectIdentifierFromSPConfig>]]></value>
+   </add>
+
    <!-- Add the scope validator config element -->
-   <add> 
+   <add>
       <after>//s:Server/s:OAuth/s:OAuthCallbackHandlers</after>
       <value><![CDATA[<OAuthScopeValidator class="org.wso2.carbon.identity.oauth2.validators.JDBCScopeValidator"/>]]></value>
    </add>
