@@ -9,7 +9,6 @@
 	License for the ~ specific language governing permissions and limitations 
 	~ under the License. -->
 <Server xmlns="http://wso2.org/projects/carbon/carbon.xml">
- <BuildSubjectIdentifierFromSPConfig>false</BuildSubjectIdentifierFromSPConfig>
     <JDBCPersistenceManager>
         <DataSource>
             <!-- Include a data source name (jndiConfigName) from the set of data
@@ -189,6 +188,7 @@
         <EnableAssertions>
             <UserName>false</UserName>
         </EnableAssertions>
+        <BuildSubjectIdentifierFromSPConfig>false</BuildSubjectIdentifierFromSPConfig>
         <!-- This should be set to true when using multiple user stores and keys
             should saved into different tables according to the user store. By default
             all the application keys are saved in to the same table. UserName Assertion
