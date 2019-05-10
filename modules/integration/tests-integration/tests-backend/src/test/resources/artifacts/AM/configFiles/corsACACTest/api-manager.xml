@@ -213,7 +213,7 @@
         <!-- Admin password for API key manager. -->
         <Password>${admin.password}</Password>
 
-        <KeyValidatorClientType>wsClient</KeyValidatorClientType>
+        <KeyValidatorClientType>WSClient</KeyValidatorClientType>
 
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a
              custom KeyValidation Handler -->
