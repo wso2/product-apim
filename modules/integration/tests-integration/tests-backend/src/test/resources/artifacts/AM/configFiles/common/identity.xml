@@ -9,6 +9,7 @@
 	License for the ~ specific language governing permissions and limitations 
 	~ under the License. -->
 <Server xmlns="http://wso2.org/projects/carbon/carbon.xml">
+ <BuildSubjectIdentifierFromSPConfig>false</BuildSubjectIdentifierFromSPConfig>
     <JDBCPersistenceManager>
         <DataSource>
             <!-- Include a data source name (jndiConfigName) from the set of data
