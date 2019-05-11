@@ -249,20 +249,20 @@
         </classes>
     </test>
 
-    <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false">
+   <!-- <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>-->
+            &lt;!&ndash;<class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>&ndash;&gt;
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.MultipleSubscriptionsTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
-            <!--class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+            &lt;!&ndash;class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/&ndash;&gt;
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
         </classes>
-    </test>
+    </test>-->
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false">
         <classes>
