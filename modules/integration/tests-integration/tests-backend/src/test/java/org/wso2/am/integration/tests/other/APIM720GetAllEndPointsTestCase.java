@@ -119,7 +119,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uri));
         String endpointProduction = "http://services.com/customers/customerservice";
-        String endpointSandbox = "http:///services/customers/customerservice";
+        String endpointSandbox = "http:///services.com/customers/customerservice";
 
         List<String> prodEndpointList = new ArrayList<String>();
         prodEndpointList.add(endpointProduction);
