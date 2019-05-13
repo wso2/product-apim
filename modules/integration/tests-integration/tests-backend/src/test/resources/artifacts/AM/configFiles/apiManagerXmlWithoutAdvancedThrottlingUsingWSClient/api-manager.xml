@@ -221,11 +221,6 @@
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
         <KeyValidatorClientType>WSClient</KeyValidatorClientType>
-        <!--ThriftClientPort>10397</ThriftClientPort-->
-        <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <!--ThriftServerPort>10397</ThriftServerPort-->
-        <ThriftServerHost>localhost</ThriftServerHost>
-        <EnableThriftServer>true</EnableThriftServer>        
 
         <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
              custom KeyValidation Handler -->
