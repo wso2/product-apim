@@ -695,6 +695,7 @@
             <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.databridge.core.default.json</param>
             <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.processor.manager.core.default.json</param>
             <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.default.json</param>
+            <param>${basedir}/src/main/resources/conf/templates/repository/conf/identity/default.json</param>
                                     </include>
                                     <target>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json</target>
                                 </task>
@@ -722,9 +723,10 @@
                                 <task>
                                     <base>${basedir}/src/main/resources/conf/unit-resolve.json</base>
                                 <include>
-                        <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json</param>
-                        <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json</param>
-                        <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.unit-resolve.json</param>
+            <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json</param>
+            <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json</param>
+            <param>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.unit-resolve.json</param>
+            <param>${basedir}/src/main/resources/conf/templates/repository/conf/identity/unit-resolve.json</param>
                                 </include>
                                 <target>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json</target>
                                 <mergeChildren>true</mergeChildren>

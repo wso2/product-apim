@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ConsentManager xmlns="http://wso2.org/carbon/consent/management">
+    <DataSource>
+        <!-- Include a data source name (jndiConfigName) from the set of data sources defined in master-datasources
+        .xml -->
+        <Name>jdbc/WSO2AM_DB</Name>
+    </DataSource>
+    <PIIController>
+        <PiiController>{{authentication.pii_controller.name}}</PiiController>
+        <Contact>{{authentication.pii_controller.contact}}</Contact>
+        <Email>{{authentication.pii_controller.email}}</Email>
+        <Phone>{{authentication.pii_controller.phone}}</Phone>
+        <OnBehalf>{{authentication.pii_controller.on_behalf}}</OnBehalf>
+        <PiiControllerUrl>{{authentication.pii_controller.url}}</PiiControllerUrl>
+        <Address>
+            <Country>{{authentication.pii_controller.country}}</Country>
+            <Locality>{{authentication.pii_controller.locality}}</Locality>
+            <Region>{{authentication.pii_controller.region}}</Region>
+            <PostOfficeBoxNumber>{{authentication.pii_controller.po_box}}</PostOfficeBoxNumber>
+            <PostalCode>{{authentication.pii_controller.postal_code}}</PostalCode>
+            <StreetAddress>{{authentication.pii_controller.street_address}}</StreetAddress>
+        </Address>
+    </PIIController>
+    <SearchLimits>
+        <Purpose>{{authentication.consent.purposes_search_limit}}</Purpose>
+    </SearchLimits>
+</ConsentManager>

@@ -1,7 +1,5 @@
 [server]
-#hostname = "localhost"
 node_ip = "127.0.0.1"
-#offset=0
 mode = "single" #single or ha
 base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
 
@@ -45,8 +43,11 @@ ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
+[apim.oauth_config]
+auth_header = "Test-Custom-Header"
+
 [apim.cors]
-allow_origins = "http://localhost"
+allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
-allow_credentials = true
+allow_credentials = false

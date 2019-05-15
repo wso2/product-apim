@@ -183,7 +183,10 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
      * @throws IOException              IO Exception.
      */
     private void startServerWithConfigChanges() throws AutomationUtilException, XPathExpressionException, IOException {
-        //todo check the config changes
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "deployment.toml"));
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restartGracefully();
     }

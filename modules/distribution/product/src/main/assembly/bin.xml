@@ -134,6 +134,8 @@
                 <exclude>**/repository/resources/conf/key-mappings.json</exclude>
                 <exclude>**/repository/resources/conf/unit-resolve.json</exclude>
                 <exclude>**/repository/conf/deployment.toml</exclude>
+                <exclude>**/cipher-text.properties.j2</exclude>
+
             </excludes>
         </fileSet>
         <fileSet>
@@ -175,6 +177,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources/conf/</outputDirectory>
             <excludes>
                 <exclude>**/*.json</exclude>
+                <exclude>**/registry.xml.j2</exclude>
+                <exclude>**/authenticators.xml.j2</exclude>
+                <exclude>**/cipher-text.properties.j2</exclude>
+                <exclude>**/conf/axis2/*.j2</exclude>
+                <exclude>**/catalina-server.xml.j2</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -1102,13 +1109,6 @@
             <filtered>true</filtered>
 	    <fileMode>644</fileMode>
         </file>
-        <file>
-            <source>target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/carbon.xml.j2</source>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/repository/conf/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>
-
         <file>
             <source>../resources/updates/product.txt</source>
             <outputDirectory>wso2am-${pom.version}/updates/</outputDirectory>

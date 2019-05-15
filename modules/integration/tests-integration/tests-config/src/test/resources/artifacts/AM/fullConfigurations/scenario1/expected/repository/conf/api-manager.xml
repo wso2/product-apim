@@ -232,13 +232,6 @@
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
         <KeyValidatorClientType>WSClient</KeyValidatorClientType>
-        <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <!--ThriftClientPort>10397</ThriftClientPort-->
-
-        <EnableThriftServer>false</EnableThriftServer>
-        <ThriftServerHost>localhost</ThriftServerHost>
-        <!--ThriftServerPort>10397</ThriftServerPort-->
-
         <ConnectionPool>
             <MaxIdle>100</MaxIdle>
             <InitIdleCapacity>50</InitIdleCapacity>
@@ -292,6 +285,18 @@
         <EnableClientSecretHash> to true in the identity.xml -->
         <EnableTokenHashMode>false</EnableTokenHashMode>
     </OAuthConfigurations>
+
+    <TokenRevocationNotifiers class="org.wso2.carbon.apimgt.keymgt.events.TokenRevocationNotifierImpl">
+        <RealtimeNotifier>
+            <Property name="ttl">5000</Property>
+        </RealtimeNotifier>
+        <PersistentNotifier>
+            <Property name="hostname">https://localhost:2379/v2/keys/jti/</Property>
+            <Property name="ttl">5000</Property>
+            <Property name="username">root</Property>
+            <Property name="password">root</Property>
+        </PersistentNotifier>
+    </TokenRevocationNotifiers>
 
     <!-- Settings related to managing API access tiers. -->
     <TierManagement>
