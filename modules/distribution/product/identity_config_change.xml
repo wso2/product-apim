@@ -17,7 +17,7 @@
    <!-- Add the scope validator config element -->
    <add>
       <after>//s:Server/s:OAuth/s:OAuthCallbackHandlers</after>
-      <value><![CDATA[<OAuthScopeValidator class="org.wso2.carbon.identity.oauth2.validators.JDBCScopeValidator"/>]]></value>
+      <value><![CDATA[<OAuthScopeValidator class="org.wso2.carbon.apimgt.keymgt.validators.APIResourceScopeValidator"/>]]></value>
    </add>
 
     <remove>
