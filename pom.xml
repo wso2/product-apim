@@ -1171,7 +1171,7 @@
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
-        <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
+        <jacoco.agent.version>0.8.4</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
 
         <carbon.metrics.version>1.2.3</carbon.metrics.version>
