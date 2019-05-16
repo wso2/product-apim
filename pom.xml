@@ -1057,7 +1057,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.40</carbon.kernel.version>
-        <apimserver.version>3.0.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
