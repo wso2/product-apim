@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.195-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.195</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
