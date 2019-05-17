@@ -210,3 +210,13 @@ allow_credentials = false
 #port = 3025
 #enable_start_tls = false
 #enable_authentication = true
+
+#[apim.token.revocation]
+#notifier_impl = "org.wso2.carbon.apimgt.keymgt.events.TokenRevocationNotifierImpl"
+#enable_realtime_notifier = true
+#realtime_notifier.ttl = 5000
+#enable_persistent_notifier = true
+#persistent_notifier.hostname = "https://localhost:2379/v2/keys/jti/"
+#persistent_notifier.ttl = 5000
+#persistent_notifier.username = "root"
+#persistent_notifier.password = "root"

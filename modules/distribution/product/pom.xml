@@ -677,7 +677,7 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>wso2-maven-json-merge-plugin</artifactId>
-                <version>5.2.2-SNAPSHOT</version>
+                <version>5.2.2</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>
