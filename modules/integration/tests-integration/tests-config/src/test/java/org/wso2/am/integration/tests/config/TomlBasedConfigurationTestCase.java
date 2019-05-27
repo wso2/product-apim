@@ -25,7 +25,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.nextgen.config.ConfigParser;
-import org.wso2.carbon.nextgen.config.model.Context;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.DefaultNodeMatcher;
@@ -70,8 +69,7 @@ public class TomlBasedConfigurationTestCase {
                         .withUnitResolverFilePath(configuration)
                         .build();
 
-        Context context = new Context();
-        Map<String, String> outputFileContentMap = configParser.parse(context);
+        Map<String, String> outputFileContentMap = configParser.parse();
         outputFileContentMap.forEach((path, content) -> {
             String actualFilePath = getAMResourceLocation() + File.separator + "fullConfigurarions" + File.separator
                     + scenario + File.separator + path;
@@ -106,8 +104,7 @@ public class TomlBasedConfigurationTestCase {
                         .build();
 
         Map<String, String> outputFileContentMap;
-        Context context = new Context();
-        outputFileContentMap = configParser.parse(context);
+        outputFileContentMap = configParser.parse();
         String apim = outputFileContentMap.get("repository/conf/api-manager.xml");
 
         //Check 'Production and Sandbox' environment

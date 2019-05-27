@@ -275,8 +275,8 @@
                 <version>${bcel.version}</version>
             </dependency>
             <dependency>
-                <groupId>asm.wso2</groupId>
-                <artifactId>asm</artifactId>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-all</artifactId>
                 <version>${asm.version}</version>
             </dependency>
             <dependency>
@@ -846,7 +846,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.github.dblock.waffle.wso2</groupId>
+                <groupId>org.wso2.orbit.com.github.dblock.waffle</groupId>
                 <artifactId>waffle-jna</artifactId>
                 <version>${waffle-jna.version}</version>
             </dependency>
@@ -894,13 +894,7 @@
             <dependency>
                 <groupId>com.icegreen</groupId>
                 <artifactId>greenmail</artifactId>
-                <version>1.5.9</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wso2.carbon.analytics</groupId>
-                <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
-                <version>${carbon.analytics.version}</version>
+                <version>1.5.10</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.utils</groupId>
@@ -1065,6 +1059,11 @@
                 <artifactId>xmlunit-assertj</artifactId>
                 <version>${xml.unit.verions}</version>
             </dependency>
+            <dependency>
+                <groupId>net.consensys.cava</groupId>
+                <artifactId>cava-toml</artifactId>
+                <version>${version.cava-toml}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1072,14 +1071,14 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.42</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.58-SNAPSHOT</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.119</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.192-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.6.38</carbon.registry.version>
+        <carbon.registry.version>4.6.46</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.5.4, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1087,41 +1086,41 @@
         <carbon.governance.version>4.7.27</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.37-SNAPSHOT</carbon.kernel.version>
+        <carbon.kernel.version>4.4.41-SNAPSHOT</carbon.kernel.version>
         <apimserver.version>2.6.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
 
-        <carbon.commons.version>4.6.49</carbon.commons.version>
+        <carbon.commons.version>4.6.65</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.105</carbon.mediation.version>
+        <carbon.mediation.version>4.6.149</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.12.231</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>6.0.83</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.12.368</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>6.0.157</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-openid.version>5.2.6</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-inbound-auth-openid.version>5.2.13</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.0.7</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.19</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.0.7</carbon.identity-metadata-saml2.version>
-        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.15</carbon.extension.identity.oauth2.grantType.jwt.version>
+        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.18</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.2.12</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.1.23</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.7.19</carbon.deployment.version>
+        <carbon.deployment.version>4.8.1</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.3.25</carbon.analytics.version>
+        <carbon.analytics.version>1.3.37</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.6.15</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.6.22</carbon.multitenancy.version>
 
         <carbon.dashboard.version>2.0.19</carbon.dashboard.version>
         <analytics.shared.version>1.0.4</analytics.shared.version>
@@ -1130,17 +1129,17 @@
         <axis2-transports.wso2.version>2.0.0-wso2v29</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <log4j.version>1.2.13</log4j.version>
+        <log4j.version>1.2.17</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
         <commons-codec.version>1.4.0.wso2v1</commons-codec.version>
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v80</synapse.version>
+        <synapse.version>2.1.7-wso2v111</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v28</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
-        <servlet-api.version>2.4</servlet-api.version>
+        <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
         <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
@@ -1148,7 +1147,7 @@
         <apache.derby.version>10.3.2.1wso2v1</apache.derby.version>
         <hibernate.version>3.2.5.ga-wso2v1</hibernate.version>
         <bcel.version>5.2.0.wso2v1</bcel.version>
-        <asm.version>1.5.3.wso2v1</asm.version>
+        <asm.version>5.2</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
         <axis2.jaxb.version>1.6.1-wso2v26</axis2.jaxb.version>
@@ -1158,15 +1157,15 @@
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
         <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
         <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
-        <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
+        <version.equinox.jsp.jasper>1.0.400.v20130327-1442</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
         <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
         <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
-        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
-        <waffle-jna.version>1.6.wso2v2</waffle-jna.version>
+        <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
+        <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -1174,16 +1173,16 @@
 
         <carbon.automation.version>4.4.3</carbon.automation.version>
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
-        <org.apache.cxf.version>3.1.7</org.apache.cxf.version>
+        <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>1.1.1-wso2v2</org.apache.axis2.transport.version>
-        <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
+        <org.springframework.version>5.1.1.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v18</rampart.wso2.version>
-        <slf4j.api.version>1.6.1</slf4j.api.version>
-        <org.slf4j.version>1.7.25</org.slf4j.version>
-        <google.code.gson.version>2.7</google.code.gson.version>
+        <slf4j.api.version>1.7.26</slf4j.api.version>
+        <org.slf4j.version>1.7.26</org.slf4j.version>
+        <google.code.gson.version>2.8.5</google.code.gson.version>
 
         <!-- Store -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
@@ -1200,26 +1199,26 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
+        <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
-        <google.guava.version>18.0</google.guava.version>
+        <google.guava.version>27.0-jre</google.guava.version>
 
         <carbon.metrics.version>1.2.3</carbon.metrics.version>
         <!-- MB Features -->
-        <carbon.messaging.version>3.2.44</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.23</carbon.event-processing.version>
+        <carbon.messaging.version>3.2.70</carbon.messaging.version>
+        <carbon.event-processing.version>2.1.28</carbon.event-processing.version>
         <andes.version>3.2.55</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
         <product.cep.version>4.1.0</product.cep.version>
-        <version.snake.yaml>1.19</version.snake.yaml>
+        <version.snake.yaml>1.24</version.snake.yaml>
 
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.0</swagger-annotations-version>
-        <jersey-version>1.18</jersey-version>
-        <jackson-version>2.9.5</jackson-version>
+        <jersey-version>1.19.4</jersey-version>
+        <jackson-version>2.9.8</jackson-version>
         <jodatime-version>2.3</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
@@ -1233,13 +1232,14 @@
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
-        <forgetme.tool.version>1.1.21</forgetme.tool.version>
+        <forgetme.tool.version>1.1.23</forgetme.tool.version>
         <!--Concent Management dependencies-->
-        <carbon.consent.mgt.version>2.0.18</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.0.19</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
 
         <!-- xml testing library -->
         <xml.unit.verions>2.6.2</xml.unit.verions>
+        <version.cava-toml>0.5.0</version.cava-toml>
     </properties>
 
 </project>

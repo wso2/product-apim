@@ -2,7 +2,8 @@
   "server.server_role": {
     "gateway-worker": {
       "apim.throttling.enable_policy_deploy": false,
-      "indexing.enable": false
+      "indexing.enable": false,
+      "system.parameter.profile": "gateway-worker"
     },
     "api-key-manager": {
       "apim.throttling.enable_policy_deploy": false,
@@ -11,13 +12,15 @@
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
-      "indexing.enable": false
+      "indexing.enable": false,
+      "system.parameter.profile": "api-key-manager"
     },
     "api-publisher": {
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false
+      "transport.wss.sender.enable": false,
+      "system.parameter.profile": "api-publisher"
     },
     "api-store": {
       "apim.throttling.enable_policy_deploy": false,
@@ -25,7 +28,11 @@
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false
+      "transport.wss.sender.enable": false,
+      "system.parameter.profile": "api-store"
+    },
+    "traffic-manager": {
+      "system.parameter.profile": "traffic-manager"
     }
   },
   "apim.jwt.encoding": {
@@ -61,16 +68,6 @@
       "database.apim_db.validationQuery": "SELECT 1"
     }
   },
-  "apim.oauth_config.encrypt_persisted_token": {
-    "default": {
-      "apim.oauth_config.encrypt_persisted_token": "true"
-    }
-  },
-  "apim.oauth_config.token_hash_mode": {
-    "default": {
-      "apim.oauth_config.enable_token_hash_mode": "true"
-    }
-  },
   "apim.throttling.decision_connection_type": {
     "andes": {
       "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
@@ -79,11 +76,6 @@
   "apim.publisher.doc_visibility": {
     "enable": {
       "apim.publisher.enable_api_doc_visibility": true
-    }
-  },
-  "apim.analytics.event_publisher_type": {
-    "default": {
-      "apim.analytics.event_publisher_impl": "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
     }
   },
   "apim.key_manager.key_validation_handler_type": {
