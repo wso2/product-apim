@@ -1074,10 +1074,10 @@
         <carbon.identity-user-ws.version>5.1.11</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.2.13</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.0.7</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.1.19</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.22</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.0.7</carbon.identity-metadata-saml2.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.18</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.2.12</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.carbon.auth.saml2.version>5.2.15</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.1.23</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
@@ -1174,7 +1174,7 @@
         <jacoco.agent.version>0.7.5.201505241946</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
 
-        <carbon.metrics.version>1.2.3</carbon.metrics.version>
+        <carbon.metrics.version>1.2.5</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.2.70</carbon.messaging.version>
         <carbon.event-processing.version>2.1.28</carbon.event-processing.version>
