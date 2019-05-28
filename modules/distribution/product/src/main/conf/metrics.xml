@@ -23,7 +23,7 @@
     <!--
         Enable Metrics
     -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
     <!--
         Metrics reporting configurations
     -->
