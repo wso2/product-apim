@@ -206,7 +206,7 @@ public final class APIImportUtil {
         // Parse DOM of APILifeCycle
         try {
             String data = provider.getLifecycleConfiguration(tenantDomain);
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = APIUtil.getSecuredDocumentBuilder();
             DocumentBuilder builder = factory.newDocumentBuilder();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data.getBytes("UTF-8"));
             Document doc = builder.parse(inputStream);
