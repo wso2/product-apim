@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.192-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.198-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1081,7 +1081,7 @@
         <carbon.identity.auth.version>1.1.23</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.8.1</carbon.deployment.version>
+        <carbon.deployment.version>4.8.4</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.3.37</carbon.analytics.version>
@@ -1120,7 +1120,7 @@
         <asm.version>5.2</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
-        <axis2.jaxb.version>1.6.1-wso2v26</axis2.jaxb.version>
+        <axis2.jaxb.version>1.6.2.wso2v13</axis2.jaxb.version>
         <jaxb.version>2.2.5.wso2v1</jaxb.version>
         <stratos.version>2.2.0</stratos.version>
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
