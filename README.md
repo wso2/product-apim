@@ -1,3 +1,6 @@
+#### Please note that, This branch (2.x) has been moved to master , Hence don't send PRs or continue development in this branch. Please send all new PRs to master branch instead.
+
+
         ================================================================================
                                         WSO2 API Manager
         ================================================================================
