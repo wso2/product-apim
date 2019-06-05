@@ -430,12 +430,12 @@ public final class APIImportUtil {
                 }
                 // This is required to make url templates and scopes get effected.
                 provider.updateAPI(importedApi);
+            }
 
-                // Change API lifecycle if state transition is required
-                if (lifecycleAction != null && !lifecycleAction.isEmpty()) {
-                    log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
-                    provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
-                }
+            // Change API lifecycle if state transition is required
+            if (lifecycleAction != null && !lifecycleAction.isEmpty()) {
+                log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
+                provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
             }
         } catch (APIManagementException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
