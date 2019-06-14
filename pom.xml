@@ -1147,7 +1147,7 @@
         <org.apache.axis2.transport.version>1.1.1-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.1.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
-        <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
+        <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v18</rampart.wso2.version>
         <slf4j.api.version>1.7.26</slf4j.api.version>
@@ -1188,7 +1188,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.0</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.9.8</jackson-version>
+        <jackson-version>2.9.9</jackson-version>
         <jodatime-version>2.3</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
