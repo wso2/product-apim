@@ -1041,7 +1041,7 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
+        <carbon.analytics.common.version>6.1.26</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.4.221</carbon.apimgt.version>
