@@ -6,7 +6,7 @@
 
 | Branch | Build Status |
 | :------------ |:-------------
-| master | [![Build Status](https://wso2.org/jenkins/job/products/job/product-apim_2.x/badge/icon)](https://wso2.org/jenkins/view/products/job/products/job/product-apim_2.x/) |
+| master | [![Build Status](https://wso2.org/jenkins/job/products/job/product-apim/badge/icon)](https://wso2.org/jenkins/view/products/job/products/job/product-apim/) |
 
 [<img src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-logo.svg" width="120">](https://stackoverflow.com/tags/wso2-am/)
 
