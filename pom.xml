@@ -1044,7 +1044,7 @@
         <carbon.analytics.common.version>5.1.57</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.4.221</carbon.apimgt.version>
+        <carbon.apimgt.version>6.4.223</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.4.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1062,7 +1062,7 @@
 
 	    <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>
 
-        <carbon.commons.version>4.6.65</carbon.commons.version>
+        <carbon.commons.version>4.6.66</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
