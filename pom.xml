@@ -1126,7 +1126,7 @@
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
         <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
-        <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
+        <version.equinox.osgi>3.9.1.v20140110-1610</version.equinox.osgi>
         <version.equinox.jsp.jasper>1.0.400.v20130327-1442</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
         <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
