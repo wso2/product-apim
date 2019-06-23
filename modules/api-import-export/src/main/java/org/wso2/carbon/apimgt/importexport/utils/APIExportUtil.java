@@ -243,11 +243,13 @@ public class APIExportUtil {
             apiToReturn.setStatus(APIConstants.CREATED);
         }
 
+        // export certificates
+        exportEndpointCertificates(apiToReturn, tenantId, provider);
+
         //export meta information
         exportMetaInformation(apiToReturn, registry);
 
         return Response.ok().build();
-
     }
 
     /**

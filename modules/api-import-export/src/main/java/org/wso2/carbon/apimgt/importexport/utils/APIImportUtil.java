@@ -458,6 +458,7 @@ public final class APIImportUtil {
         addAPISequences(pathToArchive, importedApi);
         addAPISpecificSequences(pathToArchive, importedApi);
         addAPIWsdl(pathToArchive, importedApi);
+        addEndpointCertificates(pathToArchive, importedApi);
     }
 
     /**
@@ -621,6 +622,7 @@ public final class APIImportUtil {
         addAPISequences(pathToArchive, importedApi);
         addAPISpecificSequences(pathToArchive, importedApi);
         addAPIWsdl(pathToArchive, importedApi);
+        addEndpointCertificates(pathToArchive, importedApi);
     }
 
     /**
