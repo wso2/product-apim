@@ -443,7 +443,7 @@ public final class APIImportUtil {
             }
 
             // Change API lifecycle if state transition is required
-            if (StringUtils.isEmpty(lifecycleAction)) {
+            if (!StringUtils.isEmpty(lifecycleAction)) {
                 log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
                 provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
             }
@@ -995,6 +995,10 @@ public final class APIImportUtil {
             throws APIImportException {
         String pathToJSONFile = pathToArchive + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
                 File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE;
+        if (!checkFileExistence(pathToJSONFile)) {
+            return;
+        }
+
         try {
             String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
             JsonElement configElement = new JsonParser().parse(jsonContent);
