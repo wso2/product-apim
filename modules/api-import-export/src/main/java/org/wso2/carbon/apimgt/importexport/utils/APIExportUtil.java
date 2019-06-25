@@ -183,7 +183,7 @@ public class APIExportUtil {
      * @return HttpResponse indicating whether resource retrieval got succeed or not
      * @throws APIExportException If an error occurs while retrieving API related resources
      */
-    public static Response retrieveApiToExport(APIIdentifier apiID, String userName) throws APIExportException {
+    public static Response retrieveApiToExport(APIIdentifier apiID, String userName, boolean isStatusPreserved) throws APIExportException {
 
         API apiToReturn;
         String archivePath = archiveBasePath.concat(File.separator + apiID.getApiName() + "-" +
@@ -234,14 +234,18 @@ public class APIExportUtil {
         //export sequences
         exportSequences(apiToReturn, apiID, registry);
 
-        //set API status to created
-        apiToReturn.setStatus(APIConstants.CREATED);
+        //set API status to created if status is not preserved
+        if (!isStatusPreserved) {
+            apiToReturn.setStatus(APIConstants.CREATED);
+        }
+
+        // export certificates
+        exportEndpointCertificates(apiToReturn, tenantId, provider);
 
         //export meta information
         exportMetaInformation(apiToReturn, registry);
 
         return Response.ok().build();
-
     }
 
     /**

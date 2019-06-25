@@ -74,7 +74,11 @@ public class APIService {
     @Path("/export-api")
     @Produces("application/zip")
     public Response exportAPI(@QueryParam("name") String name, @QueryParam("version") String version,
-            @QueryParam("provider") String providerName, @Context HttpHeaders httpHeaders) {
+            @QueryParam("provider") String providerName, @QueryParam("preserveStatus") String preserveStatus, @Context HttpHeaders httpHeaders) {
+        boolean isStatusPreserved = true;
+        if(APIImportExportConstants.STATUS_FALSE.equals(preserveStatus)){
+            isStatusPreserved = false;
+        }
 
         if (name == null || version == null || providerName == null) {
             log.error("Invalid API Information ");
@@ -87,7 +91,6 @@ public class APIService {
         boolean isTenantFlowStarted = false;
 
         try {
-
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
             if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
@@ -146,7 +149,7 @@ public class APIService {
                 isTenantFlowStarted = true;
             }
 
-            Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName);
+            Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName, isStatusPreserved);
 
             //Retrieve resources : thumbnail, meta information, wsdl, sequences and documents
             // available for the exporting API
