@@ -109,7 +109,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 if (i == retries) {
                     Assert.fail("Basic content search in publisher failed. Received response : " + responseString);
                 } else {
-                    log.warn("Basic content search in publisher failed. Received response : " + responseString + " Retrying...");
+                    log.warn("Basic content search in publisher failed. Received response : " + responseString
+                            + " Retrying...");
                     Thread.sleep(5000);
                 }
             }
@@ -133,7 +134,8 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 if (i == retries) {
                     Assert.fail("Basic content search in store failed. Received response : " + responseString);
                 } else {
-                    log.warn("Basic content search in store failed. Received response : " + responseString + " Retrying...");
+                    log.warn("Basic content search in store failed. Received response : " + responseString
+                            + " Retrying...");
                     Thread.sleep(5000);
                 }
             }
