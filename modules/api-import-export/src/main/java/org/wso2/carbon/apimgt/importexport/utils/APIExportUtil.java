@@ -935,13 +935,15 @@ public class APIExportUtil {
                 List<CertificateDetail> list = getCertificateContentAndMetaData(tenantid, hostname, apiprovider);
                 endpointCertificatesDetails.addAll(list);
             }
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String element = gson.toJson(endpointCertificatesDetails,
-                    new TypeToken<ArrayList<CertificateDetail>>() {
-                    }.getType());
-            writeFile(archivePath + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
-                            File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE,
-                    element);
+            if (endpointCertificatesDetails.size() > 0) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String element = gson.toJson(endpointCertificatesDetails,
+                        new TypeToken<ArrayList<CertificateDetail>>() {
+                        }.getType());
+                writeFile(archivePath + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
+                                File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE,
+                        element);
+            }
         } catch (JSONException e) {
             String errorMsg = "Error in converting Endpoint config to JSON object in API [" + api.getId().getApiName() + "]" ;
             throw new APIExportException(errorMsg, e);
