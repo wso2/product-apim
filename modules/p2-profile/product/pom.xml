@@ -453,39 +453,7 @@
                                 <featureArtifactDef>
                                     org.jaggeryjs.modules:sso.feature:${jaggery.modules.sso.feature.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:event.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:login.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:permission.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:registration.feature:${es.feature.version}
-                                </featureArtifactDef>                             
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:store.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:ues.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.store:account-management.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:rxt.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.store:lifecycle.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-				    org.wso2.carbon.store:utils.feature:${es.feature.version}
-                                </featureArtifactDef>                               
-                                <featureArtifactDef>
-                                    org.wso2.carbon.store:org.wso2.carbon.social.feature:${carbon.social.version}
-                                </featureArtifactDef>
+
                                 <featureArtifactDef>
                                     org.wso2.carbon.registry:org.wso2.carbon.registry.task.feature:${carbon.registry.version}
                                 </featureArtifactDef>
@@ -511,7 +479,7 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
-				
+
 				<featureArtifactDef>
                                     org.wso2.ciphertool:org.wso2.ciphertool.feature:${cipher.tool.version}
                                 </featureArtifactDef>
@@ -535,9 +503,6 @@
                                 </featureArtifactDef>
 
                                 <!-- CEP based features -->
-                                <featureArtifactDef>
-                                    org.wso2.cep:org.wso2.cep.styles.feature:${product.cep.version}
-                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.event.processor.manager.core.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
@@ -582,20 +547,6 @@
                                     org.wso2.carbon.event-processing:org.wso2.carbon.siddhi.tryit.feature:${carbon.event-processing.version}
                                 </featureArtifactDef>
 
-                                <!-- START - UES Features -->
-                                <featureArtifactDef>
-                                    org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.portal.feature:${carbon.dashboard.version}
-                                </featureArtifactDef>
-                                <!-- END - UES Features -->
-                                <featureArtifactDef>
-                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.la.common.feature:${analytics.shared.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.la.apim.feature:${analytics.shared.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.data.agents.log4j.feature:${analytics.shared.version}
-                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.websocket.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
@@ -1275,25 +1226,6 @@
                                     <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-
-                                <!-- START - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.portal.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
-                                <!-- END - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1667,18 +1599,7 @@
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.websocket.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2145,24 +2066,7 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
 
-                                <!-- START - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.portal.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
-                                <!-- END - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2622,24 +2526,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
 
-                                <!-- START - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.portal.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>
-                                <!-- END - UES Features -->
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
 
                                 <!-- CEP -->
                                 <feature>
@@ -3088,18 +2974,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.shared.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
@@ -3469,16 +3343,6 @@
                                     <id>org.wso2.carbon.database.utils.feature.group</id>
                                     <version>${carbon.database.utils.version}</version>
                                 </feature>
-                                <!-- START - UES Features -->
-                                <!--<feature>
-                                    <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${shindig.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.dashboards.portal.feature.group</id>
-                                    <version>${carbon.dashboard.version}</version>
-                                </feature>-->
-                                <!-- END - UES Features -->
                                 <feature>
                                     <id>org.wso2.carbon.identity.auth.server.feature.group</id>
                                     <version>${carbon.identity.auth.version}</version>

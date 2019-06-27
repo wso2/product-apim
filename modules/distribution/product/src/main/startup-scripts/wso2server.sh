@@ -272,7 +272,6 @@ if $cygwin; then
   if [ $java_version_formatted -le 0108 ]; then
     JAVA_ENDORSED_DIRS=`cygpath --path --windows "$JAVA_ENDORSED_DIRS"`
   fi
-  JAVA_ENDORSED_DIRS=`cygpath --path --windows "$JAVA_ENDORSED_DIRS"`
   CARBON_CLASSPATH=`cygpath --path --windows "$CARBON_CLASSPATH"`
   CARBON_XBOOTCLASSPATH=`cygpath --path --windows "$CARBON_XBOOTCLASSPATH"`
 fi
@@ -303,6 +302,7 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 
 #To monitor a Carbon server in remote JMX mode on linux host machines, set the below system property.
 #   -Djava.rmi.server.hostname="your.IP.goes.here"
+
 JAVA_VER_BASED_OPTS=""
 if [ $java_version_formatted -le 0108 ]; then
     JAVA_VER_BASED_OPTS="-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
@@ -348,6 +348,9 @@ do
     -Dorg.opensaml.httpclient.https.disableHostnameVerification=true \
     -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
+    -DenableCorrelationLogs=false \
+    -Dhttpclient.hostnameVerifier="DefaultAndLocalhost" \
+    -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done

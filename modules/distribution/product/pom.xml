@@ -451,7 +451,7 @@
                             <replacements>
                                 <replacement>
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <token>(jdbc/WSO2IdentityDB)</token>
                                     <value>jdbc/WSO2AM_DB</value>
                                 </replacement>
                                 <replacement>
