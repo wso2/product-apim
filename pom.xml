@@ -1205,7 +1205,7 @@
         <forgetme.tool.version>1.1.23</forgetme.tool.version>
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.0.19</carbon.consent.mgt.version>
-        <carbon.database.utils.version>2.0.6</carbon.database.utils.version>
+        <carbon.database.utils.version>2.0.9</carbon.database.utils.version>
     </properties>
 
 </project>
