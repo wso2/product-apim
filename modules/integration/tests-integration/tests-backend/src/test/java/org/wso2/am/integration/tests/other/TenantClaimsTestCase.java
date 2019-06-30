@@ -316,7 +316,7 @@ public class TenantClaimsTestCase extends APIMIntegrationBaseTest {
                 try {
                     bufferedReader.close();
                 } catch (IOException e) {
-                    log.warn("Error when closing the buffer reade which used to reed the file:" + fileLocation +
+                    log.error("Error when closing the buffer reader which used to reed the file:" + fileLocation +
                             ". Error:" + e.getMessage());
                 }
             }
