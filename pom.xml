@@ -1096,7 +1096,7 @@
         <carbon.identity.auth.version>1.2.0</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.9.1</carbon.deployment.version>
+        <carbon.deployment.version>4.9.3</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.0</carbon.analytics.version>
@@ -1105,7 +1105,7 @@
         <org.jaggery.version>0.14.2</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.7.2</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.7.3</carbon.multitenancy.version>
 
         <siddhi.version>3.2.3</siddhi.version>
 
