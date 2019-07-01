@@ -398,9 +398,8 @@ public class RESTAPITestUtil {
             byte[] encodedBytes = Base64.encodeBase64(authenticationHeader.getBytes("UTF-8"));
             accessKeyMap.put(RESTAPITestConstants.AUTHORIZATION_KEY, "Basic " + new String(encodedBytes, "UTF-8"));
             HttpResponse tokenGenerateResponse = HttpRequestUtil.doPost(tokenEndpointURL, messageBody, accessKeyMap);
-            JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse);
-            String accessToken = new JSONObject(tokenGenJsonObject.get(RESTAPITestConstants.DATA_SECTION).toString())
-                    .get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
+            JSONObject tokenGenJsonObject = new JSONObject(tokenGenerateResponse.getData());
+            String accessToken = tokenGenJsonObject.get(RESTAPITestConstants.ACCESS_TOKEN_TEXT).toString();
 
             if (accessToken != null) {
                 return accessToken;
@@ -461,12 +460,9 @@ public class RESTAPITestUtil {
             //Set content type as its mandatory
             dcrRequestHeaders.put(RESTAPITestConstants.CONTENT_TYPE, RESTAPITestConstants.APPLICATION_JSON_CONTENT);
             JSONObject clientRegistrationResponse = new JSONObject
-                    (HttpRequestUtil.doPost(new URL(dcrEndpointURL), applicationRequestBody, dcrRequestHeaders));
-            String consumerKey = new JSONObject(clientRegistrationResponse.getString(RESTAPITestConstants.DATA_SECTION))
-                    .get(RESTAPITestConstants.CLIENT_ID).toString();
-            String consumerSecret = new JSONObject
-                    (clientRegistrationResponse.getString(RESTAPITestConstants.DATA_SECTION)).
-                    get(RESTAPITestConstants.CLIENT_SECRET).toString();
+                    (HttpRequestUtil.doPost(new URL(dcrEndpointURL), applicationRequestBody, dcrRequestHeaders).getData());
+            String consumerKey = clientRegistrationResponse.get(RESTAPITestConstants.CLIENT_ID).toString();
+            String consumerSecret = clientRegistrationResponse.get(RESTAPITestConstants.CLIENT_SECRET).toString();
 
             //give 2 second duration to create consumer key and consumer secret
             Thread.sleep(2000);
