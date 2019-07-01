@@ -29,6 +29,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -115,7 +116,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "endpoint type secured. username:" + endpointUsername + " password:" + String.valueOf(endpointPassword));
@@ -159,7 +160,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
             int retries = 3;
             for (int j = 0; j <= retries; j++) {
-                HttpResponse httpResponseGet = HttpRequestUtil.doGet(
+                HttpResponse httpResponseGet = HTTPSClientUtils.doGet(
                         getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec", requestHeadersGet);
                 assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                         "Invocation fails for GET request for endpoint type secured. username:"
