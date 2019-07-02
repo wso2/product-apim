@@ -92,11 +92,19 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
             Thread.sleep(500);
         }
 
-        Thread.sleep(10000);//Wait till APIs get indexed
-        HttpResponse response = apiStore.searchPaginateAPIs(TENANT_DOMAIN, "0", "10", API_NAME_PREFIX);
-        JSONObject responseJSON = new JSONObject(response.getData());
-        JSONArray returnedAPIs = responseJSON.getJSONArray("result");
-        Assert.assertEquals(returnedAPIs.length(), PAGINATED_COUNT);
+        //Wait till APIs get indexed
+        int returnApiCount = 0;
+        for (int i = 0; i < 25; i++) {
+            HttpResponse response = apiStore.searchPaginateAPIs(TENANT_DOMAIN, "0", "10", API_NAME_PREFIX);
+            JSONObject responseJSON = new JSONObject(response.getData());
+            JSONArray returnedAPIs = responseJSON.getJSONArray("result");
+            returnApiCount = returnedAPIs.length();
+            if (returnApiCount == PAGINATED_COUNT) {
+                break;
+            }
+            Thread.sleep(5000);
+        }
+        Assert.assertEquals(returnApiCount, PAGINATED_COUNT);
     }
 
     @AfterClass(alwaysRun = true)

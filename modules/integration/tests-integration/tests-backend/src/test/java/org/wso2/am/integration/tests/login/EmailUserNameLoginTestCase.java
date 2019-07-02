@@ -24,11 +24,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
-import org.wso2.am.admin.clients.rest.api.WorkFlowAdminRestClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -57,7 +57,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private WorkFlowAdminRestClient workflowAdmin;
+    private AdminDashboardRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
 
@@ -85,7 +85,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
-        workflowAdmin = new WorkFlowAdminRestClient(workflowAdminURLHTTP);
+        workflowAdmin = new AdminDashboardRestClient(workflowAdminURLHTTP);
 
     }
 

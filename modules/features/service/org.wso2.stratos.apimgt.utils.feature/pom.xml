@@ -44,8 +44,8 @@
             <artifactId>bcel</artifactId>
         </dependency>
         <dependency>
-            <groupId>asm.wso2</groupId>
-            <artifactId>asm</artifactId>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-all</artifactId>
         </dependency>
         <dependency>
             <groupId>cglib.wso2</groupId>
@@ -93,7 +93,7 @@
                                 <bundleDef>org.apache.derby.wso2:derby</bundleDef>
                                 <bundleDef>org.hibernate.wso2:hibernate</bundleDef>
                                 <bundleDef>org.apache.bcel.wso2:bcel</bundleDef>
-                                <bundleDef>asm.wso2:asm</bundleDef>
+                                <bundleDef>org.ow2.asm:asm-all</bundleDef>
                                 <bundleDef>cglib.wso2:cglib</bundleDef>
                                 <bundleDef>cglib.wso2:cglib</bundleDef>
                                 <bundleDef>org.apache.axis2.wso2:axis2-jibx</bundleDef>

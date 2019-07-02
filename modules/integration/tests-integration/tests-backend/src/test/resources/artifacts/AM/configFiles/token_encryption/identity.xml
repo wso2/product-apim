@@ -188,6 +188,7 @@
         <EnableAssertions>
             <UserName>false</UserName>
         </EnableAssertions>
+        <BuildSubjectIdentifierFromSPConfig>false</BuildSubjectIdentifierFromSPConfig>
         <!-- This should be set to true when using multiple user stores and keys
             should saved into different tables according to the user store. By default
             all the application keys are saved in to the same table. UserName Assertion
