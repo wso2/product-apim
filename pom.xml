@@ -858,6 +858,11 @@
                 <version>${carbon.identity-inbound-auth-oauth.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.data.publisher.oauth</groupId>
+                <artifactId>org.wso2.carbon.identity.data.publisher.oauth.server.feature</artifactId>
+                <version>${carbon.identity-data-publisher-oauth.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.andes.wso2</groupId>
                 <artifactId>andes-client</artifactId>
                 <version>${andes.version}</version>
@@ -1086,6 +1091,7 @@
         <!-- carbon identity -->
         <carbon.identity.version>5.13.6</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>6.1.1</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-data-publisher-oauth.version>1.0.11</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.2.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.3.0</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.1.0</carbon.identity-local-auth-basicauth.version>

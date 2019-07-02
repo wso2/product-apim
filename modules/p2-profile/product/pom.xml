@@ -391,6 +391,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics:org.wso2.carbon.analytics.message.tracer.handler.feature:${carbon.analytics.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.data.publisher.oauth:org.wso2.carbon.identity.data.publisher.oauth.server.feature:${carbon.identity-data-publisher-oauth.version}
+                                </featureArtifactDef>
 
                                 <!-- Carbon-MultiTenancy-->
                                 <featureArtifactDef>
@@ -1160,6 +1163,10 @@
 				                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.oauth.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-oauth.version}</version>
                                 </feature>
 
                                 <!-- MB features -->
@@ -2887,6 +2894,10 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.oauth.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-oauth.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.functions.library.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3005,6 +3016,11 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
                                     <version>${carbon.identity.auth.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
