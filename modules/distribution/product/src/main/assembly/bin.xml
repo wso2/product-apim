@@ -133,8 +133,8 @@
                 <exclude>**/repository/resources/conf/key-mappings.json</exclude>
                 <exclude>**/repository/resources/conf/unit-resolve.json</exclude>
                 <exclude>**/cipher-text.properties.j2</exclude>
-
                 <exclude>**/repository/conf/deployment.toml</exclude>
+                <exclude>**/repository/resources/conf/templates/repository/conf/etc/tasks-config.xml.j2</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -153,8 +153,8 @@
           <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
 	    <includes>
                 <include>**/httpmime-4.3.6.jar</include>
-		<include>**/encoder-1.1.jar</include>
-            </includes>
+            <include>**/encoder-1.1.jar</include>
+        </includes>
         </fileSet>
 	<fileSet>
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/endorsed</directory>
@@ -867,11 +867,18 @@
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
                 <!--<include>commons-digester.wso2:commons-digester:jar</include>-->
-                <include>org.wso2.orbit.org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar</include>
                 <include>org.wso2.securevault:org.wso2.securevault:jar</include>
                 <include>org.wso2.andes.wso2:andes-client:jar</include>
+                <include>javax.jms:javax.jms-api:jar</include>
             </includes>
         </dependencySet>
+        <dependencySet>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <includes>
+                <include>javax.jms:javax.jms-api:jar</include>
+            </includes>
+        </dependencySet>
+
     </dependencySets>
     <files>
         <!--start of claim management feature-->

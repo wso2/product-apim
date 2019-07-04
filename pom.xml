@@ -81,6 +81,10 @@
             <id>wso2-maven2-repository</id>
             <url>http://dist.wso2.org/maven2</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>wso2-nexus</id>
+            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+        </pluginRepository>
     </pluginRepositories>
 
     <profiles>
@@ -190,9 +194,9 @@
                     <version>2.5</version>
                 </plugin>
                 <plugin>
-                    <groupId>jsonmerge</groupId>
-                    <artifactId>jsonmerge</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>wso2-maven-json-merge-plugin</artifactId>
+                    <version>5.2.5</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1079,6 +1083,12 @@
                 <artifactId>json-path</artifactId>
                 <version>${com.jayway.jsonpath.version}</version>
             </dependency>
+            <!-- JMS 2.0 API dependency -->
+            <dependency>
+                <groupId>javax.jms</groupId>
+                <artifactId>javax.jms-api</artifactId>
+                <version>${javax.jms.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1114,7 +1124,7 @@
         <carbon.mediation.version>4.7.2</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.13.6</carbon.identity.version>
+        <carbon.identity.version>5.13.24</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>6.1.0</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.2.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.3.0</carbon.identity-inbound-auth-openid.version>
@@ -1245,13 +1255,14 @@
         <!-- Forget-me tool -->
         <forgetme.tool.version>1.2.0</forgetme.tool.version>
         <!--Concent Management dependencies-->
-        <carbon.consent.mgt.version>2.1.0</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.1.3</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.9</carbon.database.utils.version>
 
         <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
         <!-- xml testing library -->
         <xml.unit.verions>2.6.2</xml.unit.verions>
         <version.cava-toml>0.5.0</version.cava-toml>
+        <javax.jms.version>2.0.1</javax.jms.version>
     </properties>
 
 </project>

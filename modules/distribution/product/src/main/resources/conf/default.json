@@ -1,6 +1,11 @@
 {
-  "oauth.extension.token_generator":"org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
+  "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
   "server.base_path,": "${carbon.protocol}://${carbon.host}:${carbon.management.port}",
+  "server.default_cache_timeout": "15",
+  "default_cache_timeout.force_local_cache": false,
+  "server.enableMTOM": false,
+  "server.enableSwA": false,
+  "identity.data_source": "jdbc/WSO2AM_DB",
   "oauth.token_validation.refresh_token_validity": "1d",
   "server.clock_skew": "5m",
   "oauth.scope_validator.xacml.enable": false,
@@ -27,107 +32,30 @@
   "oauth.extensions.callback_handlers": [
     "org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler"
   ],
-  "authentication.sign_auth_response_with_tenant_of,": false,
-  "authentication.pii_controller.name": "change-me",
-  "authentication.pii_controller.contact": "change-me",
-  "authentication.pii_controller.email": "change-me",
-  "authentication.pii_controller.phone": "change-me",
-  "authentication.pii_controller.on_behalf": "change-me",
-  "authentication.pii_controller.url": "change-me",
-  "authentication.pii_controller.country": "change-me",
-  "authentication.pii_controller.locality": "change-me",
-  "authentication.pii_controller.region": "change-me",
-  "authentication.pii_controller.po_box": "change-me",
-  "authentication.pii_controller.postal_code": "change-me",
-  "authentication.pii_controller.street_address": "change-me",
-  "system.parameter.'org.wso2.CipherTransformation'" : "RSA/ECB/OAEPwithSHA1andMGF1Padding",
-
+  "system.parameter.'org.wso2.CipherTransformation'": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
   "server.userAgent": "WSO2 AM 3.0.0",
   "server.serverDetails": "WSO2 AM 3.0.0",
-  "message_formatters": [
-    {
-      "content_type": "text/html",
-      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
-    },
-    {
-      "content_type": "text/plain",
-      "class": "org.apache.axis2.format.PlainTextFormatter"
-    },
-    {
-      "content_type": "application/json",
-      "class": "org.apache.synapse.commons.json.JsonStreamFormatter"
-    },
-    {
-      "content_type": "text/javascript",
-      "class": "org.apache.axis2.json.JSONMessageFormatter"
-    },
-    {
-      "content_type": "application/octet-stream",
-      "class": "org.wso2.carbon.relay.ExpandingMessageFormatter"
-    },
-    {
-      "content_type": "application/x-www-form-urlencoded",
-      "class": "org.apache.axis2.transport.http.XFormURLEncodedFormatter"
-    },
-    {
-      "content_type": "multipart/form-data",
-      "class": "org.apache.axis2.transport.http.MultipartFormDataFormatter"
-    },
-    {
-      "content_type": "application/xml",
-      "class": "org.apache.axis2.transport.http.ApplicationXMLFormatter"
-    },
-    {
-      "content_type": "text/xml",
-      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
-    },
-    {
-      "content_type": "application/soap+xml",
-      "class": "org.apache.axis2.transport.http.SOAPMessageFormatter"
-    },
-    {
-      "content_type": "application/json/badgerfish",
-      "class": "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
-    }
-  ],
-  "message_builders": [
-    {
-      "content_type": "text/html",
-      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
-    },
-    {
-      "content_type": "application/x-www-form-urlencoded",
-      "class": "org.apache.synapse.commons.builders.XFormURLEncodedBuilder"
-    },
-    {
-      "content_type": "text/plain",
-      "class": "org.apache.axis2.format.PlainTextBuilder"
-    },
-    {
-      "content_type": "application/json",
-      "class": "org.apache.synapse.commons.json.JsonStreamBuilder"
-    },
-    {
-      "content_type": "text/javascript",
-      "class": "org.apache.axis2.json.JSONBuilder"
-    },
-    {
-      "content_type": "application/octet-stream",
-      "class": "org.wso2.carbon.relay.BinaryRelayBuilder"
-    },
-    {
-      "content_type": "application/xml",
-      "class": "org.apache.axis2.builder.ApplicationXMLBuilder"
-    },
-    {
-      "content_type": "multipart/form-data",
-      "class": "org.apache.axis2.builder.MultipartFormDataBuilder"
-    },
-    {
-      "content_type": "application/json/badgerfish",
-      "class": "org.apache.axis2.json.JSONBadgerfishOMBuilder"
-    }
-  ],
+  "message_formatter.form_urlencoded": "org.apache.axis2.transport.http.XFormURLEncodedFormatter",
+  "message_formatter.multipart_form_data": "org.apache.axis2.transport.http.MultipartFormDataFormatter",
+  "message_formatter.application_xml": "org.apache.axis2.transport.http.ApplicationXMLFormatter",
+  "message_formatter.text_xml": "org.apache.axis2.transport.http.SOAPMessageFormatter",
+  "message_formatter.soap_xml": "org.apache.axis2.transport.http.SOAPMessageFormatter",
+  "message_formatter.json": "org.apache.synapse.commons.json.JsonStreamFormatter",
+  "message_formatter.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishMessageFormatter",
+  "message_formatter.text_javascript": "org.apache.axis2.json.JSONMessageFormatter",
+  "message_formatter.text_plain": "org.apache.axis2.format.PlainTextFormatter",
+  "message_formatter.text_html": "org.apache.axis2.transport.http.ApplicationXMLFormatter",
+  "message_formatter.octet_stream": "org.wso2.carbon.relay.ExpandingMessageFormatter",
+  "message_builder.text_html": "org.wso2.carbon.relay.BinaryRelayBuilder",
+  "message_builder.form_urlencoded": "org.apache.synapse.commons.builders.XFormURLEncodedBuilder",
+  "message_builder.text_plain": "org.apache.axis2.format.PlainTextBuilder",
+  "message_builder.json": "org.apache.synapse.commons.json.JsonStreamBuilder",
+  "message_builder.text_javascript": "org.apache.axis2.json.JSONBuilder",
+  "message_builder.content_type": "application/octet-stream",
+  "message_builder.octet_stream": "org.wso2.carbon.relay.BinaryRelayBuilder",
+  "message_builder.application_xml": "org.apache.axis2.builder.ApplicationXMLBuilder",
+  "message_builder.multipart_form_data": "org.apache.axis2.builder.MultipartFormDataBuilder",
+  "message_builder.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishOMBuilder",
   "transport.passthru_http.listener.parameters": {
     "port": "8280",
     "non-blocking": true,
@@ -152,7 +80,8 @@
     "non-blocking": true
   },
   "transport.passthru_https.sender.parameters": {
-    "non-blocking": true
+    "non-blocking": true,
+    "HostnameVerifier": "DefaultAndLocalhost"
   },
   "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
@@ -208,13 +137,11 @@
   "passthru_http.'http.headers.preserve'": "Content-Type",
   "passthru_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "passthru_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
-
   "transport.receiver.max_event_buffer_capacity": "10",
   "transport.receiver.type": "binary",
   "transport.thrift.receiver.enable": false,
-  "transport.thrift.receiver.tcpPort" : "7611",
-  "transport.thrift.receiver.sslPort" : "7711",
-
+  "transport.thrift.receiver.tcpPort": "7611",
+  "transport.thrift.receiver.sslPort": "7711",
   "indexing.enable": true,
   "indexing.starting_delay": "35",
   "indexing.frequency": "3",
@@ -226,5 +153,11 @@
       "isCascadeDeleteEnabled": true,
       "initializeNewClaimManager": true
     }
-  }
+  },
+  "tasks.client_dispatch_address": "https://localhost:9443",
+  "tasks.server_address": "https://localhost:9443",
+  "identity.entitlement.policy_point.pip.attribute_designators": [
+    "org.wso2.carbon.identity.entitlement.pip.DefaultAttributeFinder"
+  ],
+  "authentication.consent.data_source": "jdbc/WSO2AM_DB"
 }
