@@ -1096,7 +1096,7 @@
         <carbon.identity.auth.version>1.2.0</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.9.3</carbon.deployment.version>
+        <carbon.deployment.version>4.9.4</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.0</carbon.analytics.version>
