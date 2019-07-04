@@ -17,7 +17,7 @@
   ~  under the License.
   -->
 
-<axisconfig name="AxisJava2.0">
+<axisconfig name="AxisJava2.0"   xmlns:svns="http://org.wso2.securevault/configuration">
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
@@ -110,13 +110,33 @@
     <!-- Following content type to message formatter mapping can be used to implement support -->
     <!-- for different message format serializations in Axis2. These message formats are -->
     <!-- expected to be resolved based on the content type. -->
-    <messageFormatters>
-        {% for message_formatter in message_formatters %}
-        <messageFormatter contentType="{{message_formatter.content_type}}"
-                          class="{{message_formatter.class}}"/>
-        {% endfor %}
-    </messageFormatters>
+   <messageFormatters>
+    <messageFormatter contentType="application/x-www-form-urlencoded"
+                              class="{{message_formatter.form_urlencoded}}"/>
+    <messageFormatter contentType="multipart/form-data"
+                              class="{{message_formatter.multipart_form_data}}"/>
+    <messageFormatter contentType="application/xml"
+                              class="{{message_formatter.application_xml}}"/>
+    <messageFormatter contentType="text/xml"
+                              class="{{message_formatter.text_xml}}"/>
+    <messageFormatter contentType="application/soap+xml"
+                              class="{{message_formatter.soap_xml}}"/>
+    <messageFormatter contentType="application/json"
+                              class="{{message_formatter.json}}"/>
+    <messageFormatter contentType="application/json/badgerfish"
+                              class="{{message_formatter.json_badgerfish}}"/>
+    <messageFormatter contentType="text/javascript"
+                              class="{{message_formatter.text_javascript}}"/>
+    <messageFormatter contentType="text/plain"
+                         class="org.{{message_formatter.text_plain}}"/>
 
+        <messageFormatter contentType="text/html"
+                          class="{{message_formatter.text_html}}"/>
+
+        <messageFormatter contentType="application/octet-stream"
+                          class="{{message_formatter.octet_stream}}"/>
+
+    </messageFormatters>
     <!-- ================================================= -->
     <!--                Message Builders                   -->
     <!-- ================================================= -->
@@ -125,10 +145,25 @@
     <!-- different message formats in Axis2. These message formats are expected to be -->
     <!-- resolved based on the content type. -->
     <messageBuilders>
-        {% for message_builder in message_builders %}
-        <messageBuilder contentType="{{message_builder.content_type}}"
-                        class="{{message_builder.class}}"/>
-        {% endfor %}
+    <messageBuilder contentType="application/xml"
+                            class="{{message_builder.application_xml}}"/>
+    <messageBuilder contentType="application/x-www-form-urlencoded"
+                            class="{{message_builder.form_urlencoded}}"/>
+
+    <messageBuilder contentType="multipart/form-data"
+                            class="{{message_builder.multipart_form_data}}"/>
+    <messageBuilder contentType="application/json"
+                            class="{{message_builder.json}}"/>
+    <messageBuilder contentType="application/json/badgerfish"
+                            class="{{message_builder.json_badgerfish}}"/>
+    <messageBuilder contentType="text/javascript"
+                            class="{{message_builder.text_javascript}}"/>
+    <messageBuilder contentType="text/html"
+                        class="{{message_builder.text_html}}"/>
+        <messageBuilder contentType="text/plain"
+                        class="{{message_builder.text_plain}}"/>
+        <messageBuilder contentType="application/octet-stream"
+                        class="{{message_builder.octet_stream}}"/>
     </messageBuilders>
 
 
