@@ -77,7 +77,7 @@ public class InvokeAPIUsingOldThrottlingWithWSClient extends APIManagerLifecycle
 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottlingUsingWSClient" +
-                File.separator + "api-manager.xml"));
+                File.separator + "deployment.toml"));
 
         serverConfigurationManager.restartGracefully();
 

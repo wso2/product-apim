@@ -71,17 +71,10 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
         String apiManagerXml =
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "api-manager.xml";
+                        File.separator + "deployment.toml";
 
-        String userMgtXml =
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "user-mgt.xml";
 
-        String carbonXml =
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "carbon.xml";
-
-        configureServer(apiManagerXml, userMgtXml, carbonXml);
+        configureServer(apiManagerXml);
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -181,13 +174,12 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
         super.cleanUp();
     }
 
-    private void configureServer(String apiManagerXml, String userMgtXml, String carbonXml) throws Exception {
+    private void configureServer(String apiManagerXml) throws Exception {
+
         try {
             serverConfigurationManager = new ServerConfigurationManager(publisherContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
-            serverConfigurationManager.applyConfiguration(new File(carbonXml));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Error while changing server configuration", e);
         }
     }
