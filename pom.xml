@@ -1206,7 +1206,7 @@
         <swagger-annotations-version>1.5.22</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
         <jackson-version>2.9.9</jackson-version>
-        <jodatime-version>2.3</jodatime-version>
+        <jodatime-version>2.10.3</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
         <com.squareup.okhttp.version>2.7.5</com.squareup.okhttp.version>
