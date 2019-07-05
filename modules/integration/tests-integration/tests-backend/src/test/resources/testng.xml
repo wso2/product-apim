@@ -28,6 +28,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
         </classes>
     </test>
 
