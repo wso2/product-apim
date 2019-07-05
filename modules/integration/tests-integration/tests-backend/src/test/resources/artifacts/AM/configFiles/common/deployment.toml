@@ -93,49 +93,6 @@ socket_timeout=20000
 [synapse_properties]
 synapse_commons_json_buildValidNCNames=true
 
-[[message_formatters]]
-content_type = "text/html"
-class = "org.apache.axis2.transport.http.ApplicationXMLFormatter"
-
-[[message_formatters]]
-content_type = "text/plain"
-class = "org.apache.axis2.format.PlainTextFormatter"
-
-[[message_formatters]]
-content_type = "application/json"
-class = "org.apache.synapse.commons.json.JsonFormatter"
-
-[[message_formatters]]
-content_type = "text/javascript"
-class = "org.apache.axis2.json.JSONMessageFormatter"
-
-[[message_formatters]]
-content_type = "application/octet-stream"
-class = "org.wso2.carbon.relay.ExpandingMessageFormatter"
-
-[[message_formatters]]
-content_type = "application/x-www-form-urlencoded"
-class = "org.apache.axis2.transport.http.XFormURLEncodedFormatter"
-
-[[message_formatters]]
-content_type = "multipart/form-data"
-class = "org.apache.axis2.transport.http.MultipartFormDataFormatter"
-
-[[message_formatters]]
-content_type = "application/xml"
-class = "org.apache.axis2.transport.http.ApplicationXMLFormatter"
-
-[[message_formatters]]
-content_type = "text/xml"
-class = "org.apache.axis2.transport.http.SOAPMessageFormatter"
-
-[[message_formatters]]
-content_type = "application/soap+xml"
-class = "org.apache.axis2.transport.http.SOAPMessageFormatter"
-
-[[message_formatters]]
-content_type = "application/json/badgerfish"
-class = "org.apache.axis2.json.JSONBadgerfishMessageFormatter"
 
 [apim.notification]
 from_address = "APIM.com"
@@ -145,3 +102,6 @@ hostname = "localhost"
 port = 3025
 enable_start_tls = false
 enable_authentication = true
+
+[apim.token.revocation.persistent_notifier]
+hostname = "https://localhost:9943/etcdmock/v2/keys/jti/"

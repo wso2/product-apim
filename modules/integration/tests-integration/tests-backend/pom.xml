@@ -470,6 +470,11 @@ under the License.
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.claim.metadata.mgt.stub</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.andes.wso2</groupId>
+            <artifactId>andes</artifactId>
+            <version>${andes.version}</version>
+        </dependency>
 
         <!--Jetty dependencies-->
         <dependency>
