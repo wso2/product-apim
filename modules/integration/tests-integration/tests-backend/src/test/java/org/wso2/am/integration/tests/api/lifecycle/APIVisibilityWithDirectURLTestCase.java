@@ -30,6 +30,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -128,7 +129,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         verifyResponse(serviceResponse);
 
 
-        HttpResponse a = HttpRequestUtil
+        HttpResponse a = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
@@ -158,7 +159,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         String session = response.getHeaders().get("Set-Cookie");
         requestHeaders.clear();
         requestHeaders.put("Cookie", session);
-        HttpResponse a = HttpRequestUtil
+        HttpResponse a = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
@@ -213,7 +214,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     public void testDirectLinkInTenantAnonymous() throws Exception {
         requestHeaders.clear();
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
-        HttpResponse a = HttpRequestUtil
+        HttpResponse a = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
@@ -229,7 +230,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
         String session = response.getHeaders().get("Set-Cookie");
         requestHeaders.put("Cookie", session);
-        HttpResponse a = HttpRequestUtil
+        HttpResponse a = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertFalse(a.getData().contains("user is not authorized to view the API"),
@@ -248,7 +249,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         String session = response.getHeaders().get("Set-Cookie");
         requestHeaders.clear();
         requestHeaders.put("Cookie", session);
-        HttpResponse a = HttpRequestUtil
+        HttpResponse a = HTTPSClientUtils
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
