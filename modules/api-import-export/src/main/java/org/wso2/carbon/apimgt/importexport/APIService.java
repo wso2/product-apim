@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.importexport;
 
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
@@ -65,18 +66,23 @@ public class APIService {
      * This service generates a zipped archive which contains all the above mentioned resources
      * for a given API
      *
-     * @param name         Name of the API that needs to be exported
-     * @param version      Version of the API that needs to be exported
-     * @param providerName Provider name of the API that needs to be exported
+     * @param name           Name of the API that needs to be exported
+     * @param version        Version of the API that needs to be exported
+     * @param providerName   Provider name of the API that needs to be exported
+     * @param format         Format of output documents. Can be YAML or JSON
+     * @param preserveStatus Preserve API status on export
+     * @param httpHeaders    HTTP headers for the authentication mechanism
      * @return Zipped API as the response to the service call
      */
     @GET
     @Path("/export-api")
     @Produces("application/zip")
     public Response exportAPI(@QueryParam("name") String name, @QueryParam("version") String version,
-            @QueryParam("provider") String providerName, @QueryParam("preserveStatus") String preserveStatus, @Context HttpHeaders httpHeaders) {
+                              @QueryParam("provider") String providerName, @QueryParam("preserveStatus") String preserveStatus,
+                              @QueryParam("format") String format, @Context HttpHeaders httpHeaders) {
+        ExportFormat exportFormat = ExportFormat.JSON;
         boolean isStatusPreserved = true;
-        if(APIImportExportConstants.STATUS_FALSE.equals(preserveStatus)){
+        if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(preserveStatus)) {
             isStatusPreserved = false;
         }
 
@@ -91,6 +97,11 @@ public class APIService {
         boolean isTenantFlowStarted = false;
 
         try {
+            // change this to provide default exporting type
+            if (StringUtils.isNotEmpty(format)) {
+                exportFormat = ExportFormat.valueOf(format.toUpperCase());
+            }
+
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
             if (Response.Status.OK.getStatusCode() != authorizationResponse.getStatus()) {
                 return authorizationResponse;
@@ -143,13 +154,13 @@ public class APIService {
                     isTenantFlowStarted = true;
                 }
             } else if (apiRequesterDomain != null &&
-                !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
+                    !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiRequesterDomain, true);
                 isTenantFlowStarted = true;
             }
 
-            Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName, isStatusPreserved);
+            Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName, isStatusPreserved, exportFormat);
 
             //Retrieve resources : thumbnail, meta information, wsdl, sequences and documents
             // available for the exporting API
@@ -171,6 +182,10 @@ public class APIService {
             log.error("APIExportException occurred while exporting ", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
                     .type(MediaType.APPLICATION_JSON).build();
+        } catch (IllegalArgumentException e) {
+            log.error("IllegalArgumentException occured while exporting", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid type " + e.getMessage())
+                    .type(MediaType.APPLICATION_JSON).build();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
@@ -182,9 +197,9 @@ public class APIService {
      * This is the service which is used to import an API. All relevant API data will be included upon the creation of
      * the API. Depending on the choice of the user, provider of the imported API will be preserved or modified.
      *
-     * @param uploadedInputStream uploadedInputStream input stream from the REST request
-     * @param defaultProviderStatus     user choice to keep or replace the API provider
-     * @param httpHeaders         HTTP headers for the authentication mechanism
+     * @param uploadedInputStream   uploadedInputStream input stream from the REST request
+     * @param defaultProviderStatus user choice to keep or replace the API provider
+     * @param httpHeaders           HTTP headers for the authentication mechanism
      * @return response for the API process
      */
     @POST
@@ -192,7 +207,7 @@ public class APIService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importAPI(@Multipart("file") InputStream uploadedInputStream, @QueryParam("preserveProvider")
-    String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
+            String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
 
         boolean isProviderPreserved = true;
         boolean isTenantFlowStarted = false;
@@ -269,10 +284,10 @@ public class APIService {
     /**
      * This service will update an existing API given by the ID. It will preserve state of the API during the update
      *
-     * @param uploadedInputStream       Input stream from the REST request
-     * @param apiID                     ID of the API to be updated
-     * @param defaultProviderStatus     User choice to keep or replace the API provider
-     * @param httpHeaders               HTTP headers of the request
+     * @param uploadedInputStream   Input stream from the REST request
+     * @param apiID                 ID of the API to be updated
+     * @param defaultProviderStatus User choice to keep or replace the API provider
+     * @param httpHeaders           HTTP headers of the request
      * @return Status of the API update
      */
     @PUT
