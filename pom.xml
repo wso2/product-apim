@@ -1049,6 +1049,13 @@
                 <artifactId>json-path</artifactId>
                 <version>${com.jayway.jsonpath.version}</version>
             </dependency>
+
+            <!-- API Import/Export -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${com.fasterxml.jackson.dataformat.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1219,6 +1226,9 @@
         <carbon.database.utils.version>2.0.9</carbon.database.utils.version>
 
         <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
+
+        <!-- API Import/Export Dependencies -->
+        <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
     </properties>
 
 </project>
