@@ -1,0 +1,106 @@
+{
+  "server.server_role": {
+    "gateway-worker": {
+      "apim.throttling.enable_policy_deploy": false,
+      "indexing.enable": false,
+      "system.parameter.profile": "gateway-worker"
+    },
+    "api-key-manager": {
+      "apim.throttling.enable_policy_deploy": false,
+      "apim.throttling.enable_data_publishing": false,
+      "apim.throttling.enable_decision_connection": false,
+      "apim.throttling.enable_blacklist_condition": false,
+      "transport.ws.sender.enable": false,
+      "transport.wss.sender.enable": false,
+      "indexing.enable": false,
+      "system.parameter.profile": "api-key-manager"
+    },
+    "api-publisher": {
+      "apim.throttling.enable_decision_connection": false,
+      "apim.throttling.enable_blacklist_condition": false,
+      "transport.ws.sender.enable": false,
+      "transport.wss.sender.enable": false,
+      "system.parameter.profile": "api-publisher"
+    },
+    "api-store": {
+      "apim.throttling.enable_policy_deploy": false,
+      "apim.throttling.enable_data_publishing": false,
+      "apim.throttling.enable_decision_connection": false,
+      "apim.throttling.enable_blacklist_condition": false,
+      "transport.ws.sender.enable": false,
+      "transport.wss.sender.enable": false,
+      "system.parameter.profile": "api-store"
+    },
+    "traffic-manager": {
+      "system.parameter.profile": "traffic-manager"
+    }
+  },
+  "apim.jwt.encoding": {
+    "base64": {
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+    },
+    "base64url": {
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator"
+    }
+  },
+  "apim.jwt.enable_user_claims": {
+    "true": {
+      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+    }
+  },
+  "apim.store.application_sharing_type": {
+    "default": {
+      "apim.store.application_sharing_impl": "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+    },
+    "saml": {
+      "apim.store.application_sharing_impl": "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
+    }
+  },
+  "database.apim_db.type": {
+    "mysql": {
+      "database.apim_db.driver": "com.mysql.jdbc.Driver",
+      "database.apim_db.url": "jdbc:mysql://$ref{database.shared_db.hostname}:$ref{database.shared_db.port}/$ref{database.shared_db.name}",
+      "database.apim_db.validationQuery": "SELECT 1"
+    },
+    "h2": {
+      "database.apim_db.driver": "org.h2.Driver",
+      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT\u003dFALSE;LOCK_TIMEOUT\u003d60000",
+      "database.apim_db.validationQuery": "SELECT 1"
+    }
+  },
+  "apim.throttling.decision_connection_type": {
+    "andes": {
+      "apim.throttling.jms.java_naming_factory_initial": "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
+    }
+  },
+  "apim.publisher.doc_visibility": {
+    "enable": {
+      "apim.publisher.enable_api_doc_visibility": true
+    }
+  },
+  "apim.key_manager.key_validation_handler_type": {
+    "default": {
+      "apim.key_manager.key_validation_handler_impl": "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
+    }
+  },
+  "server.mode": {
+    "single": {
+      "event_processor.enable_single_mode": true,
+      "event_processor.enable_ha_mode": false
+    },
+    "ha": {
+      "event_processor.enable_single_mode": false,
+      "event_processor.enable_ha_mode": true
+    }
+  },
+  "transport.receiver.type": {
+    "binary": {
+      "transport.thrift.receiver.enable": false,
+      "transport.binary.receiver.enable": true
+    },
+    "thrift": {
+      "transport.binary.receiver.enable": false,
+      "transport.thrift.receiver.enable": true
+    }
+  }
+}

@@ -17,17 +17,26 @@ rem  limitations under the License.
 set userLocation=%cd%
 set pathToApiManagerXML=..\repository\conf\api-manager.xml
 set pathToAxis2XML=..\repository\conf\axis2\axis2.xml
-set pathToRegistry=..\repository\conf\registry.xml
+set pathToAxis2XMLTemplate=..\repository\resources\conf\template\repository\conf\axis2\axis2.xml.j2
+set pathToRegistry=..\repository\resources\conf\template\repository\conf\registry.xml.j2
+set pathToRegistryTemplate=..\repository\conf\registry.xml
 set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
 set pathToAxis2TMXml=..\repository\conf\axis2\axis2_TM.xml
+set pathToAxis2TMXmlTemplate=..\repository\resources\conf\template\repository\conf\axis2\axis2_TM.xml.j2
 set pathToRegistryTM=..\repository\conf\registry_TM.xml
+set pathToRegistryTMTemplate=..\repository\resources\conf\template\repository\conf\registry_TM.xml.j2
 set axis2XMLBackup=axis2backup.xml
+set axis2XMLBackupTemplate=axis2.backup
 set registryBackup=registryBackup.xml
+set registryBackupTemplate=registry.backup
 set axis2XML=axis2.xml
+set axis2XMLTemplate=axis2.xml.j2
 set registryXML=registry.xml
+set registryXMLTemplate=registry.xml.j2
+
 cd /d %~dp0
 
 rem ----- Process the input commands (two args only)-------------------------------------------
@@ -46,6 +55,7 @@ echo Starting to optimize API Manager for the Key Manager profile
 call :disableDataPublisher
 call :disableJMSConnectionDetails
 call :disablePolicyDeployer
+call :disableBlockConditionRetriever
 call :disableTransportSenderWS
 call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
@@ -76,8 +86,8 @@ goto finishOptimization
 
 :publisher
 echo Starting to optimize API Manager for the API Publisher profile
-call :disableDataPublisher
 call :disableJMSConnectionDetails
+call :disableBlockConditionRetriever
 call :disableTransportSenderWS
 call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
@@ -109,6 +119,7 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Developer Portal (API Store) profile
 call :disableDataPublisher
 call :disableJMSConnectionDetails
+call :disableBlockConditionRetriever
 call :disablePolicyDeployer
 call :disableTransportSenderWS
 call :disableTransportSenderWSS
@@ -141,6 +152,8 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Traffic Manager profile
 call :replaceAxis2File
 call :replaceRegistryXMLFile
+call :replaceAxis2TemplateFile
+call :replaceRegistryXMLTemplateFile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :disableIndexingConfiguration
@@ -221,6 +234,16 @@ for /f %%i in ('powershell -Command "$xml = [xml] (Get-Content %pathToApiManager
 		powershell -Command "$xml = [xml] (Get-Content %pathToApiManagerXML%); $xml.APIManager.ThrottlingConfigurations.PolicyDeployer.Enabled='false'; $xml.Save('%pathToApiManagerXML%');"
 		call :Timestamp value
 		echo %value% INFO - Disabled the ^<PolicyDeployer^> from api-manager.xml file
+	)
+)
+EXIT /B 0
+
+:disableBlockConditionRetriever
+for /f %%i in ('powershell -Command "$xml = [xml] (Get-Content %pathToApiManagerXML%); $xml.APIManager.ThrottlingConfigurations.BlockCondition.Enabled;"') do (
+	if %%i==true (
+		powershell -Command "$xml = [xml] (Get-Content %pathToApiManagerXML%); $xml.APIManager.ThrottlingConfigurations.BlockCondition.Enabled='false'; $xml.Save('%pathToApiManagerXML%');"
+		call :Timestamp value
+		echo %value% INFO - Disabled the ^<BlockCondition^> from api-manager.xml file
 	)
 )
 EXIT /B 0
@@ -311,6 +334,33 @@ if exist %pathToRegistry% (
 	)
 )
 EXIT /B 0
+
+:replaceAxis2TemplateFile
+if exist %pathToAxis2XMLTemplate% (
+	if exist %pathToAxis2TMXmlTemplate% (
+		ren %pathToAxis2XMLTemplate% %axis2XMLBackupTemplate%
+		call :Timestamp value
+		echo %value% INFO - Rename the existing %pathToAxis2XML% file as %axis2XMLBackupTemplate%
+		ren %pathToAxis2TMXmlTemplate% %pathToAxis2XMLTemplate%
+		call :Timestamp value
+		echo %value% INFO - Rename the existing %pathToAxis2TMXmlTemplate% file as %axis2XMLTemplate%
+	)
+)
+EXIT /B 0
+
+:replaceRegistryXMLTemplateFile
+if exist %pathToRegistryTemplate% (
+	if exist %pathToRegistryTMTemplate% (
+        ren %pathToRegistryTemplate% %registryBackupTemplate%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToRegistryTemplate% file as %registryBackupTemplate%
+        ren  %pathToRegistryTM% %registryXMLTemplate%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToRegistryTMTemplate% file as %registryXMLTemplate%
+	)
+)
+EXIT /B 0
+
 
 :Timestamp
 set "%~1=[%date:~10,14%-%date:~4,2%-%date:~7,2% %time%]"
