@@ -80,7 +80,7 @@ public class APIService {
     public Response exportAPI(@QueryParam("name") String name, @QueryParam("version") String version,
                               @QueryParam("provider") String providerName, @QueryParam("preserveStatus") String preserveStatus,
                               @QueryParam("format") String format, @Context HttpHeaders httpHeaders) {
-        ExportFormat exportFormat = ExportFormat.JSON;
+        ExportFormat exportFormat = ExportFormat.YAML;
         boolean isStatusPreserved = true;
         if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(preserveStatus)) {
             isStatusPreserved = false;
