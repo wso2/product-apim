@@ -349,7 +349,6 @@ do
     -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
     -DenableCorrelationLogs=false \
-    -Dhttpclient.hostnameVerifier="DefaultAndLocalhost" \
     -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?

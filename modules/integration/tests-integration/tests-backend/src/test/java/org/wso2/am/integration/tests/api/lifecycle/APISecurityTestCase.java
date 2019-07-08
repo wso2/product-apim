@@ -186,15 +186,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(
                 getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "api-manager.xml"));
-        String axis2SourceFile =
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "axis2.xml";
-        String axis2TargetFile =
-                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "axis2"
-                        + File.separator + "axis2.xml";
-        serverConfigurationManager
-                .applyConfigurationWithoutRestart(new File(axis2SourceFile), new File(axis2TargetFile), true);
+                        + File.separator + "deployment.toml"));
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restartGracefully();
     }
 

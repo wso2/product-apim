@@ -1,0 +1,105 @@
+[server]
+#hostname = "publisher.wso2.com"
+node_ip = "127.0.0.1"
+server_role = "api-publisher"
+
+[user_store]
+type = "database"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[database.apim_db]
+type = "mysql"
+hostname = "apim.mysql"
+name = "apimgtdb"
+port = "3306"
+username = "apimuser"
+password = "apimuser"
+
+[database.shared_db]
+type = "mysql"
+hostname = "shared_db.mysql"
+name = "shared_db"
+port = "3306"
+username = "shareduser"
+password = "shareduser"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+
+[truststore]
+file_name = "client-truststore.jks"
+type = "JKS"
+password = "wso2carbon"
+
+
+[[apim.gateway.environment]]
+name= "Production and Sandbox"
+type= "hybrid"
+display_in_api_console= true
+description= "This is a hybrid gateway that handles both production and sandbox token traffic."
+service_url= "https://gw.mgt.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
+
+[apim.analytics]
+store_api_url = "https://analytics.wso2.com:7444"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic1.local:7612"
+analytics_auth_url="ssl://analytic1.local:7712"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic2.local:7612"
+analytics_auth_url="ssl://analytic2.local:7712"
+
+
+# Traffic Manager configurations
+[apim.throttling]
+service_url = "https://tm.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
+enable_data_publishing = true
+enable_policy_deploy = true
+enable_blacklist_condition = false
+# JMS connection also should be disable
+
+[[apim.throttling.nodes.group0]]
+traffic_manager_url="tcp://tm1.local:9611"
+traffic_manager_auth_url="ssl://tm1.local:9711"
+
+[[apim.throttling.nodes.group1]]
+traffic_manager_url="tcp://tm2.local:9611"
+traffic_manager_auth_url="ssl://tm2.local:9711"
+
+[apim.cache.scopes]
+enable = true
+
+[apim.cache.publisher_roles] #check the usage and move to dev role
+enable = true
+
+[apim.store]
+url = "https://store.wso2.com:443/store"
+
+[apim.workflow]
+enable = false
+service_url = "https://localhost:9445/bpmn"
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
+callback_endpoint = "https://localhost:9443/api/am/publisher/v0.14/workflows/update-workflow-status"
+token_endpoint = "https://localhost:8243/token"
+client_registration_endpoint = "https://localhost:9443/client-registration/v0.14/register"
+client_registration_username = "$ref{super_admin.username}"
+client_registration_password = "$ref{super_admin.password}"

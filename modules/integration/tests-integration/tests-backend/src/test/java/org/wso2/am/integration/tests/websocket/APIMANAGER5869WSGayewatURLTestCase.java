@@ -213,7 +213,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfiguration(new File(
                     getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketTest"
-                            + File.separator + "api-manager.xml"));
+                            + File.separator + "deployment.toml"));
         }
         String tenant = storeContext.getContextTenant().getDomain();
         String provider = user.getUserName();

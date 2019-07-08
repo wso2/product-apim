@@ -48,10 +48,6 @@ public class AdvancedThrottlingConfig extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
-                File.separator + "api-manager.xml"));
         serverConfigurationManager.copyToComponentLib(new File(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"));
 
