@@ -1,0 +1,8 @@
+/public/**
+/node_modules/**
+/coverage/**
+/source/src/app/components/Apis/Details/Security/**
+/source/src/app/components/Apis/Details/Resources/**
+/source/src/app/components/Apis/Details/LifeCycle/**
+/source/src/app/components/Apis/Details/Documents/**
+/source/src/app/components/Apis/Details/Endpoints/**
