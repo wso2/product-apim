@@ -54,7 +54,7 @@ class PuppeteerEnvironment extends NodeEnvironment {
         });
         const envVar = process.env.WSO2_PORT_OFFSET;
         console.log('WSO2_PORT_OFFSET=' + envVar);
-        this.global.PORT_OFFSET = Number(envVar) || 9443;
+        this.global.PORT_OFFSET = Number(envVar) || 0;
     }
 
     /**
