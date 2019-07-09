@@ -25,6 +25,8 @@ describe(
     'Publisher application user authentication tests',
     () => {
         let page;
+        const port = 9443 + global.PORT_OFFSET;
+        const publisherURL = 'https://localhost:' + port + '/publisher-new';
         beforeAll(async () => {
             page = await global.__BROWSER__.newPage();
         }, timeout);
@@ -32,9 +34,6 @@ describe(
         beforeEach(async () => {
             await page._client.send('Network.clearBrowserCookies');
             await page._client.send('Network.clearBrowserCache');
-            let port = 9443 + global.PORT_OFFSET;
-            console.log(port);
-            await page.goto('https://localhost:' + port + '/publisher-new');
         });
 
         afterAll(async () => {
@@ -42,52 +41,76 @@ describe(
         });
 
         test('should able to login without error', async () => {
+            await page.goto(publisherURL);
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
-            await Promise.all([
-                page.$eval('#loginForm', form => form.submit()),
-                page.waitForNavigation()
-            ]);
+            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
             await page.click('input#approveCb[type="radio"]');
-            const consentSelector = await page.$(
-                'input#consent_select_all[type="checkbox"]'
-            );
-            if (consentSelector)
+            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
+            if (consentSelector) {
                 await page.click('input#consent_select_all[type="checkbox"]');
-            await Promise.all([
-                page.click('#approve'),
-                page.waitForNavigation({ waitUntil: 'load' })
-            ]);
+            }
+            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'load' })]);
             const expectedCookies = [
+                'AM_ID_TOKEN_DEFAULT_P2',
+                'AM_ID_TOKEN_DEFAULT_P1',
+                'CLIENT_ID',
                 'AM_ACC_TOKEN_DEFAULT_P2',
-                'JSESSIONID',
-                'opbs',
+                'AM_REF_TOKEN_DEFAULT_P2',
                 'WSO2_AM_TOKEN_1_Default',
-                'commonAuthId',
-                'AM_REF_TOKEN_DEFAULT_P2'
+                'opbs',
             ];
-            let availableCookies = await page.cookies();
-            availableCookies = availableCookies.map(
-                cookieObject => cookieObject.name
-            );
-            expectedCookies.forEach(expectedCookie =>
-                expect(availableCookies).toContain(expectedCookie)
-            );
+            let { cookies: availableCookies } = await page._client.send('Network.getAllCookies', {});
+            availableCookies = availableCookies.map(cookieObject => cookieObject.name);
+            expectedCookies.forEach(expectedCookie => expect(availableCookies).toContain(expectedCookie));
         });
 
         test('should not able to login with an invalid username', async () => {
+            await page.goto(publisherURL);
             await page.type('input[name="username"]', 'chuckNorris');
             await page.type('input[name="password"]', 'chuckNorris');
 
             await Promise.all([
                 page.$eval('#loginForm', form => form.submit()),
-                page.waitForNavigation({ waitUntil: 'load' })
+                page.waitForNavigation({ waitUntil: 'load' }),
             ]);
             const { authFailure } = qs.parse(page.url().split('?')[1]);
             expect(authFailure).toEqual('true');
         });
 
-        test.todo('should return to original location after login');
+        test('should return to original location after login', async () => {
+            const pathName = '/apis/create/rest';
+            await page.goto(publisherURL + pathName);
+
+            await page.type('input[name="username"]', 'admin');
+            await page.type('input[name="password"]', 'admin');
+            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
+
+            await page.click('input#approveCb[type="radio"]');
+            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
+            if (consentSelector) await page.click('input#consent_select_all[type="checkbox"]');
+
+            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'load' })]);
+
+            const currentPageURL = await page.url();
+            expect(currentPageURL).toContain(pathName);
+        });
+
+        test('should be able to logout without an error', async () => {
+            await page.goto(publisherURL);
+            await page.type('input[name="username"]', 'admin');
+            await page.type('input[name="password"]', 'admin');
+            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
+            await page.click('input#approveCb[type="radio"]');
+            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
+            if (consentSelector) await page.click('input#consent_select_all[type="checkbox"]');
+            await Promise.all([page.click('#approve'), page.waitForNavigation()]);
+            await page.click('#profile-menu-btn');
+            await page.click('#logout');
+            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
+            const currentPageURL = await page.url();
+            expect(currentPageURL).toContain('/authenticationendpoint/login');
+        });
     },
-    timeout
+    timeout,
 );

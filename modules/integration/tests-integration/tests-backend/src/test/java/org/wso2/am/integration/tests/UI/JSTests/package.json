@@ -5,13 +5,11 @@
     "main": "app.jsx",
     "scripts": {
         "test": "jest",
-        "test:integration": "jest -c source/Tests/Integration/jest.config.js",
-        "analysis": "NODE_ENV=development webpack --env.analysis -p --progress",
         "lint": "eslint source"
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/wso2/carbon-apimgt"
+        "url": "git://github.com/wso2/product-apim"
     },
     "author": "WSO2 Org",
     "license": "Apache-2.0",
@@ -26,13 +24,11 @@
         "eslint-loader": "^2.0.0",
         "eslint-plugin-import": "^2.9.0",
         "eslint-plugin-jest": "^22.6.4",
-        "eslint-plugin-jsx-a11y": "^6.0.3",
         "eslint-plugin-react": "v7.13.0",
         "jest": "^24.8.0",
         "jest-puppeteer": "^4.2.0",
         "puppeteer": "^1.17.0",
         "webpack": "v4.28.4",
-        "webpack-bundle-analyzer": "^2.9.1",
         "webpack-cli": "^3.3.2"
     }
 }

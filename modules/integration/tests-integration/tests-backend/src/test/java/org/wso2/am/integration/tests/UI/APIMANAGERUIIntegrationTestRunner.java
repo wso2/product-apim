@@ -103,7 +103,7 @@ public class APIMANAGERUIIntegrationTestRunner extends APIMIntegrationBaseTest {
             log.warn("Echo Error:\n" + output(activeProcess.getErrorStream()));
             Assert.assertEquals(0, exitCode);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("Something went wrong while executing the UI tests", e);
         }
     }
 

@@ -4,14 +4,8 @@
         "baseUrl": "./",
         "jsx": "react",
         "allowSyntheticDefaultImports": true,
-        "paths": {
-            "AppComponents/*": ["source/src/app/components/*"],
-            "AppData/*": ["source/src/app/data/*"],
-            "AppTests/*": ["source/Tests/*"],
-        }
     },
-    "include": ["./source"],
-    "exclude": ["node_modules", "coverage", "site", "services"],
+    "exclude": ["node_modules", "coverage"],
     "typeAcquisition": {
         "include": ["jest"]
     }

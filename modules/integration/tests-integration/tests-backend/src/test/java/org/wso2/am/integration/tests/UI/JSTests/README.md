@@ -24,3 +24,12 @@ Before running the integration tests, Make sure you have started relevant WSO2 A
 ## Where is unit tests ??
 
 Unit tests are located in the [`carbon-apimgt`](https://github.com/wso2/carbon-apimgt/blob/master/features/apimgt/org.wso2.carbon.apimgt.publisher.feature/src/main/resources/publisher-new/source/Tests/README.md) along with the React component source files.
+
+# Troubleshooting
+
+> Feel free to update this guide , If you able to find better alternatives or or if you find anything that is worth adding here
+
+## No node found for selector: input[name="username"]
+
+
+## net::ERR_CONNECTION_REFUSED at `URL`
