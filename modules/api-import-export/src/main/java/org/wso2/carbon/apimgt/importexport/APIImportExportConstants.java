@@ -121,4 +121,6 @@ public final class APIImportExportConstants {
     public static final String SEARCH_TYPE_CONTEXT = "Context";
 
     public static final String SEARCH_TYPE_NAME = "Name";
+
+    public static final String NODE_TRANSITION = "transition";
 }

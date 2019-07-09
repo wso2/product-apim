@@ -66,7 +66,15 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -226,7 +234,7 @@ public final class APIImportUtil {
                     for (int j = 0; j < nTransitions; j++) {
                         Node transition = transitions.item(j);
                         // Add transitions
-                        if (transition.getNodeName().equals("transition")) {
+                        if (APIImportExportConstants.NODE_TRANSITION.equals(transition.getNodeName())) {
                             Node target = transition.getAttributes().getNamedItem("target");
                             Node action = transition.getAttributes().getNamedItem("event");
                             if (target != null && action != null) {
@@ -469,7 +477,7 @@ public final class APIImportUtil {
             }
 
             // Change API lifecycle if state transition is required
-            if (lifecycleAction != null && !lifecycleAction.isEmpty()) {
+            if (StringUtils.isNotEmpty(lifecycleAction)) {
                 log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
                 provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
             }
@@ -648,7 +656,7 @@ public final class APIImportUtil {
             provider.updateAPI(importedApi);
 
             // Change lifecycle if state transition is required
-            if (lifecycleAction != null && !lifecycleAction.isEmpty()) {
+            if (StringUtils.isNotEmpty(lifecycleAction)) {
                 log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
                 provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
             }
