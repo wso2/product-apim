@@ -1,0 +1,104 @@
+[server]
+#hostname = "store.wso2.com"
+node_ip = "127.0.0.1"
+server_role="api-store"
+
+[user_store]
+type = "database"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[database.apim_db]
+type = "mysql"
+hostname = "apim.mysql"
+name = "apimgtdb"
+port = "3306"
+username = "apimuser"
+password = "apimuser"
+
+[database.shared_db]
+type = "mysql"
+hostname = "shared_db.mysql"
+name = "shared_db"
+port = "3306"
+username = "shareduser"
+password = "shareduser"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+
+[truststore]
+file_name = "client-truststore.jks"
+type = "JKS"
+password = "wso2carbon"
+
+[[apim.gateway.environment]]
+name= "Production and Sandbox"
+type= "hybrid"
+display_in_api_console= true
+description= "This is a hybrid gateway that handles both production and sandbox token traffic."
+service_url= "https://gw.mgt.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+ws_endpoint= "ws://api.gw.wso2.com:9099"
+http_endpoint = "http://api.gw.wso2.com:8280/"
+https_endpoint = "https://api.gw.wso2.com:8243/"
+show_as_token_endpoint_url = true
+
+
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
+[apim.throttling]
+enable_data_publishing = false
+enable_policy_deploy = false
+enable_blacklist_condition = false
+# JMS connection also should be disable
+
+[apim.analytics]
+store_api_url = "https://analytics.wso2.com:7444"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic1.local:7612"
+analytics_auth_url="ssl://analytic1.local:7712"
+
+[[apim.analytics.analytics_node]]
+analytics_url="tcp://analytic2.local:7612"
+analytics_auth_url="ssl://analytic2.local:7712"
+
+
+[apim.cache.recent_apis]
+enable = false
+
+[apim.cache.scopes]
+enable = true
+
+[apim.cache.tags]
+expiry_time = 120000
+
+[apim.oauth_config]
+revoke_endpoint = "https://localhost:8243/revoke"
+enable_token_encryption = false
+enable_token_hashing = false
+
+[apim.store]
+enable_application_sharing = true
+application_sharing_type = "default" #changed to type, saml, default
+#application_sharing_impl = "org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl"
+display_multiple_versions = false
+display_deprecated_apis = false
+enable_comments = true
+enable_ratings = true
+enable_forum = true
