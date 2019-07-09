@@ -30,12 +30,17 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.FaultGatewaysException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.ResourceFile;
 import org.wso2.carbon.apimgt.api.model.Scope;
@@ -48,22 +53,28 @@ import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.apimgt.importexport.APIImportException;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.apimgt.importexport.APIService;
+import org.wso2.carbon.apimgt.importexport.lifecycle.LifeCycle;
+import org.wso2.carbon.apimgt.importexport.lifecycle.LifeCycleTransition;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.registry.api.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -191,6 +202,102 @@ public final class APIImportUtil {
     }
 
     /**
+     * This method returns the lifecycle action which can be used to transit from currentStatus to targetStatus
+     *
+     * @param tenantDomain  Tenant domain
+     * @param currentStatus Current status to do status transition
+     * @param targetStatus  Target status to do status transition
+     * @return Lifecycle action or null if target is not reachable
+     * @throws APIImportException If getting lifecycle action failed
+     */
+    private static String getLifeCycleAction(String tenantDomain, String currentStatus, String targetStatus) throws APIImportException {
+        LifeCycle lifeCycle = new LifeCycle();
+        // Parse DOM of APILifeCycle
+        try {
+            String data = provider.getLifecycleConfiguration(tenantDomain);
+            DocumentBuilderFactory factory = APIUtil.getSecuredDocumentBuilder();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data.getBytes("UTF-8"));
+            Document doc = builder.parse(inputStream);
+            Element root = doc.getDocumentElement();
+
+            // Get all nodes with state
+            NodeList states = root.getElementsByTagName("state");
+            int nStates = states.getLength();
+            for (int i = 0; i < nStates; i++) {
+                Node node = states.item(i);
+                Node id = node.getAttributes().getNamedItem("id");
+                if (id != null && !id.getNodeValue().isEmpty()) {
+                    LifeCycleTransition lifeCycleTransition = new LifeCycleTransition();
+                    NodeList transitions = node.getChildNodes();
+                    int nTransitions = transitions.getLength();
+                    for (int j = 0; j < nTransitions; j++) {
+                        Node transition = transitions.item(j);
+                        // Add transitions
+                        if (APIImportExportConstants.NODE_TRANSITION.equals(transition.getNodeName())) {
+                            Node target = transition.getAttributes().getNamedItem("target");
+                            Node action = transition.getAttributes().getNamedItem("event");
+                            if (target != null && action != null) {
+                                lifeCycleTransition.addTransition(target.getNodeValue().toLowerCase(), action.getNodeValue());
+                            }
+                        }
+                    }
+                    lifeCycle.addLifeCycleState(id.getNodeValue().toLowerCase(), lifeCycleTransition);
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            String errorMessage = "Error parsing APILifeCycle";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        } catch (UnsupportedEncodingException e) {
+            String errorMessage = "Error parsing unsupported encoding";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        } catch (IOException e) {
+            String errorMessage = "Error reading APILifeCycle";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        } catch (SAXException e) {
+            String errorMessage = "Error parsing APILifeCycle";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        } catch (APIManagementException e) {
+            String errorMessage = "Error retrieving APILifeCycle";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        }
+
+        // Retrieve lifecycle action
+        LifeCycleTransition transition = lifeCycle.getTransition(currentStatus.toLowerCase());
+        if (transition != null) {
+            return transition.getAction(targetStatus.toLowerCase());
+        }
+        return null;
+    }
+
+    /**
+     * Load a swagger document from archive. This method lookup for swagger as a yaml or json
+     *
+     * @param pathToArchive Path to archive
+     * @return Swagger content as a JSON
+     * @throws IOException When swagger document not found
+     */
+    private static String loadSwaggerFile(String pathToArchive) throws IOException {
+        if (checkFileExistence(pathToArchive + APIImportExportConstants.YAML_SWAGGER_DEFINITION_LOCATION)) {
+            log.debug("Found swagger file " + pathToArchive + APIImportExportConstants.YAML_SWAGGER_DEFINITION_LOCATION);
+            String yamlContent = FileUtils.readFileToString(
+                    new File(pathToArchive + APIImportExportConstants.YAML_SWAGGER_DEFINITION_LOCATION));
+            return YAMLUtils.YamlToJson(yamlContent);
+        } else if (checkFileExistence(pathToArchive + APIImportExportConstants.JSON_SWAGGER_DEFINITION_LOCATION)) {
+            log.debug("Found swagger file " + pathToArchive + APIImportExportConstants.JSON_SWAGGER_DEFINITION_LOCATION);
+            return FileUtils.readFileToString(
+                    new File(pathToArchive + APIImportExportConstants.JSON_SWAGGER_DEFINITION_LOCATION));
+        }
+
+        throw new IOException("Missing swagger file. Either swagger.json or swagger.yaml should present");
+    }
+
+    /**
      * This method imports an API
      *
      * @param pathToArchive            location of the extracted folder of the API
@@ -200,16 +307,32 @@ public final class APIImportUtil {
      */
     public static void importAPI(String pathToArchive, String currentUser, boolean isDefaultProviderAllowed)
             throws APIImportException {
-
-        API importedApi = null;
+        String jsonContent = null;
+        API importedApi;
         String prevProvider;
-        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
         List<API> allMatchedApis;
-
-        String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
+        String currentTenantDomain;
+        String currentStatus;
+        String targetStatus;
+        String lifecycleAction = null;
+        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
+        String pathToYamlFile = pathToArchive + APIImportExportConstants.YAML_API_FILE_LOCATION;
+        String pathToJsonFile = pathToArchive + APIImportExportConstants.JSON_API_FILE_LOCATION;
 
         try {
-            String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
+            // load yaml representation first if it is present
+            if (checkFileExistence(pathToYamlFile)) {
+                log.debug("Found api definition file " + pathToYamlFile);
+                String yamlContent = FileUtils.readFileToString(new File(pathToYamlFile));
+                jsonContent = YAMLUtils.YamlToJson(yamlContent);
+            } else if (checkFileExistence(pathToJsonFile)) {
+                // load as a json fallback
+                log.debug("Found api definition file " + pathToJsonFile);
+                jsonContent = FileUtils.readFileToString(new File(pathToJsonFile));
+            }
+            if (jsonContent == null) {
+                throw new IOException("Cannot find API definition. api.json or api.yaml should present");
+            }
             JsonElement configElement = new JsonParser().parse(jsonContent);
             JsonObject configObject = configElement.getAsJsonObject();
 
@@ -218,12 +341,11 @@ public final class APIImportUtil {
             prevProvider = apiId.get(APIImportExportConstants.PROVIDER_ELEMENT).getAsString();
             String prevTenantDomain = MultitenantUtils
                     .getTenantDomain(APIUtil.replaceEmailDomainBack(prevProvider));
-            String currentTenantDomain = MultitenantUtils
+            currentTenantDomain = MultitenantUtils
                     .getTenantDomain(APIUtil.replaceEmailDomainBack(currentUser));
 
             // If the original provider is preserved,
             if (isDefaultProviderAllowed) {
-
                 if (!StringUtils.equals(prevTenantDomain, currentTenantDomain)) {
                     String errorMessage = "Tenant mismatch! Please enable preserveProvider property " +
                             "for cross tenant API Import ";
@@ -243,7 +365,7 @@ public final class APIImportUtil {
 
                 importedApi = new Gson().fromJson(configElement, API.class);
                 //Replace context to match with current provider
-                importedApi = setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
+                setCurrentProviderToAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
 
             //Checking whether this is a duplicate API
@@ -271,6 +393,22 @@ public final class APIImportUtil {
                 throw new APIImportException(errMsg);
             }
 
+            // Store imported API status
+            targetStatus = importedApi.getStatus();
+            // Initialize to CREATED when import
+            currentStatus = APIStatus.CREATED.toString();
+            importedApi.setStatus(currentStatus);
+
+            // check whether targetStatus is reachable from current status, if not throw an exception
+            if (!importedApi.getStatus().equals(targetStatus)) {
+                lifecycleAction = getLifeCycleAction(currentTenantDomain, importedApi.getStatus(), targetStatus);
+                if (lifecycleAction == null) {
+                    String errMsg = "Error occurred while adding the API. " + targetStatus + " is not reachable from " +
+                            currentStatus;
+                    log.error(errMsg);
+                    throw new APIImportException(errMsg);
+                }
+            }
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
             log.error(errorMessage, e);
@@ -298,11 +436,9 @@ public final class APIImportUtil {
             //If at least one unsupported tier is found, it should be removed before adding API
             if (!(unsupportedTiersList.isEmpty())) {
                 for (Tier unsupportedTier : unsupportedTiersList) {
-
                     //Process is continued with a warning and only supported tiers are added to the importer API
                     log.warn("Tier name : " + unsupportedTier.getName() + " is not supported.");
                 }
-
                 //Remove the unsupported tiers before adding the API
                 importedApi.removeAvailableTiers(unsupportedTiersList);
             }
@@ -314,10 +450,7 @@ public final class APIImportUtil {
 
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
-
-                String swaggerContent = FileUtils.readFileToString(
-                        new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
-
+                String swaggerContent = loadSwaggerFile(pathToArchive);
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
                 //Load required properties from swagger to the API
@@ -343,6 +476,11 @@ public final class APIImportUtil {
                 provider.updateAPI(importedApi);
             }
 
+            // Change API lifecycle if state transition is required
+            if (StringUtils.isNotEmpty(lifecycleAction)) {
+                log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
+                provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
+            }
         } catch (APIManagementException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             String errorMessage = "Error in adding API to the provider. ";
@@ -358,14 +496,13 @@ public final class APIImportUtil {
             log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }
-
         //Since Image, documents, sequences and WSDL are optional, exceptions are logged and ignored in implementation
         addAPIImage(pathToArchive, importedApi);
         addAPIDocuments(pathToArchive, importedApi);
         addAPISequences(pathToArchive, importedApi);
         addAPISpecificSequences(pathToArchive, importedApi);
         addAPIWsdl(pathToArchive, importedApi);
-
+        addEndpointCertificates(pathToArchive, importedApi);
     }
 
     /**
@@ -379,14 +516,32 @@ public final class APIImportUtil {
      */
     public static void updateAPI(String apiID, String pathToArchive, String currentUser, boolean isDefaultProviderAllowed)
             throws APIImportException {
+        String jsonContent = null;
         API importedApi;
         API targetApi;
+        String currentStatus;
+        String targetStatus;
         String prevProvider;
+        String currentTenantDomain;
+        String lifecycleAction = null;
         APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
-        String pathToJSONFile = pathToArchive + APIImportExportConstants.JSON_FILE_LOCATION;
+        String pathToYamlFile = pathToArchive + APIImportExportConstants.YAML_API_FILE_LOCATION;
+        String pathToJsonFile = pathToArchive + APIImportExportConstants.JSON_API_FILE_LOCATION;
 
         try {
-            String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
+            // load yaml representation first if it is present
+            if (checkFileExistence(pathToYamlFile)) {
+                log.debug("Found api definition file " + pathToYamlFile);
+                String yamlContent = FileUtils.readFileToString(new File(pathToYamlFile));
+                jsonContent = YAMLUtils.YamlToJson(yamlContent);
+            } else if (checkFileExistence(pathToJsonFile)) {
+                // load as a json fallback
+                log.debug("Found api definition file " + pathToJsonFile);
+                jsonContent = FileUtils.readFileToString(new File(pathToJsonFile));
+            }
+            if (jsonContent == null) {
+                throw new IOException("Cannot find API definition. api.json or api.yaml should present");
+            }
             JsonElement configElement = new JsonParser().parse(jsonContent);
             JsonObject configObject = configElement.getAsJsonObject();
 
@@ -395,7 +550,7 @@ public final class APIImportUtil {
             prevProvider = apiId.get(APIImportExportConstants.PROVIDER_ELEMENT).getAsString();
             String prevTenantDomain = MultitenantUtils
                     .getTenantDomain(APIUtil.replaceEmailDomainBack(prevProvider));
-            String currentTenantDomain = MultitenantUtils
+            currentTenantDomain = MultitenantUtils
                     .getTenantDomain(APIUtil.replaceEmailDomainBack(currentUser));
 
             // If the original provider is preserved,
@@ -422,9 +577,23 @@ public final class APIImportUtil {
             }
 
             // Checking whether the API exists
-            // If API exists set the imported API status to the target one
+            // Note: this method throws an exception when API not found
             targetApi = provider.getAPIbyUUID(apiID, currentTenantDomain);
-            importedApi.setStatus(targetApi.getStatus());
+
+            // Store API status
+            currentStatus = targetApi.getStatus();
+            targetStatus = importedApi.getStatus();
+
+            // check whether targetStatus is reachable from current status, if not throw exception
+            if (!currentStatus.equals(targetStatus)) {
+                lifecycleAction = getLifeCycleAction(currentTenantDomain, currentStatus, targetStatus);
+                if (lifecycleAction == null) {
+                    String errMsg = "Error occurred while adding the API. " + targetStatus + " is not reachable from " +
+                            currentStatus;
+                    log.error(errMsg);
+                    throw new APIImportException(errMsg);
+                }
+            }
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
             throw new APIImportException(errorMessage, e);
@@ -460,8 +629,7 @@ public final class APIImportUtil {
         try {
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
-                String swaggerContent = FileUtils.readFileToString(
-                        new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
+                String swaggerContent = loadSwaggerFile(pathToArchive);
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
                 //Load required properties from swagger to the API
@@ -484,7 +652,14 @@ public final class APIImportUtil {
                 }
             }
             // update the API
+            importedApi.setStatus(currentStatus);
             provider.updateAPI(importedApi);
+
+            // Change lifecycle if state transition is required
+            if (StringUtils.isNotEmpty(lifecycleAction)) {
+                log.info("Changing lifecycle from " + currentStatus + " to " + targetStatus);
+                provider.changeLifeCycleStatus(importedApi.getId(), lifecycleAction);
+            }
         } catch (APIManagementException e) {
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             String errorMessage = "Error in adding API to the provider. ";
@@ -504,6 +679,7 @@ public final class APIImportUtil {
         addAPISequences(pathToArchive, importedApi);
         addAPISpecificSequences(pathToArchive, importedApi);
         addAPIWsdl(pathToArchive, importedApi);
+        addEndpointCertificates(pathToArchive, importedApi);
     }
 
     /**
@@ -513,9 +689,8 @@ public final class APIImportUtil {
      * @param importedApi    Imported API
      * @param currentDomain  current domain name
      * @param previousDomain original domain name
-     * @return API after changing provider details to match with imported environment
      */
-    private static API setCurrentProviderToAPIProperties(API importedApi, String currentDomain, String previousDomain) {
+    private static void setCurrentProviderToAPIProperties(API importedApi, String currentDomain, String previousDomain) {
         if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(currentDomain) &&
                 !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(previousDomain)) {
             importedApi.setContext(importedApi.getContext().replace("/t/" + previousDomain, ""));
@@ -530,7 +705,6 @@ public final class APIImportUtil {
             importedApi.setContextTemplate(importedApi.getContextTemplate().replace
                     (previousDomain, currentDomain));
         }
-        return importedApi;
     }
 
     /**
@@ -590,65 +764,73 @@ public final class APIImportUtil {
      * @param importedApi   the imported API object
      */
     private static void addAPIDocuments(String pathToArchive, API importedApi) {
-
-        String docFileLocation = pathToArchive + APIImportExportConstants.DOCUMENT_FILE_LOCATION;
+        String jsonContent = null;
+        String pathToYamlFile = pathToArchive + APIImportExportConstants.YAML_DOCUMENT_FILE_LOCATION;
+        String pathToJsonFile = pathToArchive + APIImportExportConstants.JSON_DOCUMENT_FILE_LOCATION;
         FileInputStream inputStream = null;
-        BufferedReader bufferedReader = null;
         APIIdentifier apiIdentifier = importedApi.getId();
 
         try {
-            if (checkFileExistence(docFileLocation)) {
+            // load document file if exists
+            if (checkFileExistence(pathToYamlFile)) {
+                log.debug("Found documents definition file " + pathToYamlFile);
+                String yamlContent = FileUtils.readFileToString(new File(pathToYamlFile));
+                jsonContent = YAMLUtils.YamlToJson(yamlContent);
+            } else if (checkFileExistence(pathToJsonFile)) {
+                // load as a json fallback
+                log.debug("Found documents definition file " + pathToJsonFile);
+                jsonContent = FileUtils.readFileToString(new File(pathToJsonFile));
+            }
+            if (jsonContent == null) {
+                log.debug("No document definition found, Skipping");
+                return;
+            }
 
-                inputStream = new FileInputStream(docFileLocation);
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                Documentation[] documentations = new Gson().fromJson(bufferedReader, Documentation[].class);
+            Documentation[] documentations = new Gson().fromJson(jsonContent, Documentation[].class);
+            //For each type of document separate action is performed
+            for (Documentation doc : documentations) {
+                if (APIImportExportConstants.INLINE_DOC_TYPE.equalsIgnoreCase(doc.getSourceType().toString())) {
+                    provider.addDocumentation(apiIdentifier, doc);
+                    inputStream = new FileInputStream(pathToArchive +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR +
+                            APIImportExportConstants.DOCUMENT_DIRECTORY +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR +
+                            APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR + doc.getName());
+                    String inlineContent = IOUtils.toString(inputStream, APIImportExportConstants.CHARSET);
+                    provider.addDocumentationContent(importedApi, doc.getName(), inlineContent);
 
-                //For each type of document separate action is performed
-                for (Documentation doc : documentations) {
+                } else if (APIImportExportConstants.URL_DOC_TYPE.equalsIgnoreCase(doc.getSourceType().toString())) {
+                    provider.addDocumentation(apiIdentifier, doc);
 
-                    if (APIImportExportConstants.INLINE_DOC_TYPE.equalsIgnoreCase(doc.getSourceType().toString())) {
-                        provider.addDocumentation(apiIdentifier, doc);
-                        inputStream = new FileInputStream(pathToArchive +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR +
-                                APIImportExportConstants.DOCUMENT_DIRECTORY +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR +
-                                APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR + doc.getName());
-                        String inlineContent = IOUtils.toString(inputStream, APIImportExportConstants.CHARSET);
-                        provider.addDocumentationContent(importedApi, doc.getName(), inlineContent);
+                } else if (APIImportExportConstants.FILE_DOC_TYPE.
+                        equalsIgnoreCase(doc.getSourceType().toString())) {
+                    inputStream = new FileInputStream(pathToArchive +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR +
+                            APIImportExportConstants.DOCUMENT_DIRECTORY +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR +
+                            APIImportExportConstants.FILE_DOCUMENT_DIRECTORY +
+                            APIImportExportConstants.DIRECTORY_SEPARATOR +
+                            doc.getFilePath());
+                    String docExtension =
+                            FilenameUtils.getExtension(pathToArchive + APIImportExportConstants.DIRECTORY_SEPARATOR
+                                    + APIImportExportConstants.DOCUMENT_DIRECTORY
+                                    + APIImportExportConstants.DIRECTORY_SEPARATOR
+                                    + doc.getFilePath());
 
-                    } else if (APIImportExportConstants.URL_DOC_TYPE.equalsIgnoreCase(doc.getSourceType().toString())) {
-                        provider.addDocumentation(apiIdentifier, doc);
+                    ResourceFile apiDocument = new ResourceFile(inputStream, docExtension);
+                    String visibleRolesList = importedApi.getVisibleRoles();
+                    String[] visibleRoles = new String[0];
 
-                    } else if (APIImportExportConstants.FILE_DOC_TYPE.
-                            equalsIgnoreCase(doc.getSourceType().toString())) {
-                        inputStream = new FileInputStream(pathToArchive +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR +
-                                APIImportExportConstants.DOCUMENT_DIRECTORY +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR +
-                                APIImportExportConstants.FILE_DOCUMENT_DIRECTORY +
-                                APIImportExportConstants.DIRECTORY_SEPARATOR +
-                                doc.getFilePath());
-                        String docExtension =
-                                FilenameUtils.getExtension(pathToArchive + APIImportExportConstants.DIRECTORY_SEPARATOR
-                                        + APIImportExportConstants.DOCUMENT_DIRECTORY
-                                        + APIImportExportConstants.DIRECTORY_SEPARATOR
-                                        + doc.getFilePath());
-
-                        ResourceFile apiDocument = new ResourceFile(inputStream, docExtension);
-                        String visibleRolesList = importedApi.getVisibleRoles();
-                        String[] visibleRoles = new String[0];
-
-                        if (visibleRolesList != null) {
-                            visibleRoles = visibleRolesList.split(",");
-                        }
-
-                        String filePathDoc = APIUtil.getDocumentationFilePath(apiIdentifier, doc.getFilePath());
-                        APIUtil.setResourcePermissions(importedApi.getId().getProviderName(),
-                                importedApi.getVisibility(), visibleRoles, filePathDoc);
-                        doc.setFilePath(provider.addResourceFile(filePathDoc, apiDocument));
-                        provider.addDocumentation(apiIdentifier, doc);
+                    if (visibleRolesList != null) {
+                        visibleRoles = visibleRolesList.split(",");
                     }
+
+                    String filePathDoc = APIUtil.getDocumentationFilePath(apiIdentifier, doc.getFilePath());
+                    APIUtil.setResourcePermissions(importedApi.getId().getProviderName(),
+                            importedApi.getVisibility(), visibleRoles, filePathDoc);
+                    doc.setFilePath(provider.addResourceFile(filePathDoc, apiDocument));
+                    provider.addDocumentation(apiIdentifier, doc);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -662,7 +844,6 @@ public final class APIImportUtil {
             log.error("Failed to add Documentations to API.", e);
         } finally {
             IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(bufferedReader);
         }
 
     }
@@ -861,15 +1042,31 @@ public final class APIImportUtil {
      * This method import endpoint certificate
      *
      * @param pathToArchive location of the extracted folder of the API
-     * @param importedApi the imported API object
+     * @param importedApi   the imported API object
      * @throws APIImportException
      */
     private static void addEndpointCertificates(String pathToArchive, API importedApi)
             throws APIImportException {
-        String pathToJSONFile = pathToArchive + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
-                File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE;
+        String jsonContent = null;
+        String pathToYamlFile = pathToArchive + APIImportExportConstants.YAML_ENDPOINTS_CERTIFICATE_FILE;
+        String pathToJsonFile = pathToArchive + APIImportExportConstants.YAML_ENDPOINTS_CERTIFICATE_FILE;
+
         try {
-            String jsonContent = FileUtils.readFileToString(new File(pathToJSONFile));
+            // try loading file as YAML
+            if (checkFileExistence(pathToYamlFile)) {
+                log.debug("Found certificate file " + pathToYamlFile);
+                String yamlContent = FileUtils.readFileToString(new File(pathToYamlFile));
+                jsonContent = YAMLUtils.YamlToJson(yamlContent);
+            } else if (checkFileExistence(pathToJsonFile)) {
+                // load as a json fallback
+                log.debug("Found certificate file " + pathToJsonFile);
+                jsonContent = FileUtils.readFileToString(new File(pathToJsonFile));
+            }
+            if (jsonContent == null) {
+                log.debug("No certificate file found to be added, skipping");
+                return;
+            }
+
             JsonElement configElement = new JsonParser().parse(jsonContent);
             JsonArray certificates = configElement.getAsJsonArray().getAsJsonArray();
             for (JsonElement certificate : certificates) {
@@ -881,13 +1078,12 @@ public final class APIImportUtil {
                     provider.addCertificate(APIUtil.replaceEmailDomainBack(importedApi.getId().getProviderName()), certificate_content, alias, endpoint);
                 } catch (APIManagementException e) {
                     String errorMessage = "Error while importing certificate endpoint [" + endpoint + " ]" + "alias [" +
-                            alias + " ] tenantuser [" +  APIUtil.replaceEmailDomainBack(importedApi.getId().getProviderName()) + "]";
+                            alias + " ] tenantuser [" + APIUtil.replaceEmailDomainBack(importedApi.getId().getProviderName()) + "]";
                     log.error(errorMessage, e);
-                    continue;
                 }
             }
         } catch (IOException e) {
-            String errorMessage = "Error in reading " + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE + "file";
+            String errorMessage = "Error in reading " + APIImportExportConstants.YAML_ENDPOINTS_CERTIFICATE_FILE + " file";
             log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }

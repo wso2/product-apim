@@ -1094,6 +1094,13 @@
                 <artifactId>javax.jms-api</artifactId>
                 <version>${javax.jms.version}</version>
             </dependency>
+
+            <!-- API Import/Export -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${com.fasterxml.jackson.dataformat.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1270,6 +1277,9 @@
         <xml.unit.verions>2.6.2</xml.unit.verions>
         <version.cava-toml>0.5.0</version.cava-toml>
         <javax.jms.version>2.0.1</javax.jms.version>
+
+        <!-- API Import/Export Dependencies -->
+        <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
     </properties>
 
 </project>
