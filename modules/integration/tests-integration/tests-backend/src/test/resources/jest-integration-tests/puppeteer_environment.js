@@ -34,7 +34,7 @@ class PuppeteerEnvironment extends NodeEnvironment {
      * Setup the puppeteer environment and set the global variables
      *
      * Note: If the `WSO2_PORT_OFFSET` environment variable is not set or have invalid value
-     * check the code in >>> org/wso2/am/integration/tests/UI/APIMANAGERUIIntegrationTestRunner.java
+     * check the code in >>> org/wso2/am/integration/tests/ui/APIMANAGERUIIntegrationTestRunner.java
      * The `WSO2_PORT_OFFSET` value is expected to set from Java TestNG (above file)
      * Will set the server port to 9443
      *  for navigating to URL if someone run the test directly from npm test (not executing command via TestNG)

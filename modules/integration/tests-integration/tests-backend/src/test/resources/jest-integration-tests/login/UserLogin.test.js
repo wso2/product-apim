@@ -106,7 +106,8 @@ describe(
             if (consentSelector) await page.click('input#consent_select_all[type="checkbox"]');
             await Promise.all([page.click('#approve'), page.waitForNavigation()]);
             await page.click('#profile-menu-btn');
-            await Promise.all([await page.click('#logout'),page.waitForSelector("#approve")]);
+            await page.click('#logout');
+            await page.waitForSelector("#approve")
             await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
             const currentPageURL = await page.url();
             expect(currentPageURL).toContain('/authenticationendpoint/login');

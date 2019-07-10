@@ -16,7 +16,7 @@
  *under the License.
  */
 
-package org.wso2.am.integration.tests.UI;
+package org.wso2.am.integration.tests.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,7 +26,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,12 +76,11 @@ public class APIMANAGERUIIntegrationTestRunner extends APIMIntegrationBaseTest {
             super.init();
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             npmCommand = isWindows() ? "npm.cmd" : "npm";
-            npmSourcePath = System.getProperty("basedir") + File.separator + "src" + File.separator + "test" +
-                    File.separator + "java" + File.separator + "org" + File.separator + "wso2" + File.separator +
-                    "am" + File.separator + "integration" + File.separator + "tests" + File.separator + "UI" + File.separator + "JSTests";
+            npmSourcePath = FrameworkPathUtil.getSystemResourceLocation() + File.separator + "jest-integration-tests";
 
         } catch (APIManagerIntegrationTestException e) {
-            assertTrue(false, "Error occurred while adding tenant. Pagination count test case failed.");
+            assertTrue(false, "Error occurred while adding tenant. " +
+                    "Pagination count test case failed.");
         }
     }
 
