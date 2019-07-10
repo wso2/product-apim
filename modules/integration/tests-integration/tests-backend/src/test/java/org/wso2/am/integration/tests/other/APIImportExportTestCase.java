@@ -254,7 +254,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         JSONObject apiObj = responseObj.getJSONObject("api");
 
         String state = apiObj.getString("status");
-        Assert.assertEquals(state, APILifeCycleState.CREATED.getState(), "Imported API not in Created state");
+        Assert.assertEquals(state, APILifeCycleState.PUBLISHED.getState(), "Imported API not in Published state");
         Assert.assertEquals(API_NAME, apiObj.getString("name"), "Imported API Name is incorrect");
         Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
         Assert.assertEquals(DESCRIPTION, apiObj.getString("description"), "Imported API description is incorrect");
@@ -418,7 +418,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         JSONObject apiObj = responseObj.getJSONObject("api");
 
         String state = apiObj.getString("status");
-        Assert.assertEquals(state, APILifeCycleState.CREATED.getState(), "Imported API not in Created state");
+        Assert.assertEquals(state, APILifeCycleState.PUBLISHED.getState(), "Imported API not in Published state");
         Assert.assertEquals(NEW_API_NAME, apiObj.getString("name"), "Imported API name is incorrect");
         Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
         Assert.assertEquals("restricted", apiObj.getString("visibility"), "Imported API Visibility is incorrect");
