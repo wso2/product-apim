@@ -1134,7 +1134,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.2</carbon.mediation.version>
+        <carbon.mediation.version>4.7.3</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.13.24</carbon.identity.version>
