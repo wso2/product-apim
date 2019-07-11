@@ -148,11 +148,6 @@ under the License.
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <environmentVariables>
-                        <property>
-                            <name></name>
-                        </property>
-                    </environmentVariables>
                     <systemProperties>
                         <property>
                             <name>maven.test.haltafterfailure</name>
