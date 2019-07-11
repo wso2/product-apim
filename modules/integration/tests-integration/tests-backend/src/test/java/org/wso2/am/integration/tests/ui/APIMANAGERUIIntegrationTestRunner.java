@@ -40,8 +40,10 @@ import java.util.Map;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-4081
- * This test class tests the outcome of the paginated search result
+ * This test case triggers the Puppeteer based UI integration tests.
+ * Relevant JavaScript tests are in following directory.
+ * <product-apim>/modules/integration/tests-integration/tests-backend/src/test/resources/jest-integration-tests
+ *
  */
 public class APIMANAGERUIIntegrationTestRunner extends APIMIntegrationBaseTest {
 
@@ -79,13 +81,12 @@ public class APIMANAGERUIIntegrationTestRunner extends APIMIntegrationBaseTest {
             npmSourcePath = FrameworkPathUtil.getSystemResourceLocation() + File.separator + "jest-integration-tests";
 
         } catch (APIManagerIntegrationTestException e) {
-            assertTrue(false, "Error occurred while adding tenant. " +
-                    "Pagination count test case failed.");
+            assertTrue(false, "Error occurred while initializing UI test executor");
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Pagination test case")
-    public void testAllUI() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "UI Integration test executor")
+    public void testAllUI() {
         run("install");
         run("test");
     }
@@ -99,8 +100,9 @@ public class APIMANAGERUIIntegrationTestRunner extends APIMIntegrationBaseTest {
             Process activeProcess = process.start();
             int exitCode = activeProcess.waitFor();
             log.info("Echo Input:\n" + output(activeProcess.getInputStream()));
-            log.warn("Echo Error:\n" + output(activeProcess.getErrorStream()));
-            Assert.assertEquals(0, exitCode);
+            String errorOut = output(activeProcess.getErrorStream());
+            log.warn("Echo Error:\n" + errorOut);
+            Assert.assertEquals(errorOut,0, exitCode);
         } catch (IOException | InterruptedException e) {
             log.error("Something went wrong while executing the UI tests", e);
         }
