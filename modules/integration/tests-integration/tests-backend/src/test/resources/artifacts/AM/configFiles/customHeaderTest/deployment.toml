@@ -13,13 +13,13 @@ type = "database"
 
 [database.apim_db]
 type = "h2"
-url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
 username = "wso2carbon"
 password = "wso2carbon"
 
 [database.shared_db]
 type = "h2"
-url = "jdbc:h2:repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
 username = "wso2carbon"
 password = "wso2carbon"
 

@@ -207,7 +207,7 @@
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
             <includes>
-                <include>**/*.h2.db</include>
+                <include>**/*.mv.db</include>
             </includes>
         </fileSet>
         <!-- Add templates-->
@@ -1389,7 +1389,7 @@
         </file>
         <file>
             <source>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.h2.db
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.mv.db
             </source>
             <outputDirectory>${project.artifactId}-${project.version}/repository/database/</outputDirectory>
             <fileMode>644</fileMode>
