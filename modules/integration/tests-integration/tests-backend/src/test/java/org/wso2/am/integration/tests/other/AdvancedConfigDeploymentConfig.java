@@ -30,9 +30,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
@@ -43,7 +41,6 @@ import java.io.FileInputStream;
 public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(AdvancedConfigDeploymentConfig.class);
     private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
-    private static final String ADAPTER_CONFIG_XML = "output-event-adapters.xml";
     private ServerConfigurationManager serverConfigurationManager;
     private AutomationContext superTenantKeyManagerContext;
     private ResourceAdminServiceClient resourceAdminServiceClient;
@@ -65,36 +62,11 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                         + File.separator + "notification" + File.separator + "tenant-conf.json"));
 
         resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
-
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                "configFiles" + File.separator + "notification" + File.separator;
-
-        String apimConfigArtifactLocation = artifactsLocation + ADAPTER_CONFIG_XML;
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + ADAPTER_CONFIG_XML;
-
-        File apimConfSourceFile = new File(apimConfigArtifactLocation);
-        File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "api-manager.xml"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "axis2.xml"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "passthru-http.properties"));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "synapse.properties"));
-
-        serverConfigurationManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-
+                File.separator + "deployment.toml"));
         serverConfigurationManager.restartGracefully();
     }
 

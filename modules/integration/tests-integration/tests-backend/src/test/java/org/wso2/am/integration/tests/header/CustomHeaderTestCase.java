@@ -79,7 +79,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfiguration(new File(
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "customHeaderTest"
-                        + File.separator + "api-manager.xml"));
+                        + File.separator + "deployment.toml"));
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
         apiPublisher.login(user.getUserName(), user.getPassword());

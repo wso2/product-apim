@@ -110,27 +110,6 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        String apiManagerXml =
-                getAMResourceLocation() + File.separator + "configFiles/revokejwttest/" + "api-manager.xml";
-        String jndiPropeties =
-                getAMResourceLocation() + File.separator + "configFiles/revokejwttest/" + "jndi.properties";
-
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(jndiPropeties));
-        serverConfigurationManager.restartGracefully();
-
-        //Deploying the Mock ETCD Server
-        String webAppName = "etcdmock";
-        String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
-                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
-                + webAppName + ".war";
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().getBackEndUrl(),
-                sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
 
         //Create an API and Publish it in the store
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);

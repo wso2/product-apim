@@ -98,7 +98,7 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
             //set to 60000 ms. The test is to verify a Null Pointer Exception doesn't occur in this scenario
             httpclient.execute(get);
         } catch (NullPointerException e) {
-            Assert.assertTrue(false, "Null pointer exception shouldn't have occurred after request time out");
+            Assert.fail("Null pointer exception shouldn't have occurred after request time out");
         }
     }
 

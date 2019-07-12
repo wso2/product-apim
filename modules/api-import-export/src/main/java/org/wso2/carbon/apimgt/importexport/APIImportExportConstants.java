@@ -37,23 +37,32 @@ public final class APIImportExportConstants {
     public static final String TEMP_DIR = "java.io.tmpdir";
     //name of the uploaded zip file
     public static final String UPLOAD_FILE_NAME = "APIArchive.zip";
-    //location of the api JSON file
-    public static final String JSON_FILE_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" + DIRECTORY_SEPARATOR +
+    //location of the api YAML file
+    public static final String YAML_API_FILE_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" + DIRECTORY_SEPARATOR +
+            "api.yaml";
+    //location of the api YAML file
+    public static final String JSON_API_FILE_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" + DIRECTORY_SEPARATOR +
             "api.json";
     //name of the id element tag of the api.json file
     public static final String ID_ELEMENT = "id";
     //name of the api provider element tag of the api.json file
     public static final String PROVIDER_ELEMENT = "providerName";
     //location of the api swagger definition file
-    public static final String SWAGGER_DEFINITION_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" +
+    public static final String JSON_SWAGGER_DEFINITION_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" +
             DIRECTORY_SEPARATOR + "swagger.json";
+    //location of the api swagger definition file
+    public static final String YAML_SWAGGER_DEFINITION_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" +
+            DIRECTORY_SEPARATOR + "swagger.yaml";
     //location of the image
     public static final String IMAGE_FILE_LOCATION = DIRECTORY_SEPARATOR + "Image" + DIRECTORY_SEPARATOR;
     //name of the image
     public static final String IMAGE_FILE_NAME = "icon";
     //location of the documents JSON file
-    public static final String DOCUMENT_FILE_LOCATION = DIRECTORY_SEPARATOR + "Docs" + DIRECTORY_SEPARATOR +
+    public static final String JSON_DOCUMENT_FILE_LOCATION = DIRECTORY_SEPARATOR + "Docs" + DIRECTORY_SEPARATOR +
             "docs.json";
+    //location of the documents YAML file
+    public static final String YAML_DOCUMENT_FILE_LOCATION = DIRECTORY_SEPARATOR + "Docs" + DIRECTORY_SEPARATOR +
+            "docs.yaml";
     //name of the inline file type
     public static final String INLINE_DOC_TYPE = "INLINE";
     //name of the url file type
@@ -97,7 +106,11 @@ public final class APIImportExportConstants {
 
     public static final String META_INFO_DIRECTORY = "Meta-information";
 
-    public static final String ENDPOINTS_CERTIFICATE_FILE = "endpoint_certificates.json";
+    public static final String YAML_ENDPOINTS_CERTIFICATE_FILE = DIRECTORY_SEPARATOR + APIImportExportConstants.META_INFO_DIRECTORY +
+            DIRECTORY_SEPARATOR + "endpoint_certificates.yaml";
+
+    public static final String JSON_ENDPOINTS_CERTIFICATE_FILE = DIRECTORY_SEPARATOR + APIImportExportConstants.META_INFO_DIRECTORY +
+            DIRECTORY_SEPARATOR + "endpoint_certificates.json";
 
     public static final String HOSTNAME_JSON_KEY = "hostName";
 
@@ -108,4 +121,6 @@ public final class APIImportExportConstants {
     public static final String SEARCH_TYPE_CONTEXT = "Context";
 
     public static final String SEARCH_TYPE_NAME = "Name";
+
+    public static final String NODE_TRANSITION = "transition";
 }

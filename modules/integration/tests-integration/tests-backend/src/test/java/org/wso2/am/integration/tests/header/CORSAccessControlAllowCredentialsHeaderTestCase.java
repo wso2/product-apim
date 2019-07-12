@@ -111,14 +111,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     @Test(groups = {"wso2.am"}, description = "Checking Access-Control-Allow-Credentials header in response " +
                                               "when Access-Control-Allow-Origin is '*'")
     public void CheckAccessControlAllowCredentialsHeadersWithAnyOrigin() throws Exception {
-        //Enable CORS Access Control Allow Credentials with Origin *
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "corsACACTest" + File.separator
-                    + "withOriginAny" + File.separator + "api-manager.xml"));
-            serverConfigurationManager.restartGracefully();
-            super.init();
-        }
 
         accessToken = createPublishAndSubscribeToApi(user, API_NAME_1, API_CONTEXT_1, API_VERSION, APPLICATION_NAME_1);
 
@@ -159,7 +151,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator
-                    + "corsACACTest" + File.separator + "api-manager.xml"));
+                    + "corsACACTest" + File.separator + "deployment.toml"));
             serverConfigurationManager.restartGracefully();
             super.init();
         }
@@ -235,7 +227,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator
-                    + "corsACACTest" + File.separator + "original" + File.separator + "api-manager.xml"));
+                    + "corsACACTest" + File.separator + "original" + File.separator + "deployment.toml"));
             serverConfigurationManager.restartGracefully();
         }
         super.cleanUp();
