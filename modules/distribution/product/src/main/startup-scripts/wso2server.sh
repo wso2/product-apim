@@ -237,7 +237,6 @@ do
     fi
 done
 
-JAVA_ENDORSED_DIRS="$CARBON_HOME/lib/endorsed":"$JAVA_HOME/jre/lib/endorsed":"$JAVA_HOME/lib/endorsed"
 
 CARBON_CLASSPATH=""
 if [ -e "$JAVA_HOME/lib/tools.jar" ]; then
@@ -249,19 +248,12 @@ do
         CARBON_CLASSPATH="$CARBON_CLASSPATH":$f
     fi
 done
-for t in "$CARBON_HOME"/lib/commons-lang*.jar
+for t in "$CARBON_HOME"/lib/*.jar
 do
     CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
 done
 
-if [ $java_version_formatted -ge 0900 ]; then
-    for f in "$CARBON_HOME"/lib/endorsed/*.jar
-    do
-       if [ "$f" != "$CARBON_HOME/lib/endorsed/*.jar" ];then
-           CARBON_CLASSPATH="$CARBON_CLASSPATH":$f
-       fi
-    done
-fi
+
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -269,9 +261,6 @@ if $cygwin; then
   CARBON_HOME=`cygpath --absolute --windows "$CARBON_HOME"`
   AXIS2_HOME=`cygpath --absolute --windows "$CARBON_HOME"`
   CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
-  if [ $java_version_formatted -le 0108 ]; then
-    JAVA_ENDORSED_DIRS=`cygpath --path --windows "$JAVA_ENDORSED_DIRS"`
-  fi
   CARBON_CLASSPATH=`cygpath --path --windows "$CARBON_CLASSPATH"`
   CARBON_XBOOTCLASSPATH=`cygpath --path --windows "$CARBON_XBOOTCLASSPATH"`
 fi
@@ -304,9 +293,7 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 #   -Djava.rmi.server.hostname="your.IP.goes.here"
 
 JAVA_VER_BASED_OPTS=""
-if [ $java_version_formatted -le 0108 ]; then
-    JAVA_VER_BASED_OPTS="-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
-fi
+
 
 if [ $java_version_formatted -ge 1100 ]; then
     JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED"
@@ -349,7 +336,6 @@ do
     -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
     -DenableCorrelationLogs=false \
-    -Dhttpclient.hostnameVerifier="DefaultAndLocalhost" \
     -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?

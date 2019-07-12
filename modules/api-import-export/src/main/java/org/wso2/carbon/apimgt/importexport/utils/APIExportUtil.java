@@ -50,6 +50,7 @@ import org.wso2.carbon.apimgt.impl.utils.SelfSignUpUtil;
 import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.apimgt.importexport.CertificateDetail;
+import org.wso2.carbon.apimgt.importexport.ExportFormat;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.context.RegistryType;
@@ -67,6 +68,10 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -86,10 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the util class which consists of all the functions for exporting API
@@ -135,13 +136,13 @@ public class APIExportUtil {
                     (RegistryService) carbonContext.getOSGiService(RegistryService.class, null);
 
             CommonUtil.addDefaultLifecyclesIfNotAvailable(registryService.getConfigSystemRegistry(tenantId),
-                                                          CommonUtil.getRootSystemRegistry(tenantId));
+                    CommonUtil.getRootSystemRegistry(tenantId));
 
             return provider;
 
         } catch (APIManagementException e) {
             String errorMessage = "Error while retrieving provider";
-            log.error( errorMessage, e);
+            log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
         } catch (XMLStreamException e) {
             String errorMessage = "Error while loading logged in user's tenant registry";
@@ -178,12 +179,15 @@ public class APIExportUtil {
      * This method retrieves all meta information and registry resources required for an API to
      * recreate
      *
-     * @param apiID    Identifier of the exporting API
-     * @param userName User name of the requester
+     * @param apiID             Identifier of the exporting API
+     * @param userName          User name of the requester
+     * @param exportFormat      Export format of the API meta data, could be yaml or json
+     * @param isStatusPreserved Whether API status is preserved while export
      * @return HttpResponse indicating whether resource retrieval got succeed or not
      * @throws APIExportException If an error occurs while retrieving API related resources
      */
-    public static Response retrieveApiToExport(APIIdentifier apiID, String userName) throws APIExportException {
+    public static Response retrieveApiToExport(APIIdentifier apiID, String userName, boolean isStatusPreserved,
+                                               ExportFormat exportFormat) throws APIExportException {
 
         API apiToReturn;
         String archivePath = archiveBasePath.concat(File.separator + apiID.getApiName() + "-" +
@@ -222,7 +226,7 @@ public class APIExportUtil {
         }
 
         if (!docList.isEmpty()) {
-            exportAPIDocumentation(docList, apiID, registry);
+            exportAPIDocumentation(docList, apiID, registry, exportFormat);
         }
 
         //export wsdl
@@ -234,14 +238,18 @@ public class APIExportUtil {
         //export sequences
         exportSequences(apiToReturn, apiID, registry);
 
-        //set API status to created
-        apiToReturn.setStatus(APIConstants.CREATED);
+        //set API status to created if status is not preserved
+        if (!isStatusPreserved) {
+            apiToReturn.setStatus(APIConstants.CREATED);
+        }
+
+        // export certificates
+        exportEndpointCertificates(apiToReturn, tenantId, provider, exportFormat);
 
         //export meta information
-        exportMetaInformation(apiToReturn, registry);
+        exportMetaInformation(apiToReturn, registry, exportFormat);
 
         return Response.ok().build();
-
     }
 
     /**
@@ -329,11 +337,12 @@ public class APIExportUtil {
      * @param apiIdentifier ID of the requesting API
      * @param registry      Current tenant registry
      * @param docList       documentation list of the exporting API
+     * @param exportFormat  Format for export
      * @throws APIExportException If an error occurs while retrieving documents from the
      *                            registry or storing in the archive directory
      */
     public static void exportAPIDocumentation(List<Documentation> docList, APIIdentifier apiIdentifier,
-            Registry registry) throws APIExportException {
+                                              Registry registry, ExportFormat exportFormat) throws APIExportException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String archivePath = archiveBasePath.concat(File.separator + apiIdentifier.getApiName() + "-" +
                 apiIdentifier.getVersion());
@@ -351,9 +360,9 @@ public class APIExportUtil {
                     //check whether resource exists in the registry
                     Resource docFile = registry.get(filePath);
                     String localDirectoryPath = File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY +
-                                                File.separator + APIImportExportConstants.FILE_DOCUMENT_DIRECTORY;
+                            File.separator + APIImportExportConstants.FILE_DOCUMENT_DIRECTORY;
                     createDirectory(archivePath + File.separator + localDirectoryPath);
-                    String localFilePath = localDirectoryPath+ File.separator + fileName;
+                    String localFilePath = localDirectoryPath + File.separator + fileName;
                     outputStream = new FileOutputStream(archivePath + localFilePath);
                     fileInputStream = docFile.getContentStream();
 
@@ -367,14 +376,14 @@ public class APIExportUtil {
                 } else if (Documentation.DocumentSourceType.INLINE.toString().equalsIgnoreCase
                         (sourceType)) {
                     createDirectory(archivePath + File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY
-                                    + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY);
+                            + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY);
                     String contentPath = APIUtil.getAPIDocPath(apiIdentifier) + RegistryConstants.PATH_SEPARATOR
-                                         + APIImportExportConstants.INLINE_DOC_CONTENT_REGISTRY_DIRECTORY
-                                         + RegistryConstants.PATH_SEPARATOR + doc.getName();
+                            + APIImportExportConstants.INLINE_DOC_CONTENT_REGISTRY_DIRECTORY
+                            + RegistryConstants.PATH_SEPARATOR + doc.getName();
                     Resource docFile = registry.get(contentPath);
                     String localFilePath = File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY
-                                           + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY
-                                           + File.separator + doc.getName();
+                            + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY
+                            + File.separator + doc.getName();
                     outputStream = new FileOutputStream(archivePath + localFilePath);
                     fileInputStream = docFile.getContentStream();
 
@@ -383,7 +392,15 @@ public class APIExportUtil {
             }
 
             String json = gson.toJson(docList);
-            writeFile(archivePath + APIImportExportConstants.DOCUMENT_FILE_LOCATION, json);
+            switch (exportFormat) {
+                case JSON:
+                    writeFile(archivePath + APIImportExportConstants.JSON_DOCUMENT_FILE_LOCATION, json);
+                    break;
+                case YAML:
+                    String yaml = YAMLUtils.JsonToYaml(json);
+                    writeFile(archivePath + APIImportExportConstants.YAML_DOCUMENT_FILE_LOCATION, yaml);
+                    break;
+            }
 
             if (log.isDebugEnabled()) {
                 log.debug("API Documentation retrieved successfully");
@@ -461,7 +478,7 @@ public class APIExportUtil {
      * @throws APIExportException If an error occurs while exporting sequences
      */
     public static void exportSequences(API api, APIIdentifier apiIdentifier, Registry registry)
-        throws APIExportException {
+            throws APIExportException {
 
         Map<String, String> sequences = new HashMap<String, String>();
 
@@ -491,28 +508,28 @@ public class APIExportUtil {
                 if (sequenceName != null) {
                     if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
                         sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                                                            registry);
+                                registry);
                         if (sequenceDetails == null) {
-                            sequenceDetails = getAPISpecificSequence(api.getId(),sequenceName, APIConstants
+                            sequenceDetails = getAPISpecificSequence(api.getId(), sequenceName, APIConstants
                                     .API_CUSTOM_SEQUENCE_TYPE_IN, registry);
                             writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                                                           apiIdentifier);
+                                    apiIdentifier);
                         } else {
                             writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                                                apiIdentifier);
+                                    apiIdentifier);
                         }
 
                     } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
                         sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                                                            registry);
+                                registry);
                         if (sequenceDetails == null) {
-                            sequenceDetails = getAPISpecificSequence(api.getId(),sequenceName, APIConstants
+                            sequenceDetails = getAPISpecificSequence(api.getId(), sequenceName, APIConstants
                                     .API_CUSTOM_SEQUENCE_TYPE_OUT, registry);
                             writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                                                           apiIdentifier);
+                                    apiIdentifier);
                         } else {
                             writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                                                apiIdentifier);
+                                    apiIdentifier);
                         }
                     } else {
                         sequenceDetails = getCustomSequence(sequenceName, APIConstants
@@ -522,10 +539,10 @@ public class APIExportUtil {
                             sequenceDetails = getAPISpecificSequence(api.getId(), sequenceName, APIConstants
                                     .API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
                             writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
-                                                           apiIdentifier);
+                                    apiIdentifier);
                         } else {
                             writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
-                                                apiIdentifier);
+                                    apiIdentifier);
                         }
                     }
                 }
@@ -543,7 +560,7 @@ public class APIExportUtil {
      * @throws APIExportException If an error occurs while retrieving registry elements
      */
     private static AbstractMap.SimpleEntry<String, OMElement> getCustomSequence(String sequenceName,
-        String type, Registry registry) throws APIExportException {
+                                                                                String type, Registry registry) throws APIExportException {
         AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
 
         org.wso2.carbon.registry.api.Collection seqCollection = null;
@@ -551,14 +568,13 @@ public class APIExportUtil {
         try {
             if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equals(type)) {
                 seqCollection = (org.wso2.carbon.registry.api.Collection)
-                                registry.get(APIConstants.API_CUSTOM_INSEQUENCE_LOCATION);
+                        registry.get(APIConstants.API_CUSTOM_INSEQUENCE_LOCATION);
             } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equals(type)) {
                 seqCollection = (org.wso2.carbon.registry.api.Collection)
-                                registry.get(APIConstants.API_CUSTOM_OUTSEQUENCE_LOCATION);
-            } else
-                if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
-                    seqCollection = (org.wso2.carbon.registry.api.Collection)
-                                    registry.get(APIConstants.API_CUSTOM_FAULTSEQUENCE_LOCATION);
+                        registry.get(APIConstants.API_CUSTOM_OUTSEQUENCE_LOCATION);
+            } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                        registry.get(APIConstants.API_CUSTOM_FAULTSEQUENCE_LOCATION);
             }
 
             if (seqCollection != null) {
@@ -580,7 +596,7 @@ public class APIExportUtil {
             String errorMessage = "Error while retrieving sequence from the registry ";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
-        } catch (Exception e ) { //APIUtil.buildOMElement() throws a generic exception
+        } catch (Exception e) { //APIUtil.buildOMElement() throws a generic exception
             String errorMessage = "Error while reading sequence content ";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
@@ -599,14 +615,14 @@ public class APIExportUtil {
      * @return Registry resource name of the sequence and its content
      * @throws APIExportException If an error occurs while retrieving registry elements
      */
-    private static AbstractMap.SimpleEntry<String, OMElement> getAPISpecificSequence(APIIdentifier api,String sequenceName, String type, Registry registry) throws APIExportException {
+    private static AbstractMap.SimpleEntry<String, OMElement> getAPISpecificSequence(APIIdentifier api, String sequenceName, String type, Registry registry) throws APIExportException {
         AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
 
         org.wso2.carbon.registry.api.Collection seqCollection;
 
         String regPath = APIConstants.API_ROOT_LOCATION + RegistryConstants.PATH_SEPARATOR + api
                 .getProviderName() + RegistryConstants.PATH_SEPARATOR + api.getApiName() +
-                         RegistryConstants.PATH_SEPARATOR + api.getVersion() + RegistryConstants.PATH_SEPARATOR + type;
+                RegistryConstants.PATH_SEPARATOR + api.getVersion() + RegistryConstants.PATH_SEPARATOR + type;
 
         try {
             seqCollection = (org.wso2.carbon.registry.api.Collection) registry.get(regPath);
@@ -630,7 +646,7 @@ public class APIExportUtil {
             String errorMessage = "Error while retrieving sequence from the registry ";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
-        } catch (Exception e ) { //APIUtil.buildOMElement() throws a generic exception
+        } catch (Exception e) { //APIUtil.buildOMElement() throws a generic exception
             String errorMessage = "Error while reading sequence content ";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
@@ -644,9 +660,9 @@ public class APIExportUtil {
     /**
      * Store custom sequences in the archive directory
      *
-     * @param sequenceDetails   Details of the sequence
-     * @param direction      Direction of the sequence "in", "out" or "fault"
-     * @param apiIdentifier  ID of the requesting API
+     * @param sequenceDetails Details of the sequence
+     * @param direction       Direction of the sequence "in", "out" or "fault"
+     * @param apiIdentifier   ID of the requesting API
      * @throws APIExportException If an error occurs while serializing XML stream or storing in
      *                            archive directory
      */
@@ -687,9 +703,9 @@ public class APIExportUtil {
     /**
      * Store API Specific sequences in the archive directory
      *
-     * @param sequenceDetails   Details of the sequence
-     * @param direction      Direction of the sequence "in", "out" or "fault"
-     * @param apiIdentifier  ID of the requesting API
+     * @param sequenceDetails Details of the sequence
+     * @param direction       Direction of the sequence "in", "out" or "fault"
+     * @param apiIdentifier   ID of the requesting API
      * @throws APIExportException If an error occurs while serializing XML stream or storing in
      *                            archive directory
      */
@@ -749,11 +765,12 @@ public class APIExportUtil {
      * URL template information are stored in swagger.json definition while rest of the required
      * data are in api.json
      *
-     * @param apiToReturn API to be exported
-     * @param registry    Current tenant registry
+     * @param apiToReturn  API to be exported
+     * @param registry     Current tenant registry
+     * @param exportFormat Export format of file
      * @throws APIExportException If an error occurs while exporting meta information
      */
-    private static void exportMetaInformation(API apiToReturn, Registry registry) throws APIExportException {
+    private static void exportMetaInformation(API apiToReturn, Registry registry, ExportFormat exportFormat) throws APIExportException {
         APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
         String archivePath = archiveBasePath.concat(File.separator + apiToReturn.getId().getApiName() + "-" +
                 apiToReturn.getId().getVersion());
@@ -762,11 +779,19 @@ public class APIExportUtil {
         //Remove unnecessary data from exported Api
         cleanApiDataToExport(apiToReturn);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String apiInJson = gson.toJson(apiToReturn);
-        writeFile(archivePath + File.separator + "Meta-information" + File.separator + "api.json", apiInJson);
-
         try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String apiInJson = gson.toJson(apiToReturn);
+            switch (exportFormat) {
+                case JSON:
+                    writeFile(archivePath + APIImportExportConstants.JSON_API_FILE_LOCATION, apiInJson);
+                    break;
+                case YAML:
+                    String apiInYaml = YAMLUtils.JsonToYaml(apiInJson);
+                    writeFile(archivePath + APIImportExportConstants.YAML_API_FILE_LOCATION, apiInYaml);
+                    break;
+            }
+
             //If a web socket API is exported, it does not contain a swagger file.
             //Therefore swagger export is only required for REST or SOAP based APIs
             if (!APIConstants.APITransportType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
@@ -774,8 +799,17 @@ public class APIExportUtil {
                 JsonParser parser = new JsonParser();
                 JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
                 String formattedSwaggerJson = gson.toJson(json);
-                writeFile(archivePath + File.separator + "Meta-information" + File.separator + "swagger.json",
-                          formattedSwaggerJson);
+
+                switch (exportFormat) {
+                    case YAML:
+                        String swaggerInYaml = YAMLUtils.JsonToYaml(formattedSwaggerJson);
+                        writeFile(archivePath + APIImportExportConstants.YAML_SWAGGER_DEFINITION_LOCATION,
+                                swaggerInYaml);
+                        break;
+                    case JSON:
+                        writeFile(archivePath + APIImportExportConstants.JSON_SWAGGER_DEFINITION_LOCATION,
+                                formattedSwaggerJson);
+                }
 
                 if (log.isDebugEnabled()) {
                     log.debug("Meta information retrieved successfully");
@@ -783,6 +817,10 @@ public class APIExportUtil {
             }
         } catch (APIManagementException e) {
             String errorMessage = "Error while retrieving Swagger definition";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (IOException e) {
+            String errorMessage = "Error while retrieving saving as YAML";
             log.error(errorMessage, e);
             throw new APIExportException(errorMessage, e);
         }
@@ -864,7 +902,7 @@ public class APIExportUtil {
         }
         boolean isSuperTenantUser = resourceRquesterDomain.equals(superTenantDomain);
 
-        if(!isSuperTenantUser) {
+        if (!isSuperTenantUser) {
             return true;
         }
         //check whether the user has super tenant admin role
@@ -902,14 +940,15 @@ public class APIExportUtil {
     }
 
     /**
-     *export endpoint certificates
+     * export endpoint certificates
      *
-     * @param api API to be exported
-     * @param tenantid tenant id of the user
-     * @param apiprovider api Provider
+     * @param api          API to be exported
+     * @param tenantId     tenant id of the user
+     * @param apiProvider  api Provider
+     * @param exportFormat Export format of file
      * @throws APIExportException
      */
-    private static void exportEndpointCertificates(API api, int tenantid, APIProvider apiprovider)
+    private static void exportEndpointCertificates(API api, int tenantId, APIProvider apiProvider, ExportFormat exportFormat)
             throws APIExportException {
         String archivePath = archiveBasePath.concat(File.separator + api.getId().getApiName() + "-" +
                 api.getId().getVersion());
@@ -928,19 +967,33 @@ public class APIExportUtil {
             uniqueHostNames.addAll(productionHostNames); // Remove duplicate and append result
             uniqueHostNames.addAll(sandboxEndpoints);
             for (String hostname : uniqueHostNames) {
-                List<CertificateDetail> list = getCertificateContentAndMetaData(tenantid, hostname, apiprovider);
+                List<CertificateDetail> list = getCertificateContentAndMetaData(tenantId, hostname, apiProvider);
                 endpointCertificatesDetails.addAll(list);
             }
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String element = gson.toJson(endpointCertificatesDetails,
-                    new TypeToken<ArrayList<CertificateDetail>>() {
-                    }.getType());
-            writeFile(archivePath + File.separator + APIImportExportConstants.META_INFO_DIRECTORY +
-                            File.separator + APIImportExportConstants.ENDPOINTS_CERTIFICATE_FILE,
-                    element);
+            if (endpointCertificatesDetails.size() > 0) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String element = gson.toJson(endpointCertificatesDetails,
+                        new TypeToken<ArrayList<CertificateDetail>>() {
+                        }.getType());
+
+                switch (exportFormat) {
+                    case YAML:
+                        String yaml = YAMLUtils.JsonToYaml(element);
+                        writeFile(archivePath + APIImportExportConstants.YAML_ENDPOINTS_CERTIFICATE_FILE,
+                                yaml);
+                        break;
+                    case JSON:
+                        writeFile(archivePath + APIImportExportConstants.JSON_ENDPOINTS_CERTIFICATE_FILE,
+                                element);
+                }
+            }
         } catch (JSONException e) {
-            String errorMsg = "Error in converting Endpoint config to JSON object in API [" + api.getId().getApiName() + "]" ;
+            String errorMsg = "Error in converting Endpoint config to JSON object in API [" + api.getId().getApiName() + "]";
             throw new APIExportException(errorMsg, e);
+        } catch (IOException e) {
+            String errorMessage = "Error while retrieving saving as YAML";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
     }
 
@@ -950,12 +1003,12 @@ public class APIExportUtil {
      * @param url url of the endpoint
      * @return host address of the endpoint
      */
-    private static String getHostAddress(URL url){
+    private static String getHostAddress(URL url) {
         String host = url.getHost();
         String protocol = url.getProtocol();
         int port = url.getPort();
         String address = null;
-        if (port != -1){
+        if (port != -1) {
             address = protocol + "://" + host + ":" + port;
         } else {
             address = protocol + "://" + host;
@@ -967,7 +1020,7 @@ public class APIExportUtil {
      * Get hostname list from endpoint config
      *
      * @param endpointConfig JSON converted endpoint config
-     * @param type end point type - production/sandbox
+     * @param type           end point type - production/sandbox
      * @return list of hostnames
      * @throws APIExportException
      */
@@ -986,7 +1039,7 @@ public class APIExportUtil {
                             urls.add(urlvalue);
 
                         } catch (JSONException ex) {
-                            log.error("Endpoint URL extraction from endpoints JSON objectfailed in API[" +apiName + "]", ex);
+                            log.error("Endpoint URL extraction from endpoints JSON objectfailed in API[" + apiName + "]", ex);
                             continue;
                         }
                     }
@@ -996,7 +1049,7 @@ public class APIExportUtil {
                         String urlvalue = endpointJSON.get("url").toString();
                         urls.add(urlvalue);
                     } catch (JSONException ex) {
-                        log.error("Endpoint URL extraction from endpoint JSON object failed in API[" +apiName + "]", ex);
+                        log.error("Endpoint URL extraction from endpoint JSON object failed in API[" + apiName + "]", ex);
                     }
                 }
                 for (String url : urls) {
@@ -1019,8 +1072,8 @@ public class APIExportUtil {
     /**
      * get Certificate MetaData and Certificate detail and build JSON list
      *
-     * @param tenantid tenant id of the user
-     * @param hostname hostname of the endpoint
+     * @param tenantid    tenant id of the user
+     * @param hostname    hostname of the endpoint
      * @param apiProvider api Provider
      * @return list of certificate detail JSON objects
      * @throws APIExportException
@@ -1061,7 +1114,7 @@ public class APIExportUtil {
                 }
             }
         } finally {
-            if(certificate != null)
+            if (certificate != null)
                 IOUtils.closeQuietly(certificate);
         }
 

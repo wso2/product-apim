@@ -41,7 +41,7 @@ public class ApplicationSharingConfig extends APIMIntegrationBaseTest {
 
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "applicationSharing" +
-                File.separator + "api-manager.xml"));
+                File.separator + "deployment.toml"));
     }
 
     @AfterTest(alwaysRun = true)
