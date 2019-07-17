@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.scenario.test.common.*;
 import org.wso2.carbon.apimgt.api.APIManagementException;
@@ -42,6 +43,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * DeleteAPINegativeTestCases contains test cases for API delete negative scenarios
+ */
 public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(DeleteExistingAPIsTestCases.class);
     private APIPublisherRestClient apiPublisher;
@@ -59,6 +63,14 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     private static final String API_NAME_PREFIX = "DeleteAPINeg_";
     private static final String API_VERSION = "1.0.0";
 
+    /**
+     * Initialize store and publisher
+     *
+     * @throws APIManagerIntegrationTestException
+     * @throws APIManagementException
+     * @throws RemoteException
+     * @throws UserAdminUserAdminException
+     */
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
             UserAdminUserAdminException {
@@ -71,6 +83,12 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         apiStore.login(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW);
     }
 
+    /**
+     * Test deleting an API with subscriptions
+     *
+     * @param state API life cycle state
+     * @throws Exception
+     */
     @Test(description = "1.4.1.4", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPIWithSubscription(APILifeCycleState state) throws Exception {
@@ -81,12 +99,17 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         }
         checkDeleteAPI(name, "Cannot remove the API as active ");
         verifyAPIAvailableInPublisher(name);
-//        check availability in store for only PUBLISHED apis
+        // check availability in store for only PUBLISHED apis
         if (state.equals(APILifeCycleState.PUBLISHED)) {
             verifyAPIAvailableInStore(name);
         }
     }
 
+    /**
+     * Test deleting an API by an authorized user
+     *
+     * @throws Exception
+     */
     @Test(description = "1.4.1.5")
     public void testDeleteAPIByUnauthorizedUser() throws Exception {
         String name = API_NAME_PREFIX + "unauthUser";
@@ -96,15 +119,27 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         checkDeleteAPI(name,
                 "does not have the required permission: /permission/admin/manage/api/create");
         apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
-//        API is in CREATED state therefor only check availability in publisher
+        // API is in CREATED state therefor only check availability in publisher
         verifyAPIAvailableInPublisher(name);
     }
 
+    /**
+     * Test deleting an API that doesn't exist
+     *
+     * @throws Exception
+     */
     @Test(description = "1.4.1.6")
     public void testDeleteNonExistingAPI() throws Exception {
         checkDeleteAPI(API_NAME_PREFIX + "nonExist", "Unable to find the API");
     }
 
+    /**
+     * Create , publish and subscribe to API
+     *
+     * @param apiName API name
+     * @param applicationName application name
+     * @throws Exception
+     */
     private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception{
         createApplication(applicationName);
         createApi(apiName);
@@ -113,6 +148,12 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         subscribeToAPI(apiName, applicationName);
     }
 
+    /**
+     * Create an application
+     *
+     * @param applicationName application name
+     * @throws Exception
+     */
     private void createApplication(String applicationName) throws Exception{
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationName,
@@ -123,6 +164,12 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
                 "Application creation failed for application: " + applicationName);
     }
 
+    /**
+     * Create an API
+     *
+     * @param apiName API name
+     * @throws Exception
+     */
     private void createApi(String apiName) throws Exception {
         APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
                 "/menu", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -134,8 +181,15 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         verifyResponse(apiInfo);
     }
 
+    /**
+     * Change API life cycle state
+     *
+     * @param apiName API name
+     * @param state life cycle state
+     * @throws Exception
+     */
     private void changeApiState(String apiName, APILifeCycleState state) throws Exception {
-        org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest updateRequest;
+        APILifeCycleStateRequest updateRequest;
         switch (state) {
             case PROTOTYPED:
                 updateRequest = new org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest(apiName,
@@ -162,12 +216,16 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
                         API_CREATOR_PUBLISHER_USERNAME, APILifeCycleState.RETIRED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
-            case CREATED:
-            default:
-//                    do nothing
         }
     }
 
+    /**
+     * Subscribe to API
+     *
+     * @param apiName API name
+     * @param applicationName Application name
+     * @throws Exception
+     */
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, API_CREATOR_PUBLISHER_USERNAME);
         subscriptionRequest.setApplicationName(applicationName);
@@ -176,6 +234,12 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         verifyResponse(subscribeAPIResponse);
     }
 
+    /**
+     * Verify whether API state change was successful
+     *
+     * @param apiUpdateResponse API state update response
+     * @param status API state
+     */
     private void verifyApiStatusChange(HttpResponse apiUpdateResponse, String status) {
         log.info("API life cycle state change response code : " + apiUpdateResponse.getResponseCode());
         log.info("API life cycle state change response data : " + apiUpdateResponse.getData());
@@ -184,6 +248,13 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
                 "API life cycle state change failed");
     }
 
+    /**
+     * Verify whether API delete failed
+     *
+     * @param apiName API name
+     * @param errorMessage Error message received when deleting API
+     * @throws Exception
+     */
     private void checkDeleteAPI(String apiName, String errorMessage) throws Exception {
         HttpResponse response = apiPublisher.deleteAPI(apiName, API_VERSION, API_CREATOR_PUBLISHER_USERNAME);
         log.info("API delete response code for API \'" + apiName + "\' : "
@@ -195,6 +266,12 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
                 "API has been deleted : " + apiName);
     }
 
+    /**
+     * Verify whether API is available in publisher
+     *
+     * @param apiName API name
+     * @throws Exception
+     */
     private void verifyAPIAvailableInPublisher(String apiName) throws Exception {
         HttpResponse response = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USERNAME, API_VERSION);
         log.info("Check API available in publisher response code for API \'" + apiName + "\' : "
@@ -208,10 +285,21 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
 
     }
 
+    /**
+     * Verify whether API is available in store
+     *
+     * @param apiName API name
+     * @throws Exception
+     */
     private void verifyAPIAvailableInStore(String apiName) throws Exception {
         isAPIVisibleInStore(apiName, apiStore);
     }
 
+    /**
+     * Clean up method
+     *
+     * @throws Exception
+     */
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         for (String name : applicationsList) {
