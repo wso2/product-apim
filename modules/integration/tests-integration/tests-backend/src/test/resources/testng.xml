@@ -38,6 +38,12 @@
         </classes>
     </test>
 
+    <test name="apim-ui-tests" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.ui.APIMANAGERUIIntegrationTestRunner"/>
+        </classes>
+    </test>
+
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
