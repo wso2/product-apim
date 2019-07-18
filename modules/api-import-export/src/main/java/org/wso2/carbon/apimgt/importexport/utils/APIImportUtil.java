@@ -449,7 +449,7 @@ public final class APIImportUtil {
             provider.addAPI(importedApi);
 
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
-            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
+            if (!APIConstants.APITransportType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
                 String swaggerContent = loadSwaggerFile(pathToArchive);
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
@@ -628,7 +628,7 @@ public final class APIImportUtil {
 
         try {
             //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
-            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
+            if (!APIConstants.APITransportType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
                 String swaggerContent = loadSwaggerFile(pathToArchive);
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 

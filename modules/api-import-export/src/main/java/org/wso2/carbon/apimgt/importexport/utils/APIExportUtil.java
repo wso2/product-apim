@@ -794,7 +794,7 @@ public class APIExportUtil {
 
             //If a web socket API is exported, it does not contain a swagger file.
             //Therefore swagger export is only required for REST or SOAP based APIs
-            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
+            if (!APIConstants.APITransportType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
                 String swaggerDefinition = definitionFromOpenAPISpec.getAPIDefinition(apiToReturn.getId(), registry);
                 JsonParser parser = new JsonParser();
                 JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
