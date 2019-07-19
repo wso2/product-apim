@@ -196,7 +196,7 @@
                 <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>wso2-maven-json-merge-plugin</artifactId>
-                    <version>5.2.5</version>
+                    <version>5.2.6</version>
                 </plugin>
             </plugins>
         </pluginManagement>
