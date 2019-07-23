@@ -220,3 +220,7 @@ allow_credentials = false
 #persistent_notifier.ttl = 5000
 #persistent_notifier.username = "root"
 #persistent_notifier.password = "root"
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]

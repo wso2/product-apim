@@ -159,5 +159,8 @@
   "identity.entitlement.policy_point.pip.attribute_designators": [
     "org.wso2.carbon.identity.entitlement.pip.DefaultAttributeFinder"
   ],
-  "authentication.consent.data_source": "jdbc/WSO2AM_DB"
+  "authentication.consent.data_source": "jdbc/WSO2AM_DB",
+  "authentication.consent.prompt": false,
+  "identity_mgt.user_self_registration.allow_self_registration": true,
+  "identity_mgt.user_self_registration.lock_on_creation": false
 }
