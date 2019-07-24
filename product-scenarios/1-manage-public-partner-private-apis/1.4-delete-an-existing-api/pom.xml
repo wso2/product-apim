@@ -17,14 +17,4 @@
         <module>1.4.1-delete-an-existing-api</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>scenarios-common</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>

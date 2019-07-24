@@ -554,6 +554,11 @@
                 <artifactId>logging-interceptor</artifactId>
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>scenarios-common</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

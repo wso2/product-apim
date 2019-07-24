@@ -492,7 +492,7 @@ public class ScenarioTestBase {
                         log.info("API found in store : " + apiName);
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
-//                        do nothing
+                        // do nothing
                     }
                 } else {
                     log.info("API : " + apiName + " not found in store.");
@@ -564,7 +564,7 @@ public class ScenarioTestBase {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
-//                        do nothing
+                        // do nothing
                     }
                 }
             }

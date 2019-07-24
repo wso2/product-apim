@@ -42,6 +42,9 @@ import java.util.List;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * DeleteExistingAPIsTestCases class contains scenario test for deleting an existing API
+ */
 public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(DeleteExistingAPIsTestCases.class);
     private APIPublisherRestClient apiPublisher;
@@ -57,6 +60,14 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     private static final String API_NAME_PREFIX = "DeleteAPI_";
     private static final String API_VERSION = "1.0.0";
 
+    /**
+     * Initialize
+     *
+     * @throws APIManagerIntegrationTestException If an error occurs when login
+     * @throws APIManagementException If an error occurs when creating user with roles
+     * @throws RemoteException If an error occurs when creating user with subscriber role
+     * @throws UserAdminUserAdminException If an error occurs when creating user with subscriber role
+     */
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
             UserAdminUserAdminException {
@@ -69,6 +80,12 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         apiStore.login(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW);
     }
 
+    /**
+     * Test deleting an API
+     *
+     * @param state API life cycle state
+     * @throws Exception If an error occurs when testing deleting an API
+     */
     @Test(description = "1.4.1.1", dataProvider = "DeleteAPIInLifeCycleStateDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPI(APILifeCycleState state) throws Exception {
@@ -78,6 +95,12 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         deleteAPI(name);
     }
 
+    /**
+     * Delete API after deleting application
+     *
+     * @param state API life cycle state
+     * @throws Exception If an error occurs when testing deleting an API after deleting subscribed application
+     */
     @Test(description = "1.4.1.2", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPIAfterDeleteSubscribedApplication(APILifeCycleState state) throws Exception {
@@ -90,6 +113,12 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         deleteAPI(name);
     }
 
+    /**
+     * Delete API after unsubscribing application
+     *
+     * @param state API life cycle state
+     * @throws Exception If an error occurs when testing deleting an API after unsubscribing application
+     */
     @Test(description = "1.4.1.3", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPIAfterUnsubscribeApplication(APILifeCycleState state) throws Exception {
@@ -103,6 +132,12 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         deleteAPI(name);
     }
 
+    /**
+     * Create API
+     *
+     * @param apiName API name
+     * @throws Exception If an error occurs when creating an API
+     */
     private void createApi(String apiName) throws Exception {
         APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
                 "/menu", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -114,6 +149,13 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         verifyResponse(apiInfo);
     }
 
+    /**
+     * Change API life cycle state
+     *
+     * @param apiName API name
+     * @param state API life cycle state
+     * @throws Exception If an error occurs when changing API state
+     */
     private void changeApiStateTo(String apiName, APILifeCycleState state) throws Exception{
         switch (state) {
             case PROTOTYPED:
@@ -130,12 +172,16 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
                 changeApiState(apiName, APILifeCycleState.DEPRECATED);
                 changeApiState(apiName, state);
                 break;
-            case CREATED:
-            default:
-//                    do nothing
         }
     }
 
+    /**
+     * Change API life cycle state
+     *
+     * @param apiName API name
+     * @param state API life cycle state
+     * @throws Exception If an error occurs when changing APIn state
+     */
     private void changeApiState(String apiName, APILifeCycleState state) throws Exception {
         APILifeCycleStateRequest updateRequest;
         switch (state) {
@@ -164,15 +210,18 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
                         APILifeCycleState.RETIRED);
                 verifyApiStatusChange(apiPublisher.changeAPILifeCycleStatus(updateRequest), state.toString());
                 break;
-            case CREATED:
-                default:
-//                    do nothing
         }
     }
 
+    /**
+     * Delete API
+     *
+     * @param apiName API name
+     * @throws Exception If an error occurs when deleting API
+     */
     private void deleteAPI(String apiName) throws Exception {
         verifyResponse(apiPublisher.deleteAPI(apiName, API_VERSION, API_CREATOR_PUBLISHER_USERNAME));
-//        verify API not available in publisher
+        // verify API not available in publisher
         HttpResponse response = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USERNAME, API_VERSION);
         log.info("API delete response code for API \'" + apiName + "\' : " + response.getResponseCode());
         log.info("API delete response data for API \'" + apiName + "\' : " + response.getData());
@@ -180,10 +229,16 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         assertTrue(responseData.getBoolean("error"), "API deletion unsuccessful for API : " + apiName);
         assertTrue(responseData.getString("message").contains("Cannot find the requested API"),
                 "API deletion unsuccessful for API : " + apiName);
-//        verify API not available in store
+        // verify API not available in store
         isAPINotVisibleInStore(apiName, apiStore);
     }
 
+    /**
+     * Verify API state change is successful
+     *
+     * @param apiUpdateResponse API state change response
+     * @param status API status
+     */
     private void verifyApiStatusChange(HttpResponse apiUpdateResponse, String status) {
         log.info("API life cycle state change response code : " + apiUpdateResponse.getResponseCode());
         log.info("API life cycle state change response data : " + apiUpdateResponse.getData());
@@ -192,6 +247,12 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
                 "API life cycle state change failed");
     }
 
+    /**
+     * Create application
+     *
+     * @param applicationName Application name
+     * @throws Exception If an error occurs when creating application
+     */
     private void createApplication(String applicationName) throws Exception{
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationName,
@@ -203,6 +264,13 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     }
 
 
+    /**
+     * Subscribe to aPI
+     *
+     * @param apiName API name
+     * @param applicationName Application name
+     * @throws Exception If an error occurs when subscribing to API
+     */
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, API_CREATOR_PUBLISHER_USERNAME);
         subscriptionRequest.setApplicationName(applicationName);
@@ -211,6 +279,13 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         verifyResponse(subscribeAPIResponse);
     }
 
+    /**
+     * Create APi and subscribe
+     *
+     * @param apiName API name
+     * @param applicationName Application name
+     * @throws Exception If an error occurs when creating and subscribing to API
+     */
     private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception{
         createApplication(applicationName);
         createApi(apiName);
@@ -219,6 +294,11 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         subscribeToAPI(apiName, applicationName);
     }
 
+    /**
+     * Cleanup
+     *
+     * @throws Exception If an error occurs during clean up
+     */
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         for (String name : applicationsList) {
