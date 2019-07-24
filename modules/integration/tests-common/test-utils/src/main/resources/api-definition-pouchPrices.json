@@ -1,0 +1,29 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/pouch/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "allowMultiple": false,
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited"
+      }
+    }
+  },
+  "info": {
+    "title": "Pouch_prices_API",
+    "version": "1.0.0"
+  }
+}
