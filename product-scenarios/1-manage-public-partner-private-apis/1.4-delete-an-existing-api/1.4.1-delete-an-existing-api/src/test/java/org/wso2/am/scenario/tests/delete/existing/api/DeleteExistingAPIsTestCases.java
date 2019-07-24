@@ -63,10 +63,10 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     /**
      * Initialize
      *
-     * @throws APIManagerIntegrationTestException
-     * @throws APIManagementException
-     * @throws RemoteException
-     * @throws UserAdminUserAdminException
+     * @throws APIManagerIntegrationTestException If an error occurs when login
+     * @throws APIManagementException If an error occurs when creating user with roles
+     * @throws RemoteException If an error occurs when creating user with subscriber role
+     * @throws UserAdminUserAdminException If an error occurs when creating user with subscriber role
      */
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
@@ -84,7 +84,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Test deleting an API
      *
      * @param state API life cycle state
-     * @throws Exception
+     * @throws Exception If an error occurs when testing deleting an API
      */
     @Test(description = "1.4.1.1", dataProvider = "DeleteAPIInLifeCycleStateDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
@@ -99,7 +99,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Delete API after deleting application
      *
      * @param state API life cycle state
-     * @throws Exception
+     * @throws Exception If an error occurs when testing deleting an API after deleting subscribed application
      */
     @Test(description = "1.4.1.2", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
@@ -117,7 +117,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Delete API after unsubscribing application
      *
      * @param state API life cycle state
-     * @throws Exception
+     * @throws Exception If an error occurs when testing deleting an API after unsubscribing application
      */
     @Test(description = "1.4.1.3", dataProvider = "DeleteAPIAfterSubscribingDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
@@ -136,7 +136,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Create API
      *
      * @param apiName API name
-     * @throws Exception
+     * @throws Exception If an error occurs when creating an API
      */
     private void createApi(String apiName) throws Exception {
         APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
@@ -154,7 +154,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      *
      * @param apiName API name
      * @param state API life cycle state
-     * @throws Exception
+     * @throws Exception If an error occurs when changing API state
      */
     private void changeApiStateTo(String apiName, APILifeCycleState state) throws Exception{
         switch (state) {
@@ -180,7 +180,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      *
      * @param apiName API name
      * @param state API life cycle state
-     * @throws Exception
+     * @throws Exception If an error occurs when changing APIn state
      */
     private void changeApiState(String apiName, APILifeCycleState state) throws Exception {
         APILifeCycleStateRequest updateRequest;
@@ -217,7 +217,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Delete API
      *
      * @param apiName API name
-     * @throws Exception
+     * @throws Exception If an error occurs when deleting API
      */
     private void deleteAPI(String apiName) throws Exception {
         verifyResponse(apiPublisher.deleteAPI(apiName, API_VERSION, API_CREATOR_PUBLISHER_USERNAME));
@@ -251,7 +251,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * Create application
      *
      * @param applicationName Application name
-     * @throws Exception
+     * @throws Exception If an error occurs when creating application
      */
     private void createApplication(String applicationName) throws Exception{
         HttpResponse addApplicationResponse = apiStore
@@ -269,7 +269,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      *
      * @param apiName API name
      * @param applicationName Application name
-     * @throws Exception
+     * @throws Exception If an error occurs when subscribing to API
      */
     private void subscribeToAPI(String apiName, String applicationName) throws Exception {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, API_CREATOR_PUBLISHER_USERNAME);
@@ -284,7 +284,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      *
      * @param apiName API name
      * @param applicationName Application name
-     * @throws Exception
+     * @throws Exception If an error occurs when creating and subscribing to API
      */
     private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception{
         createApplication(applicationName);
@@ -297,7 +297,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     /**
      * Cleanup
      *
-     * @throws Exception
+     * @throws Exception If an error occurs during clean up
      */
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
