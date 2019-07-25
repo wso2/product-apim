@@ -1044,6 +1044,46 @@
                 <type>zip</type>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.user.server.feature</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.captcha.server.feature</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.governance.server.feature</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.mgt.endpoint</artifactId>
+                <version>${carbon.identity.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.governance.stub</artifactId>
+                <version>${carbon.identity.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.recovery</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.recovery.stub</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.event.handler.accountlock</groupId>
+                <artifactId>org.wso2.carbon.identity.handler.event.account.lock.feature</artifactId>
+                <version>${carbon.identity.event.handler.account.lock.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.micro.gateway.rest.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
@@ -1111,7 +1151,7 @@
         <carbon.analytics.common.version>5.2.1</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.31</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.34</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1136,7 +1176,9 @@
         <carbon.mediation.version>4.7.2</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.13.24</carbon.identity.version>
+        <carbon.identity.version>5.13.41</carbon.identity.version>
+        <carbon.identity.governance.version>1.2.9</carbon.identity.governance.version>
+        <carbon.identity.event.handler.account.lock.version>1.2.1</carbon.identity.event.handler.account.lock.version>
         <carbon.identity-inbound-auth-oauth.version>6.1.6</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.0.11</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.2.0</carbon.identity-user-ws.version>
