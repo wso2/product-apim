@@ -221,7 +221,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"}, enabled = false)
     public void testListingOfRestrictedAPIsByTags() throws Exception {
         String tag = "tagsDistinctRoles";
-
         HttpResponse apisWithTagResponse = apiStoreClient.getAPIPageFilteredWithTags(tag);
         Assert.assertNotNull(apisWithTagResponse, "Response object is null");
         log.info("Response Code for get API by tag \'" + tag + "\': " + apisWithTagResponse.getResponseCode());
