@@ -280,14 +280,10 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
                 PUBLISHER_CREATOR_USERNAME);
         apiPublisher.deleteAPI("APIVisibility_tagsPublicAndRestricted2", apiVersion,
                 PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles1", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles1", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion, PUBLISHER_CREATOR_USERNAME);
 
         deleteUser(PUBLISHER_CREATOR_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
