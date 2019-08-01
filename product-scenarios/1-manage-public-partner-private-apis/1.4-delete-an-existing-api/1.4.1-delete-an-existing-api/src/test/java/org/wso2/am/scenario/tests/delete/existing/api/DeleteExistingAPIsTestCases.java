@@ -156,7 +156,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * @param state API life cycle state
      * @throws Exception If an error occurs when changing API state
      */
-    private void changeApiStateTo(String apiName, APILifeCycleState state) throws Exception{
+    private void changeApiStateTo(String apiName, APILifeCycleState state) throws Exception {
         switch (state) {
             case PROTOTYPED:
             case PUBLISHED:
@@ -253,7 +253,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * @param applicationName Application name
      * @throws Exception If an error occurs when creating application
      */
-    private void createApplication(String applicationName) throws Exception{
+    private void createApplication(String applicationName) throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationName,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
@@ -262,7 +262,6 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
         assertEquals(new JSONObject(addApplicationResponse.getData()).get("status"), "APPROVED",
                 "Application creation failed for application: " + applicationName);
     }
-
 
     /**
      * Subscribe to aPI
@@ -286,7 +285,7 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
      * @param applicationName Application name
      * @throws Exception If an error occurs when creating and subscribing to API
      */
-    private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception{
+    private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception {
         createApplication(applicationName);
         createApi(apiName);
         changeApiState(apiName, APILifeCycleState.PUBLISHED);

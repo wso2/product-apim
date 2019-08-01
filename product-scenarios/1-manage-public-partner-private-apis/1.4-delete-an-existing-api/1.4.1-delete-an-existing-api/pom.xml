@@ -86,7 +86,5 @@
             <artifactId>greenmail</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
 </project>
