@@ -105,7 +105,7 @@
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
 
                 <exclude>**/repository/components/plugins/netty-all_4.0.23.wso2v1.jar</exclude>
-
+                <exclude>**/repository/components/plugins/org.wso2.carbon.apimgt.rest.api.util_*.jar</exclude>
                 <exclude>
                     **/repository/components/plugins/org.wso2.carbon.event.output.adapter.sms_${carbon.analytics.common.version}.jar
                 </exclude>

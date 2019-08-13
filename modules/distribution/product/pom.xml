@@ -353,6 +353,22 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>move-rest-api-util-jar</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <copy todir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3/">
+                                    <fileset dir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
+                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar"/>
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
 
