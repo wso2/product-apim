@@ -92,6 +92,7 @@
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
 
                 <!-- Remove jars which are not needed-->
+                <exclude>**/repository/components/plugins/org.wso2.carbon.webapp.list.ui_${carbon.deployment.version}.jar</exclude>
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
 
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
