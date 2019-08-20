@@ -352,6 +352,9 @@
                                     org.wso2.carbon.identity.inbound.auth.oauth2:org.wso2.carbon.identity.oauth.feature:${carbon.identity-inbound-auth-oauth.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.identity.datapublisher.authentication:org.wso2.carbon.identity.data.publisher.application.authentication.server.feature:${carbon.identity-data-publisher-application-authentication.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.identity.inbound.auth.oauth2:org.wso2.carbon.identity.oauth.ui.feature:${carbon.identity-inbound-auth-oauth.version}
                                 </featureArtifactDef>
                               	<featureArtifactDef>
@@ -905,6 +908,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.template.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
@@ -2736,6 +2743,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.authenticator.basicauth.server.feature.group</id>
                                     <version>${carbon.identity-local-auth-basicauth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.authenticator.samlsso.server.feature.group</id>
