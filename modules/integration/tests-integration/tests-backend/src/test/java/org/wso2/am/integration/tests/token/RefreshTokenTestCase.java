@@ -90,7 +90,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 //                             "tokenTest" + File.separator + "api-manager.xml"));
 //            serverConfigurationManager.applyConfiguration(
 //                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-//                             "tokenTest" + File.separator + "log4j.properties"));
+//                             "tokenTest" + File.separator + "log4j2.properties"));
 
         backEndEndpointUrl = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
 

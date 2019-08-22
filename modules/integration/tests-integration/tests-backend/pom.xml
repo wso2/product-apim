@@ -178,6 +178,9 @@ under the License.
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                     </systemProperties>
                     <workingDirectory>${basedir}/target</workingDirectory>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -519,6 +522,11 @@ under the License.
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
             <scope>test</scope>
         </dependency>
         <!--Jetty dependencies end -->

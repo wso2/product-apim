@@ -281,8 +281,8 @@ under the License.
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.nextgen.config</artifactId>
+            <groupId>org.wso2.config.mapper</groupId>
+            <artifactId>config-mapper</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

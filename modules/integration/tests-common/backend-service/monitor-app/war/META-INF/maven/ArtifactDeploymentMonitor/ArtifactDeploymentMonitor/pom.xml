@@ -59,9 +59,8 @@ under the License.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.logging</artifactId>
-            <version>4.4.1</version>
+            <groupId>org.ops4j.pax.logging</groupId>
+            <artifactId>pax-logging-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

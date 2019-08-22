@@ -7,7 +7,6 @@
   "server.enableSwA": false,
   "identity.data_source": "jdbc/WSO2AM_DB",
   "oauth.token_validation.refresh_token_validity": "1d",
-  "server.clock_skew": "5m",
   "oauth.scope_validator.xacml.enable": false,
   "oauth.grant_type.authorization_code.enable": true,
   "oauth.grant_type.authorization_code.grant_handler": "org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler",
@@ -162,5 +161,26 @@
   "authentication.consent.data_source": "jdbc/WSO2AM_DB",
   "authentication.consent.prompt": false,
   "identity_mgt.user_self_registration.allow_self_registration": true,
-  "identity_mgt.user_self_registration.lock_on_creation": false
+  "identity_mgt.user_self_registration.lock_on_creation": false,
+  "oauth.prompt_consent": false,
+  "resource.access_control": [
+    {
+      "context": "/publisher(.*)",
+      "secure": false,
+      "http_method": "ALL",
+      "permissions": {}
+    },
+    {
+      "context": "/store(.*)",
+      "secure": false,
+      "http_method": "ALL",
+      "permissions": {}
+    },
+    {
+      "context": "/publisher(.*)",
+      "secure": false,
+      "http_method": "ALL",
+      "permissions": {}
+    }
+  ]
 }
