@@ -26,15 +26,6 @@
 
     <build>
         <finalName>sample-data-backend</finalName>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
     <artifactId>org.wso2.carbon.apimgt.samples.backend</artifactId>

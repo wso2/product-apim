@@ -1133,16 +1133,6 @@
             <destName>deployment.toml</destName>
             <filtered>true</filtered>
         </file>
-        <!--file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/rule-engine-config.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-        </file-->
-        <!--<file>-->
-            <!--<source>-->
-                <!--../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/logging-config.xml-->
-            <!--</source>-->
-            <!--<outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>-->
-        <!--</file>-->
         <file>
             <source>../../../LICENSE.txt</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
