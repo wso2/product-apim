@@ -45,12 +45,6 @@ describe(
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
             await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
-            await page.click('input#approveCb[type="radio"]');
-            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
-            if (consentSelector) {
-                await page.click('input#consent_select_all[type="checkbox"]');
-            }
-            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'load' })]);
             const expectedCookies = [
                 'AM_ID_TOKEN_DEFAULT_P2',
                 'AM_ID_TOKEN_DEFAULT_P1',
@@ -86,11 +80,6 @@ describe(
             await page.type('input[name="password"]', 'admin');
             await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
 
-            await page.click('input#approveCb[type="radio"]');
-            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
-            if (consentSelector) await page.click('input#consent_select_all[type="checkbox"]');
-
-            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'load' })]);
 
             const currentPageURL = await page.url();
             expect(currentPageURL).toContain(pathName);
@@ -101,14 +90,9 @@ describe(
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
             await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
-            await page.click('input#approveCb[type="radio"]');
-            const consentSelector = await page.$('input#consent_select_all[type="checkbox"]');
-            if (consentSelector) await page.click('input#consent_select_all[type="checkbox"]');
-            await Promise.all([page.click('#approve'), page.waitForNavigation()]);
             await page.click('#profile-menu-btn');
             await page.click('#logout');
-            await page.waitForSelector("#approve")
-            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
+            await page.waitForNavigation();
             const currentPageURL = await page.url();
             expect(currentPageURL).toContain('/authenticationendpoint/login');
         });

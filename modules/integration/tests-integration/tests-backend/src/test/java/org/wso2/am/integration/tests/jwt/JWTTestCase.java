@@ -114,7 +114,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "deployment.toml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
-                    + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
+                    + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j2.properties"));
             subscriberUserWithTenantDomain = subscriberUsername;
         }
 

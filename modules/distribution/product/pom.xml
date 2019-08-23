@@ -354,6 +354,18 @@
                         </goals>
                     </execution>
                     <execution>
+                    <id>modify-resource-authentication-identity</id>
+                    <phase>prepare-package</phase>
+                    <configuration>
+                        <tasks>
+                            <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;ResourceAccessControl default-access=&quot;deny&quot;&gt;" value="&lt;ResourceAccessControl default-access=&quot;allow&quot;&gt;" />
+                        </tasks>
+                    </configuration>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                    </execution>
+                    <execution>
                         <id>move-rest-api-util-jar</id>
                         <phase>prepare-package</phase>
                         <configuration>
@@ -393,7 +405,7 @@
                         <id>pre_dist</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
@@ -409,7 +421,7 @@
                         <id>dist</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
@@ -425,7 +437,7 @@
                         <id>docs</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <filters>
@@ -440,7 +452,7 @@
                         <id>sample-scenarios</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <filters>
@@ -504,6 +516,11 @@
                                     <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
                                     <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
                                     <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/ResourceAccessControl/@default-access</xpath>
+                                    <token>(deny)</token>
+                                    <value>allow</value>
                                 </replacement>
                             </replacements>
                         </configuration>
