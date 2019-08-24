@@ -226,10 +226,11 @@
                 <Name>org.wso2.apimgt.statistics.execution.time</Name>
                 <Version>1.0.0</Version>
             </ExecutionTime>
-	    <AlertTypes>
+	        <AlertTypes>
                 <Name>org.wso2.analytics.apim.alertStakeholderInfo</Name>
                 <Version>1.0.0</Version>
             </AlertTypes>
+
         </Streams>
 
     </Analytics>

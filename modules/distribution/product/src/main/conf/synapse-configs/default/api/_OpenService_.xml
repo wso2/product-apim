@@ -1,8 +1,7 @@
-<api xmlns="http://ws.apache.org/ns/synapse" name="_HoneyPotAPI_" context="/honeycheck" version="v1" version-type="context">
+<api xmlns="http://ws.apache.org/ns/synapse" name="_OpenService_" context="/service">
     <resource methods="HEAD DELETE POST GET OPTIONS PATCH PUT" url-mapping="/*" faultSequence="_token_fault_">
         <inSequence>
-
-            <class name="org.wso2.carbon.apimgt.gateway.mediators.HoneyPotAPIMediator"/>
+            <class name="org.wso2.carbon.apimgt.gateway.mediators.BotDetectionMediator"/>
             <respond/>
         </inSequence>
         <outSequence>

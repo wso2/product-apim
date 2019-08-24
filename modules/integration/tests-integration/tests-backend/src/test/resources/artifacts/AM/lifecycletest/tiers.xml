@@ -135,5 +135,29 @@
                 </throttle:Control>
             </wsp:Policy>
         </wsp:Policy>
+        <wsp:Policy>
+            <!--It's possible to define a display name for a tier to show in UIs by adding the attribute of throttle:displayName="xxxx" for <throttle:ID>
+            element.
+            For ex:  <throttle:ID throttle:type="ROLE" throttle:displayName="xxxx">Gold</throttle:ID>
+                     ......
+            -->
+            <throttle:ID throttle:type="ROLE">policyKey</throttle:ID>
+            <wsp:Policy>
+                <throttle:Control>
+                    <wsp:Policy>
+                        <throttle:MaximumCount>60</throttle:MaximumCount>
+                        <throttle:UnitTime>60000</throttle:UnitTime>
+                        <!--It's possible to define tier level attributes as below for each tier level.For eg:Payment Plan for a tier
+                        <wsp:Policy>
+                        <throttle:Attributes>
+                            <throttle:Attribute1>xxxx</throttle:Attribute1>
+                            <throttle:Attribute2>xxxx</throttle:Attribute2>
+                        </throttle:Attributes>
+                        </wsp:Policy>
+                        -->
+                    </wsp:Policy>
+                </throttle:Control>
+            </wsp:Policy>
+        </wsp:Policy>
     </throttle:MediatorThrottleAssertion>
 </wsp:Policy>
