@@ -1154,15 +1154,15 @@
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.8</carbon.registry.version>
+        <carbon.registry.version>4.7.9</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.5</carbon.governance.version>
+        <carbon.governance.version>4.8.6</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.5.0-alpha</carbon.kernel.version>
+        <carbon.kernel.version>4.5.0-alpha3</carbon.kernel.version>
         <apimserver.version>3.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 

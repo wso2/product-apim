@@ -85,10 +85,6 @@ under the License.
                         <inherited>false</inherited>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-                            <!--argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                                 -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                                 -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                             </argLine-->
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -122,6 +118,7 @@ under the License.
                                 <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                             </systemProperties>
+                            <skipTests>${skipIntegrationTests}</skipTests>
                             <environmentVariables>
                                 <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
                                 <SHARED_DATABASE_URL>
@@ -196,10 +193,6 @@ under the License.
                         <inherited>false</inherited>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-                            <!--argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                                 -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                                 -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                             </argLine-->
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -292,10 +285,6 @@ under the License.
                         <inherited>false</inherited>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-                            <!--argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                                 -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                                 -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                             </argLine-->
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
