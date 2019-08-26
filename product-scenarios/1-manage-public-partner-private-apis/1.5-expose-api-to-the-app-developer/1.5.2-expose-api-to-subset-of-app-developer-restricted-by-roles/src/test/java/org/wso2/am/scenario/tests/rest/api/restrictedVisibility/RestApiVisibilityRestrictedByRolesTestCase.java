@@ -221,7 +221,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     @Test(description = "1.5.2.10", dependsOnMethods = {"testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles"}, enabled = false)
     public void testListingOfRestrictedAPIsByTags() throws Exception {
         String tag = "tagsDistinctRoles";
-
         HttpResponse apisWithTagResponse = apiStoreClient.getAPIPageFilteredWithTags(tag);
         Assert.assertNotNull(apisWithTagResponse, "Response object is null");
         log.info("Response Code for get API by tag \'" + tag + "\': " + apisWithTagResponse.getResponseCode());
@@ -280,14 +279,10 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
                 PUBLISHER_CREATOR_USERNAME);
         apiPublisher.deleteAPI("APIVisibility_tagsPublicAndRestricted2", apiVersion,
                 PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles1", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
-        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion,
-                PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles1", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_tagsDistinctRoles2", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag1", apiVersion, PUBLISHER_CREATOR_USERNAME);
+        apiPublisher.deleteAPI("APIVisibility_apiByTag2", apiVersion, PUBLISHER_CREATOR_USERNAME);
 
         deleteUser(PUBLISHER_CREATOR_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);

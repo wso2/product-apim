@@ -140,7 +140,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
      * @param applicationName application name
      * @throws Exception If an error occurs when creating and subscribing to an API
      */
-    private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception{
+    private void createAPIAndSubscribe(String apiName, String applicationName) throws Exception {
         createApplication(applicationName);
         createApi(apiName);
         changeApiState(apiName, APILifeCycleState.PUBLISHED);
@@ -154,7 +154,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
      * @param applicationName application name
      * @throws Exception If an error occurs when creating an application
      */
-    private void createApplication(String applicationName) throws Exception{
+    private void createApplication(String applicationName) throws Exception {
         HttpResponse addApplicationResponse = apiStore
                 .addApplication(applicationName,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
