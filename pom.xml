@@ -1159,10 +1159,10 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.5</carbon.governance.version>
+        <carbon.governance.version>4.8.6</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.5.0-alpha</carbon.kernel.version>
+        <carbon.kernel.version>4.5.0-alpha3</carbon.kernel.version>
         <apimserver.version>3.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
