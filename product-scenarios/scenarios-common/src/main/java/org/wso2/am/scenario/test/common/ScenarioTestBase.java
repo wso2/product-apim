@@ -162,7 +162,7 @@ public class ScenarioTestBase {
         try {
             authenticatorClient = new AuthenticatorClient(keyManagerURL);
             URL url = new URL(keyManagerURL);
-            String sessionCookie = authenticatorClient.login("admin", "admin", url.getHost());
+            String sessionCookie = authenticatorClient.login("admin", "admin", "localhost");
 
             TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(keyManagerURL,
                     sessionCookie);
@@ -203,7 +203,7 @@ public class ScenarioTestBase {
         try {
             authenticatorClient = new AuthenticatorClient(host);
             URL url = new URL(host);
-            String sessionCookie = authenticatorClient.login(username, password, url.getHost());
+            String sessionCookie = authenticatorClient.login(username, password, "localhost");
 
             return sessionCookie;
         } catch (Exception e) {
