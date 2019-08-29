@@ -1292,7 +1292,7 @@
         <version.snake.yaml>1.25</version.snake.yaml>
 
         <!--Sample scenarios dependencies -->
-        <swagger-annotations-version>1.5.22</swagger-annotations-version>
+        <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
         <jackson-version>2.9.9</jackson-version>
         <jodatime-version>2.10.3</jodatime-version>
