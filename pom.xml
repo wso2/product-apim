@@ -1321,7 +1321,7 @@
 
         <!-- API Import/Export Dependencies -->
         <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
-        <versions.pax.logging>1.10.1</versions.pax.logging>
+        <versions.pax.logging>1.11.0</versions.pax.logging>
         <config.mapper.version>1.0.0</config.mapper.version>
     </properties>
 
