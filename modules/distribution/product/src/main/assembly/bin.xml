@@ -118,7 +118,7 @@
                 <exclude>**/repository/components/plugins/wsdl4j_1.6.2.wso2v4.jar</exclude>
                 <exclude>**/repository/components/plugins/org.antlr.antlr4-runtime-osgi_4.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/org.objectweb.asm_5.2.0.jar</exclude>
-                <exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>
+                <!--<exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>-->
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/conf/email/email-admin-config.xml</exclude>

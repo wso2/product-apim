@@ -32,7 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
@@ -42,7 +41,7 @@ import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromOpenAPISpec;
+import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
@@ -771,7 +770,6 @@ public class APIExportUtil {
      * @throws APIExportException If an error occurs while exporting meta information
      */
     private static void exportMetaInformation(API apiToReturn, Registry registry, ExportFormat exportFormat) throws APIExportException {
-        APIDefinition definitionFromOpenAPISpec = new APIDefinitionFromOpenAPISpec();
         String archivePath = archiveBasePath.concat(File.separator + apiToReturn.getId().getApiName() + "-" +
                 apiToReturn.getId().getVersion());
 
@@ -795,7 +793,7 @@ public class APIExportUtil {
             //If a web socket API is exported, it does not contain a swagger file.
             //Therefore swagger export is only required for REST or SOAP based APIs
             if (!APIConstants.APITransportType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
-                String swaggerDefinition = definitionFromOpenAPISpec.getAPIDefinition(apiToReturn.getId(), registry);
+                String swaggerDefinition = OASParserUtil.getAPIDefinition(apiToReturn.getId(), registry);
                 JsonParser parser = new JsonParser();
                 JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
                 String formattedSwaggerJson = gson.toJson(json);
