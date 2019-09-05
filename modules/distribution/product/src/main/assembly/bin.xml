@@ -1538,6 +1538,11 @@
             <destName>config.json</destName>
             <fileMode>744</fileMode>
         </file>
+        <!--Add trust store-->
+        <file>
+            <source>src/main/resources/client-truststore.jks</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/security/</outputDirectory>
+        </file>
     </files>
 
 </assembly>
