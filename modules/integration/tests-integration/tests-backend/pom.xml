@@ -82,6 +82,7 @@ under the License.
                     </plugin>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.22.1</version>
                         <inherited>false</inherited>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
@@ -191,6 +192,7 @@ under the License.
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <inherited>false</inherited>
+                        <version>2.22.1</version>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                             <suiteXmlFiles>
@@ -283,6 +285,7 @@ under the License.
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <inherited>false</inherited>
+                        <version>2.22.1</version>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                             <suiteXmlFiles>
