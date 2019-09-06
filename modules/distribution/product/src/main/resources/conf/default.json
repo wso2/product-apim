@@ -64,7 +64,8 @@
     "port": "8243",
     "non-blocking": true,
     "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
-    "SSLVerifyClient": "optional"
+    "SSLVerifyClient": "optional",
+    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
   },
   "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.listener.key_store.type": "$ref{keystore.tls.type}",
@@ -80,7 +81,8 @@
   },
   "transport.passthru_https.sender.parameters": {
     "non-blocking": true,
-    "HostnameVerifier": "DefaultAndLocalhost"
+    "HostnameVerifier": "DefaultAndLocalhost",
+    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
   },
   "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
@@ -163,24 +165,9 @@
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
   "oauth.prompt_consent": false,
-  "resource.access_control": [
-    {
-      "context": "/publisher(.*)",
-      "secure": false,
-      "http_method": "ALL",
-      "permissions": {}
-    },
-    {
-      "context": "/store(.*)",
-      "secure": false,
-      "http_method": "ALL",
-      "permissions": {}
-    },
-    {
-      "context": "/publisher(.*)",
-      "secure": false,
-      "http_method": "ALL",
-      "permissions": {}
-    }
+  "transport.binary.receiver.sslEnabledProtocols": [
+    "TLSv1",
+    "TLSv1.1",
+    "TLSv1.2"
   ]
 }
