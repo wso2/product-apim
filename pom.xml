@@ -1176,7 +1176,7 @@
 
         <!-- carbon identity -->
         <carbon.identity.version>5.14.37</carbon.identity.version>
-        <carbon.identity.governance.version>1.3.5</carbon.identity.governance.version>
+        <carbon.identity.governance.version>1.3.8</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.3.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity-inbound-auth-oauth.version>6.2.7</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.2.3</carbon.identity-data-publisher-oauth.version>
