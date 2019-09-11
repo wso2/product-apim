@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.other;
 import com.google.common.io.Files;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,7 +66,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -141,8 +141,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         tags = TAG1 + "," + TAG2 + "," + TAG3;
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
-        importUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
-        exportUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
+        importUrl = publisherURLHttps + "api/am/admin/v0.14/import/api";
+        exportUrl = publisherURLHttps + "api/am/admin/v0.14/export/api";
 
         //adding new 3 roles and two users
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
@@ -224,8 +224,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     public void testAPIExport() throws Exception {
 
         //construct export API url
-        URL exportRequest = new URL(
-                exportUrl + "?name=" + API_NAME + "&version=" + API_VERSION + "&provider=" + user.getUserName());
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + API_NAME + "&version=" + API_VERSION + "&providerName=" + user
+                        .getUserName() + "&format=JSON");
         zipTempDir = Files.createTempDir();
 
         //set the export file name with tenant prefix
@@ -322,18 +323,17 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 new URL(endpointUrl));
 
         //adding resources using swagger
-        String swagger = "{" + "\"paths\": {" + "\"/add\": {" + "\"get\": {" + "\"x-auth-type\": \"" + URLEncoder
-                .encode(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, "UTF-8") + "\","
-                + "\"x-throttling-tier\": \"" + APIMIntegrationConstants.API_TIER.UNLIMITED + "\"," + "\"x-scope\": \""
-                + SCOPE_NAME + "\"," + "\"responses\": {" + "\"200\": {}" + "}," + "\"parameters\": [{"
-                + "\"name\": \"x\"," + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
-                + "\"description\": \"First value\"," + "\"in\": \"query\"" + "}, {" + "\"name\": \"y\","
-                + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
-                + "\"description\": \"Second Value\"," + "\"in\": \"query\"" + "}]" + "}" + "}" + "},"
-                + "\"swagger\": \"2.0\"," + "\"x-wso2-security\": {" + "\"apim\": {" + "\"x-wso2-scopes\": [{"
-                + "\"description\": \"Sample Scope\"," + "\"name\": \"" + SCOPE_NAME + "\"," + "\"roles\": \""
-                + ALLOWED_ROLE + "\"," + "\"key\": \"" + SCOPE_NAME + "\"" + "}]" + "}" + "}," + "\"info\": {"
-                + "\"title\": \"" + NEW_API_NAME + "\"," + "\"" + API_VERSION + "\": \"1.0.0\"" + "}" + "}";
+        String resourceFile =
+                "artifacts" + File.separator + "AM" + File.separator + "configFiles" + File.separator + "importExport"
+                        + File.separator + "swagger.json";
+        String swagger = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceFile), "UTF-8");
+        swagger = swagger.replaceAll("\\$authType",
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER)
+                .replaceAll("\\$tier", APIMIntegrationConstants.API_TIER.UNLIMITED)
+                .replaceAll("\\$scope", SCOPE_NAME)
+                .replaceAll("\\$roles", ALLOWED_ROLE)
+                .replaceAll("\\$apiName", NEW_API_NAME)
+                .replaceAll("\\$apiVersion", API_VERSION);
 
         apiCreationRequestBean.setSwagger(swagger);
         apiCreationRequestBean.setVisibility("restricted");
@@ -389,8 +389,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
             "wso2.am" }, description = "Exporting above created new API", dependsOnMethods = "testNewAPIInvoke")
     public void testNewAPIExport() throws Exception {
         //export api
-        URL exportRequest = new URL(
-                exportUrl + "?name=" + NEW_API_NAME + "&version=" + API_VERSION + "&provider=" + user.getUserName());
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + NEW_API_NAME + "&version=" + API_VERSION + "&providerName=" + user
+                        .getUserName() + "&format=JSON");
         String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
@@ -479,7 +480,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setTiersCollection(tierCollection);
         //define resources
-        resList = new ArrayList<APIResourceBean>();
+        resList = new ArrayList<>();
         APIResourceBean resource = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
                 APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
@@ -501,9 +502,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     public void testPreserveProviderTrueApiExport() throws Exception {
 
         //construct export API url
-        URL exportRequest = new URL(
-                exportUrl + "?name=" + PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION + "&provider=" + user
-                        .getUserName());
+        URL exportRequest = new URL(exportUrl + "?name=" + PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION
+                + "&providerName=" + user.getUserName() + "&format=JSON");
         //set the export file name with tenant prefix
         String fileName = user.getUserDomain() + "_" + PRESERVE_PUBLISHER_API_NAME;
         preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
@@ -578,9 +578,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     public void testPreserveProviderFalseApiExport() throws Exception {
 
         //construct export API url
-        URL exportRequest = new URL(
-                exportUrl + "?name=" + NOT_PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION + "&provider=" + user
-                        .getUserName());
+        URL exportRequest = new URL(exportUrl + "?name=" + NOT_PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION
+                + "&providerName=" + user.getUserName() + "&format=JSON");
         //set the export file name with tenant prefix
         String fileName = user.getUserDomain() + "_" + NOT_PRESERVE_PUBLISHER_API_NAME;
         notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
@@ -654,7 +653,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @param pass password
      * @return encoded basic auth, as string
      */
-    private String encodeCredentials(String user, char[] pass) {
+    private static String encodeCredentials(String user, char[] pass) {
         StringBuilder builder = new StringBuilder(user).append(':').append(pass);
         String cred = builder.toString();
         byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
@@ -696,7 +695,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @param fileName  Name of the file to be upload
      * @throws IOException throws if connection issues occurred
      */
-    private void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
+    private static void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
         //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
@@ -729,7 +728,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         while ((temp = read.readLine()) != null) {
             response.append(temp);
         }
-        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response);
+        Assert.assertEquals(status, HttpStatus.SC_OK, "Response code is not as expected : " + response);
     }
 
 }
