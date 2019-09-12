@@ -132,6 +132,12 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #enable_ratings = true
 #enable_forum = true
 
+#[[apim.store.application_attributes]]
+#required=true
+#hidden=false
+#name="External Reference Id"
+#description="Sample description of the attribute"
+
 [apim.cors]
 allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
