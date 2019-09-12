@@ -92,7 +92,5 @@
             <artifactId>scenarios-common</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
 </project>
