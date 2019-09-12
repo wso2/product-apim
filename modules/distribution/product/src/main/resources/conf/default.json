@@ -164,7 +164,7 @@
   "authentication.consent.prompt": false,
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
-  "oauth.prompt_consent": false,
+  "oauth.prompt_consent": true,
   "transport.binary.receiver.sslEnabledProtocols": [
     "TLSv1",
     "TLSv1.1",
