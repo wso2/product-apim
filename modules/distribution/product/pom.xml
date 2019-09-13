@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -372,7 +372,7 @@
                             <target>
                                 <copy todir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3/">
                                     <fileset dir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
-                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar"/>
+                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar" />
                                     </fileset>
                                 </copy>
                             </target>
