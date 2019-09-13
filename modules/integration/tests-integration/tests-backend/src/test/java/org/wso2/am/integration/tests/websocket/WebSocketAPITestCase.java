@@ -367,12 +367,16 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         socket.getLatch().await(3, TimeUnit.SECONDS);
         // Send 6 WebSocket messages when throttle limit is 4.
         try {
-            for (int count = 1; count <= limit; count++) {
+            for (int count = 1; count <= limit + 1; count++) {
+                if (count > limit) {
+                    // Set time gap to allow throttle to take place
+                    Thread.sleep(20000);
+                }
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
                 log.info("Count :" + count + " Message :" + socket.getResponseMessage());
                 // At the 6th message check frame is throttled out.
-                if (count >= limit) {
+                if (count > limit) {
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
                             "Received response is not matching");
                 }
