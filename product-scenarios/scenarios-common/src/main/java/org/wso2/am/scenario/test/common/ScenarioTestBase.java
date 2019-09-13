@@ -312,7 +312,7 @@ public class ScenarioTestBase {
                     new String[]{},
                     permisionArray
                    );
-        } catch (Exception e) {
+        } catch (RemoteException | UserAdminUserAdminException e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
 
