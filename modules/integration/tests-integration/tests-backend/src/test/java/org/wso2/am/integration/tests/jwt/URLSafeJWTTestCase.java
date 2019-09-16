@@ -109,7 +109,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
                 + "urlSafeTokenTest" + File.separator + "deployment.toml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                 + "configFiles" + File.separator + "tokenTest" + File.separator + "urlSafeTokenTest"
-                + File.separator + "log4j.properties"));
+                + File.separator + "log4j2.properties"));
             subscriberUserWithTenantDomain = subscriberUser;
             //Load the back-end API
             String gatewaySessionCookie = createSession(gatewayContextMgt);

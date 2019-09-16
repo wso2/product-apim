@@ -24,7 +24,6 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -58,7 +57,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
     @Test(groups = {"webapp"}, description = "This test method tests the pluggable versioning stratergy")
     public void testPluggableVersioningStratergy() throws Exception,
-                                                          IOException, LogViewerLogViewerException {
+                                                          IOException {
 
         //Add request headers
         HashMap<String, String> requestHeadersGet = new HashMap<String, String>();

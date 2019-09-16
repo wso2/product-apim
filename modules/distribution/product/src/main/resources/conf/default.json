@@ -7,7 +7,6 @@
   "server.enableSwA": false,
   "identity.data_source": "jdbc/WSO2AM_DB",
   "oauth.token_validation.refresh_token_validity": "1d",
-  "server.clock_skew": "5m",
   "oauth.scope_validator.xacml.enable": false,
   "oauth.grant_type.authorization_code.enable": true,
   "oauth.grant_type.authorization_code.grant_handler": "org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler",
@@ -65,7 +64,8 @@
     "port": "8243",
     "non-blocking": true,
     "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
-    "SSLVerifyClient": "optional"
+    "SSLVerifyClient": "optional",
+    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
   },
   "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.listener.key_store.type": "$ref{keystore.tls.type}",
@@ -81,7 +81,8 @@
   },
   "transport.passthru_https.sender.parameters": {
     "non-blocking": true,
-    "HostnameVerifier": "DefaultAndLocalhost"
+    "HostnameVerifier": "DefaultAndLocalhost",
+    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
   },
   "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
@@ -159,5 +160,14 @@
   "identity.entitlement.policy_point.pip.attribute_designators": [
     "org.wso2.carbon.identity.entitlement.pip.DefaultAttributeFinder"
   ],
-  "authentication.consent.data_source": "jdbc/WSO2AM_DB"
+  "authentication.consent.data_source": "jdbc/WSO2AM_DB",
+  "authentication.consent.prompt": false,
+  "identity_mgt.user_self_registration.allow_self_registration": true,
+  "identity_mgt.user_self_registration.lock_on_creation": false,
+  "oauth.prompt_consent": true,
+  "transport.binary.receiver.sslEnabledProtocols": [
+    "TLSv1",
+    "TLSv1.1",
+    "TLSv1.2"
+  ]
 }

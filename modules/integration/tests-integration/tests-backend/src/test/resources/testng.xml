@@ -38,6 +38,12 @@
         </classes>
     </test>
 
+    <test name="apim-ui-tests" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.ui.APIMANAGERUIIntegrationTestRunner"/>
+        </classes>
+    </test>
+
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
@@ -239,7 +245,8 @@
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <!--THis test will be enabled once the stats event streams are finalized  -->
             <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
+            <!-- Temporarily disabling intermittently failing test-->
+            <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>

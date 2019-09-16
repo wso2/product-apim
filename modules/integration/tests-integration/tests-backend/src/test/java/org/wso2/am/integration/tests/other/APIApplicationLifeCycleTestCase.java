@@ -528,7 +528,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getUserName());
         apiData = apiStore.subscribe(subscriptionRequest).getData();
 
-        Assert.assertTrue(apiData.contains("Error while adding subscription for user: admin. Reason: Subscriptions not allowed on APIs in the state: DEPRECATED"),
+        Assert.assertTrue(apiData.contains("Error while adding subscription for user: admin. Reason: Subscriptions not allowed on APIs/API Products in the state: DEPRECATED"),
                 "Can subscribe to the old API version");
 
         //subscribe to the new API version

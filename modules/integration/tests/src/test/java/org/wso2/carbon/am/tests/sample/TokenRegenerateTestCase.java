@@ -62,7 +62,7 @@ public class TokenRegenerateTestCase extends APIManagerIntegrationTest {
            // serverConfigurationManager.applyConfiguration(new File(ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
             //        + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
-                    + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+                    + File.separator + "configFiles/tokenTest/" + "log4j2.properties"));
             super.init(0);
         } else {
             publisherURLHttp = getPublisherServerURLHttp();

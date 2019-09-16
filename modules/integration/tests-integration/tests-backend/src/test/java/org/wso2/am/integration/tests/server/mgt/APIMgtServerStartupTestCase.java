@@ -26,8 +26,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
-import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
-import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
+import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 
 import java.rmi.RemoteException;
 
@@ -53,7 +52,7 @@ public class APIMgtServerStartupTestCase {
     }
 
     @Test(groups = "wso2.all", description = "verify server startup errors")
-    public void testVerifyLogs() throws RemoteException, LogViewerLogViewerException {
+    public void testVerifyLogs() throws RemoteException {
         boolean status = false;
         int startLine = 0;
         int stopLine = 0;

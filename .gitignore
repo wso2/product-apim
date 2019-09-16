@@ -17,3 +17,7 @@ target
 .project
 *.iml
 .idea
+
+#OSX meta files and js local packages
+.DS_Store
+node_modules/

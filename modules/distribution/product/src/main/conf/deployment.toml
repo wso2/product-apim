@@ -1,5 +1,5 @@
 [server]
-#hostname = "localhost"
+hostname = "localhost"
 node_ip = "127.0.0.1"
 #offset=0
 mode = "single" #single or ha
@@ -15,13 +15,13 @@ type = "database"
 
 [database.apim_db]
 type = "h2"
-url = "jdbc:h2:repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
 username = "wso2carbon"
 password = "wso2carbon"
 
 [database.shared_db]
 type = "h2"
-url = "jdbc:h2:repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
 username = "wso2carbon"
 password = "wso2carbon"
 
@@ -220,3 +220,7 @@ allow_credentials = false
 #persistent_notifier.ttl = 5000
 #persistent_notifier.username = "root"
 #persistent_notifier.password = "root"
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
