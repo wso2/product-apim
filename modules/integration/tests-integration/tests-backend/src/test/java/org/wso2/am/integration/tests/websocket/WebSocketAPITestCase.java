@@ -66,6 +66,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -356,6 +357,14 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param accessToken API accessToken
      */
     private void testThrottling(String accessToken) throws Exception {
+
+        final int UNIT_TIME = 5; //5 minutes (The unit time is defined as 5 minutes in policy.json)
+        /* Prevent API requests getting dispersed into two time units */
+        while (LocalDateTime.now().getMinute() % UNIT_TIME >= (UNIT_TIME - 1)) {
+            Thread.sleep(65000);
+        }
+        int startingDistinctUnitTime = LocalDateTime.now().getMinute() / UNIT_TIME;
+
         int limit = 10;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
@@ -377,6 +386,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 log.info("Count :" + count + " Message :" + socket.getResponseMessage());
                 // At the 6th message check frame is throttled out.
                 if (count > limit) {
+                    //If throttling testing time duration is dispersed into two separate unit times, repeat the test
+                    if ((LocalDateTime.now().getMinute() / UNIT_TIME) != startingDistinctUnitTime) {
+                        //repeat the test
+                        log.info("Repeating the test as throttling testing time duration is dispersed into two " +
+                                "separate units of time");
+                        testThrottling(accessToken);
+                    }
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
                             "Received response is not matching");
                 }
