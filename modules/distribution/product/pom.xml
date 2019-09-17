@@ -372,7 +372,7 @@
                             <target>
                                 <copy todir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3/">
                                     <fileset dir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
-                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar"/>
+                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar" />
                                     </fileset>
                                 </copy>
                             </target>

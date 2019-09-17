@@ -169,5 +169,9 @@
     "TLSv1",
     "TLSv1.1",
     "TLSv1.2"
-  ]
+  ],
+  "monitoring.jmx.rmi_registry_port": "9999",
+  "monitoring.jmx.rmi_server_port": "11111",
+  "monitoring.jmx.rmi_server_start": true,
+  "monitoring.jmx.rmi_hostname": "localhost"
 }
