@@ -222,10 +222,11 @@ elif [ "$CMD" = "version" ]; then
 fi
 
 # ---------- Handle the SSL Issue with proper JDK version --------------------
-jdk_17=`$JAVA_HOME/bin/java -version 2>&1 | grep "1.[7|8]"`
-if [ "$jdk_17" = "" ]; then
+java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+java_version_formatted=$(echo "$java_version" | awk -F. '{printf("%02d%02d",$1,$2);}')
+if [ $java_version_formatted -lt 0107 ] || [ $java_version_formatted -gt 1100 ]; then
    echo " Starting WSO2 Carbon (in unsupported JDK)"
-   echo " [ERROR] CARBON is supported only on JDK 1.7 and 1.8"
+   echo " [ERROR] CARBON is supported only on JDK 1.7, 1.8, 9, 10 and 11"
 fi
 
 CARBON_XBOOTCLASSPATH=""
@@ -236,7 +237,6 @@ do
     fi
 done
 
-JAVA_ENDORSED_DIRS="$CARBON_HOME/lib/endorsed":"$JAVA_HOME/jre/lib/endorsed":"$JAVA_HOME/lib/endorsed"
 
 CARBON_CLASSPATH=""
 if [ -e "$JAVA_HOME/lib/tools.jar" ]; then
@@ -248,17 +248,19 @@ do
         CARBON_CLASSPATH="$CARBON_CLASSPATH":$f
     fi
 done
-for t in "$CARBON_HOME"/lib/commons-lang*.jar
+for t in "$CARBON_HOME"/lib/*.jar
 do
     CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
 done
+
+
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   JAVA_HOME=`cygpath --absolute --windows "$JAVA_HOME"`
   CARBON_HOME=`cygpath --absolute --windows "$CARBON_HOME"`
   AXIS2_HOME=`cygpath --absolute --windows "$CARBON_HOME"`
   CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
-  JAVA_ENDORSED_DIRS=`cygpath --path --windows "$JAVA_ENDORSED_DIRS"`
   CARBON_CLASSPATH=`cygpath --path --windows "$CARBON_CLASSPATH"`
   CARBON_XBOOTCLASSPATH=`cygpath --path --windows "$CARBON_XBOOTCLASSPATH"`
 fi
@@ -272,7 +274,7 @@ cd "$CARBON_HOME"
 
 TMP_DIR="$CARBON_HOME"/tmp
 if [ -d "$TMP_DIR" ]; then
-rm -rf "$TMP_DIR"
+rm -rf "$TMP_DIR"/*
 fi
 
 START_EXIT_STATUS=121
@@ -290,6 +292,13 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 #To monitor a Carbon server in remote JMX mode on linux host machines, set the below system property.
 #   -Djava.rmi.server.hostname="your.IP.goes.here"
 
+JAVA_VER_BASED_OPTS=""
+
+
+if [ $java_version_formatted -ge 1100 ]; then
+    JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED"
+fi
+
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
     $JAVACMD \
@@ -300,7 +309,7 @@ do
     $JAVA_OPTS \
     -Dcom.sun.management.jmxremote \
     -classpath "$CARBON_CLASSPATH" \
-    -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" \
+    $JAVA_VER_BASED_OPTS \
     -Djava.io.tmpdir="$CARBON_HOME/tmp" \
     -Dcatalina.base="$CARBON_HOME/lib/tomcat" \
     -Dwso2.server.standalone=true \
@@ -326,6 +335,8 @@ do
     -Dorg.opensaml.httpclient.https.disableHostnameVerification=true \
     -Dhttpclient.hostnameVerifier=AllowAll \
     -DworkerNode=false \
+    -DenableCorrelationLogs=false \
+    -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done

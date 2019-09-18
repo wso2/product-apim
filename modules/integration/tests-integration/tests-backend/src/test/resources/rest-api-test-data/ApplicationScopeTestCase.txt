@@ -47,49 +47,42 @@
                   "request-headers":{
                      "Authorization":"Bearer"
                   },
-                  "request-payload":"{\r\n   \"name\": \"APItoTestSubscription\",\r\n   \"context\": \"\/apiToTestSubscription\",\r\n
-                        \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\r\n   \"status\": \"CREATED\",\r\n
-                        \"tags\": [],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
-                        \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
-                        \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"Unlimited\"],\r\n
-                        \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
-                        \"visibleTenants\": [],\r\n
-                        \"endpointConfig\":
-                        \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
-                        \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
-                        \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
-                        \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
-                        \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
-                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
-                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":
-                        \\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"200\\\":{}}},
-                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
-                        \\\"x-scope\\\":\\\"admin_scope\\\"
-                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"Request Body\\\",
-                        \\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
-                        \\\"responses\\\":{\\\"200\\\":{}}},\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"x-scope\\\":\\\"role1_scope\\\",
-                        \\\"responses\\\":{\\\"200\\\":{}}},
-                        \\\"delete\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
-                        \\\"patch\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
-                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
-                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
-                        \\\"responses\\\":{\\\"200\\\":{}}}}},\\\"swagger\\\":\\\"2.0\\\",
-                        \\\"info\\\":{\\\"title\\\":\\\"api1\\\",\\\"version\\\":\\\"1\\\"}
-                        \\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[{\\\"name\\\":\\\"admin\\\",
-                        \\\"description\\\":\\\"\\\",\\\"key\\\":\\\"admin_scope\\\",\\\"roles\\\":\\\"admin\\\"},
-                        {\\\"name\\\":\\\"role1\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"role1_scope\\\",
-                        \\\"roles\\\":\\\"role1\\\"}]}}}\",
-                        \r\n\"responseCaching\": \"Disabled\",\r\n   \"isDefaultVersion\": false,\r\n   \"businessInformation\":
-                        {\r\n      \"technicalOwner\": null,\r\n      \"technicalOwnerEmail\": null,\r\n
-                        \"businessOwner\": null,\r\n      \"businessOwnerEmail\": null\r\n   }\r\n}",
+                  "request-payload":"{\"name\": \"APItoTestSubscription\",\"context\": \"/apiToTestSubscription\",
+                      \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\"status\": \"CREATED\",\"tags\": [],\"transport\":
+                      [\"http\",\"https\"],\"cacheTimeout\": 300,\"description\": null,\"provider\": \"admin\",\"version\":
+                      \"1\",\"sequences\": [],\"tiers\": [\"Unlimited\"],\"thumbnailUri\": null,\"visibility\": \"PUBLIC\",
+                      \"visibleRoles\": [],\"visibleTenants\": [],\"endpointConfig\": \"{\\\"production_endpoints\\\":
+                      {\\\"url\\\":\\\"http://maps.googleapis.com/maps/api/geocode/json?address=Colombo\\\",
+                      \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}
+                      \",\"subscriptionAvailability\": \"current_tenant\",\"subscriptionAvailableTenants\": [],
+                      \"destinationStatsEnabled\": \"Disabled\",\"apiDefinition\": \"{\\\"paths\\\": {\\\"/*\\\":
+                      {\\\"put\\\": {\\\"x-auth-type\\\": \\\"Application & Application User\\\",\\\"x-throttling-tier\\\":
+                      \\\"Unlimited\\\",\\\"parameters\\\": [{\\\"schema\\\": {\\\"type\\\": \\\"object\\\"},
+                      \\\"description\\\": \\\"Request Body\\\",\\\"name\\\": \\\"Payload\\\",\\\"required\\\": false,
+                      \\\"in\\\": \\\"body\\\"}],\\\"responses\\\": {\\\"200\\\": {  \\\"description\\\":
+                      \\\"description\\\"}}},\\\"post\\\": {\\\"x-auth-type\\\": \\\"Application & Application User\\\",
+                      \\\"x-throttling-tier\\\": \\\"Unlimited\\\",\\\"x-scope\\\": \\\"admin_scope\\\",\\\"parameters\\\":
+                      [{\\\"schema\\\": {\\\"type\\\": \\\"object\\\"},\\\"description\\\": \\\"Request Body\\\",
+                      \\\"name\\\": \\\"Payload\\\",\\\"required\\\": false,\\\"in\\\": \\\"body\\\"}],\\\"responses\\\":
+                      {\\\"200\\\": {  \\\"description\\\": \\\"description\\\"}}},\\\"get\\\": {\\\"x-auth-type\\\":
+                      \\\"Application & Application User\\\",\\\"x-throttling-tier\\\": \\\"Unlimited\\\",\\\"x-scope\\\":
+                      \\\"role1_scope\\\",\\\"responses\\\": {\\\"200\\\": {  \\\"description\\\": \\\"description\\\"}}},
+                      \\\"delete\\\": {\\\"x-auth-type\\\": \\\"Application & Application User\\\",\\\"x-throttling-tier\\\":
+                      \\\"Unlimited\\\",\\\"responses\\\": {\\\"200\\\": {  \\\"description\\\": \\\"description\\\"}}},
+                      \\\"patch\\\": {\\\"x-auth-type\\\": \\\"Application & Application User\\\",\\\"x-throttling-tier\\\":
+                      \\\"Unlimited\\\",\\\"parameters\\\": [{\\\"schema\\\": {\\\"type\\\": \\\"object\\\"},
+                      \\\"description\\\": \\\"Request Body\\\",\\\"name\\\": \\\"Payload\\\",\\\"required\\\": false,
+                      \\\"in\\\": \\\"body\\\"}],\\\"responses\\\": {\\\"200\\\": {  \\\"description\\\": \\\"description
+                      \\\"}}}}},\\\"swagger\\\": \\\"2.0\\\",\\\"info\\\": {\\\"title\\\": \\\"api1\\\",\\\"version\\\":
+                      \\\"1\\\"},\\\"x-wso2-security\\\": {\\\"apim\\\": {\\\"x-wso2-scopes\\\": [{\\\"name\\\": \\\"admin
+                      \\\",\\\"description\\\": \\\"\\\",\\\"key\\\": \\\"admin_scope\\\",\\\"roles\\\": \\\"admin\\\"},
+                      {\\\"name\\\": \\\"role1\\\",\\\"description\\\": \\\"\\\",\\\"key\\\": \\\"role1_scope\\\",
+                      \\\"roles\\\": \\\"role1\\\"}]}}}\",\"responseCaching\": \"Disabled\",\"isDefaultVersion\": false,
+                      \"businessInformation\": {\"technicalOwner\": null,\"technicalOwnerEmail\": null,\"businessOwner\":
+                      null,\"businessOwnerEmail\": null}}",
 
-                        "response-headers":"",
-                        "response-payload":""
+                  "response-headers":"",
+                  "response-payload":""
                },
                "asserts": {
                     "header-asserts": {

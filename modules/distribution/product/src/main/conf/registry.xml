@@ -29,6 +29,27 @@
     <dbConfig name="wso2registry">
         <dataSource>jdbc/WSO2CarbonDB</dataSource>
     </dbConfig>
+    <dbConfig name="govregistry">
+        <dataSource>jdbc/SHARED_DB</dataSource>
+    </dbConfig>
+    <remoteInstance url="https://localhost">
+        <id>gov</id>
+        <cacheId>wso2carbon@jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000</cacheId>
+        <dbConfig>govregistry</dbConfig>
+        <readOnly>false</readOnly>
+        <enableCache>true</enableCache>
+        <registryRoot>/</registryRoot>
+    </remoteInstance>
+
+
+    <mount path="/_system/governance" overwrite="true">
+        <instanceId>gov</instanceId>
+        <targetPath>/_system/governance</targetPath>
+    </mount>
+    <mount path="/_system/config" overwrite="true">
+        <instanceId>gov</instanceId>
+        <targetPath>/_system/config</targetPath>
+    </mount>
 
     <!-- This handler provides the feature to add a simlink to a given resource -->
 
@@ -260,10 +281,10 @@
     <!-- NOTE: You can edit the options under "StaticConfiguration" only before the
      startup. -->
     <staticConfiguration>
-        <versioningProperties>true</versioningProperties>
-        <versioningComments>true</versioningComments>
-        <versioningTags>true</versioningTags>
-        <versioningRatings>true</versioningRatings>
+        <versioningProperties>false</versioningProperties>
+        <versioningComments>false</versioningComments>
+        <versioningTags>false</versioningTags>
+        <versioningRatings>false</versioningRatings>
         <!-- Location you want to add service and default location will be /services/ -->
         <servicePath>/trunk/services/</servicePath>
     </staticConfiguration>

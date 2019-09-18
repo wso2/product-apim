@@ -60,6 +60,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -349,6 +353,34 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                    <id>modify-resource-authentication-identity</id>
+                    <phase>prepare-package</phase>
+                    <configuration>
+                        <tasks>
+                            <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;ResourceAccessControl default-access=&quot;deny&quot;&gt;" value="&lt;ResourceAccessControl default-access=&quot;allow&quot;&gt;" />
+                        </tasks>
+                    </configuration>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                    </execution>
+                    <execution>
+                        <id>move-rest-api-util-jar</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <copy todir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3/">
+                                    <fileset dir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
+                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar" />
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -373,7 +405,7 @@
                         <id>pre_dist</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
@@ -389,7 +421,7 @@
                         <id>dist</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
@@ -405,7 +437,7 @@
                         <id>docs</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <filters>
@@ -420,7 +452,7 @@
                         <id>sample-scenarios</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <filters>
@@ -449,9 +481,10 @@
                         <configuration>
                             <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</file>
                             <replacements>
+
                                 <replacement>
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <token>(jdbc/WSO2IdentityDB)</token>
                                     <value>jdbc/WSO2AM_DB</value>
                                 </replacement>
                                 <replacement>
@@ -483,6 +516,11 @@
                                     <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
                                     <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
                                     <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/ResourceAccessControl/@default-access</xpath>
+                                    <token>(deny)</token>
+                                    <value>allow</value>
                                 </replacement>
                             </replacements>
                         </configuration>
@@ -672,6 +710,142 @@
                 <configuration>
                        <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>wso2-maven-json-merge-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/default.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.databridge.agent.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.databridge.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.processor.manager.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.consent.mgt.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.application.authentication.framework.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.default.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/infer.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.infer.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.infer.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/validator.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/validator.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.validator.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/validator.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/key-mappings.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.application.authentication.framework.server.feature.key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.key-mapping.json
+                                        </param>
+
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/unit-resolve.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.unit-resolve.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                    </target>
+                                    <mergeChildren>true</mergeChildren>
+                                </task>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

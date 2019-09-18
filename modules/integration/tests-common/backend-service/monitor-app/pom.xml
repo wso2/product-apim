@@ -49,8 +49,8 @@ under the License.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.logging</artifactId>
+            <groupId>org.ops4j.pax.logging</groupId>
+            <artifactId>pax-logging-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -83,13 +83,6 @@ under the License.
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.2</version>

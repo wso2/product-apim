@@ -37,8 +37,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
-import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
+import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -99,9 +98,9 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         String log4jPropertiesFile =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "lifecycletest" + File.separator + "log4j.properties";
+                        "AM" + File.separator + "lifecycletest" + File.separator + "log4j2.properties";
         String log4jPropertiesTargetLocation =
-                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "log4j.properties";
+                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "log4j2.properties";
         serverConfigurationManager.applyConfigurationWithoutRestart
                 (new File(log4jPropertiesFile), new File(log4jPropertiesTargetLocation), true);
         serverConfigurationManager.restartGracefully();
@@ -127,7 +126,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
 
     @Test(groups = {"wso2.am"}, description = "Invoke the APi and check the  API request is going through the new handler.")
     public void testAPIInvocationHitsTheNewHandler() throws Exception,
-            XMLStreamException, LogViewerLogViewerException {
+            XMLStreamException {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
         //Create publish and subscribe a API

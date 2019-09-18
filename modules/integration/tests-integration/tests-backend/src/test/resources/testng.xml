@@ -28,12 +28,19 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
         </classes>
     </test>
 
     <test name="apim-integration-tests-api-application-lifecycle" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.APIApplicationLifeCycleTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-ui-tests" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.ui.APIMANAGERUIIntegrationTestRunner"/>
         </classes>
     </test>
 
@@ -71,8 +78,6 @@
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
             <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
-            <!-- Commenting this test since its required to setup BAM and the DBs to run this
-            <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.CustomLifeCycleTestCase"/>
@@ -107,7 +112,6 @@
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.InvokeAPIUsingOldThrottlingWithWSClient"/>-->
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
@@ -241,7 +245,8 @@
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <!--THis test will be enabled once the stats event streams are finalized  -->
             <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
+            <!-- Temporarily disabling intermittently failing test-->
+            <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>
@@ -249,20 +254,21 @@
         </classes>
     </test>
 
-   <!-- <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false">
+    <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false">
         <classes>
-            &lt;!&ndash;<class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>&ndash;&gt;
+            <class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.MultipleSubscriptionsTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
-            &lt;!&ndash;class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/&ndash;&gt;
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/-->
+            <!--Disable following test cases, since old throttling engine is deprecated -->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
         </classes>
-    </test>-->
+    </test>
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false">
         <classes>

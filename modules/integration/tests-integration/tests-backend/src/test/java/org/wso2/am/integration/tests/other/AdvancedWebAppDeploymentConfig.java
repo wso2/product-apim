@@ -67,6 +67,14 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                 .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
                 APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        //Deploying the Mock ETCD Server
+        String webAppName = "etcdmock";
+        sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
+                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
+                + webAppName + ".war";
+        webAppAdminClient.uploadWarFile(sourcePath);
+        WebAppDeploymentUtil
+                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
         log.info("Web App Deployed");
 
         initialize();

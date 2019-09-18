@@ -24,11 +24,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
-import org.wso2.am.admin.clients.rest.api.WorkFlowAdminRestClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -57,7 +57,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private WorkFlowAdminRestClient workflowAdmin;
+    private AdminDashboardRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
 
@@ -71,21 +71,14 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
         String apiManagerXml =
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "api-manager.xml";
+                        File.separator + "deployment.toml";
 
-        String userMgtXml =
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "user-mgt.xml";
 
-        String carbonXml =
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                        File.separator + "carbon.xml";
-
-        configureServer(apiManagerXml, userMgtXml, carbonXml);
+        configureServer(apiManagerXml);
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
-        workflowAdmin = new WorkFlowAdminRestClient(workflowAdminURLHTTP);
+        workflowAdmin = new AdminDashboardRestClient(workflowAdminURLHTTP);
 
     }
 
@@ -181,13 +174,12 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
         super.cleanUp();
     }
 
-    private void configureServer(String apiManagerXml, String userMgtXml, String carbonXml) throws Exception {
+    private void configureServer(String apiManagerXml) throws Exception {
+
         try {
             serverConfigurationManager = new ServerConfigurationManager(publisherContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
-            serverConfigurationManager.applyConfiguration(new File(carbonXml));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Error while changing server configuration", e);
         }
     }

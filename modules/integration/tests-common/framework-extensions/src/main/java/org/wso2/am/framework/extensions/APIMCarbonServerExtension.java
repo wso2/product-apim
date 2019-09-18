@@ -89,9 +89,9 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
 
                 try {
                     FileManager.copyFile(new File(resourcePath + File.separator + "configFiles" + File.separator +
-                                    "throttling" + File.separator + "jndi.properties")
+                                    "originalFile" + File.separator + "deployment.toml")
                             , serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
-                                    "conf" + File.separator +"jndi.properties");
+                                    "conf" + File.separator +"deployment.toml");
 
                 } catch (IOException e) {
                     throw new AutomationFrameworkException(e.getMessage(), e);

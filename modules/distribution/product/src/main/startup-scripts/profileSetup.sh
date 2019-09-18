@@ -16,16 +16,25 @@
 
 userLocation=`pwd`
 pathToApiManagerXML='../repository/conf/api-manager.xml'
+pathToDeploymentConfiguration='../repository/conf/deployment.toml'
 pathToAxis2XML='../repository/conf/axis2/axis2.xml'
+pathToAxis2XMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2.xml.j2'
 pathToRegistry='../repository/conf/registry.xml'
+pathToRegistryTemplate='../repository/resources/conf/templates/repository/conf/registry.xml.j2'
 pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/inbound-endpoints/'
 pathToWebapps='../repository/deployment/server/webapps'
 pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
 pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
+pathToAxis2TMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_TM.xml.j2'
 pathToRegistryTM='../repository/conf/registry_TM.xml'
+pathToRegistryTMTemplate='../repository/resources/conf/templates/repository/conf/registry_TM.xml.j2'
 pathToAxis2XMLBackup='../repository/conf/axis2/axis2backup.xml'
+pathToAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/axis2.backup'
 pathToRegistryBackup='../repository/conf/registryBackup.xml'
+pathToRegistryTemplateBackup='../repository/resources/conf/templates/repository/conf/registry.backup'
+pathToDeploymentConfigurationBackup='../repository/conf/deployment.toml.backup'
+pathToDeploymentTemplates='../repository/resources/conf/deployment-templates'
 timestamp=""
 cd `dirname "$0"`
 
@@ -46,6 +55,21 @@ disableDataPublisher(){
 		fi
 		timeStamp
 		echo "[${timestamp}] INFO - Disabled the <DataPublisher> from api-manager.xml file"
+	fi
+}
+disableBlockConditionRetriever(){
+	value=`xmllint --xpath '//BlockCondition/Enabled/text()' $pathToApiManagerXML`
+	kernel=$(uname -s)
+	if [ "$value" = "true" ]
+	then
+		if [ "$kernel" = "Darwin" ]
+		then
+			sed -i '' -e "/<BlockCondition>/,/<\/BlockCondition>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		else
+			sed -i "/<BlockCondition>/,/<\/BlockCondition>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
+		fi
+		timeStamp
+		echo "[${timestamp}] INFO - Disabled the <BlockCondition> from api-manager.xml file"
 	fi
 }
 
@@ -113,7 +137,7 @@ disableTransportSenderWSS(){
 			then
 				sed -i '' -e '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			else
-				sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML	
+				sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
 			fi
 			timeStamp
 			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
@@ -195,6 +219,43 @@ replaceRegistryXMLFile(){
 	fi
 }
 
+replaceAxis2TemplateFile(){
+    if [ -e $pathToAxis2XMLTemplate ] && [ -e $pathToAxis2TMXmlTemplate ]
+	then
+	    mv $pathToAxis2XMLTemplate $pathToAxis2TXmlTemplateBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing $$pathToAxis2XMLTemplate file as axis2.backup"
+		mv $pathToAxis2TMXmlTemplate $pathToAxis2XMLTemplate
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2TMXmlTemplate file as axis2.xml.j2"
+	fi
+}
+
+replaceRegistryXMLTemplateFile(){
+    if [ -e $pathToRegistryTemplate ] && [ -e $pathToRegistryTMTemplate ]
+	then
+        mv $pathToRegistryTemplate $pathToRegistryTemplateBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTemplate file as registry.backup"
+		mv $pathToRegistryTMTemplate $pathToRegistryTemplate
+		timeStamp
+		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTMTemplate file as registry.xml.j2"
+	fi
+}
+
+replaceDeploymentConfiguration(){
+    profileConfiguration=$pathToDeploymentTemplates/$1.toml
+        if [ -e $pathToDeploymentConfiguration ] && [ -e $profileConfiguration ]
+    	then
+            mv $pathToDeploymentConfiguration $pathToDeploymentConfigurationBackup
+    		timeStamp
+    		echo "[${timestamp}] INFO - Rename the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
+    		mv $profileConfiguration $pathToDeploymentConfiguration
+    		timeStamp
+    		echo "[${timestamp}] INFO - Rename the existing $profileConfiguration file as deployment.toml"
+    	fi
+}
+
 #main
 case $1 in
 	-Dprofile=api-key-manager)
@@ -204,9 +265,11 @@ case $1 in
 		disablePolicyDeployer
 		disableTransportSenderWS
 		disableTransportSenderWSS
+		disableBlockConditionRetriever
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
+		replaceDeploymentConfiguration api-key-manager
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
@@ -231,10 +294,11 @@ case $1 in
 		;;
 	-Dprofile=api-publisher)
 		echo "Starting to optimize API Manager for the API Publisher profile"
-		disableDataPublisher
 		disableJMSConnectionDetails
 		disableTransportSenderWS
 		disableTransportSenderWSS
+		disableBlockConditionRetriever
+     	replaceDeploymentConfiguration api-publisher
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
@@ -266,6 +330,8 @@ case $1 in
 		disablePolicyDeployer
 		disableTransportSenderWS
 		disableTransportSenderWSS
+		disableBlockConditionRetriever
+     	replaceDeploymentConfiguration api-store
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
@@ -294,7 +360,10 @@ case $1 in
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
 		replaceAxis2File
 		replaceRegistryXMLFile
+		replaceAxis2TemplateFile
+		replaceRegistryXMLTemplateFile
 		disableIndexingConfiguration
+     	replaceDeploymentConfiguration traffic-manager
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
@@ -324,6 +393,7 @@ case $1 in
 		echo "Starting to optimize API Manager for the Gateway worker profile"
 		disablePolicyDeployer
 		disableIndexingConfiguration
+     	replaceDeploymentConfiguration gateway-worker
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'am#sample#pizzashack#v*.war'); do
 			rm -r $i

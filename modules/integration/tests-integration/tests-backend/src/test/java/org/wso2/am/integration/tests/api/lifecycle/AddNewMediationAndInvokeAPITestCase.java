@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,6 +35,8 @@ import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -55,7 +58,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     private final String API_NAME = "AddNewMediationAndInvokeAPITest";
     private final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_END_POINT_POSTFIX_URL = "CxfRestService-1.0.0-SNAPSHOT/rest/employeeservices/10/";
+    private final String API_END_POINT_POSTFIX_URL = "xmlapi";
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
@@ -68,7 +71,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        String apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
         String providerName = user.getUserName();
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
@@ -89,11 +92,8 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
 
         String sessionId = createSession(gatewayContextMgt);
-        deployArrService(gatewayContextMgt.getContextUrls().getBackEndUrl(), sessionId);
+        deployArrService(gatewayContextMgt, sessionId);
 
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                                                 sessionId, "CxfRestService-1.0.0-SNAPSHOT");
-        assertTrue(isWebAppDeployed, "Web Application Not Deployed Correctly.");
 
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
@@ -107,14 +107,14 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
         //Send GET Request
 
-        HttpClient client = HttpClientBuilder.create().build();
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization" , "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
 
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
 
-        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml; charset=UTF-8");
 
     }
 
@@ -125,7 +125,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         apiCreationRequestBean.setOutSequence("xml_to_json_out_message");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         waitForAPIDeployment();
-        HttpClient client = HttpClientBuilder.create().build();
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization" , "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
@@ -143,14 +143,14 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         waitForAPIDeployment();
         //Send GET Request
-        HttpClient client = HttpClientBuilder.create().build();
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization" , "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
 
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
 
-        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml; charset=UTF-8");
     }
 
 
@@ -161,14 +161,11 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
     }
 
-    public void deployArrService(String backEndUrl, String sessionCookie) throws  Exception {
+    public void deployArrService(AutomationContext gatewayContextMgt, String gatewaySessionCookie) throws Exception {
 
-        String filePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
-                          File.separator + "sequence" + File.separator + "CxfRestService-1.0.0-SNAPSHOT.war";
-
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(backEndUrl, sessionCookie);
-        webAppAdminClient.uploadWarFile(filePath);
-
+        String filePath = "artifacts" + File.separator + "AM" + File.separator + "sequence" + File.separator +
+                "xml_api.xml";
+            loadSynapseConfigurationFromClasspath(filePath, gatewayContextMgt, gatewaySessionCookie);
 
     }
 
