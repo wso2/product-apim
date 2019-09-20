@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -24,36 +24,14 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>wso2is-identity-oauth2-grant-types</artifactId>
+    <artifactId>wso2is-identity-outbound-authenticators</artifactId>
     <packaging>pom</packaging>
-    <name>API Manager : oauth2-grant-types</name>
+    <name>API Manager : outbound-authenticators</name>
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                    <!-- Download JWT Bearer Grant jar from nexus and copy to the oauth2GrantCopied folder-->
-                    <execution>
-                        <id>download_jwtgrant_jar</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon.extension.identity.oauth2.grantType.jwt</groupId>
-                                    <artifactId>org.wso2.carbon.identity.oauth2.grant.jwt</artifactId>
-                                    <version>${carbon.extension.identity.oauth2.grantType.jwt.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${basedir}/target/oauth2GrantCopied/jar</outputDirectory>
-                                    <includes>**/*.jar</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-
                     <!-- Download OIDC jar from nexus and copy to the authenticatoroutbound/jar folder-->
                     <execution>
                         <id>download_oidc_jar</id>
