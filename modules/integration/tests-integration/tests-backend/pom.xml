@@ -86,6 +86,7 @@ under the License.
                         <inherited>false</inherited>
                         <configuration>
                             <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <!--<argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</argLine>-->
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -673,6 +674,21 @@ under the License.
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.carbon.apimgt.test.utils</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <!--Jetty dependencies end -->
 

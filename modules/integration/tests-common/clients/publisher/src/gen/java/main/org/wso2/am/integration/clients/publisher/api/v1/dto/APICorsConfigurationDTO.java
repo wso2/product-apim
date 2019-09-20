@@ -30,7 +30,7 @@ import java.util.List;
  * CORS configuration for the API 
  */
 @ApiModel(description = "CORS configuration for the API ")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-07-19T12:20:14.501+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
 public class APICorsConfigurationDTO {
   @SerializedName("corsConfigurationEnabled")
   private Boolean corsConfigurationEnabled = false;

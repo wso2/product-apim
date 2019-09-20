@@ -3837,7 +3837,7 @@ paths:
       x-wso2-curl: "curl -X GET \
                       https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/client-certificates/newtest1 Authorization:
+      x-wso2-request: "GET https://localhost/api/am/publisher/v0.14/client-certificates/newtest1 Authorization:
       Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK
                         Date: Tue, 09 Oct 2018 16:25:43 GMT
@@ -3897,7 +3897,7 @@ paths:
       x-wso2-curl: "curl -X GET \
                       https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1/content \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-request: "GET https://localhost/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK \
                         Content-Disposition: attachment; filename=\"newtest1.crt\" \
                          Date: Tue, 09 Oct 2018 16:21:25 GMT
@@ -4428,8 +4428,8 @@ paths:
           - apim:ep_certificates_view
       produces:
         - application/json
-      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon\" -H  \"accept: application/json\""
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-curl: "curl -X GET \"https://localhost/api/am/publisher/v0.14/certificates/wso2carbon\" -H  \"accept: application/json\""
+      x-wso2-request: "GET https://localhost/api/am/publisher/v0.14/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK \nContent-Type: application/json\r\n {\n  \"status\":\"Active\",\n  \"validity\":{\n    \"from\":\"Fri May 04 19:01:01 IST 2018\",\n    \"to\":\"Thu Aug 02 19:01:01 IST 2018\"\n  }\n,  \"version\":\"3\",\n  \"subject\":\"CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK\"\n}"
       summary: Get the certificate information.
       description: |
@@ -4478,8 +4478,8 @@ paths:
       security:
         - OAuth2Security:
           - apim:ep_certificates_view
-      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content\" -H \"accept: application/json\""
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-curl: "curl -X GET \"https://localhost/api/am/publisher/v0.14/certificates/wso2carbon/content\" -H \"accept: application/json\""
+      x-wso2-request: "GET https://localhost/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK\r\n [content of the certificate]"
       summary: Download a certificate.
       description: |
@@ -5092,13 +5092,13 @@ definitions:
           ],"
       subscriptionAvailability:
         type: string
-        description: The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
+        description: The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
         enum:
-          - current_tenant
-          - all_tenants
-          - specific_tenants
-        example: current_tenant
-        default: all_tenants
+          - CURRENT_TENANT
+          - ALL_TENANTS
+          - SPECIFIC_TENANTS
+        example: CURRENT_TENANT
+        default: ALL_TENANTS
       subscriptionAvailableTenants:
         type: array
         items:

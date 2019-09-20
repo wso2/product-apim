@@ -24,6 +24,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -32,6 +33,8 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.test.Constants;
+import org.wso2.carbon.apimgt.test.utils.APIUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -65,8 +68,8 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
 
         //Login to the API Publisher
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse response;
-        response = apiPublisher.login(user.getUserName(), user.getPassword());
-        verifyResponse(response);
+//        response = apiPublisherApi.login(user.getUserName(), user.getPassword());
+//        verifyResponse(response);
 
         String apiName = "SubscriptionCheckAPI";
         String apiVersion = "1.0.0";
@@ -83,21 +86,18 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
             //Add the API using the API publisher.
-            response = apiPublisher.addAPI(apiRequest);
-            verifyResponse(response);
+            APIUtils apiUtils = new APIUtils();
+            response = apiUtils.addAPI(apiRequest);
+            //verifyResponse(response);
 
-            APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(apiName,
-                    user.getUserName(), APILifeCycleState.PUBLISHED);
             //Publish the API
-            response = apiPublisher.changeAPILifeCycleStatus(updateRequest1);
-            verifyResponse(response);
+            apiUtils.changeAPILifeCycleStatus(response.getData(), Constants.PUBLISHED);
+//            verifyResponse(response);
 
-            //Login to the API Store
-            response = apiStore.login(user.getUserName(), user.getPassword());
-            verifyResponse(response);
 
             //Add an Application in the Store.
-            response = apiStore.addApplication("subscriptionCheckApp1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+            response = apiUtils.createApplication("subscriptionCheckApp1",
+                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", ApplicationDTO.TokenTypeEnum.OAUTH);
             verifyResponse(response);
 
             //Subscribe the API to the Application

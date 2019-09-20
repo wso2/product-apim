@@ -261,7 +261,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         map.put("api", API_NAME);
         map.put("api_version", API_VERSION);
         map.put("tenantDomain", user.getUserDomain());
-        map.put("apiPublisher", publisher);
+        map.put("apiPublisherApi", publisher);
         map.put("context", context);
         testExecutionTimeEvent(map);
 
@@ -322,7 +322,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         map.put("userId", userId);
         map.put("tenantDomain", user.getUserDomain());
         map.put("hostName", "");
-        map.put("apiPublisher", user.getUserName());
+        map.put("apiPublisherApi", user.getUserName());
         map.put("applicationName", APP_NAME);
         map.put("applicationId", "");
         map.put("protocol", "http");
@@ -392,7 +392,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         map.put("api", THROTTLE_API_NAME);
         map.put("api_version", apiVersion);
         map.put("context", context);
-        map.put("apiPublisher", user.getUserName());
+        map.put("apiPublisherApi", user.getUserName());
         map.put("applicationName", APP_NAME);
         map.put("subscriber", user.getUserName());
         map.put("throttledOutReason", "HARD_LIMIT_EXCEEDED");
@@ -481,7 +481,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("request").toString()), "Wrong request count received");
         Assert.assertEquals(userId, map.get("userId").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisherApi").toString(), "Wrong apiPublisherApi received");
         Assert.assertEquals(APP_NAME, map.get("applicationName").toString(), "Wrong applicationName received");
         Assert.assertEquals(APIMIntegrationConstants.API_TIER.UNLIMITED, map.get("tier").toString(),
                 "Wrong subscribe tier received");
@@ -531,7 +531,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("request").toString()), "Wrong request count received");
         Assert.assertEquals("anonymous", map.get("userId").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisherApi").toString(), "Wrong apiPublisherApi received");
         Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
         Assert.assertEquals("Unauthenticated", map.get("tier").toString(), "Wrong subscribe tier received");
         Assert.assertEquals("false", map.get("throttledOut").toString(), "Wrong throttledOut state received");
@@ -590,7 +590,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("response").toString()), "Wrong request count received");
         Assert.assertEquals(username, map.get("username").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisherApi").toString(), "Wrong apiPublisherApi received");
         Assert.assertEquals(APP_NAME, map.get("applicationName").toString(), "Wrong applicationName received");
         Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
         Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
@@ -642,7 +642,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("response").toString()), "Wrong request count received");
         Assert.assertEquals("anonymous", map.get("username").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisherApi").toString(), "Wrong apiPublisherApi received");
         Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
         Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
         Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
@@ -677,8 +677,8 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
                 "Wrong api_version received");
         Assert.assertEquals(expected.get("tenantDomain"), map.get("tenantDomain").toString(),
                 "Wrong tenantDomain received");
-        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
-                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("apiPublisherApi"), map.get("apiPublisherApi").toString(),
+                "Wrong apiPublisherApi received");
         Assert.assertEquals(expected.get("context"), map.get("context").toString(), "Wrong context received");
     }
 
@@ -717,8 +717,8 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(expected.get("userId"), map.get("userId"), "Wrong userId received");
         Assert.assertEquals(expected.get("tenantDomain"), map.get("tenantDomain").toString(),
                 "Wrong tenantDomain received");
-        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
-                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("apiPublisherApi"), map.get("apiPublisherApi").toString(),
+                "Wrong apiPublisherApi received");
         Assert.assertEquals(expected.get("applicationName"), map.get("applicationName"),
                 "Wrong applicationName received");
         Assert.assertEquals(expected.get("protocol"), map.get("protocol").toString(), "Wrong protocol received");
@@ -755,8 +755,8 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(expected.get("api_version"), map.get("api_version").toString(),
                 "Wrong api_version received");
         Assert.assertEquals(expected.get("context"), map.get("context").toString(), "Wrong context received");
-        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
-                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("apiPublisherApi"), map.get("apiPublisherApi").toString(),
+                "Wrong apiPublisherApi received");
         Assert.assertEquals(expected.get("applicationName"), map.get("applicationName"),
                 "Wrong applicationName received");
         Assert.assertEquals(expected.get("subscriber"), map.get("subscriber"), "Wrong subscriber received");

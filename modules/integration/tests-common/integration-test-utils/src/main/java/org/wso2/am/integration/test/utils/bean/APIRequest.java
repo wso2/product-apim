@@ -116,9 +116,19 @@ public class APIRequest extends AbstractRequest {
         this.context = context;
         try {
             this.endpoint =
-                    new JSONObject("{\"production_endpoints\":{\"url\":\""
-                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                            + "http" + "\"}");
+                    new JSONObject("{\n" +
+                            "  \"production_endpoints\": {\n" +
+                            "    \"template_not_supported\": false,\n" +
+                            "    \"config\": null,\n" +
+                            "    \"url\": \"http://www.mocky.io/v2/5d837eeb3400006420f4a55a\"\n" +
+                            "  },\n" +
+                            "  \"sandbox_endpoints\": {\n" +
+                            "    \"url\": \"http://www.mocky.io/v2/5d837eeb3400006420f4a55a/1231\",\n" +
+                            "    \"config\": null,\n" +
+                            "    \"template_not_supported\": false\n" +
+                            "  },\n" +
+                            "  \"endpoint_type\": \"http\"\n" +
+                            "}");
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +

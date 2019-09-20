@@ -32,7 +32,7 @@ Name | Type | Description | Notes
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
 **labels** | [**List&lt;LabelDTO&gt;**](LabelDTO.md) | Labels of micro-gateway environments attached to the API.  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
-**subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants. |  [optional]
+**subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
 **additionalProperties** | **Map&lt;String, String&gt;** | Map of custom properties of API |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
@@ -71,9 +71,9 @@ RESTRICTED | &quot;RESTRICTED&quot;
 ## Enum: SubscriptionAvailabilityEnum
 Name | Value
 ---- | -----
-CURRENT_TENANT | &quot;current_tenant&quot;
-ALL_TENANTS | &quot;all_tenants&quot;
-SPECIFIC_TENANTS | &quot;specific_tenants&quot;
+CURRENT_TENANT | &quot;CURRENT_TENANT&quot;
+ALL_TENANTS | &quot;ALL_TENANTS&quot;
+SPECIFIC_TENANTS | &quot;SPECIFIC_TENANTS&quot;
 
 
 <a name="AccessControlEnum"></a>

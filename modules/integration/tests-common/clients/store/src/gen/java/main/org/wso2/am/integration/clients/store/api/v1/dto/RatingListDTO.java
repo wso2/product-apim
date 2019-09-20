@@ -31,7 +31,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 /**
  * RatingListDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-07-19T12:20:24.022+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
 public class RatingListDTO {
   @SerializedName("avgRating")
   private String avgRating = null;

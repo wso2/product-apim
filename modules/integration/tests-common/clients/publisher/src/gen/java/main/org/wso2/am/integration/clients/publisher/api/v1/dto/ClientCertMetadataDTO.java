@@ -28,7 +28,7 @@ import java.io.IOException;
  * Meta data of certificate
  */
 @ApiModel(description = "Meta data of certificate")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-07-19T12:20:14.501+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
 public class ClientCertMetadataDTO {
   @SerializedName("alias")
   private String alias = null;

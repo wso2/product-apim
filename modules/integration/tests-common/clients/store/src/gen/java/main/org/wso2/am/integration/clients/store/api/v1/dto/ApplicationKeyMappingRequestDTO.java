@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * ApplicationKeyMappingRequestDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-07-19T12:20:24.022+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
 public class ApplicationKeyMappingRequestDTO {
   @SerializedName("consumerKey")
   private String consumerKey = null;

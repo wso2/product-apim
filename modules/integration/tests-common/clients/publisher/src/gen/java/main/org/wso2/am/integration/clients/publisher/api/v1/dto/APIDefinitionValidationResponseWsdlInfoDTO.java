@@ -32,7 +32,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDefinitionValidat
  * Summary of the WSDL including the basic information
  */
 @ApiModel(description = "Summary of the WSDL including the basic information")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-07-19T12:20:14.501+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
 public class APIDefinitionValidationResponseWsdlInfoDTO {
   @SerializedName("version")
   private String version = null;
