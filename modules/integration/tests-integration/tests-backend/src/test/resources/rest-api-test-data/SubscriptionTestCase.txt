@@ -156,7 +156,7 @@
                     "request-headers": {
                         "Authorization": "Bearer"
                     },
-                    "request-payload": "{\n   \"applicationId\": \"(applicationId)\",\n   \"status\": \"UNBLOCKED\",\n   \"tier\": \"PlatinumTier\",\n   \"subscriptionId\": \"1633bb5a-a805-4ab2-a872-1bf647b0a06a\",\n   \"apiIdentifier\": \"admin-APItoTestSubscription-1\"\n}",
+                    "request-payload": "{\n   \"applicationId\": \"(applicationId)\",\n   \"status\": \"UNBLOCKED\",\n   \"tier\": \"PlatinumTier\",\n   \"subscriptionId\": \"1633bb5a-a805-4ab2-a872-1bf647b0a06a\",\n   \"apiIdentifier\": \"(apiId)\"\n}",
                     "response-headers": "",
                     "response-payload": ""
                 },

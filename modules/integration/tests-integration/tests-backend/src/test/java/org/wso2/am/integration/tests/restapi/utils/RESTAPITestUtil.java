@@ -354,8 +354,6 @@ public class RESTAPITestUtil {
      */
     private String replaceParameterPatternWithValues(String parametrizedText, String regex) {
 
-        String actualTextWithValues = parametrizedText;
-
         if (parametrizedText != null && regex != null && regex.length() > 1) {
             //get the pattern for dynamically generated texts
             Pattern parameterPattern = Pattern.compile(regex);
@@ -367,11 +365,11 @@ public class RESTAPITestUtil {
                 //construct the final text with the values fetched from the preserved attribute list
                 String template = Character.toString(regex.charAt(1)) +
                         parameterName + Character.toString(regex.charAt(regex.length() - 1));
-                actualTextWithValues = parametrizedText.replace(template, preservedAttributes.get(parameterName));
+                parametrizedText = parametrizedText.replace(template, preservedAttributes.get(parameterName));
             }
         }
         //if patterns are found, then this returns the text with the values fetched from the preserved attribute list
-        return actualTextWithValues;
+        return parametrizedText;
     }
 
     /**
