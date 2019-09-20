@@ -555,7 +555,22 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>authenticationendpoint.war</include>
+                <include>authenticationendpoint/</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                src/main/extensions
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/authenticationendpoint/extensions
+            </outputDirectory>
+            <includes>
+                <include>title.jsp</include>
+                <include>header.jsp</include>
+                <include>footer.jsp</include>
+                <include>cookie-policy-content.jsp</include>
+                <include>privacy-policy-content.jsp</include>
             </includes>
         </fileSet>
 
@@ -566,7 +581,20 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>accountrecoveryendpoint.war</include>
+                <include>accountrecoveryendpoint/</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                src/main/extensions
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/accountrecoveryendpoint/extensions
+            </outputDirectory>
+            <includes>
+                <include>title.jsp</include>
+                <include>header.jsp</include>
+                <include>footer.jsp</include>
             </includes>
         </fileSet>
 
