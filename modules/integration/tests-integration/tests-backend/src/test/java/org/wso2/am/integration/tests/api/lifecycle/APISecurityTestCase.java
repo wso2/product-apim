@@ -109,7 +109,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         JSONObject response = new JSONObject(apiResponse.getData());
-        assertEquals(response.getJSONObject("fault").getInt("code"), 900911,
+        //fix test failure due to error code changes introduced in product-apim pull #7106
+        assertEquals(response.getJSONObject("fault").getInt("code"), 900901,
                 "API invocation succeeded with the access token without need for mutual ssl");
         apiResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD,
