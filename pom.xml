@@ -1199,7 +1199,7 @@
         <org.jaggery.version>0.14.8</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.7.9</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.7.11</carbon.multitenancy.version>
 
         <siddhi.version>3.2.6</siddhi.version>
 
