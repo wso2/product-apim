@@ -1149,7 +1149,7 @@
         <carbon.analytics.common.version>5.2.10</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.112</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.118</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1190,7 +1190,7 @@
         <carbon.identity.auth.version>1.3.4</carbon.identity.auth.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.9.11</carbon.deployment.version>
+        <carbon.deployment.version>4.9.9</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.2</carbon.analytics.version>
