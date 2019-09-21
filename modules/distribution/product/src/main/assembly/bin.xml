@@ -864,6 +864,15 @@
             </includes>
         </fileSet>
 
+        <!--Copy the outbound authenticator jars such as OIDC.-->
+        <fileSet>
+            <directory>../../authenticators/target/authenticatoroutboundCopied/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+        </fileSet>
+
         <!-- copy cxf filter extensions -->
         <fileSet>
             <directory>../../oauth2-client-authentication-filter/target/cxfFilters/jar</directory>

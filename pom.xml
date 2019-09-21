@@ -49,6 +49,7 @@
         <module>sample-scenarios</module>
         <module>modules/p2-profile</module>
         <module>modules/oauth2-grant-types</module>
+        <module>modules/authenticators</module>
         <module>modules/distribution</module>
         <module>modules/integration</module>
     </modules>
@@ -1139,6 +1140,13 @@
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${com.fasterxml.jackson.dataformat.version}</version>
             </dependency>
+
+            <!-- Outbound Authenticators -->
+            <dependency>
+                <groupId>org.wso2.carbon.identity.outbound.auth.oidc</groupId>
+                <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
+                <version>${identity.outbound.auth.oidc.version`}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1322,6 +1330,9 @@
         <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>1.11.2</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
+
+        <!-- Authenticator Properties -->
+        <identity.outbound.auth.oidc.version>5.3.2</identity.outbound.auth.oidc.version>
     </properties>
 
 </project>
