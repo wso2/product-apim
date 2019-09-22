@@ -27,32 +27,32 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-codegen-maven-plugin</artifactId>
-                <version>2.4.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/publisher-api.yaml</inputSpec>
-                            <language>java</language>
-                            <configOptions>
-                                <apiPackage>org.wso2.am.integration.clients.publisher.api.v1</apiPackage>
-                                <modelPackage>org.wso2.am.integration.clients.publisher.api.v1.dto</modelPackage>
-                                <sourceFolder>src/gen/java/main</sourceFolder>
-                                <dateLibrary>java8</dateLibrary>
-                                <java8>true</java8>
-                            </configOptions>
-                            <output>.</output>
-                            <skipOverwrite>false</skipOverwrite>
-                            <modelNameSuffix>DTO</modelNameSuffix>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>io.swagger</groupId>-->
+                <!--<artifactId>swagger-codegen-maven-plugin</artifactId>-->
+                <!--<version>2.4.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<goals>-->
+                            <!--<goal>generate</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<inputSpec>${project.basedir}/src/main/resources/publisher-api.yaml</inputSpec>-->
+                            <!--<language>java</language>-->
+                            <!--<configOptions>-->
+                                <!--<apiPackage>org.wso2.am.integration.clients.publisher.api.v1</apiPackage>-->
+                                <!--<modelPackage>org.wso2.am.integration.clients.publisher.api.v1.dto</modelPackage>-->
+                                <!--<sourceFolder>src/gen/java/main</sourceFolder>-->
+                                <!--<dateLibrary>java8</dateLibrary>-->
+                                <!--<java8>true</java8>-->
+                            <!--</configOptions>-->
+                            <!--<output>.</output>-->
+                            <!--<skipOverwrite>false</skipOverwrite>-->
+                            <!--<modelNameSuffix>DTO</modelNameSuffix>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -82,13 +82,5 @@
             <artifactId>gson-fire</artifactId>
             <version>1.8.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 </project>

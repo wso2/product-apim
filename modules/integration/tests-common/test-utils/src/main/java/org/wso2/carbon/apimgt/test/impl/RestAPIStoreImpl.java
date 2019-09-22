@@ -43,7 +43,7 @@ public class RestAPIStoreImpl {
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
-    public static final String grantType = "client_credentials";
+    public static final String grantType = "password client_credentials";
     public static final String dcrEndpoint = "http://127.0.0.1:10263/client-registration/v0.14/register";
     public static final String username = "admin";
     public static final String password = "admin";
