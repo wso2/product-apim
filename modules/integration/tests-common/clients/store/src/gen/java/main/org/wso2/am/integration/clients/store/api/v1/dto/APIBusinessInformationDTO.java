@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * APIBusinessInformationDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:19.732+05:30")
+
 public class APIBusinessInformationDTO {
   @SerializedName("businessOwner")
   private String businessOwner = null;

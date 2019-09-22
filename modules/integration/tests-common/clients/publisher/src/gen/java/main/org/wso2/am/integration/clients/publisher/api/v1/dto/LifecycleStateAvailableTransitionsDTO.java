@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * LifecycleStateAvailableTransitionsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class LifecycleStateAvailableTransitionsDTO {
   @SerializedName("event")
   private String event = null;

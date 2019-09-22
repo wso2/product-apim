@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * ScopeBindingsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class ScopeBindingsDTO {
   @SerializedName("type")
   private String type = null;

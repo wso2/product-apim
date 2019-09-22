@@ -47,6 +47,7 @@
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
                             </configOptions>
                             <output>.</output>
                             <skipOverwrite>false</skipOverwrite>

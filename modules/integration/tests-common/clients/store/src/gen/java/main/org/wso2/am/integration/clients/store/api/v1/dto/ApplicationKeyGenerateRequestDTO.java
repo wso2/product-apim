@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * ApplicationKeyGenerateRequestDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:19.732+05:30")
+
 public class ApplicationKeyGenerateRequestDTO {
   /**
    * Gets or Sets keyType

@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * APIThreatProtectionPoliciesListDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class APIThreatProtectionPoliciesListDTO {
   @SerializedName("policyId")
   private String policyId = null;

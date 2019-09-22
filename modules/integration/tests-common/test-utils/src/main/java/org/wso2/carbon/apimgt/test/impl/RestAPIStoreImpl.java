@@ -18,13 +18,17 @@ package org.wso2.carbon.apimgt.test.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.store.api.ApiClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.apimgt.test.ClientAuthenticator;
@@ -39,6 +43,7 @@ import java.util.ArrayList;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+    public static ApIsApi apIsApi = new ApIsApi();
     public static ApplicationsApi applicationsApi = new ApplicationsApi();
     public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
 
@@ -56,15 +61,16 @@ public class RestAPIStoreImpl {
 
     public RestAPIStoreImpl() {
 
-//        String accessToken = ClientAuthenticator
-//                .getAccessToken("apim:subscribe apim:subscription_block apim:subscription_view apim:tier_manage apim:tier_view",
-//                        appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
+        String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage " +
+                "apim:self-signup apim:dedicated_gateway apim:store_settings";
+
         String accessToken = ClientAuthenticator
-                .getAccessToken("apim:subscribe",
+                .getAccessToken(scopes,
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiStoreClient.setBasePath("https://localhost:9943/api/am/store/v1.0");
+        apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
     }
@@ -94,13 +100,14 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
-                                           SubscriptionDTO.StatusEnum statusEnum) {
+                                           SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum) {
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
             subscription.setStatus(statusEnum);
+            subscription.setType(typeEnum);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription);
 
             HttpResponse response = null;
@@ -138,19 +145,15 @@ public class RestAPIStoreImpl {
      * Get api which are published
      *
      * @return - http response of get API post request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if API information retrieval fails.
+     * @throws ApiException - throws if API information retrieval fails.
      */
-    public HttpResponse getAPI() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"),
-//                    "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve API information. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse getAPI(String apiId) throws ApiException {
+        APIDTO apiDto = apIsApi.apisApiIdGet(apiId, null, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apiDto.getId())) {
+            response = new HttpResponse(apiDto.getId(), 200);
+        }
+        return response;
     }
 
 
@@ -803,65 +806,18 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Get all subscriptions
+     * Get All subscriptions for an application.
      *
-     * @return - http response of get all subscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
+     * @param applicationId application
+     * @return
+     * @throws ApiException Throws if an error occurred when getting subscriptions.
      */
-    public HttpResponse getAllSubscriptions() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-//                            "action=getAllSubscriptions"), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscriptions."
-//                    + " Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
+    public SubscriptionListDTO getAllSubscriptionsOfApplication(String applicationId) throws ApiException {
 
-    /**
-     * Get all subscriptions of Application. This is a method to get the subscription of a given application. As
-     * there is no application name is given, then only the subscriptions of first applications are returned.
-     *
-     * @return - http response of get all subscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
-     */
-    public HttpResponse getAllSubscriptionsOfApplication() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-//                            "action=getAllSubscriptionsOfApplication"), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscriptions. " +
-//                    "Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
-
-    /**
-     * Get all subscriptions of Application. This is a method to get the subscription of a given application. If no
-     * application name is given, then only the subscriptions of first applications are returned.
-     *
-     * @return - http response of get all subscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
-     */
-    public HttpResponse getAllSubscriptionsOfApplication(String selectedApplication)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-//                            "action=getAllSubscriptionsOfApplication&selectedApp=" + selectedApplication), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, null, null, null);
+        if (subscriptionListDTO.getCount() > 0) {
+            return subscriptionListDTO;
+        }
         return null;
     }
 

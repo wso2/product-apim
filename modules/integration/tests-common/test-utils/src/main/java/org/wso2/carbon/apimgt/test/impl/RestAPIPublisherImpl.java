@@ -49,8 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
-
 /**
  * This util class performs the actions related to APIDTOobjects.
  */
@@ -117,10 +115,12 @@ public class RestAPIPublisherImpl {
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-////        body.setGatewayEnvironments(apiRequest.ge);
-        body.setSubscriptionAvailability(ALL_TENANTS);
-////        body.setVisibleRoles(visibleRoles);
-//        body.setSubscriptionAvailableTenants("ALL_TENANTS");
+        ArrayList<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add(apiRequest.getEnvironment());
+        body.setGatewayEnvironments(gatewayEnvironments);
+//        body.setSubscriptionAvailability(ALL_TENANTS);
+//        body.setVisibleRoles(visibleRoles);
+//        body.setSubscriptionAvailableTenants();
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
@@ -131,7 +131,7 @@ public class RestAPIPublisherImpl {
         APIDTO apidto;
         try {
             apidto = apiPublisherApi.apisPost(body);
-            this.apiPublisherApi.apisApiIdGet(apidto.getId(), "carbon.super", null);
+//            this.apiPublisherApi.apisApiIdGet(apidto.getId(), "carbon.super", null);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
@@ -260,9 +260,11 @@ public class RestAPIPublisherImpl {
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-////        body.setGatewayEnvironments(apiRequest.ge);
-//        body.setSubscriptionAvailability(apiRequest.);
-////        body.setVisibleRoles(visibleRoles);
+        ArrayList<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add(apiRequest.getEnvironment());
+        body.setGatewayEnvironments(gatewayEnvironments);
+//        body.setSubscriptionAvailability();
+//        body.setVisibleRoles(visibleRoles);
 //        body.setSubscriptionAvailableTenants(apiRequest.getV);
         List<APIOperationsDTO> operationsDTOS = null;
         body.setOperations(operationsDTOS);

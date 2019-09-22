@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * ResourcePathDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class ResourcePathDTO {
   @SerializedName("id")
   private Integer id = null;

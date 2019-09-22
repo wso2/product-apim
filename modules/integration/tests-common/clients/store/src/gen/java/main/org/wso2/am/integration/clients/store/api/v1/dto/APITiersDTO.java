@@ -28,7 +28,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIMonetizationAttribute
 /**
  * APITiersDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:19.732+05:30")
+
 public class APITiersDTO {
   @SerializedName("tierName")
   private String tierName = null;

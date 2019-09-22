@@ -28,7 +28,7 @@ import java.io.IOException;
  * WSDL information of the API. This is only available if the API is a SOAP API.
  */
 @ApiModel(description = "WSDL information of the API. This is only available if the API is a SOAP API.")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class APIWsdlInfoDTO {
   /**
    * Indicates whether the WSDL is a single WSDL or an archive in ZIP format

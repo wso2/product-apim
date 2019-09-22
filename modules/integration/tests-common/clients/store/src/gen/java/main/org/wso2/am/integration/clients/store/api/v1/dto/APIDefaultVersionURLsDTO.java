@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * APIDefaultVersionURLsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:19.732+05:30")
+
 public class APIDefaultVersionURLsDTO {
   @SerializedName("http")
   private String http = null;

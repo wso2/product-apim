@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * APIRevenueDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
+
 public class APIRevenueDTO {
   @SerializedName("properties")
   private Map<String, String> properties = null;
