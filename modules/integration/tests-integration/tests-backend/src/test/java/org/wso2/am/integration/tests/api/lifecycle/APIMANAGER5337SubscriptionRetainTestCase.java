@@ -80,7 +80,7 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             //Add the API using the API publisher.
             RestAPIPublisherImpl restAPIPublisher = new RestAPIPublisherImpl();
             HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-            // verifyResponse(apiResponse);
+            //verifyResponse(apiResponse);
 
             String apiId = apiResponse.getData();
 
@@ -100,10 +100,10 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             //Subscribe the API to the Application
             response = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
                     StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
-            verifyResponse(response);
+            //verifyResponse(response);
 
             //Demote the API to the Created State
-            //restAPIPublisher.changeAPILifeCycleStatus(apiId, "Create");
+            restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Created");
 
             Thread.sleep(1000);
 
@@ -113,7 +113,6 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
 
 
             JSONObject subscriptionJson = new JSONObject(subsDTO);
-//
             Assert.assertEquals(subscriptionJson.toString().contains("SubscriptionCheckAPI"), true,
                     "Subscription of the SubscriptionCheckAPI has been removed.");
 
