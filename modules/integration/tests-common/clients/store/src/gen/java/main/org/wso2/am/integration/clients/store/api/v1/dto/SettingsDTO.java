@@ -29,13 +29,19 @@ import java.util.List;
 /**
  * SettingsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class SettingsDTO {
   @SerializedName("grantTypes")
   private List<String> grantTypes = null;
 
   @SerializedName("scopes")
   private List<String> scopes = null;
+
+  @SerializedName("applicationSharingEnabled")
+  private Boolean applicationSharingEnabled = false;
+
+  @SerializedName("mapExistingAuthApps")
+  private Boolean mapExistingAuthApps = false;
 
   public SettingsDTO grantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
@@ -89,6 +95,42 @@ public class SettingsDTO {
     this.scopes = scopes;
   }
 
+  public SettingsDTO applicationSharingEnabled(Boolean applicationSharingEnabled) {
+    this.applicationSharingEnabled = applicationSharingEnabled;
+    return this;
+  }
+
+   /**
+   * Get applicationSharingEnabled
+   * @return applicationSharingEnabled
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isApplicationSharingEnabled() {
+    return applicationSharingEnabled;
+  }
+
+  public void setApplicationSharingEnabled(Boolean applicationSharingEnabled) {
+    this.applicationSharingEnabled = applicationSharingEnabled;
+  }
+
+  public SettingsDTO mapExistingAuthApps(Boolean mapExistingAuthApps) {
+    this.mapExistingAuthApps = mapExistingAuthApps;
+    return this;
+  }
+
+   /**
+   * Get mapExistingAuthApps
+   * @return mapExistingAuthApps
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isMapExistingAuthApps() {
+    return mapExistingAuthApps;
+  }
+
+  public void setMapExistingAuthApps(Boolean mapExistingAuthApps) {
+    this.mapExistingAuthApps = mapExistingAuthApps;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -100,12 +142,14 @@ public class SettingsDTO {
     }
     SettingsDTO settings = (SettingsDTO) o;
     return Objects.equals(this.grantTypes, settings.grantTypes) &&
-        Objects.equals(this.scopes, settings.scopes);
+        Objects.equals(this.scopes, settings.scopes) &&
+        Objects.equals(this.applicationSharingEnabled, settings.applicationSharingEnabled) &&
+        Objects.equals(this.mapExistingAuthApps, settings.mapExistingAuthApps);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(grantTypes, scopes);
+    return Objects.hash(grantTypes, scopes, applicationSharingEnabled, mapExistingAuthApps);
   }
 
 
@@ -116,6 +160,8 @@ public class SettingsDTO {
     
     sb.append("    grantTypes: ").append(toIndentedString(grantTypes)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
+    sb.append("    applicationSharingEnabled: ").append(toIndentedString(applicationSharingEnabled)).append("\n");
+    sb.append("    mapExistingAuthApps: ").append(toIndentedString(mapExistingAuthApps)).append("\n");
     sb.append("}");
     return sb.toString();
   }

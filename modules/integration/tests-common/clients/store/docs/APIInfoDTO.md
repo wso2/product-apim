@@ -9,9 +9,11 @@ Name | Type | Description | Notes
 **description** | **String** |  |  [optional]
 **context** | **String** |  |  [optional]
 **version** | **String** |  |  [optional]
+**type** | **String** |  |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **lifeCycleStatus** | **String** |  |  [optional]
 **thumbnailUri** | **String** |  |  [optional]
+**avgRating** | **String** | Average rating of the API |  [optional]
 **throttlingPolicies** | **List&lt;String&gt;** | List of throttling policies of the API |  [optional]
 
 

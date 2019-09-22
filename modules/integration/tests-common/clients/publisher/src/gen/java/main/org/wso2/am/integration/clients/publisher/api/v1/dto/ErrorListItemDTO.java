@@ -27,13 +27,16 @@ import java.io.IOException;
 /**
  * ErrorListItemDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class ErrorListItemDTO {
   @SerializedName("code")
   private String code = null;
 
   @SerializedName("message")
   private String message = null;
+
+  @SerializedName("description")
+  private String description = null;
 
   public ErrorListItemDTO code(String code) {
     this.code = code;
@@ -71,6 +74,24 @@ public class ErrorListItemDTO {
     this.message = message;
   }
 
+  public ErrorListItemDTO description(String description) {
+    this.description = description;
+    return this;
+  }
+
+   /**
+   * A detail description about the error message. 
+   * @return description
+  **/
+  @ApiModelProperty(value = "A detail description about the error message. ")
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -82,12 +103,13 @@ public class ErrorListItemDTO {
     }
     ErrorListItemDTO errorListItem = (ErrorListItemDTO) o;
     return Objects.equals(this.code, errorListItem.code) &&
-        Objects.equals(this.message, errorListItem.message);
+        Objects.equals(this.message, errorListItem.message) &&
+        Objects.equals(this.description, errorListItem.description);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, message);
+    return Objects.hash(code, message, description);
   }
 
 
@@ -98,6 +120,7 @@ public class ErrorListItemDTO {
     
     sb.append("    code: ").append(toIndentedString(code)).append("\n");
     sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -27,19 +27,13 @@ import java.io.IOException;
 /**
  * CommentDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class CommentDTO {
-  @SerializedName("commentId")
-  private String commentId = null;
+  @SerializedName("id")
+  private String id = null;
 
-  @SerializedName("apiId")
-  private String apiId = null;
-
-  @SerializedName("username")
-  private String username = null;
-
-  @SerializedName("commentText")
-  private String commentText = null;
+  @SerializedName("content")
+  private String content = null;
 
   @SerializedName("createdTime")
   private String createdTime = null;
@@ -47,82 +41,40 @@ public class CommentDTO {
   @SerializedName("createdBy")
   private String createdBy = null;
 
-  @SerializedName("lastUpdatedTime")
-  private String lastUpdatedTime = null;
-
-  @SerializedName("lastUpdatedBy")
-  private String lastUpdatedBy = null;
-
-  public CommentDTO commentId(String commentId) {
-    this.commentId = commentId;
+  public CommentDTO id(String id) {
+    this.id = id;
     return this;
   }
 
    /**
-   * Get commentId
-   * @return commentId
+   * Get id
+   * @return id
+  **/
+  @ApiModelProperty(value = "")
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public CommentDTO content(String content) {
+    this.content = content;
+    return this;
+  }
+
+   /**
+   * Get content
+   * @return content
   **/
   @ApiModelProperty(required = true, value = "")
-  public String getCommentId() {
-    return commentId;
+  public String getContent() {
+    return content;
   }
 
-  public void setCommentId(String commentId) {
-    this.commentId = commentId;
-  }
-
-  public CommentDTO apiId(String apiId) {
-    this.apiId = apiId;
-    return this;
-  }
-
-   /**
-   * Get apiId
-   * @return apiId
-  **/
-  @ApiModelProperty(required = true, value = "")
-  public String getApiId() {
-    return apiId;
-  }
-
-  public void setApiId(String apiId) {
-    this.apiId = apiId;
-  }
-
-  public CommentDTO username(String username) {
-    this.username = username;
-    return this;
-  }
-
-   /**
-   * If username is not given user invoking the API will be taken as the username. 
-   * @return username
-  **/
-  @ApiModelProperty(required = true, value = "If username is not given user invoking the API will be taken as the username. ")
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public CommentDTO commentText(String commentText) {
-    this.commentText = commentText;
-    return this;
-  }
-
-   /**
-   * Get commentText
-   * @return commentText
-  **/
-  @ApiModelProperty(required = true, value = "")
-  public String getCommentText() {
-    return commentText;
-  }
-
-  public void setCommentText(String commentText) {
-    this.commentText = commentText;
+  public void setContent(String content) {
+    this.content = content;
   }
 
   public CommentDTO createdTime(String createdTime) {
@@ -161,42 +113,6 @@ public class CommentDTO {
     this.createdBy = createdBy;
   }
 
-  public CommentDTO lastUpdatedTime(String lastUpdatedTime) {
-    this.lastUpdatedTime = lastUpdatedTime;
-    return this;
-  }
-
-   /**
-   * Get lastUpdatedTime
-   * @return lastUpdatedTime
-  **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
-  public String getLastUpdatedTime() {
-    return lastUpdatedTime;
-  }
-
-  public void setLastUpdatedTime(String lastUpdatedTime) {
-    this.lastUpdatedTime = lastUpdatedTime;
-  }
-
-  public CommentDTO lastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-   /**
-   * Get lastUpdatedBy
-   * @return lastUpdatedBy
-  **/
-  @ApiModelProperty(value = "")
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -207,19 +123,15 @@ public class CommentDTO {
       return false;
     }
     CommentDTO comment = (CommentDTO) o;
-    return Objects.equals(this.commentId, comment.commentId) &&
-        Objects.equals(this.apiId, comment.apiId) &&
-        Objects.equals(this.username, comment.username) &&
-        Objects.equals(this.commentText, comment.commentText) &&
+    return Objects.equals(this.id, comment.id) &&
+        Objects.equals(this.content, comment.content) &&
         Objects.equals(this.createdTime, comment.createdTime) &&
-        Objects.equals(this.createdBy, comment.createdBy) &&
-        Objects.equals(this.lastUpdatedTime, comment.lastUpdatedTime) &&
-        Objects.equals(this.lastUpdatedBy, comment.lastUpdatedBy);
+        Objects.equals(this.createdBy, comment.createdBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(commentId, apiId, username, commentText, createdTime, createdBy, lastUpdatedTime, lastUpdatedBy);
+    return Objects.hash(id, content, createdTime, createdBy);
   }
 
 
@@ -228,14 +140,10 @@ public class CommentDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class CommentDTO {\n");
     
-    sb.append("    commentId: ").append(toIndentedString(commentId)).append("\n");
-    sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("    commentText: ").append(toIndentedString(commentText)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    content: ").append(toIndentedString(content)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
-    sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
-    sb.append("    lastUpdatedBy: ").append(toIndentedString(lastUpdatedBy)).append("\n");
     sb.append("}");
     return sb.toString();
   }

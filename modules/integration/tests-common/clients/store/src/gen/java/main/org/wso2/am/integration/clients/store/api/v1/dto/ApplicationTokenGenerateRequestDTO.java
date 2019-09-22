@@ -29,13 +29,13 @@ import java.util.List;
 /**
  * ApplicationTokenGenerateRequestDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class ApplicationTokenGenerateRequestDTO {
   @SerializedName("consumerSecret")
   private String consumerSecret = null;
 
   @SerializedName("validityPeriod")
-  private String validityPeriod = null;
+  private Long validityPeriod = null;
 
   @SerializedName("scopes")
   private List<String> scopes = null;
@@ -64,7 +64,7 @@ public class ApplicationTokenGenerateRequestDTO {
     this.consumerSecret = consumerSecret;
   }
 
-  public ApplicationTokenGenerateRequestDTO validityPeriod(String validityPeriod) {
+  public ApplicationTokenGenerateRequestDTO validityPeriod(Long validityPeriod) {
     this.validityPeriod = validityPeriod;
     return this;
   }
@@ -74,11 +74,11 @@ public class ApplicationTokenGenerateRequestDTO {
    * @return validityPeriod
   **/
   @ApiModelProperty(value = "Token validity period")
-  public String getValidityPeriod() {
+  public Long getValidityPeriod() {
     return validityPeriod;
   }
 
-  public void setValidityPeriod(String validityPeriod) {
+  public void setValidityPeriod(Long validityPeriod) {
     this.validityPeriod = validityPeriod;
   }
 

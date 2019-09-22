@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * RatingDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class RatingDTO {
   @SerializedName("ratingId")
   private String ratingId = null;
@@ -35,8 +35,8 @@ public class RatingDTO {
   @SerializedName("apiId")
   private String apiId = null;
 
-  @SerializedName("username")
-  private String username = null;
+  @SerializedName("ratedBy")
+  private String ratedBy = null;
 
   @SerializedName("rating")
   private Integer rating = null;
@@ -50,7 +50,7 @@ public class RatingDTO {
    * Get ratingId
    * @return ratingId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(value = "")
   public String getRatingId() {
     return ratingId;
   }
@@ -68,7 +68,7 @@ public class RatingDTO {
    * Get apiId
    * @return apiId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(value = "")
   public String getApiId() {
     return apiId;
   }
@@ -77,22 +77,22 @@ public class RatingDTO {
     this.apiId = apiId;
   }
 
-  public RatingDTO username(String username) {
-    this.username = username;
+  public RatingDTO ratedBy(String ratedBy) {
+    this.ratedBy = ratedBy;
     return this;
   }
 
    /**
-   * If username is not given user invoking the API will be taken as the username. 
-   * @return username
+   * Get ratedBy
+   * @return ratedBy
   **/
-  @ApiModelProperty(required = true, value = "If username is not given user invoking the API will be taken as the username. ")
-  public String getUsername() {
-    return username;
+  @ApiModelProperty(value = "")
+  public String getRatedBy() {
+    return ratedBy;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setRatedBy(String ratedBy) {
+    this.ratedBy = ratedBy;
   }
 
   public RatingDTO rating(Integer rating) {
@@ -125,13 +125,13 @@ public class RatingDTO {
     RatingDTO rating = (RatingDTO) o;
     return Objects.equals(this.ratingId, rating.ratingId) &&
         Objects.equals(this.apiId, rating.apiId) &&
-        Objects.equals(this.username, rating.username) &&
+        Objects.equals(this.ratedBy, rating.ratedBy) &&
         Objects.equals(this.rating, rating.rating);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(ratingId, apiId, username, rating);
+    return Objects.hash(ratingId, apiId, ratedBy, rating);
   }
 
 
@@ -142,7 +142,7 @@ public class RatingDTO {
     
     sb.append("    ratingId: ").append(toIndentedString(ratingId)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
+    sb.append("    ratedBy: ").append(toIndentedString(ratedBy)).append("\n");
     sb.append("    rating: ").append(toIndentedString(rating)).append("\n");
     sb.append("}");
     return sb.toString();

@@ -23,25 +23,26 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiCollectionApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.CertificatesIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.DocumentIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
-import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.ClientCertificateCreationBean;
 import org.wso2.carbon.apimgt.test.ClientAuthenticator;
 import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -54,14 +55,14 @@ import java.util.List;
 public class RestAPIPublisherImpl {
     public static ApiIndividualApi apiPublisherApi = new ApiIndividualApi();
     public static ApiCollectionApi apiCollectionApi = new ApiCollectionApi();
-    public static ApplicationsApi applicationsApi = new ApplicationsApi();
-    public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
     public static DocumentIndividualApi documentIndividualApi = new DocumentIndividualApi();
     public static ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
+    public static CertificatesIndividualApi certificatesIndividualApi = new CertificatesIndividualApi();
+    public static RolesApi rolesApi = new RolesApi();
 
     public static ApiClient apiPublisherClient = new ApiClient();
     public static org.wso2.am.integration.clients.store.api.ApiClient apiStoreClient = new org.wso2.am.integration.clients.store.api.ApiClient();
-    public static final String appName = "Integration_Test_App";
+    public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
@@ -75,8 +76,8 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl() {
 
         String accessToken = ClientAuthenticator
-                .getAccessToken("apim:api_create apim:api_delete apim:api_publish " +
-                                "apim:api_view apim:subscribe apim:subscription_block apim:subscription_view apim:tier_manage apim:tier_view",
+                .getAccessToken("apim:api_create apim:api_delete apim:api_publish apim:ep_certificates_view" +
+                                "apim:ep_certificates_update apim:api_view apim:tier_manage apim:tier_view",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -88,9 +89,9 @@ public class RestAPIPublisherImpl {
         apiPublisherApi.setApiClient(apiPublisherClient);
         documentIndividualApi.setApiClient(apiPublisherClient);
         apiCollectionApi.setApiClient(apiPublisherClient);
-        applicationsApi.setApiClient(apiStoreClient);
-        subscriptionIndividualApi.setApiClient(apiStoreClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
+        certificatesIndividualApi.setApiClient(apiPublisherClient);
+        rolesApi.setApiClient(apiPublisherClient);
     }
 
 
@@ -354,16 +355,6 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "publisher/site/blocks/tokens/ajax/revokeToken.jag"),
-//                    "action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
-//                            authUser + "&consumerKey=" + consumerKey, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to revoke access token"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
         return null;
     }
 
@@ -379,16 +370,6 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse updatePermissions(String tierName, String permissionType, String roles)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "publisher/site/blocks/tiers/ajax/tiers.jag"),
-//                    "action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
-//                            permissionType + "&roles=" + roles, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to update permission."
-//                    + " Error: " + e.getMessage(), e);
-//        }
         return null;
     }
 
@@ -401,7 +382,6 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse updateResourceOfAPI(String apiId, String api)
             throws APIManagerIntegrationTestException {
-
         return null;
     }
 
@@ -416,15 +396,6 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
                                            String apiVersion) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
-//                    "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl + "&providerName=" + providerName
-//                            + "&apiName=" + apiName + "&apiVersion=" + apiVersion, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Check for valid endpoint fails for " + endpointUrl
-//                    + ". Error: " + e.getMessage(), e);
-//        }
         return null;
     }
 
@@ -432,34 +403,22 @@ public class RestAPIPublisherImpl {
     /**
      * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
      *
-     * @param apiIdentifier           - Instance of APIIdentifier
+     * @param apiId                   - API ID
      * @param isRequireReSubscription - true if Re-subscription is required else false.
      * @return HttpResponse - Response of the API publish event
      * @throws APIManagerIntegrationTestException - Exception Throws in checkAuthentication() and when do the REST
      *                                            service calls to do the lifecycle change.
      */
-//    public HttpResponse changeAPILifeCycleStatusToPublish(APIIdentifier apiIdentifier, boolean isRequireReSubscription)
-//            throws APIManagerIntegrationTestException {
-//        try {
-//            Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
-//            checkAuthentication();
-//            APILifeCycleStateRequest publishUpdateRequest =
-//                    new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
-//                            APILifeCycleState.PUBLISHED);
-//            publishUpdateRequest.setVersion(apiIdentifier.getVersion());
-//            if (isRequireReSubscription) {
-//                publishUpdateRequest.setRequireResubscription("true");
-//            }
-//            String requestParameters = publishUpdateRequest.generateRequestParameters();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when change he lifecycle to publish"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-//        return null;
-//    }
+    public HttpResponse changeAPILifeCycleStatusToPublish(String apiId, boolean isRequireReSubscription) throws ApiException {
+        ApiResponse<WorkflowResponseDTO> responseDTOApiResponse = this.apiPublisherApi
+                .apisChangeLifecyclePostWithHttpInfo(Constants.PUBLISHED, apiId, "Re-Subscription:" + isRequireReSubscription, null);
+        HttpResponse response = null;
+        if (responseDTOApiResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully deleted the API", 200);
+        }
+        return response;
+    }
+
 
     /**
      * Retrieve the Tier Permission Page
@@ -469,61 +428,6 @@ public class RestAPIPublisherImpl {
      *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getTierPermissionsPage() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(backendURL + "/publisher/site/pages/tiers.jag", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
-     * Retrieve the API Manage Page
-     *
-     * @param apiName  - Name of the API.
-     * @param provider - Name of the API Provider.
-     * @param version  - Version of the API.
-     * @return HttpResponse - Response that contains the API Manage Page
-     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HTTPSClientUtils.doGet() method call
-     */
-    public HttpResponse getAPIManagePage(String apiName, String provider, String version)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "/publisher/manage?name=" + apiName + "&version=" + version + "&provider=" + provider,
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when retrieving the API Manage page"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-
-    /**
-     * Retrieve the API Information Page
-     *
-     * @param apiName  - Name of the API.
-     * @param provider - Name of the API Provider.
-     * @param version  - Version of the API.
-     * @return HttpResponse - Response that contains the API Information Page
-     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HTTPSClientUtils.doGet() method call
-     */
-    public HttpResponse getAPIInformationPage(String apiName, String provider, String version)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/info"),
-//                    "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
         return null;
     }
 
@@ -583,24 +487,23 @@ public class RestAPIPublisherImpl {
 
 
     /**
-     * To upload a client certificate against an API.
+     * This method is used to upload certificates
      *
-     * @param clientCertificateCreationBean Client Certificate Creation Bean with required information for uploading
-     *                                      client certificate.
-     * @return Http response after uploading the certificate.
-     * @throws APIManagerIntegrationTestException API Manager Integration Test Exception.
+     * @param certificate certificate
+     * @param alias       alis
+     * @param endpoint    endpoint.
+     * @return
+     * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadCertificate(ClientCertificateCreationBean clientCertificateCreationBean) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
-//                    clientCertificateCreationBean.generateRequestParameters(), requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
-//                    + "Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse uploadCertificate(File certificate, String alias, String endpoint) throws ApiException {
+
+        CertMetadataDTO certificateDTO = certificatesIndividualApi.endpointCertificatesPost(certificate, alias, endpoint);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
+            response = new HttpResponse("Successfully uploaded the certificate", 200);
+        }
+        return response;
+
     }
 
 
@@ -622,19 +525,19 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     * @param role role
+     * This method is used to validate roles.
+     *
+     * @param roleId role Id
      * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse validateRoles(String role) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
-//                    "action=validateRoles&roles=" + role ,requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse validateRoles(String roleId) throws ApiException {
+        ApiResponse<Void> releResponse = rolesApi.validateSystemRoleWithHttpInfo(roleId);
+
+        HttpResponse response = null;
+        if (releResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully validate the role", 200);
+        }
+        return response;
     }
 }

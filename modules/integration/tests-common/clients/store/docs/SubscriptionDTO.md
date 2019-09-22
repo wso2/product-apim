@@ -6,8 +6,10 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **subscriptionId** | **String** | The UUID of the subscription |  [optional]
 **applicationId** | **String** | The UUID of the application | 
-**apiId** | **String** | The unique identifier of the API. | 
+**apiId** | **String** | The unique identifier of the API. |  [optional]
 **apiInfo** | [**APIInfoDTO**](APIInfoDTO.md) |  |  [optional]
+**apiProductId** | **String** | The unique identifier of the API Product. |  [optional]
+**apiProductInfo** | [**APIProductInfoDTO**](APIProductInfoDTO.md) |  |  [optional]
 **applicationInfo** | [**ApplicationInfoDTO**](ApplicationInfoDTO.md) |  |  [optional]
 **throttlingPolicy** | **String** |  | 
 **type** | [**TypeEnum**](#TypeEnum) |  |  [optional]
@@ -18,8 +20,8 @@ Name | Type | Description | Notes
 ## Enum: TypeEnum
 Name | Value
 ---- | -----
-API | &quot;api&quot;
-APIPRODUCT | &quot;apiProduct&quot;
+API | &quot;API&quot;
+API_PRODUCT | &quot;API_PRODUCT&quot;
 
 
 <a name="StatusEnum"></a>

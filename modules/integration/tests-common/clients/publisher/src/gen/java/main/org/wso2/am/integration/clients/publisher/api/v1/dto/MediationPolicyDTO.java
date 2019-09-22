@@ -27,16 +27,13 @@ import java.io.IOException;
 /**
  * MediationPolicyDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class MediationPolicyDTO {
   @SerializedName("id")
   private String id = null;
 
   @SerializedName("name")
   private String name = null;
-
-  @SerializedName("config")
-  private String config = null;
 
   @SerializedName("type")
   private String type = null;
@@ -78,24 +75,6 @@ public class MediationPolicyDTO {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public MediationPolicyDTO config(String config) {
-    this.config = config;
-    return this;
-  }
-
-   /**
-   * Get config
-   * @return config
-  **/
-  @ApiModelProperty(example = "", value = "")
-  public String getConfig() {
-    return config;
-  }
-
-  public void setConfig(String config) {
-    this.config = config;
   }
 
   public MediationPolicyDTO type(String type) {
@@ -146,14 +125,13 @@ public class MediationPolicyDTO {
     MediationPolicyDTO mediationPolicy = (MediationPolicyDTO) o;
     return Objects.equals(this.id, mediationPolicy.id) &&
         Objects.equals(this.name, mediationPolicy.name) &&
-        Objects.equals(this.config, mediationPolicy.config) &&
         Objects.equals(this.type, mediationPolicy.type) &&
         Objects.equals(this.shared, mediationPolicy.shared);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, config, type, shared);
+    return Objects.hash(id, name, type, shared);
   }
 
 
@@ -164,7 +142,6 @@ public class MediationPolicyDTO {
     
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    config: ").append(toIndentedString(config)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    shared: ").append(toIndentedString(shared)).append("\n");
     sb.append("}");

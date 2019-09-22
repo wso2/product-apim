@@ -29,16 +29,13 @@ import java.util.List;
 /**
  * ApplicationInfoDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class ApplicationInfoDTO {
   @SerializedName("applicationId")
   private String applicationId = null;
 
   @SerializedName("name")
   private String name = null;
-
-  @SerializedName("subscriber")
-  private String subscriber = null;
 
   @SerializedName("throttlingPolicy")
   private String throttlingPolicy = null;
@@ -54,6 +51,12 @@ public class ApplicationInfoDTO {
 
   @SerializedName("subscriptionCount")
   private Integer subscriptionCount = null;
+
+  @SerializedName("attributes")
+  private Object attributes = null;
+
+  @SerializedName("owner")
+  private String owner = null;
 
   public ApplicationInfoDTO applicationId(String applicationId) {
     this.applicationId = applicationId;
@@ -89,24 +92,6 @@ public class ApplicationInfoDTO {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public ApplicationInfoDTO subscriber(String subscriber) {
-    this.subscriber = subscriber;
-    return this;
-  }
-
-   /**
-   * Get subscriber
-   * @return subscriber
-  **/
-  @ApiModelProperty(example = "admin", value = "")
-  public String getSubscriber() {
-    return subscriber;
-  }
-
-  public void setSubscriber(String subscriber) {
-    this.subscriber = subscriber;
   }
 
   public ApplicationInfoDTO throttlingPolicy(String throttlingPolicy) {
@@ -207,6 +192,42 @@ public class ApplicationInfoDTO {
     this.subscriptionCount = subscriptionCount;
   }
 
+  public ApplicationInfoDTO attributes(Object attributes) {
+    this.attributes = attributes;
+    return this;
+  }
+
+   /**
+   * Get attributes
+   * @return attributes
+  **/
+  @ApiModelProperty(example = "\"External Reference ID, Billing Tier\"", value = "")
+  public Object getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(Object attributes) {
+    this.attributes = attributes;
+  }
+
+  public ApplicationInfoDTO owner(String owner) {
+    this.owner = owner;
+    return this;
+  }
+
+   /**
+   * Get owner
+   * @return owner
+  **/
+  @ApiModelProperty(example = "admin", value = "")
+  public String getOwner() {
+    return owner;
+  }
+
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -219,17 +240,18 @@ public class ApplicationInfoDTO {
     ApplicationInfoDTO applicationInfo = (ApplicationInfoDTO) o;
     return Objects.equals(this.applicationId, applicationInfo.applicationId) &&
         Objects.equals(this.name, applicationInfo.name) &&
-        Objects.equals(this.subscriber, applicationInfo.subscriber) &&
         Objects.equals(this.throttlingPolicy, applicationInfo.throttlingPolicy) &&
         Objects.equals(this.description, applicationInfo.description) &&
         Objects.equals(this.status, applicationInfo.status) &&
         Objects.equals(this.groups, applicationInfo.groups) &&
-        Objects.equals(this.subscriptionCount, applicationInfo.subscriptionCount);
+        Objects.equals(this.subscriptionCount, applicationInfo.subscriptionCount) &&
+        Objects.equals(this.attributes, applicationInfo.attributes) &&
+        Objects.equals(this.owner, applicationInfo.owner);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(applicationId, name, subscriber, throttlingPolicy, description, status, groups, subscriptionCount);
+    return Objects.hash(applicationId, name, throttlingPolicy, description, status, groups, subscriptionCount, attributes, owner);
   }
 
 
@@ -240,12 +262,13 @@ public class ApplicationInfoDTO {
     
     sb.append("    applicationId: ").append(toIndentedString(applicationId)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    subscriber: ").append(toIndentedString(subscriber)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    groups: ").append(toIndentedString(groups)).append("\n");
     sb.append("    subscriptionCount: ").append(toIndentedString(subscriptionCount)).append("\n");
+    sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
+    sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
     sb.append("}");
     return sb.toString();
   }

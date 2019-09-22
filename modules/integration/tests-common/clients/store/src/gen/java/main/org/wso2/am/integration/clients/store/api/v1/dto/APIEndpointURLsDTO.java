@@ -23,12 +23,13 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIEnvironmentURLsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDefaultVersionURLsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIURLsDTO;
 
 /**
  * APIEndpointURLsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class APIEndpointURLsDTO {
   @SerializedName("environmentName")
   private String environmentName = null;
@@ -36,8 +37,11 @@ public class APIEndpointURLsDTO {
   @SerializedName("environmentType")
   private String environmentType = null;
 
-  @SerializedName("environmentURLs")
-  private APIEnvironmentURLsDTO environmentURLs = null;
+  @SerializedName("URLs")
+  private APIURLsDTO urLs = null;
+
+  @SerializedName("defaultVersionURLs")
+  private APIDefaultVersionURLsDTO defaultVersionURLs = null;
 
   public APIEndpointURLsDTO environmentName(String environmentName) {
     this.environmentName = environmentName;
@@ -75,22 +79,40 @@ public class APIEndpointURLsDTO {
     this.environmentType = environmentType;
   }
 
-  public APIEndpointURLsDTO environmentURLs(APIEnvironmentURLsDTO environmentURLs) {
-    this.environmentURLs = environmentURLs;
+  public APIEndpointURLsDTO urLs(APIURLsDTO urLs) {
+    this.urLs = urLs;
     return this;
   }
 
    /**
-   * Get environmentURLs
-   * @return environmentURLs
+   * Get urLs
+   * @return urLs
   **/
   @ApiModelProperty(value = "")
-  public APIEnvironmentURLsDTO getEnvironmentURLs() {
-    return environmentURLs;
+  public APIURLsDTO getUrLs() {
+    return urLs;
   }
 
-  public void setEnvironmentURLs(APIEnvironmentURLsDTO environmentURLs) {
-    this.environmentURLs = environmentURLs;
+  public void setUrLs(APIURLsDTO urLs) {
+    this.urLs = urLs;
+  }
+
+  public APIEndpointURLsDTO defaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
+    this.defaultVersionURLs = defaultVersionURLs;
+    return this;
+  }
+
+   /**
+   * Get defaultVersionURLs
+   * @return defaultVersionURLs
+  **/
+  @ApiModelProperty(value = "")
+  public APIDefaultVersionURLsDTO getDefaultVersionURLs() {
+    return defaultVersionURLs;
+  }
+
+  public void setDefaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
+    this.defaultVersionURLs = defaultVersionURLs;
   }
 
 
@@ -105,12 +127,13 @@ public class APIEndpointURLsDTO {
     APIEndpointURLsDTO apIEndpointURLs = (APIEndpointURLsDTO) o;
     return Objects.equals(this.environmentName, apIEndpointURLs.environmentName) &&
         Objects.equals(this.environmentType, apIEndpointURLs.environmentType) &&
-        Objects.equals(this.environmentURLs, apIEndpointURLs.environmentURLs);
+        Objects.equals(this.urLs, apIEndpointURLs.urLs) &&
+        Objects.equals(this.defaultVersionURLs, apIEndpointURLs.defaultVersionURLs);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(environmentName, environmentType, environmentURLs);
+    return Objects.hash(environmentName, environmentType, urLs, defaultVersionURLs);
   }
 
 
@@ -121,7 +144,8 @@ public class APIEndpointURLsDTO {
     
     sb.append("    environmentName: ").append(toIndentedString(environmentName)).append("\n");
     sb.append("    environmentType: ").append(toIndentedString(environmentType)).append("\n");
-    sb.append("    environmentURLs: ").append(toIndentedString(environmentURLs)).append("\n");
+    sb.append("    urLs: ").append(toIndentedString(urLs)).append("\n");
+    sb.append("    defaultVersionURLs: ").append(toIndentedString(defaultVersionURLs)).append("\n");
     sb.append("}");
     return sb.toString();
   }

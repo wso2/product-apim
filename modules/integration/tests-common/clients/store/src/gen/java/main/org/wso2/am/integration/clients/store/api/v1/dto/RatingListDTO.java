@@ -31,13 +31,13 @@ import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 /**
  * RatingListDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class RatingListDTO {
   @SerializedName("avgRating")
   private String avgRating = null;
 
   @SerializedName("userRating")
-  private String userRating = null;
+  private Integer userRating = null;
 
   @SerializedName("count")
   private Integer count = null;
@@ -66,7 +66,7 @@ public class RatingListDTO {
     this.avgRating = avgRating;
   }
 
-  public RatingListDTO userRating(String userRating) {
+  public RatingListDTO userRating(Integer userRating) {
     this.userRating = userRating;
     return this;
   }
@@ -76,11 +76,11 @@ public class RatingListDTO {
    * @return userRating
   **/
   @ApiModelProperty(value = "Rating given by the user ")
-  public String getUserRating() {
+  public Integer getUserRating() {
     return userRating;
   }
 
-  public void setUserRating(String userRating) {
+  public void setUserRating(Integer userRating) {
     this.userRating = userRating;
   }
 

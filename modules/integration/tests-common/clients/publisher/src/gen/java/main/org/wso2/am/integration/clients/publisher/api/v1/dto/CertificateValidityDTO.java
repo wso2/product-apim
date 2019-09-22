@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * CertificateValidityDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class CertificateValidityDTO {
   @SerializedName("from")
   private String from = null;

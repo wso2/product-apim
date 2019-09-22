@@ -29,13 +29,15 @@ import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.LabelDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
 
 /**
  * APIDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class APIDTO {
   @SerializedName("id")
   private String id = null;
@@ -55,6 +57,9 @@ public class APIDTO {
   @SerializedName("provider")
   private String provider = null;
 
+  @SerializedName("apiDefinition")
+  private String apiDefinition = null;
+
   @SerializedName("wsdlUri")
   private String wsdlUri = null;
 
@@ -64,8 +69,14 @@ public class APIDTO {
   @SerializedName("isDefaultVersion")
   private Boolean isDefaultVersion = null;
 
+  @SerializedName("type")
+  private String type = null;
+
   @SerializedName("transport")
   private List<String> transport = null;
+
+  @SerializedName("operations")
+  private List<APIOperationsDTO> operations = null;
 
   @SerializedName("authorizationHeader")
   private String authorizationHeader = null;
@@ -77,7 +88,7 @@ public class APIDTO {
   private List<String> tags = null;
 
   @SerializedName("tiers")
-  private List<String> tiers = null;
+  private List<APITiersDTO> tiers = null;
 
   @SerializedName("hasThumbnail")
   private Boolean hasThumbnail = false;
@@ -99,6 +110,9 @@ public class APIDTO {
 
   @SerializedName("scopes")
   private List<ScopeInfoDTO> scopes = null;
+
+  @SerializedName("avgRating")
+  private String avgRating = null;
 
   public APIDTO id(String id) {
     this.id = id;
@@ -208,6 +222,24 @@ public class APIDTO {
     this.provider = provider;
   }
 
+  public APIDTO apiDefinition(String apiDefinition) {
+    this.apiDefinition = apiDefinition;
+    return this;
+  }
+
+   /**
+   * Swagger definition of the API which contains details about URI templates and scopes 
+   * @return apiDefinition
+  **/
+  @ApiModelProperty(example = "{\"paths\":{\"/substract\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}},\"/add\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"CalculatorAPI\",\"version\":\"1.0.0\"}}", value = "Swagger definition of the API which contains details about URI templates and scopes ")
+  public String getApiDefinition() {
+    return apiDefinition;
+  }
+
+  public void setApiDefinition(String apiDefinition) {
+    this.apiDefinition = apiDefinition;
+  }
+
   public APIDTO wsdlUri(String wsdlUri) {
     this.wsdlUri = wsdlUri;
     return this;
@@ -262,6 +294,24 @@ public class APIDTO {
     this.isDefaultVersion = isDefaultVersion;
   }
 
+  public APIDTO type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * This describes the transport type of the API
+   * @return type
+  **/
+  @ApiModelProperty(example = "WS", value = "This describes the transport type of the API")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
   public APIDTO transport(List<String> transport) {
     this.transport = transport;
     return this;
@@ -286,6 +336,32 @@ public class APIDTO {
 
   public void setTransport(List<String> transport) {
     this.transport = transport;
+  }
+
+  public APIDTO operations(List<APIOperationsDTO> operations) {
+    this.operations = operations;
+    return this;
+  }
+
+  public APIDTO addOperationsItem(APIOperationsDTO operationsItem) {
+    if (this.operations == null) {
+      this.operations = new ArrayList<>();
+    }
+    this.operations.add(operationsItem);
+    return this;
+  }
+
+   /**
+   * Get operations
+   * @return operations
+  **/
+  @ApiModelProperty(value = "")
+  public List<APIOperationsDTO> getOperations() {
+    return operations;
+  }
+
+  public void setOperations(List<APIOperationsDTO> operations) {
+    this.operations = operations;
   }
 
   public APIDTO authorizationHeader(String authorizationHeader) {
@@ -358,12 +434,12 @@ public class APIDTO {
     this.tags = tags;
   }
 
-  public APIDTO tiers(List<String> tiers) {
+  public APIDTO tiers(List<APITiersDTO> tiers) {
     this.tiers = tiers;
     return this;
   }
 
-  public APIDTO addTiersItem(String tiersItem) {
+  public APIDTO addTiersItem(APITiersDTO tiersItem) {
     if (this.tiers == null) {
       this.tiers = new ArrayList<>();
     }
@@ -375,12 +451,12 @@ public class APIDTO {
    * The subscription tiers selected for the particular API
    * @return tiers
   **/
-  @ApiModelProperty(example = "[\"Unlimited\"]", value = "The subscription tiers selected for the particular API")
-  public List<String> getTiers() {
+  @ApiModelProperty(value = "The subscription tiers selected for the particular API")
+  public List<APITiersDTO> getTiers() {
     return tiers;
   }
 
-  public void setTiers(List<String> tiers) {
+  public void setTiers(List<APITiersDTO> tiers) {
     this.tiers = tiers;
   }
 
@@ -550,6 +626,24 @@ public class APIDTO {
     this.scopes = scopes;
   }
 
+  public APIDTO avgRating(String avgRating) {
+    this.avgRating = avgRating;
+    return this;
+  }
+
+   /**
+   * The average rating of the API
+   * @return avgRating
+  **/
+  @ApiModelProperty(example = "4.5", value = "The average rating of the API")
+  public String getAvgRating() {
+    return avgRating;
+  }
+
+  public void setAvgRating(String avgRating) {
+    this.avgRating = avgRating;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -566,10 +660,13 @@ public class APIDTO {
         Objects.equals(this.context, API.context) &&
         Objects.equals(this.version, API.version) &&
         Objects.equals(this.provider, API.provider) &&
+        Objects.equals(this.apiDefinition, API.apiDefinition) &&
         Objects.equals(this.wsdlUri, API.wsdlUri) &&
         Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
         Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
+        Objects.equals(this.type, API.type) &&
         Objects.equals(this.transport, API.transport) &&
+        Objects.equals(this.operations, API.operations) &&
         Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
         Objects.equals(this.securityScheme, API.securityScheme) &&
         Objects.equals(this.tags, API.tags) &&
@@ -580,12 +677,13 @@ public class APIDTO {
         Objects.equals(this.businessInformation, API.businessInformation) &&
         Objects.equals(this.labels, API.labels) &&
         Objects.equals(this.environmentList, API.environmentList) &&
-        Objects.equals(this.scopes, API.scopes);
+        Objects.equals(this.scopes, API.scopes) &&
+        Objects.equals(this.avgRating, API.avgRating);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, wsdlUri, lifeCycleStatus, isDefaultVersion, transport, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, endpointURLs, businessInformation, labels, environmentList, scopes);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating);
   }
 
 
@@ -600,10 +698,13 @@ public class APIDTO {
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
+    sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
     sb.append("    wsdlUri: ").append(toIndentedString(wsdlUri)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
+    sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
@@ -615,6 +716,7 @@ public class APIDTO {
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    environmentList: ").append(toIndentedString(environmentList)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
+    sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("}");
     return sb.toString();
   }

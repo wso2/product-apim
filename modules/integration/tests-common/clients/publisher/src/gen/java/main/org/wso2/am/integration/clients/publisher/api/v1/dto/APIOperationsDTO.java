@@ -29,16 +29,16 @@ import java.util.List;
 /**
  * APIOperationsDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class APIOperationsDTO {
   @SerializedName("id")
   private String id = null;
 
-  @SerializedName("uritemplate")
-  private String uritemplate = "/_*";
+  @SerializedName("target")
+  private String target = null;
 
-  @SerializedName("httpVerb")
-  private String httpVerb = "GET";
+  @SerializedName("verb")
+  private String verb = null;
 
   @SerializedName("authType")
   private String authType = "Any";
@@ -67,40 +67,40 @@ public class APIOperationsDTO {
     this.id = id;
   }
 
-  public APIOperationsDTO uritemplate(String uritemplate) {
-    this.uritemplate = uritemplate;
+  public APIOperationsDTO target(String target) {
+    this.target = target;
     return this;
   }
 
    /**
-   * Get uritemplate
-   * @return uritemplate
+   * Get target
+   * @return target
   **/
   @ApiModelProperty(value = "")
-  public String getUritemplate() {
-    return uritemplate;
+  public String getTarget() {
+    return target;
   }
 
-  public void setUritemplate(String uritemplate) {
-    this.uritemplate = uritemplate;
+  public void setTarget(String target) {
+    this.target = target;
   }
 
-  public APIOperationsDTO httpVerb(String httpVerb) {
-    this.httpVerb = httpVerb;
+  public APIOperationsDTO verb(String verb) {
+    this.verb = verb;
     return this;
   }
 
    /**
-   * Get httpVerb
-   * @return httpVerb
+   * Get verb
+   * @return verb
   **/
   @ApiModelProperty(value = "")
-  public String getHttpVerb() {
-    return httpVerb;
+  public String getVerb() {
+    return verb;
   }
 
-  public void setHttpVerb(String httpVerb) {
-    this.httpVerb = httpVerb;
+  public void setVerb(String verb) {
+    this.verb = verb;
   }
 
   public APIOperationsDTO authType(String authType) {
@@ -176,8 +176,8 @@ public class APIOperationsDTO {
     }
     APIOperationsDTO apIOperations = (APIOperationsDTO) o;
     return Objects.equals(this.id, apIOperations.id) &&
-        Objects.equals(this.uritemplate, apIOperations.uritemplate) &&
-        Objects.equals(this.httpVerb, apIOperations.httpVerb) &&
+        Objects.equals(this.target, apIOperations.target) &&
+        Objects.equals(this.verb, apIOperations.verb) &&
         Objects.equals(this.authType, apIOperations.authType) &&
         Objects.equals(this.throttlingPolicy, apIOperations.throttlingPolicy) &&
         Objects.equals(this.scopes, apIOperations.scopes);
@@ -185,7 +185,7 @@ public class APIOperationsDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, uritemplate, httpVerb, authType, throttlingPolicy, scopes);
+    return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes);
   }
 
 
@@ -195,8 +195,8 @@ public class APIOperationsDTO {
     sb.append("class APIOperationsDTO {\n");
     
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    uritemplate: ").append(toIndentedString(uritemplate)).append("\n");
-    sb.append("    httpVerb: ").append(toIndentedString(httpVerb)).append("\n");
+    sb.append("    target: ").append(toIndentedString(target)).append("\n");
+    sb.append("    verb: ").append(toIndentedString(verb)).append("\n");
     sb.append("    authType: ").append(toIndentedString(authType)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");

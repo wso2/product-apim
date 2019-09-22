@@ -23,21 +23,21 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ApplicationInfoDTO;
 
 /**
  * SubscriptionDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class SubscriptionDTO {
   @SerializedName("subscriptionId")
   private String subscriptionId = null;
 
   @SerializedName("applicationInfo")
-  private ApplicationDTO applicationInfo = null;
+  private ApplicationInfoDTO applicationInfo = null;
 
-  @SerializedName("policy")
-  private String policy = null;
+  @SerializedName("throttlingPolicy")
+  private String throttlingPolicy = null;
 
   /**
    * Gets or Sets subscriptionStatus
@@ -113,7 +113,7 @@ public class SubscriptionDTO {
     this.subscriptionId = subscriptionId;
   }
 
-  public SubscriptionDTO applicationInfo(ApplicationDTO applicationInfo) {
+  public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
     this.applicationInfo = applicationInfo;
     return this;
   }
@@ -123,30 +123,30 @@ public class SubscriptionDTO {
    * @return applicationInfo
   **/
   @ApiModelProperty(required = true, value = "")
-  public ApplicationDTO getApplicationInfo() {
+  public ApplicationInfoDTO getApplicationInfo() {
     return applicationInfo;
   }
 
-  public void setApplicationInfo(ApplicationDTO applicationInfo) {
+  public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
     this.applicationInfo = applicationInfo;
   }
 
-  public SubscriptionDTO policy(String policy) {
-    this.policy = policy;
+  public SubscriptionDTO throttlingPolicy(String throttlingPolicy) {
+    this.throttlingPolicy = throttlingPolicy;
     return this;
   }
 
    /**
-   * Get policy
-   * @return policy
+   * Get throttlingPolicy
+   * @return throttlingPolicy
   **/
   @ApiModelProperty(example = "Unlimited", required = true, value = "")
-  public String getPolicy() {
-    return policy;
+  public String getThrottlingPolicy() {
+    return throttlingPolicy;
   }
 
-  public void setPolicy(String policy) {
-    this.policy = policy;
+  public void setThrottlingPolicy(String throttlingPolicy) {
+    this.throttlingPolicy = throttlingPolicy;
   }
 
   public SubscriptionDTO subscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
@@ -179,13 +179,13 @@ public class SubscriptionDTO {
     SubscriptionDTO subscription = (SubscriptionDTO) o;
     return Objects.equals(this.subscriptionId, subscription.subscriptionId) &&
         Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
-        Objects.equals(this.policy, subscription.policy) &&
+        Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
         Objects.equals(this.subscriptionStatus, subscription.subscriptionStatus);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(subscriptionId, applicationInfo, policy, subscriptionStatus);
+    return Objects.hash(subscriptionId, applicationInfo, throttlingPolicy, subscriptionStatus);
   }
 
 
@@ -196,7 +196,7 @@ public class SubscriptionDTO {
     
     sb.append("    subscriptionId: ").append(toIndentedString(subscriptionId)).append("\n");
     sb.append("    applicationInfo: ").append(toIndentedString(applicationInfo)).append("\n");
-    sb.append("    policy: ").append(toIndentedString(policy)).append("\n");
+    sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    subscriptionStatus: ").append(toIndentedString(subscriptionStatus)).append("\n");
     sb.append("}");
     return sb.toString();

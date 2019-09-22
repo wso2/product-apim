@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * APIInfoDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class APIInfoDTO {
   @SerializedName("id")
   private String id = null;
@@ -46,6 +46,9 @@ public class APIInfoDTO {
   @SerializedName("version")
   private String version = null;
 
+  @SerializedName("type")
+  private String type = null;
+
   @SerializedName("provider")
   private String provider = null;
 
@@ -54,6 +57,9 @@ public class APIInfoDTO {
 
   @SerializedName("thumbnailUri")
   private String thumbnailUri = null;
+
+  @SerializedName("avgRating")
+  private String avgRating = null;
 
   @SerializedName("throttlingPolicies")
   private List<String> throttlingPolicies = null;
@@ -148,6 +154,24 @@ public class APIInfoDTO {
     this.version = version;
   }
 
+  public APIInfoDTO type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @ApiModelProperty(example = "WS", value = "")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
   public APIInfoDTO provider(String provider) {
     this.provider = provider;
     return this;
@@ -202,6 +226,24 @@ public class APIInfoDTO {
     this.thumbnailUri = thumbnailUri;
   }
 
+  public APIInfoDTO avgRating(String avgRating) {
+    this.avgRating = avgRating;
+    return this;
+  }
+
+   /**
+   * Average rating of the API
+   * @return avgRating
+  **/
+  @ApiModelProperty(example = "4.5", value = "Average rating of the API")
+  public String getAvgRating() {
+    return avgRating;
+  }
+
+  public void setAvgRating(String avgRating) {
+    this.avgRating = avgRating;
+  }
+
   public APIInfoDTO throttlingPolicies(List<String> throttlingPolicies) {
     this.throttlingPolicies = throttlingPolicies;
     return this;
@@ -243,15 +285,17 @@ public class APIInfoDTO {
         Objects.equals(this.description, apIInfo.description) &&
         Objects.equals(this.context, apIInfo.context) &&
         Objects.equals(this.version, apIInfo.version) &&
+        Objects.equals(this.type, apIInfo.type) &&
         Objects.equals(this.provider, apIInfo.provider) &&
         Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
         Objects.equals(this.thumbnailUri, apIInfo.thumbnailUri) &&
+        Objects.equals(this.avgRating, apIInfo.avgRating) &&
         Objects.equals(this.throttlingPolicies, apIInfo.throttlingPolicies);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, thumbnailUri, throttlingPolicies);
+    return Objects.hash(id, name, description, context, version, type, provider, lifeCycleStatus, thumbnailUri, avgRating, throttlingPolicies);
   }
 
 
@@ -265,9 +309,11 @@ public class APIInfoDTO {
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
+    sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    throttlingPolicies: ").append(toIndentedString(throttlingPolicies)).append("\n");
     sb.append("}");
     return sb.toString();

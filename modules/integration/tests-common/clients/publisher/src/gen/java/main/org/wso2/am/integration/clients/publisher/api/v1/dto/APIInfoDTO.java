@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * APIInfoDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class APIInfoDTO {
   @SerializedName("id")
   private String id = null;
@@ -48,6 +48,9 @@ public class APIInfoDTO {
 
   @SerializedName("provider")
   private String provider = null;
+
+  @SerializedName("type")
+  private String type = null;
 
   @SerializedName("lifeCycleStatus")
   private String lifeCycleStatus = null;
@@ -169,6 +172,24 @@ public class APIInfoDTO {
     this.provider = provider;
   }
 
+  public APIInfoDTO type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @ApiModelProperty(example = "HTTP", value = "")
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
   public APIInfoDTO lifeCycleStatus(String lifeCycleStatus) {
     this.lifeCycleStatus = lifeCycleStatus;
     return this;
@@ -265,6 +286,7 @@ public class APIInfoDTO {
         Objects.equals(this.context, apIInfo.context) &&
         Objects.equals(this.version, apIInfo.version) &&
         Objects.equals(this.provider, apIInfo.provider) &&
+        Objects.equals(this.type, apIInfo.type) &&
         Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
         Objects.equals(this.workflowStatus, apIInfo.workflowStatus) &&
         Objects.equals(this.hasThumbnail, apIInfo.hasThumbnail) &&
@@ -273,7 +295,7 @@ public class APIInfoDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme);
+    return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme);
   }
 
 
@@ -288,6 +310,7 @@ public class APIInfoDTO {
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");

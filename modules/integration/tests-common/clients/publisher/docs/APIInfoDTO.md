@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **context** | **String** |  |  [optional]
 **version** | **String** |  |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
+**type** | **String** |  |  [optional]
 **lifeCycleStatus** | **String** |  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]

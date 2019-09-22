@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIThreatProtectionPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIWsdlInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LabelDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
@@ -41,7 +41,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 /**
  * APIDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class APIDTO {
   @SerializedName("id")
   private String id = null;
@@ -64,11 +64,11 @@ public class APIDTO {
   @SerializedName("lifeCycleStatus")
   private String lifeCycleStatus = null;
 
-  @SerializedName("wsdlUri")
-  private String wsdlUri = null;
+  @SerializedName("wsdlInfo")
+  private APIWsdlInfoDTO wsdlInfo = null;
 
-  @SerializedName("responseCaching")
-  private String responseCaching = null;
+  @SerializedName("responseCachingEnabled")
+  private Boolean responseCachingEnabled = null;
 
   @SerializedName("cacheTimeout")
   private Integer cacheTimeout = null;
@@ -82,8 +82,11 @@ public class APIDTO {
   @SerializedName("isDefaultVersion")
   private Boolean isDefaultVersion = null;
 
+  @SerializedName("enableSchemaValidation")
+  private Boolean enableSchemaValidation = null;
+
   /**
-   * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST
+   * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
    */
   @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
@@ -91,7 +94,11 @@ public class APIDTO {
     
     WS("WS"),
     
-    SOAPTOREST("SOAPTOREST");
+    SOAPTOREST("SOAPTOREST"),
+    
+    SOAP("SOAP"),
+    
+    GRAPHQL("GRAPHQL");
 
     private String value;
 
@@ -226,15 +233,15 @@ public class APIDTO {
   private List<MediationPolicyDTO> mediationPolicies = null;
 
   /**
-   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
+   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
    */
   @JsonAdapter(SubscriptionAvailabilityEnum.Adapter.class)
   public enum SubscriptionAvailabilityEnum {
-    CURRENT_TENANT("CURRENT_TENANT"),
+    CURRENT_TENANT("current_tenant"),
     
-    ALL_TENANTS("ALL_TENANTS"),
+    ALL_TENANTS("all_tenants"),
     
-    SPECIFIC_TENANTS("SPECIFIC_TENANTS");
+    SPECIFIC_TENANTS("specific_tenants");
 
     private String value;
 
@@ -340,7 +347,7 @@ public class APIDTO {
   private List<String> accessControlRoles = null;
 
   @SerializedName("businessInformation")
-  private APIBusinessInformationDTO businessInformation = null;
+  private Object businessInformation = null;
 
   @SerializedName("corsConfiguration")
   private APICorsConfigurationDTO corsConfiguration = null;
@@ -356,6 +363,56 @@ public class APIDTO {
 
   @SerializedName("endpointConfig")
   private Object endpointConfig = null;
+
+  /**
+   * Gets or Sets endpointImplementationType
+   */
+  @JsonAdapter(EndpointImplementationTypeEnum.Adapter.class)
+  public enum EndpointImplementationTypeEnum {
+    INLINE("INLINE"),
+    
+    ENDPOINT("ENDPOINT");
+
+    private String value;
+
+    EndpointImplementationTypeEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static EndpointImplementationTypeEnum fromValue(String text) {
+      for (EndpointImplementationTypeEnum b : EndpointImplementationTypeEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+
+    public static class Adapter extends TypeAdapter<EndpointImplementationTypeEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final EndpointImplementationTypeEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public EndpointImplementationTypeEnum read(final JsonReader jsonReader) throws IOException {
+        String value = jsonReader.nextString();
+        return EndpointImplementationTypeEnum.fromValue(String.valueOf(value));
+      }
+    }
+  }
+
+  @SerializedName("endpointImplementationType")
+  private EndpointImplementationTypeEnum endpointImplementationType = EndpointImplementationTypeEnum.ENDPOINT;
 
   @SerializedName("scopes")
   private List<ScopeDTO> scopes = null;
@@ -492,40 +549,40 @@ public class APIDTO {
     this.lifeCycleStatus = lifeCycleStatus;
   }
 
-  public APIDTO wsdlUri(String wsdlUri) {
-    this.wsdlUri = wsdlUri;
+  public APIDTO wsdlInfo(APIWsdlInfoDTO wsdlInfo) {
+    this.wsdlInfo = wsdlInfo;
     return this;
   }
 
    /**
-   * WSDL URL if the API is based on a WSDL endpoint 
-   * @return wsdlUri
+   * Get wsdlInfo
+   * @return wsdlInfo
   **/
-  @ApiModelProperty(example = "http://www.webservicex.com/globalweather.asmx?wsdl", value = "WSDL URL if the API is based on a WSDL endpoint ")
-  public String getWsdlUri() {
-    return wsdlUri;
+  @ApiModelProperty(value = "")
+  public APIWsdlInfoDTO getWsdlInfo() {
+    return wsdlInfo;
   }
 
-  public void setWsdlUri(String wsdlUri) {
-    this.wsdlUri = wsdlUri;
+  public void setWsdlInfo(APIWsdlInfoDTO wsdlInfo) {
+    this.wsdlInfo = wsdlInfo;
   }
 
-  public APIDTO responseCaching(String responseCaching) {
-    this.responseCaching = responseCaching;
+  public APIDTO responseCachingEnabled(Boolean responseCachingEnabled) {
+    this.responseCachingEnabled = responseCachingEnabled;
     return this;
   }
 
    /**
-   * Get responseCaching
-   * @return responseCaching
+   * Get responseCachingEnabled
+   * @return responseCachingEnabled
   **/
-  @ApiModelProperty(example = "Disabled", value = "")
-  public String getResponseCaching() {
-    return responseCaching;
+  @ApiModelProperty(example = "true", value = "")
+  public Boolean isResponseCachingEnabled() {
+    return responseCachingEnabled;
   }
 
-  public void setResponseCaching(String responseCaching) {
-    this.responseCaching = responseCaching;
+  public void setResponseCachingEnabled(Boolean responseCachingEnabled) {
+    this.responseCachingEnabled = responseCachingEnabled;
   }
 
   public APIDTO cacheTimeout(Integer cacheTimeout) {
@@ -600,16 +657,34 @@ public class APIDTO {
     this.isDefaultVersion = isDefaultVersion;
   }
 
+  public APIDTO enableSchemaValidation(Boolean enableSchemaValidation) {
+    this.enableSchemaValidation = enableSchemaValidation;
+    return this;
+  }
+
+   /**
+   * Get enableSchemaValidation
+   * @return enableSchemaValidation
+  **/
+  @ApiModelProperty(example = "false", value = "")
+  public Boolean isEnableSchemaValidation() {
+    return enableSchemaValidation;
+  }
+
+  public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
+    this.enableSchemaValidation = enableSchemaValidation;
+  }
+
   public APIDTO type(TypeEnum type) {
     this.type = type;
     return this;
   }
 
    /**
-   * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST
+   * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
    * @return type
   **/
-  @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST")
+  @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL")
   public TypeEnum getType() {
     return type;
   }
@@ -933,7 +1008,7 @@ public class APIDTO {
    * Get mediationPolicies
    * @return mediationPolicies
   **/
-  @ApiModelProperty(example = "\"\\\"sequences\\\": [ {\\\"name\\\": \\\"json_to_xml_in_message\\\",\\\"config\\\": null,\\\"type\\\": \\\"in\\\"}, {\\\"name\\\": \\\"xml_to_json_out_message\\\",\\\"config\\\": null,\\\"type\\\": \\\"out\\\"}, {\\\"name\\\": \\\"json_fault\\\",\\\"config\\\": null,\\\"type\\\": \\\"fault\\\"} ],\"", value = "")
+  @ApiModelProperty(example = "\"\\\"mediationPolicies\\\": [ {\\\"name\\\": \\\"json_to_xml_in_message\\\",\\\"type\\\": \\\"in\\\"}, {\\\"name\\\": \\\"xml_to_json_out_message\\\",\\\"type\\\": \\\"out\\\"}, {\\\"name\\\": \\\"json_fault\\\",\\\"type\\\": \\\"fault\\\"} ],\"", value = "")
   public List<MediationPolicyDTO> getMediationPolicies() {
     return mediationPolicies;
   }
@@ -948,10 +1023,10 @@ public class APIDTO {
   }
 
    /**
-   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
+   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
    * @return subscriptionAvailability
   **/
-  @ApiModelProperty(example = "CURRENT_TENANT", value = "The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.")
+  @ApiModelProperty(example = "current_tenant", value = "The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.")
   public SubscriptionAvailabilityEnum getSubscriptionAvailability() {
     return subscriptionAvailability;
   }
@@ -1074,7 +1149,7 @@ public class APIDTO {
     this.accessControlRoles = accessControlRoles;
   }
 
-  public APIDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+  public APIDTO businessInformation(Object businessInformation) {
     this.businessInformation = businessInformation;
     return this;
   }
@@ -1084,11 +1159,11 @@ public class APIDTO {
    * @return businessInformation
   **/
   @ApiModelProperty(value = "")
-  public APIBusinessInformationDTO getBusinessInformation() {
+  public Object getBusinessInformation() {
     return businessInformation;
   }
 
-  public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
+  public void setBusinessInformation(Object businessInformation) {
     this.businessInformation = businessInformation;
   }
 
@@ -1182,6 +1257,24 @@ public class APIDTO {
     this.endpointConfig = endpointConfig;
   }
 
+  public APIDTO endpointImplementationType(EndpointImplementationTypeEnum endpointImplementationType) {
+    this.endpointImplementationType = endpointImplementationType;
+    return this;
+  }
+
+   /**
+   * Get endpointImplementationType
+   * @return endpointImplementationType
+  **/
+  @ApiModelProperty(example = "INLINE", value = "")
+  public EndpointImplementationTypeEnum getEndpointImplementationType() {
+    return endpointImplementationType;
+  }
+
+  public void setEndpointImplementationType(EndpointImplementationTypeEnum endpointImplementationType) {
+    this.endpointImplementationType = endpointImplementationType;
+  }
+
   public APIDTO scopes(List<ScopeDTO> scopes) {
     this.scopes = scopes;
     return this;
@@ -1269,12 +1362,13 @@ public class APIDTO {
         Objects.equals(this.version, API.version) &&
         Objects.equals(this.provider, API.provider) &&
         Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
-        Objects.equals(this.wsdlUri, API.wsdlUri) &&
-        Objects.equals(this.responseCaching, API.responseCaching) &&
+        Objects.equals(this.wsdlInfo, API.wsdlInfo) &&
+        Objects.equals(this.responseCachingEnabled, API.responseCachingEnabled) &&
         Objects.equals(this.cacheTimeout, API.cacheTimeout) &&
         Objects.equals(this.destinationStatsEnabled, API.destinationStatsEnabled) &&
         Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
         Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
+        Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
         Objects.equals(this.type, API.type) &&
         Objects.equals(this.transport, API.transport) &&
         Objects.equals(this.tags, API.tags) &&
@@ -1302,6 +1396,7 @@ public class APIDTO {
         Objects.equals(this.createdTime, API.createdTime) &&
         Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
         Objects.equals(this.endpointConfig, API.endpointConfig) &&
+        Objects.equals(this.endpointImplementationType, API.endpointImplementationType) &&
         Objects.equals(this.scopes, API.scopes) &&
         Objects.equals(this.operations, API.operations) &&
         Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies);
@@ -1309,7 +1404,7 @@ public class APIDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlUri, responseCaching, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, scopes, operations, threatProtectionPolicies);
+    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies);
   }
 
 
@@ -1325,12 +1420,13 @@ public class APIDTO {
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
-    sb.append("    wsdlUri: ").append(toIndentedString(wsdlUri)).append("\n");
-    sb.append("    responseCaching: ").append(toIndentedString(responseCaching)).append("\n");
+    sb.append("    wsdlInfo: ").append(toIndentedString(wsdlInfo)).append("\n");
+    sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
     sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
     sb.append("    destinationStatsEnabled: ").append(toIndentedString(destinationStatsEnabled)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
+    sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
@@ -1358,6 +1454,7 @@ public class APIDTO {
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    endpointConfig: ").append(toIndentedString(endpointConfig)).append("\n");
+    sb.append("    endpointImplementationType: ").append(toIndentedString(endpointImplementationType)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
     sb.append("    threatProtectionPolicies: ").append(toIndentedString(threatProtectionPolicies)).append("\n");

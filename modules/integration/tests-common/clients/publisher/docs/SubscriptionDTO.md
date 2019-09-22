@@ -5,8 +5,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **subscriptionId** | **String** |  | 
-**applicationInfo** | [**ApplicationDTO**](ApplicationDTO.md) |  | 
-**policy** | **String** |  | 
+**applicationInfo** | [**ApplicationInfoDTO**](ApplicationInfoDTO.md) |  | 
+**throttlingPolicy** | **String** |  | 
 **subscriptionStatus** | [**SubscriptionStatusEnum**](#SubscriptionStatusEnum) |  | 
 
 

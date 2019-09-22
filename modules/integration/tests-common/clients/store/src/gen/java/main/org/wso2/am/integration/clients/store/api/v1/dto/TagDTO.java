@@ -27,48 +27,48 @@ import java.io.IOException;
 /**
  * TagDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:28.212+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:21.329+05:30")
 public class TagDTO {
-  @SerializedName("name")
-  private String name = null;
+  @SerializedName("value")
+  private String value = null;
 
-  @SerializedName("weight")
-  private Integer weight = null;
+  @SerializedName("count")
+  private Integer count = null;
 
-  public TagDTO name(String name) {
-    this.name = name;
+  public TagDTO value(String value) {
+    this.value = value;
     return this;
   }
 
    /**
-   * Get name
-   * @return name
+   * Get value
+   * @return value
   **/
-  @ApiModelProperty(example = "tag1", required = true, value = "")
-  public String getName() {
-    return name;
+  @ApiModelProperty(example = "tag1", value = "")
+  public String getValue() {
+    return value;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setValue(String value) {
+    this.value = value;
   }
 
-  public TagDTO weight(Integer weight) {
-    this.weight = weight;
+  public TagDTO count(Integer count) {
+    this.count = count;
     return this;
   }
 
    /**
-   * Get weight
-   * @return weight
+   * Get count
+   * @return count
   **/
-  @ApiModelProperty(example = "5", required = true, value = "")
-  public Integer getWeight() {
-    return weight;
+  @ApiModelProperty(example = "5", value = "")
+  public Integer getCount() {
+    return count;
   }
 
-  public void setWeight(Integer weight) {
-    this.weight = weight;
+  public void setCount(Integer count) {
+    this.count = count;
   }
 
 
@@ -81,13 +81,13 @@ public class TagDTO {
       return false;
     }
     TagDTO tag = (TagDTO) o;
-    return Objects.equals(this.name, tag.name) &&
-        Objects.equals(this.weight, tag.weight);
+    return Objects.equals(this.value, tag.value) &&
+        Objects.equals(this.count, tag.count);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, weight);
+    return Objects.hash(value, count);
   }
 
 
@@ -96,8 +96,8 @@ public class TagDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class TagDTO {\n");
     
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    weight: ").append(toIndentedString(weight)).append("\n");
+    sb.append("    value: ").append(toIndentedString(value)).append("\n");
+    sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("}");
     return sb.toString();
   }

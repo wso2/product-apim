@@ -6,7 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **environmentName** | **String** |  |  [optional]
 **environmentType** | **String** |  |  [optional]
-**environmentURLs** | [**APIEnvironmentURLsDTO**](APIEnvironmentURLsDTO.md) |  |  [optional]
+**urLs** | [**APIURLsDTO**](APIURLsDTO.md) |  |  [optional]
+**defaultVersionURLs** | [**APIDefaultVersionURLsDTO**](APIDefaultVersionURLsDTO.md) |  |  [optional]
 
 
 

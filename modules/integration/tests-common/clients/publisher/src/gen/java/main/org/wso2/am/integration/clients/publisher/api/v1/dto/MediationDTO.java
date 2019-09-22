@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * MediationDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-18T19:19:21.534+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
 public class MediationDTO {
   @SerializedName("id")
   private String id = null;
@@ -87,9 +87,6 @@ public class MediationDTO {
   @SerializedName("type")
   private TypeEnum type = null;
 
-  @SerializedName("config")
-  private String config = null;
-
   public MediationDTO id(String id) {
     this.id = id;
     return this;
@@ -144,24 +141,6 @@ public class MediationDTO {
     this.type = type;
   }
 
-  public MediationDTO config(String config) {
-    this.config = config;
-    return this;
-  }
-
-   /**
-   * Get config
-   * @return config
-  **/
-  @ApiModelProperty(example = "<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"log_in_message\"> <log level=\"full\"> <property name=\"IN_MESSAGE\" value=\"IN_MESSAGE_21133232\"/> </log> </sequence>", required = true, value = "")
-  public String getConfig() {
-    return config;
-  }
-
-  public void setConfig(String config) {
-    this.config = config;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -174,13 +153,12 @@ public class MediationDTO {
     MediationDTO mediation = (MediationDTO) o;
     return Objects.equals(this.id, mediation.id) &&
         Objects.equals(this.name, mediation.name) &&
-        Objects.equals(this.type, mediation.type) &&
-        Objects.equals(this.config, mediation.config);
+        Objects.equals(this.type, mediation.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type, config);
+    return Objects.hash(id, name, type);
   }
 
 
@@ -192,7 +170,6 @@ public class MediationDTO {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    config: ").append(toIndentedString(config)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -7,7 +7,6 @@ Name | Type | Description | Notes
 **id** | **String** |  |  [optional]
 **name** | **String** |  | 
 **type** | [**TypeEnum**](#TypeEnum) |  | 
-**config** | **String** |  | 
 
 
 <a name="TypeEnum"></a>

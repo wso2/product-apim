@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 <a name="subscriptionsGet"></a>
 # **subscriptionsGet**
-> SubscriptionListDTO subscriptionsGet(apiId, applicationId, groupId, offset, limit, ifNoneMatch)
+> SubscriptionListDTO subscriptionsGet(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch)
 
 Get all subscriptions 
 
@@ -37,12 +37,13 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 SubscriptionsApi apiInstance = new SubscriptionsApi();
 String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
 String applicationId = "applicationId_example"; // String | **Application Identifier** consisting of the UUID of the Application. 
+String apiType = "apiType_example"; // String | **API TYPE** Identifies the type API(API or API_PRODUCT). 
 String groupId = "groupId_example"; // String | Application Group Id 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 try {
-    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, groupId, offset, limit, ifNoneMatch);
+    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SubscriptionsApi#subscriptionsGet");
@@ -56,6 +57,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  | [optional]
  **applicationId** | **String**| **Application Identifier** consisting of the UUID of the Application.  | [optional]
+ **apiType** | **String**| **API TYPE** Identifies the type API(API or API_PRODUCT).  | [optional]
  **groupId** | **String**| Application Group Id  | [optional]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]

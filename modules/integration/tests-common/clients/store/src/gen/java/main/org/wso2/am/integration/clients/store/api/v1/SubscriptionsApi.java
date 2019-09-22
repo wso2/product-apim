@@ -61,6 +61,7 @@ public class SubscriptionsApi {
      * Build call for subscriptionsGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
+     * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -70,7 +71,7 @@ public class SubscriptionsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsGetCall(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsGetCall(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -82,6 +83,8 @@ public class SubscriptionsApi {
         localVarQueryParams.addAll(apiClient.parameterToPair("apiId", apiId));
         if (applicationId != null)
         localVarQueryParams.addAll(apiClient.parameterToPair("applicationId", applicationId));
+        if (apiType != null)
+        localVarQueryParams.addAll(apiClient.parameterToPair("apiType", apiType));
         if (groupId != null)
         localVarQueryParams.addAll(apiClient.parameterToPair("groupId", groupId));
         if (offset != null)
@@ -124,10 +127,10 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call subscriptionsGetValidateBeforeCall(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call subscriptionsGetValidateBeforeCall(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = subscriptionsGetCall(apiId, applicationId, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsGetCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
     }
@@ -137,6 +140,7 @@ public class SubscriptionsApi {
      * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
+     * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -144,8 +148,8 @@ public class SubscriptionsApi {
      * @return SubscriptionListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public SubscriptionListDTO subscriptionsGet(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
-        ApiResponse<SubscriptionListDTO> resp = subscriptionsGetWithHttpInfo(apiId, applicationId, groupId, offset, limit, ifNoneMatch);
+    public SubscriptionListDTO subscriptionsGet(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        ApiResponse<SubscriptionListDTO> resp = subscriptionsGetWithHttpInfo(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch);
         return resp.getData();
     }
 
@@ -154,6 +158,7 @@ public class SubscriptionsApi {
      * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
+     * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -161,8 +166,8 @@ public class SubscriptionsApi {
      * @return ApiResponse&lt;SubscriptionListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<SubscriptionListDTO> subscriptionsGetWithHttpInfo(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
-        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, groupId, offset, limit, ifNoneMatch, null, null);
+    public ApiResponse<SubscriptionListDTO> subscriptionsGetWithHttpInfo(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, null, null);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -172,6 +177,7 @@ public class SubscriptionsApi {
      * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
+     * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -180,7 +186,7 @@ public class SubscriptionsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsGetAsync(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback<SubscriptionListDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsGetAsync(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback<SubscriptionListDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -201,7 +207,7 @@ public class SubscriptionsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
