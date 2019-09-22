@@ -1,4 +1,4 @@
-package org.wso2.carbon.apimgt.samples.utils;
+package org.wso2.carbon.apimgt.test.utils;
 
 /*
 * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
