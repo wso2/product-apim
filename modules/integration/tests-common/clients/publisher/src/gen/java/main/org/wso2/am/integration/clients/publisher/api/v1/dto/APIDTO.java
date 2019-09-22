@@ -41,7 +41,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 /**
  * APIDTO
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T15:12:13.756+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2019-09-22T21:52:12.257+05:30")
 public class APIDTO {
   @SerializedName("id")
   private String id = null;
@@ -233,15 +233,15 @@ public class APIDTO {
   private List<MediationPolicyDTO> mediationPolicies = null;
 
   /**
-   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
+   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
    */
   @JsonAdapter(SubscriptionAvailabilityEnum.Adapter.class)
   public enum SubscriptionAvailabilityEnum {
-    CURRENT_TENANT("current_tenant"),
+    CURRENT_TENANT("CURRENT_TENANT"),
     
-    ALL_TENANTS("all_tenants"),
+    ALL_TENANTS("ALL_TENANTS"),
     
-    SPECIFIC_TENANTS("specific_tenants");
+    SPECIFIC_TENANTS("SPECIFIC_TENANTS");
 
     private String value;
 
@@ -1023,10 +1023,10 @@ public class APIDTO {
   }
 
    /**
-   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
+   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
    * @return subscriptionAvailability
   **/
-  @ApiModelProperty(example = "current_tenant", value = "The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.")
+  @ApiModelProperty(example = "CURRENT_TENANT", value = "The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.")
   public SubscriptionAvailabilityEnum getSubscriptionAvailability() {
     return subscriptionAvailability;
   }

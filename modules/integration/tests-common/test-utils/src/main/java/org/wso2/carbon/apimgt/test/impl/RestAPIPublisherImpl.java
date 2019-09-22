@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
+
 /**
  * This util class performs the actions related to APIDTOobjects.
  */
@@ -61,7 +63,6 @@ public class RestAPIPublisherImpl {
     public static RolesApi rolesApi = new RolesApi();
 
     public static ApiClient apiPublisherClient = new ApiClient();
-    public static org.wso2.am.integration.clients.store.api.ApiClient apiStoreClient = new org.wso2.am.integration.clients.store.api.ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -81,11 +82,7 @@ public class RestAPIPublisherImpl {
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-
-        apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-
         apiPublisherClient.setBasePath("https://localhost:9943/api/am/publisher/v1.0");
-        apiStoreClient.setBasePath("https://localhost:9943/api/am/store/v1.0");
         apiPublisherApi.setApiClient(apiPublisherClient);
         documentIndividualApi.setApiClient(apiPublisherClient);
         apiCollectionApi.setApiClient(apiPublisherClient);
@@ -121,9 +118,9 @@ public class RestAPIPublisherImpl {
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
 ////        body.setGatewayEnvironments(apiRequest.ge);
-//        body.setSubscriptionAvailability(apiRequest.);
+        body.setSubscriptionAvailability(ALL_TENANTS);
 ////        body.setVisibleRoles(visibleRoles);
-//        body.setSubscriptionAvailableTenants(apiRequest.getV);
+//        body.setSubscriptionAvailableTenants("ALL_TENANTS");
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
@@ -134,7 +131,7 @@ public class RestAPIPublisherImpl {
         APIDTO apidto;
         try {
             apidto = apiPublisherApi.apisPost(body);
-//            this.apiPublisherApi.apisApiIdGet(apidto.getId(), "carbon.super", null);
+            this.apiPublisherApi.apisApiIdGet(apidto.getId(), "carbon.super", null);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;

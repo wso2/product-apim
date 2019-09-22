@@ -35,8 +35,9 @@ under the License.
         <module>backend-service</module>
         <module>framework-extensions</module>
         <module>integration-test-extensions</module>
-        <module>test-utils</module>
         <module>ui-pages</module>
+        <module>clients</module>
+        <module>test-utils</module>
     </modules>
 
 </project>
