@@ -86,7 +86,7 @@ public class CommentDTO {
    * Get createdTime
    * @return createdTime
   **/
-  @ApiModelProperty(example = "2017-02-20T13:57:16.229+0000", value = "")
+  @ApiModelProperty(example = "2019-07-20T13:57:16.229+0000", value = "")
   public String getCreatedTime() {
     return createdTime;
   }

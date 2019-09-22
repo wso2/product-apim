@@ -44,7 +44,7 @@ public class CertificateValidityDTO {
    * Get from
    * @return from
   **/
-  @ApiModelProperty(example = "12-12-2017", value = "")
+  @ApiModelProperty(example = "12-12-2019", value = "")
   public String getFrom() {
     return from;
   }

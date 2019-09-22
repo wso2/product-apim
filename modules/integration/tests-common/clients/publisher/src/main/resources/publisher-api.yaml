@@ -1210,9 +1210,9 @@ paths:
             GET https://127.0.0.1:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-history
             Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\n Content-Type: application/json \n Content-Encoding: gzip \n Transfer-Encoding:
-      chunked \n\n [ { \"postState\" : \"Created\",\n    \"updatedTime\" : \"Feb 23, 2017 5:17:02 PM\",\n\"user\" :
+      chunked \n\n [ { \"postState\" : \"Created\",\n    \"updatedTime\" : \"Feb 23, 2019 5:17:02 PM\",\n\"user\" :
       \"admin\"\n  },\n { \"postState\" : \"Published\",\n    \"previousState\" : \"Created\",\n    \"updatedTime\" :
-      \"Feb 23, 2017 5:17:17 PM\",\n    \"user\" : \"admin\"\n }\n]"
+      \"Feb 23, 2019 5:17:17 PM\",\n    \"user\" : \"admin\"\n }\n]"
       summary: Get Lifecycle state change history of the API.
       description: |
             This operation can be used to retrieve Lifecycle state change history of the API.
@@ -6769,10 +6769,10 @@ definitions:
         example: APPROVED
       createdTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       lastUpdatedTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       endpointConfig:
         type: object
         description: |
@@ -7095,10 +7095,10 @@ definitions:
         $ref: '#/definitions/APICorsConfiguration'
       createdTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       lastUpdatedTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       apis:
         description: |
           APIs and resources in the API Product.
@@ -7311,12 +7311,12 @@ definitions:
         example: API_LEVEL
       createdTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       createdBy:
         type: string
       lastUpdatedTime:
         type: string
-        example: 2017-02-20T13:57:16.229
+        example: 2019-07-20T13:57:16.229
       lastUpdatedBy:
         type: string
 
@@ -8087,7 +8087,7 @@ definitions:
     properties:
       from:
         type: string
-        example: 12-12-2017
+        example: 12-12-2019
       to:
         type: string
         example: 01-01-2019
