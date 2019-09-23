@@ -561,7 +561,7 @@
 
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/extensions
+                src/main/extensions
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/authenticationendpoint/extensions
             </outputDirectory>
@@ -587,7 +587,7 @@
 
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/extensions
+                src/main/extensions
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/accountrecoveryendpoint/extensions
             </outputDirectory>
