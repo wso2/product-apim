@@ -1206,10 +1206,12 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
+     * @return APIDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public void apisCopyApiPost(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
-        apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion);
+    public APIDTO apisCopyApiPost(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
+        ApiResponse<APIDTO> resp = apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion);
+        return resp.getData();
     }
 
     /**
@@ -1218,12 +1220,13 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;APIDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<Void> apisCopyApiPostWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
+    public ApiResponse<APIDTO> apisCopyApiPostWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
         com.squareup.okhttp.Call call = apisCopyApiPostValidateBeforeCall(newVersion, apiId, defaultVersion, null, null);
-        return apiClient.execute(call);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
     }
 
     /**
@@ -1236,7 +1239,7 @@ public class ApIsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisCopyApiPostAsync(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback<Void> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisCopyApiPostAsync(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback<APIDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -1258,7 +1261,8 @@ public class ApIsApi {
         }
 
         com.squareup.okhttp.Call call = apisCopyApiPostValidateBeforeCall(newVersion, apiId, defaultVersion, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**

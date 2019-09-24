@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiCollectionApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CertificatesIndividualApi;
@@ -53,6 +54,8 @@ import java.util.List;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIPublisherImpl {
+
+    public static ApIsApi apIsApi = new ApIsApi();
     public static ApiIndividualApi apiPublisherApi = new ApiIndividualApi();
     public static ApiCollectionApi apiCollectionApi = new ApiCollectionApi();
     public static DocumentIndividualApi documentIndividualApi = new DocumentIndividualApi();
@@ -81,6 +84,7 @@ public class RestAPIPublisherImpl {
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath("https://localhost:9943/api/am/publisher/v1.0");
+        apIsApi.setApiClient(apiPublisherClient);
         apiPublisherApi.setApiClient(apiPublisherClient);
         documentIndividualApi.setApiClient(apiPublisherClient);
         apiCollectionApi.setApiClient(apiPublisherClient);
@@ -180,10 +184,12 @@ public class RestAPIPublisherImpl {
      *
      * @param action API id that need to published.
      * @param apiId  API id that need to published.
+     * return ApiResponse<WorkflowResponseDTO> change response.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public void changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
-        WorkflowResponseDTO response = this.apiPublisherApi.apisChangeLifecyclePost(action, apiId, null, null);
+    public ApiResponse<WorkflowResponseDTO> changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
+        ApiResponse<WorkflowResponseDTO> response = this.apiPublisherApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
+        return response;
     }
 
     /**
@@ -228,10 +234,10 @@ public class RestAPIPublisherImpl {
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if error occurred at API copy operation
      */
     public HttpResponse copyAPI(String newVersion, String apiId, Boolean isDefault) throws ApiException {
-        ApiResponse<Void> httpResponse = apiPublisherApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, isDefault);
+        APIDTO apiDto = apIsApi.apisCopyApiPost(newVersion, apiId, isDefault);
         HttpResponse response = null;
-        if (httpResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully copied the new API", 200);
+        if (StringUtils.isNotEmpty(apiDto.getId())) {
+            response = new HttpResponse(apiDto.getId(), 200);
         }
         return response;
     }

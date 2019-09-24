@@ -101,5 +101,9 @@
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
+        </dependency>
     </dependencies>
 </project>

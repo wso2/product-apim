@@ -1071,6 +1071,8 @@ paths:
               description: |
                 The URL of the newly created API.
               type: string
+          schema:
+            $ref: '#/definitions/API'
         400:
           description: |
             Bad Request.

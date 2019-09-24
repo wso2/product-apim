@@ -46,6 +46,7 @@ public class RestAPIStoreImpl {
     public static ApIsApi apIsApi = new ApIsApi();
     public static ApplicationsApi applicationsApi = new ApplicationsApi();
     public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
+    public static ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -73,6 +74,7 @@ public class RestAPIStoreImpl {
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
+        applicationKeysApi.setApiClient(apiStoreClient);
     }
 
 
@@ -89,6 +91,24 @@ public class RestAPIStoreImpl {
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
                 response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+
+    public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
+        try {
+
+            applicationsApi.applicationsApplicationIdDelete(applicationId, null);
+            HttpResponse response = null;
+            if ((applicationsApi.applicationsApplicationIdGet(applicationId, null) == null)) {
+                response = new HttpResponse(applicationId, 200);
             }
             return response;
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
@@ -123,9 +143,9 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public static ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
-                                                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
-                                                 ArrayList<String> grantTypes)
+    public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
+                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
+                                          ArrayList<String> grantTypes)
             throws org.wso2.am.integration.clients.store.api.ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -134,7 +154,6 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
 
-        ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
         return applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequest);
 
@@ -147,13 +166,8 @@ public class RestAPIStoreImpl {
      * @return - http response of get API post request
      * @throws ApiException - throws if API information retrieval fails.
      */
-    public HttpResponse getAPI(String apiId) throws ApiException {
-        APIDTO apiDto = apIsApi.apisApiIdGet(apiId, null, null);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(apiDto.getId())) {
-            response = new HttpResponse(apiDto.getId(), 200);
-        }
-        return response;
+    public APIDTO getAPI(String apiId) throws ApiException {
+        return apIsApi.apisApiIdGet(apiId, null, null);
     }
 
 
