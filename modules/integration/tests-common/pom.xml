@@ -36,6 +36,8 @@ under the License.
         <module>framework-extensions</module>
         <module>integration-test-extensions</module>
         <module>ui-pages</module>
+        <module>clients</module>
+        <module>test-utils</module>
     </modules>
 
 </project>

@@ -59,7 +59,7 @@ public class StreamDefinitions {
                 "          {'name':'eventTime','type':'LONG'}," +
                 "          {'name':'tenantDomain','type':'STRING'}," +
                 "          {'name':'hostName','type':'STRING'}," +
-                "          {'name':'apiPublisher','type':'STRING'}," +
+                "          {'name':'apiPublisherApi','type':'STRING'}," +
                 "          {'name':'applicationName','type':'STRING'}," +
                 "          {'name':'applicationId','type':'STRING'}," +
                 "          {'name':'cacheHit','type':'BOOL'}," +
@@ -103,7 +103,7 @@ public class StreamDefinitions {
                 "          {'name':'userId','type':'STRING'}," +
                 "          {'name':'tenantDomain','type':'STRING'}," +
                 "          {'name':'hostName','type':'STRING'}," +
-                "          {'name':'apiPublisher','type':'STRING'}," +
+                "          {'name':'apiPublisherApi','type':'STRING'}," +
                 "          {'name':'applicationName','type':'STRING'}," +
                 "          {'name':'applicationId','type':'STRING'}," +
                 "          {'name':'userAgent','type':'STRING'}," +
@@ -140,7 +140,7 @@ public class StreamDefinitions {
                 "      \"type\": \"STRING\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"name\": \"apiPublisher\",\n" +
+                "      \"name\": \"apiPublisherApi\",\n" +
                 "      \"type\": \"STRING\"\n" +
                 "    },\n" +
                 "    {\n" +
@@ -249,7 +249,7 @@ public class StreamDefinitions {
                 "    {'name': 'api','type': 'STRING'}," +
                 "    {'name': 'version','type': 'STRING'}," +
                 "    {'name': 'request','type': 'INT'}," +
-                "    {'name': 'apiPublisher','type': 'STRING'}," +
+                "    {'name': 'apiPublisherApi','type': 'STRING'}," +
                 "    {'name': 'context','type': 'STRING'}," +
                 "    {'name': 'destination','type': 'STRING'}," +
                 "    {'name': 'requestTime','type': 'LONG'}," +
@@ -280,7 +280,7 @@ public class StreamDefinitions {
                 + "    {  'name': 'userId','type': 'STRING'},"
                 + "    {  'name': 'tenantDomain','type': 'STRING'},"
                 + "    {  'name': 'hostName','type': 'STRING'},"
-                + "    {  'name': 'apiPublisher','type': 'STRING'},"
+                + "    {  'name': 'apiPublisherApi','type': 'STRING'},"
                 + "    {  'name': 'applicationName','type': 'STRING'},"
                 + "    {  'name': 'applicationId','type': 'STRING'},"
                 + "    {  'name': 'protocol','type': 'STRING'}"
@@ -303,7 +303,7 @@ public class StreamDefinitions {
                 + "    {'name': 'api','type': 'STRING'},"
                 + "    {'name': 'api_version','type': 'STRING'},"
                 + "    {'name': 'context','type': 'STRING'},"
-                + "    {'name': 'apiPublisher','type': 'STRING'},"
+                + "    {'name': 'apiPublisherApi','type': 'STRING'},"
                 + "    {'name': 'throttledTime','type': 'LONG'},"
                 + "    {'name': 'applicationName','type': 'STRING'},"
                 + "    {'name': 'applicationId','type': 'STRING'},"
