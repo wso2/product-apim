@@ -5,6 +5,7 @@
   "default_cache_timeout.force_local_cache": false,
   "server.enableMTOM": false,
   "server.enableSwA": false,
+  "server.discard_empty_caches": false,
   "identity.data_source": "jdbc/WSO2AM_DB",
   "oauth.token_validation.refresh_token_validity": "1d",
   "oauth.scope_validator.xacml.enable": false,
