@@ -355,7 +355,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
         //Create the API
         HttpResponse createAPIResponse = publisherRestClient.addAPI(apiRequest);
-        if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK && !StringUtils.isEmpty(createAPIResponse.getData())) {
+        if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_CREATED && !StringUtils.isEmpty(createAPIResponse.getData())) {
             log.info("API Created :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
             //Publish the API
             HttpResponse publishAPIResponse = publishAPIUsingRest(createAPIResponse.getData(), publisherRestClient, isRequireReSubscription);

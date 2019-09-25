@@ -211,7 +211,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws if an error occurred when publishing the API.
      */
     public HttpResponse changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
-        WorkflowResponseDTO workflowResponseDTO = this.apiPublisherApi.apisChangeLifecyclePost(action, apiId, null, null);
+        WorkflowResponseDTO workflowResponseDTO = this.apiLifecycleApi.apisChangeLifecyclePost(action, apiId, null, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(workflowResponseDTO.getLifecycleState().getState())) {
             response = new HttpResponse(workflowResponseDTO.getLifecycleState().getState(), 200);
@@ -227,7 +227,7 @@ public class RestAPIPublisherImpl {
      */
     public static void deprecateAPI(String apiId) throws ApiException {
 
-        apiPublisherApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
+        apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
     }
 
     /**
@@ -237,7 +237,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws if an error occurred when publishing the API.
      */
     public static void blockAPI(String apiId) throws ApiException {
-        apiPublisherApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
+        apiLifecycleApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
     }
 
     public HttpResponse getLifecycleStatus(String apiId) throws ApiException {
