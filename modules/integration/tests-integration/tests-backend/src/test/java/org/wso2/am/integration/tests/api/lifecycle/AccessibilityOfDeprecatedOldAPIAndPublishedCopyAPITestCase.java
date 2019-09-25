@@ -113,7 +113,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
         APIOperationsDTO apiOperationsDTO =  new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
-        apiOperationsDTO.setTarget("customers/{id}");
+        apiOperationsDTO.setTarget("/customers/{id}");
 
         List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
         operationsDTOS.add(apiOperationsDTO);
@@ -167,12 +167,13 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         HttpResponse deprecateAPIResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction(), null);
         assertEquals(deprecateAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+
                 "API deprecate Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version1));
         HttpResponse lcStateRsponse = restAPIPublisher.getLifecycleStatus(apiId);
 
         assertEquals(lcStateRsponse.getData(), APILifeCycleState.DEPRECATED.getState(),
                 "API deprecate status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + deprecateAPIResponse.getData());
+                        "Response Data:" + response.getData());
     }
 
 
@@ -244,7 +245,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(),
-                HTTP_RESPONSE_CODE_NOT_FOUND, "Response code mismatched");
+                HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
         //Invoke new version
         HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
@@ -257,8 +258,9 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, org.wso2.am.integration.clients.store.api.ApiException, ApiException {
-        restAPIStore.removeApplication(applicationID);
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, InterruptedException {
+        restAPIStore.deleteApplication(applicationID, null);
+        Thread.sleep(2000);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);
     }

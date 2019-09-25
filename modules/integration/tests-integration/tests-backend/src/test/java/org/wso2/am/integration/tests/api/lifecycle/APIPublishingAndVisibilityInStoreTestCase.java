@@ -113,6 +113,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
         //Publish the API
         HttpResponse response = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
 
