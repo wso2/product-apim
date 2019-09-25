@@ -632,7 +632,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.14.war</include>
+                <include>api#am#admin#v0.15.war</include>
             </includes>
         </fileSet>
         <fileSet>
