@@ -29,6 +29,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
@@ -85,7 +86,7 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             String apiId = apiResponse.getData();
 
             //Publish the API
-            restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+            restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
             //Add an Application in the Store.
             RestAPIStoreImpl restAPIStore = new RestAPIStoreImpl();
@@ -103,7 +104,7 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             //verifyResponse(response);
 
             //Demote the API to the Created State
-            restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Created");
+            restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Created", null);
 
             Thread.sleep(1000);
 

@@ -301,8 +301,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected HttpResponse publishAPIUsingRest(String apiId, RestAPIPublisherImpl publisherRestClient,
             boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
-
-        return publisherRestClient.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        String lifecycleChecklist = null;
+        if (isRequireReSubscription) {
+            lifecycleChecklist = "lifecycleChecklist=Require Re-Subscription:true";
+        }
+        return publisherRestClient
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), lifecycleChecklist);
 
 
     }
@@ -360,7 +364,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             //Publish the API
             HttpResponse publishAPIResponse = publishAPIUsingRest(createAPIResponse.getData(), publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    APILifeCycleState.PUBLISHED.getState().equals(publishAPIResponse.getData().toUpperCase()))) {
+                    APILifeCycleState.PUBLISHED.getState().equals(publishAPIResponse.getData()))) {
                 throw new APIManagerIntegrationTestException("Error in API Publishing" +
                         getAPIIdentifierStringFromAPIRequest(apiRequest) + "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());

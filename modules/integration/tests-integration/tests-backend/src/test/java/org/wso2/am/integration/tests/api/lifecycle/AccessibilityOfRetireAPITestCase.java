@@ -29,10 +29,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -69,8 +66,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     private String apiEndPointUrl;
     private String apiId;
     private String applicationId;
-    private ArrayList<String> scopes = new ArrayList<>();
-    private ArrayList<String> grantTypes = new ArrayList<>();
+    private ArrayList<String> grantTypes;
     private Map<String, String> requestHeaders;
     private RestAPIPublisherImpl restAPIPublisher;
     private RestAPIStoreImpl restAPIStore;
@@ -81,6 +77,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         restAPIPublisher = new RestAPIPublisherImpl();
         restAPIStore = new RestAPIStoreImpl();
+        grantTypes = new ArrayList<>();
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -102,11 +99,10 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                 APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
                 SubscriptionDTO.TypeEnum.API);
         //get access token
-        //String accessToken = generateApplicationKeys(apiStoreRestClient, APPLICATION_NAME).getAccessToken();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");
@@ -136,9 +132,10 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     public void testChangeAPILifecycleToDepricated() throws Exception {
         //DEPRECATE the API version 1.0.0
         //Change API lifecycle  to DEPRECATED
-        HttpResponse blockAPIActionResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.DEPRECATE);
+        HttpResponse blockAPIActionResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction(), null);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(APILifeCycleState.DEPRECATED.getState().equals(blockAPIActionResponse.getData().toUpperCase()),
+        assertTrue(APILifeCycleState.DEPRECATED.getState().equals(blockAPIActionResponse.getData()),
                 "API status Change is invalid when retire an API :" + API_NAME + " with API ID ("
                         + apiId + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
     }
@@ -147,9 +144,10 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testChangeAPILifecycleToDepricated") 
     public void testChangeAPILifecycleToRetired() throws Exception {
         //RETIRE the API version 1.0.0
-        HttpResponse blockAPIActionResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.RETIRE);
+        HttpResponse blockAPIActionResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.RETIRE.getAction(), null);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(APILifeCycleState.RETIRED.getState().equals(blockAPIActionResponse.getData().toUpperCase()),
+        assertTrue(APILifeCycleState.RETIRED.getState().equals(blockAPIActionResponse.getData()),
                 "API status Change is invalid when retire an API :" + API_NAME + " with API ID ("
                         + apiId + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
 
@@ -177,7 +175,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                                  APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0)  +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api after retire");
