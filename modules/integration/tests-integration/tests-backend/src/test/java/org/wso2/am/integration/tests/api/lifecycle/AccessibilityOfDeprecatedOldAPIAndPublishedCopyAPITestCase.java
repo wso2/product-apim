@@ -24,9 +24,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -38,14 +36,11 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
 import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -64,9 +59,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         extends APIManagerLifecycleBaseTest {
     private final String API_NAME = "DeprecatedAPITest";
     private final String API_CONTEXT = "DeprecatedAPI";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final String API_VERSION_1_0_0 = "1.0.0";
@@ -111,7 +104,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        APIOperationsDTO apiOperationsDTO =  new APIOperationsDTO();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
         apiOperationsDTO.setTarget("/customers/{id}");
 
@@ -255,7 +248,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, InterruptedException {
+    public void cleanUpArtifacts() throws ApiException, InterruptedException {
         restAPIStore.deleteApplication(applicationID, null);
         Thread.sleep(2000);
         restAPIPublisher.deleteAPI(apiId);
