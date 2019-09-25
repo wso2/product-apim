@@ -35,6 +35,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
@@ -128,7 +129,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         apiId = apiResponse.getData();
 
         //publishing API
-        HttpResponse response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
 
@@ -152,7 +153,8 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         String newApiId = newVersionResponse.getData();
 
         //Publisher new version
-        HttpResponse newVersionPublishResponse = restAPIPublisher.changeAPILifeCycleStatus(newApiId, Constants.PUBLISHED);
+        HttpResponse newVersionPublishResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(newApiId, APILifeCycleAction.PUBLISH.getAction(), null);
         assertEquals(newVersionPublishResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code Mismatch");
 
