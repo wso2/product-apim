@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.test.impl;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
@@ -101,6 +102,24 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+
+    public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
+        try {
+
+            applicationsApi.applicationsApplicationIdDelete(applicationId, null);
+            HttpResponse response = null;
+            if ((applicationsApi.applicationsApplicationIdGet(applicationId, null) == null)) {
+                response = new HttpResponse(applicationId, 200);
+            }
+            return response;
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
                                            SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum) {
         try {
@@ -125,9 +144,21 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse removeSubscription(String subscriptionId) throws ApiException {
+
+        ApiResponse<Void> deleteResponse = subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);
+
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Subscription deleted successfully : sub ID: " + subscriptionId, 200);
+        }
+        return response;
+
+    }
+
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
-                                                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
-                                                 ArrayList<String> grantTypes)
+                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
+                                          ArrayList<String> grantTypes)
             throws org.wso2.am.integration.clients.store.api.ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -148,13 +179,8 @@ public class RestAPIStoreImpl {
      * @return - http response of get API post request
      * @throws ApiException - throws if API information retrieval fails.
      */
-    public HttpResponse getAPI(String apiId) throws ApiException {
-        APIDTO apiDto = apIsApi.apisApiIdGet(apiId, null, null);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(apiDto.getId())) {
-            response = new HttpResponse(apiDto.getId(), 200);
-        }
-        return response;
+    public APIDTO getAPI(String apiId) throws ApiException {
+        return apIsApi.apisApiIdGet(apiId, null, null);
     }
 
 
