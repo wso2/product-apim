@@ -46,6 +46,7 @@ public class RestAPIStoreImpl {
     public static ApIsApi apIsApi = new ApIsApi();
     public static ApplicationsApi applicationsApi = new ApplicationsApi();
     public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
+    public static ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -73,6 +74,7 @@ public class RestAPIStoreImpl {
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
+        applicationKeysApi.setApiClient(apiStoreClient);
     }
 
 
@@ -123,7 +125,7 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public static ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
+    public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                                  ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
                                                  ArrayList<String> grantTypes)
             throws org.wso2.am.integration.clients.store.api.ApiException {
@@ -134,7 +136,6 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
 
-        ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
         return applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequest);
 

@@ -47,6 +47,7 @@ public class Constants {
     public static final String TIERS_UNLIMITED = "Unlimited";
     public static final String PUBLISHED = "Publish";
     public static final String DEPRECATE = "Deprecate";
+    public static final String RETIRE = "Retire";
     public static final String BLOCK = "Block";
     public static final String REJECT = "Reject";
     public static final String API_LIFECYCLE = "APILifeCycle";

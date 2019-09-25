@@ -182,8 +182,13 @@ public class RestAPIPublisherImpl {
      * @param apiId  API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public void changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
-        WorkflowResponseDTO response = this.apiPublisherApi.apisChangeLifecyclePost(action, apiId, null, null);
+    public HttpResponse changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
+        WorkflowResponseDTO workflowResponseDTO = this.apiPublisherApi.apisChangeLifecyclePost(action, apiId, null, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(workflowResponseDTO.getLifecycleState().getState())) {
+            response = new HttpResponse(workflowResponseDTO.getLifecycleState().getState(), 200);
+        }
+        return response;
     }
 
     /**
