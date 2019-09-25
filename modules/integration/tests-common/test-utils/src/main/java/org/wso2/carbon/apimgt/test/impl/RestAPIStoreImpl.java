@@ -144,7 +144,6 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-
     public HttpResponse removeSubscription(String subscriptionId) throws ApiException {
 
         ApiResponse<Void> deleteResponse = subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);

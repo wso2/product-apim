@@ -128,7 +128,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         apiId = apiResponse.getData();
 
         //publishing API
-        ApiResponse<WorkflowResponseDTO> response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        HttpResponse response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
 
         signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
 
@@ -152,8 +152,8 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         String newApiId = newVersionResponse.getData();
 
         //Publisher new version
-        ApiResponse<WorkflowResponseDTO> newVersionPublishResponse = restAPIPublisher.changeAPILifeCycleStatus(newApiId, Constants.PUBLISHED);
-        assertEquals(newVersionPublishResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+        HttpResponse newVersionPublishResponse = restAPIPublisher.changeAPILifeCycleStatus(newApiId, Constants.PUBLISHED);
+        assertEquals(newVersionPublishResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code Mismatch");
 
         // checking whether message is received by greenmail

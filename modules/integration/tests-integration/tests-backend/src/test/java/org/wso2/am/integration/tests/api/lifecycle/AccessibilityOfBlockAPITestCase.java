@@ -127,8 +127,8 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
     public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
-        ApiResponse<WorkflowResponseDTO> response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.BLOCK);
-        assertEquals(response.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+        HttpResponse response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.BLOCK);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
 
         APIDTO apiDto = restAPIStore.getAPI(apiId);

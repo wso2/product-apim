@@ -210,9 +210,34 @@ public class RestAPIPublisherImpl {
      *               return ApiResponse<WorkflowResponseDTO> change response.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public ApiResponse<WorkflowResponseDTO> changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
-        ApiResponse<WorkflowResponseDTO> response = this.apiLifecycleApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
+    public HttpResponse changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
+        WorkflowResponseDTO workflowResponseDTO = this.apiLifecycleApi.apisChangeLifecyclePost(action, apiId, null, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(workflowResponseDTO.getLifecycleState().getState())) {
+            response = new HttpResponse(workflowResponseDTO.getLifecycleState().getState(), 200);
+        }
         return response;
+    }
+
+    /**
+     * This method is used to deprecate the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void deprecateAPI(String apiId) throws ApiException {
+
+        apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
+    }
+
+    /**
+     * This method is used to block the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void blockAPI(String apiId) throws ApiException {
+        apiLifecycleApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
     }
 
     public HttpResponse getLifecycleStatus(String apiId) throws ApiException {

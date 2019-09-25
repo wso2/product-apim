@@ -111,6 +111,11 @@ public class APIMIntegrationConstants {
         public static final int BASIC_LIMIT = 1;
     }
 
+    public static class GRANT_TYPE {
+        public static final String PASSWORD = "password";
+        public static final String CLIENT_CREDENTIAL = "client_credentials";
+    }
+
     public enum ResourceAuthTypes {
         APPLICATION_USER("Application_User"), NONE("None"), APPLICATION("Application"),
         APPLICATION_AND_APPLICATION_USER("Any");

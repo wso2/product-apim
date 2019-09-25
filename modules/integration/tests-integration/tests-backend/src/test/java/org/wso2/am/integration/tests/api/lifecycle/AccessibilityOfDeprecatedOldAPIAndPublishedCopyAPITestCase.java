@@ -163,8 +163,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     @Test(groups = {"wso2.am"}, description = "Test deprecate old api version",
             dependsOnMethods = "testSubscribeNewVersion")
     public void testDeprecateOldVersion() throws APIManagerIntegrationTestException, ApiException {
-        ApiResponse<WorkflowResponseDTO> deprecateAPIResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Deprecated");
-        assertEquals(deprecateAPIResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+        HttpResponse deprecateAPIResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Deprecated");
+        assertEquals(deprecateAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API deprecate Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version1));
         HttpResponse lcStateRsponse = restAPIPublisher.getLifecycleStatus(apiId);
 
