@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.test.impl;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
@@ -141,6 +142,19 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+
+    public HttpResponse removeSubscription(String subscriptionId) throws ApiException {
+
+        ApiResponse<Void> deleteResponse = subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);
+
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Subscription deleted successfully : sub ID: " + subscriptionId, 200);
+        }
+        return response;
+
     }
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,

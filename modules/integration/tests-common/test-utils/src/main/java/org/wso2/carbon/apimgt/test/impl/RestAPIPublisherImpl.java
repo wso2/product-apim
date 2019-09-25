@@ -18,14 +18,15 @@ package org.wso2.carbon.apimgt.test.impl;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiCollectionApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.CertificatesIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.DocumentIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
@@ -35,6 +36,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -56,11 +58,11 @@ import java.util.List;
 public class RestAPIPublisherImpl {
 
     public static ApIsApi apIsApi = new ApIsApi();
-    public static ApiIndividualApi apiPublisherApi = new ApiIndividualApi();
-    public static ApiCollectionApi apiCollectionApi = new ApiCollectionApi();
-    public static DocumentIndividualApi documentIndividualApi = new DocumentIndividualApi();
+    public static ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public static ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
-    public static CertificatesIndividualApi certificatesIndividualApi = new CertificatesIndividualApi();
+    public static ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
+    public static EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
+    public static ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
     public static RolesApi rolesApi = new RolesApi();
 
     public static ApiClient apiPublisherClient = new ApiClient();
@@ -78,23 +80,28 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl() {
 
         String accessToken = ClientAuthenticator
-                .getAccessToken("apim:api_create apim:api_delete apim:api_publish apim:ep_certificates_view" +
-                                "apim:ep_certificates_update apim:api_view apim:tier_manage apim:tier_view",
+                .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
+                                "apim:subscription_view apim:subscription_block apim:external_services_discover " +
+                                "apim:threat_protection_policy_create apim:threat_protection_policy_manage " +
+                                "apim:document_create apim:document_manage apim:mediation_policy_view " +
+                                "apim:mediation_policy_create apim:mediation_policy_manage " +
+                                "apim:client_certificates_view apim:client_certificates_add " +
+                                "apim:client_certificates_update apim:ep_certificates_view " +
+                                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings apim:pub_alert_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath("https://localhost:9943/api/am/publisher/v1.0");
         apIsApi.setApiClient(apiPublisherClient);
-        apiPublisherApi.setApiClient(apiPublisherClient);
-        documentIndividualApi.setApiClient(apiPublisherClient);
-        apiCollectionApi.setApiClient(apiPublisherClient);
+        apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
-        certificatesIndividualApi.setApiClient(apiPublisherClient);
+        apiLifecycleApi.setApiClient(apiPublisherClient);
         rolesApi.setApiClient(apiPublisherClient);
     }
 
 
     /**
+     * \
      * This method is used to create an API.
      *
      * @param apiRequest
@@ -102,6 +109,25 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API.
      */
     public HttpResponse addAPI(APIRequest apiRequest) throws ApiException {
+        String osVersion = "v3";
+        APIDTO apidto = this.addAPI(apiRequest, osVersion);
+
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apidto.getId())) {
+            response = new HttpResponse(apidto.getId(), 201);
+        }
+        return response;
+    }
+
+    /**
+     * \
+     * This method is used to create an API.
+     *
+     * @param apiRequest
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API.
+     */
+    public APIDTO addAPI(APIRequest apiRequest, String osVersion) throws ApiException {
 
         APIDTO body = new APIDTO();
 
@@ -134,19 +160,16 @@ public class RestAPIPublisherImpl {
         body.setPolicies(tierList);
         APIDTO apidto;
         try {
-            apidto = apiPublisherApi.apisPost(body);
-//            this.apiPublisherApi.apisApiIdGet(apidto.getId(), "carbon.super", null);
+            ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, osVersion);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            apidto = httpInfo.getData();
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             }
             throw new ApiException(e);
         }
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(apidto.getId())) {
-            response = new HttpResponse(apidto.getId(), 200);
-        }
-        return response;
+        return apidto;
     }
 
 
@@ -160,7 +183,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException Throws if an error occurs when creating the new API version.
      */
     public static String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
-        String apiLocation = apiPublisherApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders().get("Location").get(0);
+        String apiLocation = apIsApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders().get("Location").get(0);
         String[] splitValues = apiLocation.split("/");
         return splitValues[splitValues.length - 1];
     }
@@ -184,44 +207,22 @@ public class RestAPIPublisherImpl {
      *
      * @param action API id that need to published.
      * @param apiId  API id that need to published.
-     * return ApiResponse<WorkflowResponseDTO> change response.
+     *               return ApiResponse<WorkflowResponseDTO> change response.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
     public ApiResponse<WorkflowResponseDTO> changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
-        ApiResponse<WorkflowResponseDTO> response = this.apiPublisherApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
+        ApiResponse<WorkflowResponseDTO> response = this.apiLifecycleApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
         return response;
     }
 
-    /**
-     * This method is used to deprecate the created API.
-     *
-     * @param apiId API id that need to published.
-     * @throws ApiException throws if an error occurred when publishing the API.
-     */
-    public static void deprecateAPI(String apiId) throws ApiException {
+    public HttpResponse getLifecycleStatus(String apiId) throws ApiException {
+        LifecycleStateDTO lifecycleStateDTO = this.apiLifecycleApi.apisApiIdLifecycleStateGet(apiId, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(lifecycleStateDTO.getState())) {
+            response = new HttpResponse(lifecycleStateDTO.getState(), 200);
+        }
+        return response;
 
-        apiPublisherApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
-    }
-
-    /**
-     * This method is used to block the created API.
-     *
-     * @param apiId API id that need to published.
-     * @throws ApiException throws if an error occurred when publishing the API.
-     */
-    public static void blockAPI(String apiId) throws ApiException {
-        apiPublisherApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
-    }
-
-    /**
-     * This method is used to reject the created API.
-     *
-     * @param apiId API id that need to published.
-     * @throws ApiException throws if an error occurred when publishing the API.
-     */
-    public static void rejectAPI(String apiId) throws ApiException {
-
-        apiPublisherApi.apisChangeLifecyclePost(Constants.REJECT, apiId, null, null);
     }
 
     /**
@@ -283,7 +284,7 @@ public class RestAPIPublisherImpl {
         body.setPolicies(tierList);
         APIDTO apidto;
         try {
-            apidto = apiPublisherApi.apisApiIdPut(apiId, body, null);
+            apidto = apIsApi.apisApiIdPut(apiId, body, null);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
@@ -307,7 +308,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Throws if api information cannot be retrieved.
      */
     public HttpResponse getAPI(String apiId) throws ApiException {
-        APIDTO apidto = apiPublisherApi.apisApiIdGet(apiId, null, null);
+        APIDTO apidto = apIsApi.apisApiIdGet(apiId, null, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(apidto.getId())) {
             response = new HttpResponse(apidto.getId(), 200);
@@ -323,7 +324,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Throws if API delete fails
      */
     public HttpResponse deleteAPI(String apiId) throws ApiException {
-        ApiResponse<Void> deleteResponse = apiPublisherApi.apisApiIdDeleteWithHttpInfo(apiId, null);
+        ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully deleted the API", 200);
@@ -341,7 +342,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse removeDocumentation(String apiId, String docId) throws ApiException {
 
-        ApiResponse<Void> deleteResponse = documentIndividualApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo(apiId, docId, null);
+        ApiResponse<Void> deleteResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo(apiId, docId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully removed the documentation", 200);
@@ -415,7 +416,7 @@ public class RestAPIPublisherImpl {
      *                                            service calls to do the lifecycle change.
      */
     public HttpResponse changeAPILifeCycleStatusToPublish(String apiId, boolean isRequireReSubscription) throws ApiException {
-        ApiResponse<WorkflowResponseDTO> responseDTOApiResponse = this.apiPublisherApi
+        ApiResponse<WorkflowResponseDTO> responseDTOApiResponse = this.apiLifecycleApi
                 .apisChangeLifecyclePostWithHttpInfo(Constants.PUBLISHED, apiId, "Re-Subscription:" + isRequireReSubscription, null);
         HttpResponse response = null;
         if (responseDTOApiResponse.getStatusCode() == 200) {
@@ -446,7 +447,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
     public HttpResponse addDocument(String apiId, String docId, String docContent) throws ApiException {
-        DocumentDTO doc = documentIndividualApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent, null);
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
@@ -465,7 +466,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse updateDocument(String apiId, String docId, DocumentDTO documentDTO) throws ApiException {
 
-        DocumentDTO doc = documentIndividualApi.apisApiIdDocumentsDocumentIdPut(apiId, docId, documentDTO, null);
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdPut(apiId, docId, documentDTO, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
@@ -483,7 +484,7 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAllAPIs(String tenantDomain) throws APIManagerIntegrationTestException, ApiException {
 
-        APIListDTO apis = apiCollectionApi.apisGet(null, null, null, null, null, null, null, tenantDomain);
+        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null, tenantDomain);
         if (apis.getCount() > 0) {
             return apis;
         }
@@ -502,7 +503,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse uploadCertificate(File certificate, String alias, String endpoint) throws ApiException {
 
-        CertMetadataDTO certificateDTO = certificatesIndividualApi.endpointCertificatesPost(certificate, alias, endpoint);
+        CertMetadataDTO certificateDTO = endpointCertificatesApi.endpointCertificatesPost(certificate, alias, endpoint);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);

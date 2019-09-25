@@ -84,6 +84,8 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     private GreenMail greenMail;
     private String apiId;
+    private String applicationId;
+    private String subscriptionId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public NotificationTestCase(TestUserMode userMode) {
@@ -134,13 +136,14 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
-        //verifyResponse(applicationResponse);
 
-        String applicationID = applicationResponse.getData();
+        applicationId = applicationResponse.getData();
 
         //Subscribe the API to the Application
-        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
+        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED,
                 SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+
+        subscriptionId = responseStore.getData();
 
         //Create a new Version
         HttpResponse newVersionResponse = restAPIPublisher.copyAPI(NEW_API_VERSION, apiId, null);
@@ -218,17 +221,9 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
-        if (apiStore != null) {
-            apiStore.removeApplication(APP_NAME);
-        }
-
-        if (apiPublisher != null) {
-            apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-        }
-        greenMail.stop();
-
-        super.cleanUp();
+        restAPIStore.removeSubscription(subscriptionId);
+        restAPIStore.removeApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
     }
 
     @DataProvider
