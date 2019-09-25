@@ -28,6 +28,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
@@ -110,8 +111,9 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
     public void testAPIPublishing() throws Exception {
         //Publish the API
-        ApiResponse<WorkflowResponseDTO> response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-        assertEquals(response.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+        HttpResponse response = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
 
         APIDTO apiDto = restAPIStore.getAPI(apiId);

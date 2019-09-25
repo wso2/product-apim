@@ -135,8 +135,9 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         HttpResponse apiResponse2 = restAPIPublisher.addAPI(apiRequest2);
         apiId2 = apiResponse2.getData();
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
-        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
+
 
         HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
                 SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
@@ -163,8 +164,9 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     @Test(groups = {"wso2.am"}, description = "Test deprecate old api version",
             dependsOnMethods = "testSubscribeNewVersion")
     public void testDeprecateOldVersion() throws ApiException {
-        ApiResponse<WorkflowResponseDTO> deprecateAPIResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction());
-        assertEquals(deprecateAPIResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+        HttpResponse deprecateAPIResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction(), null);
+        assertEquals(deprecateAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API deprecate Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version1));
         HttpResponse lcStateRsponse = restAPIPublisher.getLifecycleStatus(apiId);
 

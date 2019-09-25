@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
@@ -97,7 +98,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
@@ -127,7 +128,8 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
     public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
-        HttpResponse response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.BLOCK);
+        HttpResponse response = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.BLOCK.getAction(), null);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
 
