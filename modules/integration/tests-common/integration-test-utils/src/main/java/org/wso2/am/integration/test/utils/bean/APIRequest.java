@@ -24,10 +24,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Class to Provides basic API request.
@@ -72,6 +74,17 @@ public class APIRequest extends AbstractRequest {
     private String apiTier = "";
     private String accessControl;
     private String accessControlRoles;
+
+
+    public List<APIOperationsDTO> getOperationsDTOS() {
+        return operationsDTOS;
+    }
+
+    public void setOperationsDTOS(List<APIOperationsDTO> operationsDTOS) {
+        this.operationsDTOS = operationsDTOS;
+    }
+
+    private List<APIOperationsDTO> operationsDTOS;
 
     public String getEnvironment() {
         return environment;

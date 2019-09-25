@@ -38,6 +38,7 @@ public class Constants {
      */
     public static final String API_DESCRIPTION = "This is the api description";
     public static final String PROVIDER_ADMIN = "admin";
+    public static final String PROTOCOL_HTTP = "http";
     public static final String PROTOCOL_HTTPS = "https";
     public static final String GATEWAY_ENVIRONMENTS = "Production and Sandbox";
     public static final String APPLICATION_JSON = "application/json";

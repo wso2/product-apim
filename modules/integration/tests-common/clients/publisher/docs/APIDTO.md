@@ -31,7 +31,7 @@ Name | Type | Description | Notes
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
 **endpointSecurity** | [**APIEndpointSecurityDTO**](APIEndpointSecurityDTO.md) |  |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
-**labels** | [**List&lt;LabelDTO&gt;**](LabelDTO.md) | Labels of micro-gateway environments attached to the API.  |  [optional]
+**labels** | **List&lt;String&gt;** | Labels of micro-gateway environments attached to the API.  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]

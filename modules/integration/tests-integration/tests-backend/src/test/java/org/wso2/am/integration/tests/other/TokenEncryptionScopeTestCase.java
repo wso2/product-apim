@@ -27,6 +27,13 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -37,9 +44,13 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.test.Constants;
+import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
+import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
@@ -49,6 +60,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import javax.xml.xpath.XPathExpressionException;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
@@ -56,9 +68,8 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(TokenEncryptionScopeTestCase.class);
 
-    private APIPublisherRestClient apiPublisher;
-
-    private APIStoreRestClient apiStore;
+    private RestAPIPublisherImpl restAPIPublisher;
+    private RestAPIStoreImpl restAPIStore;
 
     private UserManagementClient userManagementClient1 = null;
 
@@ -83,6 +94,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
     private static final String IDENTITY_CONFIG_XML = "identity.xml";
 
     private static String apiProvider;
+    private static String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -94,17 +106,12 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         super.init();
 
         //Initialize publisher and store.
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
+        restAPIPublisher = new RestAPIPublisherImpl();
+        restAPIStore = new RestAPIStoreImpl();
     }
 
     @Test(groups = "wso2.am", description = "Check if Scopes work fine with token encryption enabled.")
-    public void testTokenEncryptionWithScopes() {
+    public void testTokenEncryptionWithScopes() throws XPathExpressionException {
 
         try {
             userManagementClient1 = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
@@ -161,16 +168,12 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         try {
-            apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                               publisherContext.getContextTenant().getContextUser().getPassword());
-
-            apiPublisher.addAPI(apiRequest);
+            //Add the API using the API publisher.
+            HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+            apiId = apiResponse.getData();
 
             //publishing API
-            APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(
-                    API_NAME, apiProvider,
-                    APILifeCycleState.PUBLISHED);
-            apiPublisher.changeAPILifeCycleStatus(updateRequest);
+            ApiResponse<WorkflowResponseDTO> response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
 
             //resources are modified using swagger doc.
             // admin_scope(used for POST) :- admin
@@ -189,21 +192,25 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             // For Admin user
             // create new application and subscribing
             apiStore.login(APP_DEV_USER, APP_DEV_PWD);
-            apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url2",
-                    "NewApp");
-            SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
-            subscriptionRequest.setApplicationName(APP_NAME);
-            subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-            apiStore.subscribe(subscriptionRequest);
+            restAPIStore = new RestAPIStoreImpl();
+
+            HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                    "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                    ApplicationDTO.TokenTypeEnum.OAUTH);
+            String applicationID = applicationResponse.getData();
+
+            //Subscribe the API to the Application
+            HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
+                    SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
 
             //Generate production token and invoke with that
-            APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-            String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-            JSONObject jsonResponse = new JSONObject(responseString);
+            ArrayList grantTypes = new ArrayList();
+            grantTypes.add("client_credentials");
+            ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
             // get Consumer Key and Consumer Secret
-            String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
-            String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+            String consumerKey = applicationKeyDTO.getConsumerKey();
+            String consumerSecret = applicationKeyDTO.getConsumerSecret();
 
             URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
             String requestBody;
@@ -214,6 +221,9 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             accessTokenGenerationResponse = new JSONObject(
                     apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                    requestBody, tokenEndpointURL).getData());
+
+
+            ApplicationKeyDTO applicationKeyDTO1 = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
             String receivedScope = accessTokenGenerationResponse.getString("scope");
 
             //Check if we receive the scope we requested for.
@@ -231,10 +241,10 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             log.error("Could not parse response JSON message received from the token endpoint ", e);
             //Fail the test case
             //Assert.assertTrue(false);
-        } catch (XPathExpressionException e) {
-            log.error("Error occurred while getting credentials from the publisher/store context ", e);
-            //Fail the test case
-            Assert.assertTrue(false);
+        } catch (ApiException e) {
+            e.printStackTrace();
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            e.printStackTrace();
         }
     }
 
@@ -246,7 +256,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         }
 
         if (apiPublisher != null) {
-            apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
+            restAPIPublisher.deleteAPI(apiId);
         }
 
         if (userManagementClient1 != null) {

@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -33,6 +34,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -48,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -69,7 +72,6 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String API_VERSION_2_0_0 = "2.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
-    private final String APPLICATION_NAME_2 = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase2";
     private String apiEndPointUrl;
     private String providerName;
 
@@ -78,8 +80,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     APIIdentifier apiIdentifierAPI1Version1;
     APIIdentifier apiIdentifierAPI1Version2;
     private String apiId, apiId2;
-    private String applicationID, applicationId2;
-    private String subscriptionId1, subscriptionId2, subscriptionId3;
+    private String applicationID;
+    private String subscriptionId1, subscriptionId2;
     private APIDTO apiDto;
 
     @BeforeClass(alwaysRun = true)
@@ -95,11 +97,6 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         applicationID = applicationResponse.getData();
-
-        HttpResponse applicationResponse2 = restAPIStore.createApplication(APPLICATION_NAME,
-                "Test Application 2", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicationId2 = applicationResponse2.getData();
     }
 
 
@@ -114,6 +111,14 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
+        APIOperationsDTO apiOperationsDTO =  new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("customers/{id}");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
 
         apiId = apiResponse.getData();
@@ -125,12 +130,13 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         apiRequest2.setVersion(API_VERSION_2_0_0);
         apiRequest2.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest2.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest2.setOperationsDTOS(operationsDTOS);
 
         HttpResponse apiResponse2 = restAPIPublisher.addAPI(apiRequest2);
         apiId2 = apiResponse2.getData();
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-        restAPIPublisher.changeAPILifeCycleStatus(apiId2, Constants.PUBLISHED);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
 
         HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
                 SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
@@ -139,36 +145,30 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful");
-        assertEquals(getValueFromJSON(oldVersionSubscribeResponse, "error"), "false",
-                "Error in subscribe of old API version" + "Response Data:"
-                        + oldVersionSubscribeResponse.getData());
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of new API version before deprecate the old version",
             dependsOnMethods = "testSubscribeOldVersionBeforeDeprecate")
-    public void testSubscribeNewVersion() throws APIManagerIntegrationTestException {
+    public void testSubscribeNewVersion() {
         HttpResponse newVersionSubscribeResponse = restAPIStore.createSubscription(apiId2, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
                 SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
 
-        subscriptionId1 = newVersionSubscribeResponse.getData();
+        subscriptionId2 = newVersionSubscribeResponse.getData();
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful ");
-        assertEquals(getValueFromJSON(newVersionSubscribeResponse, "error"), "false",
-                "Error in subscribe of old API version" +
-                        "Response Data:" + newVersionSubscribeResponse.getData());
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test deprecate old api version",
             dependsOnMethods = "testSubscribeNewVersion")
-    public void testDeprecateOldVersion() throws APIManagerIntegrationTestException, ApiException {
-        HttpResponse deprecateAPIResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Deprecated");
-        assertEquals(deprecateAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+    public void testDeprecateOldVersion() throws ApiException {
+        ApiResponse<WorkflowResponseDTO> deprecateAPIResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction());
+        assertEquals(deprecateAPIResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "API deprecate Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version1));
         HttpResponse lcStateRsponse = restAPIPublisher.getLifecycleStatus(apiId);
 
-        assertEquals(lcStateRsponse, APILifeCycleState.DEPRECATED,
+        assertEquals(lcStateRsponse.getData(), APILifeCycleState.DEPRECATED.getState(),
                 "API deprecate status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
                         "Response Data:" + deprecateAPIResponse.getData());
     }
@@ -177,7 +177,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in the store after API deprecate.",
             dependsOnMethods = "testDeprecateOldVersion")
     public void testVisibilityOfOldAPIInStoreAfterDeprecate()
-            throws APIManagerIntegrationTestException, IOException, XPathExpressionException {
+            throws APIManagerIntegrationTestException {
         //Verify the API in API Store
 
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifierAPI1Version1.getApiName(),
@@ -212,19 +212,14 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @Test(groups = {"wso2.am"}, description = "Test the subscription of deprecated API version.",
             dependsOnMethods = "testVisibilityOfNewAPIInStore")
-    public void testSubscribeOldVersionAfterDeprecate() throws APIManagerIntegrationTestException {
+    public void testSubscribeOldVersionAfterDeprecate() {
         //subscribe deprecated old version
-        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationId2, APIMIntegrationConstants.API_TIER.UNLIMITED,
+        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
                 SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
 
-        subscriptionId3 = oldVersionSubscribeResponse.getData();
-        assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Subscribe of old API version  after deprecate response code is invalid." +
-                        getAPIIdentifierString(apiIdentifierAPI1Version1));
-        assertEquals(getValueFromJSON(oldVersionSubscribeResponse, "error"), "true",
+        assertEquals(oldVersionSubscribeResponse, null,
                 "Subscribe of old API version  after deprecate success, which should fail." +
-                        getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + oldVersionSubscribeResponse.getData());
+                        getAPIIdentifierString(apiIdentifierAPI1Version1));
     }
 
 
@@ -247,7 +242,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(),
-                HTTP_RESPONSE_CODE_OK, "Response code mismatched");
+                HTTP_RESPONSE_CODE_NOT_FOUND, "Response code mismatched");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
         //Invoke new version
         HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
@@ -261,12 +256,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException, org.wso2.am.integration.clients.store.api.ApiException, ApiException {
-        restAPIStore.removeSubscription(subscriptionId1);
-        restAPIStore.removeSubscription(subscriptionId2);
-        restAPIStore.removeSubscription(subscriptionId3);
-
         restAPIStore.removeApplication(applicationID);
-        restAPIStore.removeApplication(applicationId2);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);
     }

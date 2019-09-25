@@ -73,16 +73,16 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Check custom life cycle state.")
     public void testCustomLifeCycle() throws Exception {
         //Create and publish api
-        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClient, false);
-        APILifeCycleStateRequest apiLifeCycleStatusChangeRequest = new APILifeCycleStateRequest(API_NAME,
-                user.getUserName(), APILifeCycleState.PROMOTE);
-        apiLifeCycleStatusChangeRequest.setVersion(apiIdentifier.getVersion());
-
-        //Change api status to custom state
-        HttpResponse publishAPIResponse = apiPublisherClient.changeAPILifeCycleStatus(apiLifeCycleStatusChangeRequest);
-        Boolean statusChangeSuccess = verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.PUBLISHED,
-                APILifeCycleState.PROMOTED);
-        Assert.assertTrue(statusChangeSuccess, "API status Change is not successful");
+//        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClient, false);
+//        APILifeCycleStateRequest apiLifeCycleStatusChangeRequest = new APILifeCycleStateRequest(API_NAME,
+//                user.getUserName(), APILifeCycleState.PROMOTE);
+//        apiLifeCycleStatusChangeRequest.setVersion(apiIdentifier.getVersion());
+//
+//        //Change api status to custom state
+//        HttpResponse publishAPIResponse = apiPublisherClient.changeAPILifeCycleStatus(apiLifeCycleStatusChangeRequest);
+//        Boolean statusChangeSuccess = verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.PUBLISHED,
+//                APILifeCycleState.PROMOTED);
+//        Assert.assertTrue(statusChangeSuccess, "API status Change is not successful");
     }
 
     @AfterClass

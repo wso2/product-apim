@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **apiVersion** | **String** | The version of the associated API |  [optional]
 **apiProvider** | **String** |  |  [optional]
 **apiUUID** | **String** |  |  [optional]
+**associatedType** | **String** |  |  [optional]
 
 
 <a name="DocTypeEnum"></a>

@@ -14,7 +14,7 @@ Method | HTTP request | Description
 
 Get all throttling policies for the given type
 
-This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;subscription&#x60; and &#x60;api&#x60;. 
+This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;subscription&#x60; and &#x60;api&#x60;. &#x60;subscription&#x60; is for Subscription Level policies and &#x60;api&#x60; is for Resource Level policies 
 
 ### Example
 ```java
@@ -49,7 +49,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **policyLevel** | **String**| List API or Application or Resource type policies.  | [enum: api, application, resource]
+ **policyLevel** | **String**| List API or Application or Resource type policies.  | [enum: api, subcription]
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
@@ -108,7 +108,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **policyName** | **String**| Tier name  |
- **policyLevel** | **String**| List API or Application or Resource type policies.  | [enum: api, application, resource]
+ **policyLevel** | **String**| List API or Application or Resource type policies.  | [enum: api, subcription]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
 
 ### Return type

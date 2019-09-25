@@ -141,6 +141,7 @@ public class RestAPIPublisherImpl {
             body.setProvider(username + "-AT-" + tenantDomain);
         }
         body.setTransport(new ArrayList<String>() {{
+            add(Constants.PROTOCOL_HTTP);
             add(Constants.PROTOCOL_HTTPS);
         }});
         body.isDefaultVersion(false);
@@ -148,6 +149,7 @@ public class RestAPIPublisherImpl {
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
+        body.setOperations(apiRequest.getOperationsDTOS());
 //        body.setSubscriptionAvailability(ALL_TENANTS);
 //        body.setVisibleRoles(visibleRoles);
 //        body.setSubscriptionAvailableTenants();
@@ -289,6 +291,7 @@ public class RestAPIPublisherImpl {
         }
         body.setTransport(new ArrayList<String>() {{
             add(Constants.PROTOCOL_HTTPS);
+            add(Constants.PROTOCOL_HTTP);
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
@@ -298,8 +301,7 @@ public class RestAPIPublisherImpl {
 //        body.setSubscriptionAvailability();
 //        body.setVisibleRoles(visibleRoles);
 //        body.setSubscriptionAvailableTenants(apiRequest.getV);
-        List<APIOperationsDTO> operationsDTOS = null;
-        body.setOperations(operationsDTOS);
+        body.setOperations(apiRequest.getOperationsDTOS());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));

@@ -18,23 +18,24 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.codehaus.plexus.util.StringUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.apimgt.test.Constants;
+import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
+import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -47,68 +48,60 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
     private final String API_NAME = "APIPublishingAndVisibilityInStoreTest";
     private final String API_CONTEXT = "APIPublishingAndVisibilityInStore";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_DESCRIPTION = "Descriptiön öf temporäl api";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
-    private APIIdentifier apiIdentifier;
-    private String providerName;
-    private APICreationRequestBean apiCreationRequestBean;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
+    private String apiId;
+    private RestAPIPublisherImpl restAPIPublisher;
+    private RestAPIStoreImpl restAPIStore;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws APIManagerIntegrationTestException {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiStoreClientUser1
-                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        restAPIPublisher = new RestAPIPublisherImpl();
+        restAPIStore = new RestAPIStoreImpl();
+
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Create a API and  check its availability in Publisher.")
-    public void testAvailabilityOfAPIInPublisher() throws APIManagerIntegrationTestException {
-        //Create APi
-        HttpResponse createAPIResponse = apiPublisherClientUser1.addAPI(apiCreationRequestBean);
-        assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Create API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
-        assertEquals(getValueFromJSON(createAPIResponse, "error"), "false",
-                "Error in API Creation in " + getAPIIdentifierString(apiIdentifier) +
-                        "Response Data:" + createAPIResponse.getData());
+    public void testAvailabilityOfAPIInPublisher() throws APIManagerIntegrationTestException, MalformedURLException, ApiException {
+
+
+        //Create the api creation request object
+        APIRequest apiRequest;
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        //Add the API using the API publisher.
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = apiResponse.getData();
+
+        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Create API Response Code is invalid." + apiId);
+        assertEquals(getValueFromJSON(apiResponse, "error"), "false",
+                "Error in API Creation in publisher" +
+                        "Response Data:" + apiResponse.getData());
+
+
         //Verify the API in API Publisher
-        List<APIIdentifier> apiPublisherAPIIdentifierList =
-                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
-                        apiPublisherClientUser1.getApi(API_NAME, providerName, API_VERSION_1_0_0));
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiPublisherAPIIdentifierList),
-                "Added Api is not available in APi Publisher. " + getAPIIdentifierString(apiIdentifier));
+        HttpResponse apiDto = restAPIPublisher.getAPI(apiResponse.getData());
+        assertTrue(StringUtils.isNotEmpty(apiDto.getData()),
+                "Added Api is not available in APi Publisher. API ID " + apiId);
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Check the visibility of API in Store before the API publish. " +
             "it should not be available in store.", dependsOnMethods = "testAvailabilityOfAPIInPublisher")
-    public void testVisibilityOfAPIInStoreBeforePublishing() throws APIManagerIntegrationTestException {
-        //Verify the API in API Store : API should not be available in the store.
-        List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),
-                "Api is visible in API Store before publish." + getAPIIdentifierString(apiIdentifier));
+    public void testVisibilityOfAPIInStoreBeforePublishing() throws  org.wso2.am.integration.clients.store.api.ApiException {
+
+        APIDTO apiDto = restAPIStore.getAPI(apiId);
+        assertFalse(StringUtils.isNotEmpty(apiDto.getId()),
+                "Api is visible in API Store before publish. API ID" + apiId);
     }
 
 
@@ -117,33 +110,20 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
     public void testAPIPublishing() throws Exception {
         //Publish the API
-        HttpResponse publishAPIResponse =
-                apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
-        assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifier));
-        assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
-                "API status Change is invalid in" + getAPIIdentifierString(apiIdentifier) +
-                        "Response Data:" + publishAPIResponse.getData());
-    }
+        ApiResponse<WorkflowResponseDTO> response = restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        assertEquals(response.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "API publish Response code is invalid " + apiId);
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in the store after API publish.",
-            dependsOnMethods = "testAPIPublishing")
-    public void testVisibilityOfAPIInStoreAfterPublishing() throws APIManagerIntegrationTestException {
-        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),apiCreationRequestBean.getName(),
-                                 API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
-        //Verify the API in API Store : API should be available in the store.
-        List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),
-                "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifier));
-        assertTrue(apiStoreClientUser1.getAPI().getData().contains(API_DESCRIPTION),apiStoreClientUser1.getAPI().getData());
+        APIDTO apiDto = restAPIStore.getAPI(apiId);
+
+        assertFalse(StringUtils.isEmpty(apiDto.getId()),
+                "Api is not visible in API Store. API ID" + apiId);
     }
 
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 

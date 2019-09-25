@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-codegen-maven-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>2.4.5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -44,7 +44,7 @@
                             <configOptions>
                                 <apiPackage>org.wso2.am.integration.clients.store.api.v1</apiPackage>
                                 <modelPackage>org.wso2.am.integration.clients.store.api.v1.dto</modelPackage>
-                                <sourceFolder>src/gen/java/main</sourceFolder>
+                                <sourceFolder>src/gen/java</sourceFolder>
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
                                 <hideGenerationTimestamp>true</hideGenerationTimestamp>
@@ -64,6 +64,24 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/gen/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

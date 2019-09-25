@@ -364,7 +364,7 @@ Name | Type | Description  | Notes
 
 <a name="apisApiIdSwaggerPut"></a>
 # **apisApiIdSwaggerPut**
-> apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch)
+> String apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch)
 
 Update swagger definition
 
@@ -390,7 +390,8 @@ String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID*
 String apiDefinition = "apiDefinition_example"; // String | Swagger definition of the API
 String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
 try {
-    apiInstance.apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch);
+    String result = apiInstance.apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisApiIdSwaggerPut");
     e.printStackTrace();
@@ -407,7 +408,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**String**
 
 ### Authorization
 
@@ -474,7 +475,7 @@ null (empty response body)
 
 <a name="apisCopyApiPost"></a>
 # **apisCopyApiPost**
-> apisCopyApiPost(newVersion, apiId, defaultVersion)
+> APIDTO apisCopyApiPost(newVersion, apiId, defaultVersion)
 
 Create a new API version
 
@@ -500,7 +501,8 @@ String newVersion = "newVersion_example"; // String | Version of the new API.
 String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**. 
 Boolean defaultVersion = false; // Boolean | Specifies whether new API should be added as default version.
 try {
-    apiInstance.apisCopyApiPost(newVersion, apiId, defaultVersion);
+    APIDTO result = apiInstance.apisCopyApiPost(newVersion, apiId, defaultVersion);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisCopyApiPost");
     e.printStackTrace();
@@ -517,7 +519,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**APIDTO**](APIDTO.md)
 
 ### Authorization
 
@@ -761,7 +763,7 @@ null (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/wsdl+xml, application/zip
+ - **Accept**: application/json, application/wsdl, application/zip
 
 <a name="importOpenAPIDefinition"></a>
 # **importOpenAPIDefinition**
