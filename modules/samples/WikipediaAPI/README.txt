@@ -30,7 +30,7 @@ This step will populate all master data required for WSO2AM server to start up. 
 some more master data required for this sample.
 
 6.You can login to API Publisher's console
-URL - https://localhost:9443/publisher/
+URL - https://localhost:9443/publisher-old/
 Username/password - admin/admin
 
 Take a note of the fact that there are no APIs published. Next step adds an API & publishes it to API store.

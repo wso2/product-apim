@@ -25,6 +25,7 @@ import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APIIndivid
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.APIBusinessInformation;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.APICorsConfiguration;
+import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.Sequence;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -73,7 +74,7 @@ public class SampleUtils {
         body.setSubscriptionAvailability(subscriptionAvailabilityEnum);
         body.setVisibleRoles(visibleRoles);
         body.setSubscriptionAvailableTenants(visibleTenants);
-        body.setSequences(new ArrayList<>());
+        body.setSequences(new ArrayList<Sequence>());
         body.setBusinessInformation(new APIBusinessInformation());
         body.setCorsConfiguration(new APICorsConfiguration());
         body.setTags(tags);
@@ -143,7 +144,7 @@ public class SampleUtils {
         body.setSubscriptionAvailability(subscriptionAvailabilityEnum);
         body.setVisibleRoles(visibleRoles);
         body.setSubscriptionAvailableTenants(visibleTenants);
-        body.setSequences(new ArrayList<>());
+        body.setSequences(new ArrayList<Sequence>());
         body.setBusinessInformation(new APIBusinessInformation());
         body.setCorsConfiguration(new APICorsConfiguration());
         body.setTags(tags);

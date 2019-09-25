@@ -191,7 +191,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
     private int getPaginationElementsCount(String storeUrl, String loginResponseCookie, int start, int offset)
             throws JSONException {
 
-        String paginationUrl = storeUrl + "store/site/blocks/api/listing/ajax/list.jag?" +
+        String paginationUrl = storeUrl + "store-old/site/blocks/api/listing/ajax/list.jag?" +
                 "action=getAllPaginatedPublishedAPIs&" +
                 "tenant=" + tenantDomain +
                 "&start=" + Integer.toString(start) +

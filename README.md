@@ -20,7 +20,7 @@ associated with API provisioning, governance, and integration.
 WSO2 API Manager consists of several loosely coupled modules.
 
         * API Publisher
-        * API Store
+        * API Developer Portal
         * API Gateway
         * API Key Manager
 

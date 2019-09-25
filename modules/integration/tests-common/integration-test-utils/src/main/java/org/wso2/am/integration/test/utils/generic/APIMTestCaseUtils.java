@@ -1571,7 +1571,7 @@ public class APIMTestCaseUtils {
         JSONObject jsonHeaderObject = null;
         try {
             jsonHeaderObject = new JSONObject(jsonHeader);
-            thumbPrint = new String(Base64.decodeBase64((String) jsonHeaderObject.get("x5t")));
+            thumbPrint = new String(Base64.decodeBase64(jsonHeaderObject.get("x5t").toString().getBytes()));
             signatureAlgorithm = (String) jsonHeaderObject.get("alg");
         } catch (JSONException e) {
             log.error("Error while parsing json" + e);

@@ -263,7 +263,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in Same domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAdminInOtherDomainInStore")
     public void testVisibilityForAnonymousUserInSameDomainInStore() throws Exception {
-        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store/site/blocks/api/recently-added/ajax/list.jag"
+        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store-old/site/blocks/api/recently-added/ajax/list.jag"
                 , "action=getRecentlyAddedAPIs&tenant=" + apiCreatorStoreDomain);
         assertFalse(new JSONObject(httpResponse.getData()).getBoolean("error"), "Error while getting api list");
         assertFalse(httpResponse.getData().contains(API_NAME), "API  visible to anonymous user in same domain API Store." +
@@ -275,7 +275,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in other domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAnonymousUserInSameDomainInStore")
     public void testVisibilityForAnonymousUserInOtherDomainInStore() throws Exception {
-        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store/site/blocks/api/recently-added/ajax/list.jag"
+        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store-old/site/blocks/api/recently-added/ajax/list.jag"
                 , "action=getRecentlyAddedAPIs&tenant=" + otherDomain);
         assertFalse(new JSONObject(httpResponse.getData()).getBoolean("error"), "Error while getting api list");
         assertFalse(httpResponse.getData().contains(API_NAME), "API is visible to anonymous user in other " +

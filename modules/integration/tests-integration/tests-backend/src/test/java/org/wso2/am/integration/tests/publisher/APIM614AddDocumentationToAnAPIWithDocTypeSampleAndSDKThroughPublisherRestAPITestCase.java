@@ -88,7 +88,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
 
         String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
                 "customerservice/customers/123";
-        String loginUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/user/login/ajax/login.jag";
+        String loginUrl = publisherUrls.getWebAppURLHttp()+"publisher-old/site/blocks/user/login/ajax/login.jag";
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
@@ -161,7 +161,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM614 =TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM614;;
-        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher-old/site/blocks/documentation/ajax/docs.jag";
 
 
         //Send Http Post request to add a new file
@@ -212,7 +212,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM622 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM622;
-        String addDocUrl = publisherUrls.getWebAppURLHttp() +"publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp() +"publisher-old/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -262,7 +262,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM624 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM624;
-        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher-old/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -311,7 +311,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM626 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM626;
-        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher-old/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -361,7 +361,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM629 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM629;
-        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher-old/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);

@@ -41,7 +41,7 @@ populate-user-database:
       
       
 6. Start WSO2AM server  and  you can login to API Publisher's console with the username/password as provider1/provider1.
-Provider URL - https://localhost:9443/publisher/
+Provider URL - https://localhost:9443/publisher-old/
 
 Add/Publish API
 -------------------
