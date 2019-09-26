@@ -17,6 +17,7 @@
 package org.wso2.carbon.apimgt.test.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -1095,21 +1096,19 @@ public class RestAPIStoreImpl {
     /**
      * Get the  web page with filtered API when  click the API Tag link
      *
-     * @param apiTag - API tag the need ti filter the api.
+     * @param apiTag - API tag the need ti filter the api.waitForSwaggerDocument
      * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
      * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
      *                                            HTTPSClientUtils.sendGetRequest() method call
      */
-    public HttpResponse getAPIPageFilteredWithTags(String apiTag)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(backendURL + "/store/apis/list?tag=" + apiTag + "&tenant=carbon.super",
-//                    requestHeaders);
-//        } catch (IOException ex) {
-//            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
-//                    + ". Error: " + ex.getMessage(), ex);
-//        }
+    public APIListDTO getAPIsFilteredWithTags(String apiTag)
+            throws APIManagerIntegrationTestException, ApiException {
+
+        String query = "tag:" + apiTag;
+        APIListDTO apis = apIsApi.apisGet(null, null, null, query, null);
+        if (apis.getCount() > 0) {
+            return apis;
+        }
         return null;
     }
 
