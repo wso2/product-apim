@@ -70,7 +70,7 @@ public class DocAPIParameterTamperingTest extends APIMIntegrationBaseTest{
     @Test(groups = { "wso2.am" }, description = "Test whether the response expose the stack trace")
     public void testParameterTampaeredResponseOfDocAPI() throws Exception {
         String requestURL = publisherURLHttp + "publisher/site/blocks/documentation/ajax/docs.jag?action="
-                + "getInlineContent&=&apiName=%3Balert%281%29%27%22%3C%3E&version=1.0.0&docName=asd";
+                + "getInlineContent&apiName=%3Balert%281%29%27%22%3C%3E&version=1.0.0&docName=asd";
         HttpResponse response = apiPublisher.login(user.getUserName(), user.getPassword());
         
         String cookie = response.getHeaders().get("Set-Cookie");
