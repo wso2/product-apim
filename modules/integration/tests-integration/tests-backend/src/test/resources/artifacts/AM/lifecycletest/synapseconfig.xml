@@ -34,7 +34,7 @@
                           type="STRING"/>
                 <send>
                     <endpoint>
-                        <address uri="https://localhost:9443/store/site/blocks/workflow/workflow-listener/ajax/workflow-listener.jag"
+                        <address uri="https://localhost:9443/store-old/site/blocks/workflow/workflow-listener/ajax/workflow-listener.jag"
                                  format="rest"/>
                     </endpoint>
                 </send>

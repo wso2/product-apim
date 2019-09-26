@@ -203,7 +203,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                         + File.separator + certificateFileName);
         StringWriter writer = new StringWriter();
-        IOUtils.copy(fileInputStream, writer, StandardCharsets.UTF_8);
+        IOUtils.copy(fileInputStream, writer, StandardCharsets.UTF_8.toString());
         return new String(Base64.encodeBase64(writer.toString().getBytes()));
     }
 

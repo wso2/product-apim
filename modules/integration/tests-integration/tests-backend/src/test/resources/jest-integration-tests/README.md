@@ -6,7 +6,7 @@ Require NodeJs 8.0 or higher, and npm 5.0 or higher.You may use [`nvm`](https://
 
 # How to run
 
-Before running either unit tests or integration test, Go to the application root directory where `package.json` file is located (i:e `<carbon-apimgt-root>/features/apimgt/org.wso2.carbon.apimgt.publisher.feature/src/main/resources/publisher-new/`) and run `npm install` command to download all the dependencies.
+Before running either unit tests or integration test, Go to the application root directory where `package.json` file is located (i:e `<carbon-apimgt-root>/features/apimgt/org.wso2.carbon.apimgt.publisher.feature/src/main/resources/publisher/`) and run `npm install` command to download all the dependencies.
 
 These integration test will be automatically executed , when building the product API Manager with tests i:e `mvn clean install`.
 
@@ -23,7 +23,7 @@ Before running the integration tests, Make sure you have started relevant WSO2 A
 
 ## Where is unit tests ??
 
-Unit tests are located in the [`carbon-apimgt`](https://github.com/wso2/carbon-apimgt/blob/master/features/apimgt/org.wso2.carbon.apimgt.publisher.feature/src/main/resources/publisher-new/source/Tests/README.md) along with the React component source files.
+Unit tests are located in the [`carbon-apimgt`](https://github.com/wso2/carbon-apimgt/blob/master/features/apimgt/org.wso2.carbon.apimgt.publisher.feature/src/main/resources/publisher/source/Tests/README.md) along with the React component source files.
 
 # Troubleshooting
 

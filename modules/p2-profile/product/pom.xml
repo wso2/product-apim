@@ -678,7 +678,7 @@
                     </execution>
 
                     <execution>
-                        <id>p2-profile-generation-api-store-profile</id>
+                        <id>p2-profile-generation-api-devportal-profile</id>
                         <phase>package</phase>
                         <goals>
                             <goal>materialize-product</goal>
@@ -690,7 +690,7 @@
                             <targetPath>
                                 file:${basedir}/target/wso2carbon-core-${carbon.kernel.version}/repository/components
                             </targetPath>
-                            <profile>api-store</profile>
+                            <profile>api-devportal</profile>
                         </configuration>
                     </execution>
 
@@ -1702,13 +1702,13 @@
 
                     <!--Start of api store profile-->
                     <execution>
-                        <id>p2-profile-generation-for-api-store-profile</id>
+                        <id>p2-profile-generation-for-api-devportal-profile</id>
                         <phase>package</phase>
                         <goals>
                             <goal>p2-profile-gen</goal>
                         </goals>
                         <configuration>
-                            <profile>api-store</profile>
+                            <profile>api-devportal</profile>
                             <metadataRepository>file:${basedir}/target/p2-repo</metadataRepository>
                             <artifactRepository>file:${basedir}/target/p2-repo</artifactRepository>
                             <destination>

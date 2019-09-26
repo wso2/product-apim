@@ -26,7 +26,7 @@ describe(
     () => {
         let page;
         const port = 9443 + global.PORT_OFFSET;
-        const publisherURL = 'https://localhost:' + port + '/publisher-new';
+        const publisherURL = 'https://localhost:' + port + '/publisher';
         beforeAll(async () => {
             page = await global.__BROWSER__.newPage();
         }, timeout);

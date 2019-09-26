@@ -123,7 +123,7 @@
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/conf/email/email-admin-config.xml</exclude>
                 <exclude>
-                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/store/**
+                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/devportal/**
                 </exclude>
                 <exclude>
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**
@@ -256,7 +256,7 @@
         </fileSet-->
         <fileSet>
             <directory>src/main/assembly</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/site/tenant_themes
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store-old/site/tenant_themes
             </outputDirectory>
             <excludes>
                 <exclude>*</exclude>
@@ -372,7 +372,7 @@
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/api-publisher/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher-old</outputDirectory>
             <excludes>
                 <exclude>publisherLogo/**</exclude>
                 <exclude>publisherTheme/**</exclude>
@@ -385,7 +385,7 @@
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/api-store/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store-old</outputDirectory>
             <excludes>
                 <exclude>storeLogo/**</exclude>
                 <exclude>storeSite/**</exclude>
@@ -404,16 +404,16 @@
 
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher-new/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher-new
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher
             </outputDirectory>
         </fileSet>
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/store-new/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/devportal/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store-new</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/devportal</outputDirectory>
         </fileSet>
         <!--  copying modules xml -->
         <fileSet>
