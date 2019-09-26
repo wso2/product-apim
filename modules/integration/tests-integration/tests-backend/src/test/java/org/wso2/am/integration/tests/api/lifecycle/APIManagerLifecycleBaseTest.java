@@ -303,7 +303,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
         String lifecycleChecklist = null;
         if (isRequireReSubscription) {
-            lifecycleChecklist = "lifecycleChecklist=Require Re-Subscription:true";
+            lifecycleChecklist = "Requires re-subscription when publish the API:true";
         }
         return publisherRestClient
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), lifecycleChecklist);
