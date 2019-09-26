@@ -26,7 +26,7 @@ const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup');
 module.exports = async function () {
     console.log('\nSetup Puppeteer');
     const browser = await puppeteer.launch({
-         // headless: false,
+        //  headless: false,
     });
     // This global is not available inside tests but only in global teardown
     // eslint-disable-next-line no-underscore-dangle
