@@ -396,6 +396,18 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
     }
 
+    /**
+     * Create and publish a API with re-subscription not required.
+     *
+     * @param apiRequest              - Instance of APIRequest
+     * @param publisherRestClient     - Instance of RestAPIPublisherImpl
+     * @throws APIManagerIntegrationTestException - Exception throws by API create  and publish activities.
+     */
+    protected String createAndPublishAPIWithoutRequireReSubscriptionUsingRest(APIRequest apiRequest,
+            RestAPIPublisherImpl publisherRestClient) throws APIManagerIntegrationTestException, ApiException {
+        return createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
+    }
+
 
     /**
      * Copy and API and create a new version.
