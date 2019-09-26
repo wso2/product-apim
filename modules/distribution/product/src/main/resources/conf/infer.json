@@ -3,7 +3,12 @@
     "gateway-worker": {
       "apim.throttling.enable_policy_deploy": false,
       "indexing.enable": false,
-      "system.parameter.profile": "gateway-worker"
+      "system.parameter.profile": "gateway-worker",
+      "enabled_global_handlers": [
+          "external_call_logger"
+        ],
+       "synapse_handlers.external_call_logger.name": "externalCallLogger",
+       "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
     },
     "api-key-manager": {
       "apim.throttling.enable_policy_deploy": false,
@@ -13,6 +18,7 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "indexing.enable": false,
+      "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
       "system.parameter.profile": "api-key-manager"
     },
     "api-publisher": {
@@ -33,6 +39,9 @@
     },
     "traffic-manager": {
       "system.parameter.profile": "traffic-manager"
+    },
+    "default": {
+      "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
     }
   },
   "apim.jwt.encoding": {

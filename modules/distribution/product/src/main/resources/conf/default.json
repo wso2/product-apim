@@ -1,5 +1,4 @@
 {
-  "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
   "server.base_path,": "${carbon.protocol}://${carbon.host}:${carbon.management.port}",
   "server.default_cache_timeout": "15",
   "default_cache_timeout.force_local_cache": false,
@@ -7,6 +6,8 @@
   "server.enableSwA": false,
   "server.discard_empty_caches": false,
   "identity.data_source": "jdbc/WSO2AM_DB",
+  "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000;MVCC=TRUE",
+  "database.apim_db.driver": "org.h2.Driver",
   "oauth.token_validation.refresh_token_validity": "1d",
   "oauth.scope_validator.xacml.enable": false,
   "oauth.grant_type.authorization_code.enable": true,
@@ -118,11 +119,6 @@
     "cacheHttpClient": true,
     "defaultMaxConnectionsPerHost": "200"
   },
-  "enabled_global_handlers": [
-    "external_call_logger"
-  ],
-  "synapse_handlers.external_call_logger.name": "externalCallLogger",
-  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
   "synapse_properties.'synapse.sal.endpoints.sesssion.timeout.default'": "600000",
   "synapse_properties.'synapse.global_timeout_interval'": "120000",
   "synapse_properties.'statistics.clean.enable'": "false",

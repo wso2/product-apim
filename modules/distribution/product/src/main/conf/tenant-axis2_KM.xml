@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<axisconfig name="AxisJava2.0" xmlns:svns="http://org.wso2.securevault/configuration">
+<axisconfig name="AxisJava2.0">
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
@@ -87,30 +87,56 @@
     <!--Following content type to message formatter mapping can be used to implement support for different message -->
     <!--format  serialization in Axis2. These message formats are expected to be resolved based on the content type. -->
     <messageFormatters>
-    <messageFormatter contentType="application/x-www-form-urlencoded"
-                              class="{{message_formatter.form_urlencoded}}"/>
-    <messageFormatter contentType="multipart/form-data"
-                              class="{{message_formatter.multipart_form_data}}"/>
-    <messageFormatter contentType="application/xml"
-                              class="{{message_formatter.application_xml}}"/>
-    <messageFormatter contentType="text/xml"
-                              class="{{message_formatter.text_xml}}"/>
-    <messageFormatter contentType="application/soap+xml"
-                              class="{{message_formatter.soap_xml}}"/>
-    <messageFormatter contentType="application/json/badgerfish"
-                              class="{{message_formatter.json_badgerfish}}"/>
-    <messageFormatter contentType="text/javascript"
-                              class="{{message_formatter.text_javascript}}"/>
-    <messageFormatter contentType="text/html"
-                          class="{{message_formatter.text_html}}"/>
-    <messageFormatter contentType="text/plain"
-                         class="{{message_formatter.text_plain}}"/>
+        <messageFormatter contentType="application/x-www-form-urlencoded"
+                          class="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
+        <messageFormatter contentType="multipart/form-data"
+                          class="org.apache.axis2.transport.http.MultipartFormDataFormatter"/>
+        <messageFormatter contentType="application/xml"
+                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
+        <messageFormatter contentType="text/html"
+                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
+        <messageFormatter contentType="text/xml"
+                         class="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+        <messageFormatter contentType="application/soap+xml"
+                         class="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+        <messageFormatter contentType="text/plain"
+                         class="org.apache.axis2.format.PlainTextFormatter"/>
+        <messageFormatter contentType="application/json/badgerfish"
+                          class="org.apache.axis2.json.JSONBadgerfishMessageFormatter"/>
+        <messageFormatter contentType="text/javascript"
+                          class="org.apache.axis2.json.JSONMessageFormatter"/>
+        <messageFormatter contentType="application/octet-stream" 
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
 
+        <!-- See https://wso2.org/jira/browse/ESBJAVA-1725 before enabling bellow line -->
+        <!--messageFormatter contentType=".*"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/-->
+
+        <!--messageFormatter contentType="application/x-www-form-urlencoded"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="multipart/form-data"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="multipart/related"
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="application/xml"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="text/html"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="text/plain"
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="application/soap+xml"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="text/xml"
+                        class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="application/json"
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="application/json/badgerfish"
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
+        <messageFormatter contentType="text/javascript"
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/>
         <messageFormatter contentType="application/octet-stream"
-                          class="{{message_formatter.octet_stream}}"/>
-
+                          class="org.wso2.carbon.relay.ExpandingMessageFormatter"/-->
     </messageFormatters>
-
 
     <!-- ================================================= -->
     <!-- Message Builders -->
@@ -118,16 +144,52 @@
     <!--Following content type to builder mapping can be used to implement support for different message -->
     <!--formats in Axis2. These message formats are expected to be resolved based on the content type. -->
     <messageBuilders>
-    <messageBuilder contentType="application/xml"
-                            class="{{message_builder.application_xml}}"/>
-    <messageBuilder contentType="multipart/form-data"
-                            class="{{message_builder.multipart_form_data}}"/>
-    <messageBuilder contentType="application/json/badgerfish"
-                            class="{{message_builder.json_badgerfish}}"/>
-    <messageBuilder contentType="text/javascript"
-                            class="{{message_builder.text_javascript}}"/>
-    <messageBuilder contentType="text/plain"
-                        class="{{message_builder.text_plain}}"/>
+        <messageBuilder contentType="application/xml"
+                        class="org.apache.axis2.builder.ApplicationXMLBuilder"/>
+        <messageBuilder contentType="text/html"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="multipart/form-data"
+                        class="org.apache.axis2.builder.MultipartFormDataBuilder"/>
+        <messageBuilder contentType="text/plain"
+                        class="org.apache.axis2.format.PlainTextBuilder"/>
+        <messageBuilder contentType="application/json/badgerfish"
+                        class="org.apache.axis2.json.JSONBadgerfishOMBuilder"/>
+        <messageBuilder contentType="text/javascript"
+                        class="org.apache.axis2.json.JSONBuilder"/>
+        <messageBuilder contentType="application/octet-stream" 
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+
+        <!--messageBuilder contentType="text/javascript"
+                        class="org.apache.axis2.json.JSONStreamBuilder"/-->
+
+        <!--See  https://wso2.org/jira/browse/ESBJAVA-1725 before enabling bellow line -->
+	<!--messageBuilder contentType=".*"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/-->
+
+	<!--messageBuilder contentType="application/xml"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="application/x-www-form-urlencoded"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="multipart/form-data"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="multipart/related"
+                       class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="application/soap+xml"
+                       class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="text/plain"
+                       class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="text/html"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="text/xml"
+                       class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="application/json"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="application/json/badgerfish"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="text/javascript"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
+        <messageBuilder contentType="application/octet-stream"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/-->
     </messageBuilders>
 
     <!-- ================================================= -->
