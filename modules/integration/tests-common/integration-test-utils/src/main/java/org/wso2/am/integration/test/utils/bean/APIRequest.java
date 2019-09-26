@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.net.URI;
@@ -75,6 +76,15 @@ public class APIRequest extends AbstractRequest {
     private String accessControl;
     private String accessControlRoles;
 
+    public List<MediationPolicyDTO> getMediationPolicies() {
+        return mediationPolicies;
+    }
+
+    public void setMediationPolicies(List<MediationPolicyDTO> mediationPolicies) {
+        this.mediationPolicies = mediationPolicies;
+    }
+
+    private List<MediationPolicyDTO> mediationPolicies;
 
     public List<APIOperationsDTO> getOperationsDTOS() {
         return operationsDTOS;

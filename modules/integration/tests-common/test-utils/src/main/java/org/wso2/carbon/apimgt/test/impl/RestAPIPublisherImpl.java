@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.test.impl;
 
+import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.testng.Assert;
@@ -135,11 +136,8 @@ public class RestAPIPublisherImpl {
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
         body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
-        body.setDescription(Constants.API_DESCRIPTION);
-        body.setProvider(Constants.PROVIDER_ADMIN);
-        if (!StringUtils.isEmpty(tenantDomain)) {
-            body.setProvider(username + "-AT-" + tenantDomain);
-        }
+        body.setDescription(apiRequest.getDescription());
+        body.setProvider(apiRequest.getProvider());
         body.setTransport(new ArrayList<String>() {{
             add(Constants.PROTOCOL_HTTP);
             add(Constants.PROTOCOL_HTTPS);
@@ -153,10 +151,12 @@ public class RestAPIPublisherImpl {
 //        body.setSubscriptionAvailability(ALL_TENANTS);
 //        body.setVisibleRoles(visibleRoles);
 //        body.setSubscriptionAvailableTenants();
+        body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+//        body.setMediationPolicies(apiRe);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(tierList);
@@ -285,11 +285,8 @@ public class RestAPIPublisherImpl {
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
         body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
-        body.setDescription(Constants.API_DESCRIPTION);
-        body.setProvider(Constants.PROVIDER_ADMIN);
-        if (!StringUtils.isEmpty(tenantDomain)) {
-            body.setProvider(username + "-AT-" + tenantDomain);
-        }
+        body.setDescription(apiRequest.getDescription());
+        body.setProvider(apiRequest.getProvider());
         body.setTransport(new ArrayList<String>() {{
             add(Constants.PROTOCOL_HTTPS);
             add(Constants.PROTOCOL_HTTP);
@@ -302,6 +299,7 @@ public class RestAPIPublisherImpl {
 //        body.setSubscriptionAvailability();
 //        body.setVisibleRoles(visibleRoles);
 //        body.setSubscriptionAvailableTenants(apiRequest.getV);
+        body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setOperations(apiRequest.getOperationsDTOS());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
@@ -339,7 +337,8 @@ public class RestAPIPublisherImpl {
         APIDTO apidto = apIsApi.apisApiIdGet(apiId, null, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(apidto.getId())) {
-            response = new HttpResponse(apidto.getId(), 200);
+            Gson gson = new Gson();
+            response = new HttpResponse(gson.toJson(apidto), 200);
         }
         return response;
     }
