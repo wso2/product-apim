@@ -1,5 +1,5 @@
 {
-  "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
+  "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
   "server.base_path,": "${carbon.protocol}://${carbon.host}:${carbon.management.port}",
   "server.default_cache_timeout": "15",
   "default_cache_timeout.force_local_cache": false,
