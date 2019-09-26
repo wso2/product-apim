@@ -79,6 +79,10 @@ public class RestAPIPublisherImpl {
     public static final String tokenEndpoint = "https://127.0.0.1:9943/oauth2/token";
 
     public RestAPIPublisherImpl() {
+        this(username, password, tenantDomain);
+    }
+
+    public RestAPIPublisherImpl(String username, String password, String tenantDomain) {
 
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +

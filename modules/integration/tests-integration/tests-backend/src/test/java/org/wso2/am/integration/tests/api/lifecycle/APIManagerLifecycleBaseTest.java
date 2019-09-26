@@ -303,7 +303,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
         String lifecycleChecklist = null;
         if (isRequireReSubscription) {
-            lifecycleChecklist = "lifecycleChecklist=Require Re-Subscription:true";
+            lifecycleChecklist = "Requires re-subscription when publish the API:true";
         }
         return publisherRestClient
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), lifecycleChecklist);
@@ -394,6 +394,18 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                                                    APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
+    }
+
+    /**
+     * Create and publish a API with re-subscription not required.
+     *
+     * @param apiRequest              - Instance of APIRequest
+     * @param publisherRestClient     - Instance of RestAPIPublisherImpl
+     * @throws APIManagerIntegrationTestException - Exception throws by API create  and publish activities.
+     */
+    protected String createAndPublishAPIWithoutRequireReSubscriptionUsingRest(APIRequest apiRequest,
+            RestAPIPublisherImpl publisherRestClient) throws APIManagerIntegrationTestException, ApiException {
+        return createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
     }
 
 
