@@ -173,7 +173,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
         assertEquals(lcStateRsponse.getData(), APILifeCycleState.DEPRECATED.getState(),
                 "API deprecate status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + response.getData());
+                        "Response Data:" + lcStateRsponse.getData());
     }
 
 
