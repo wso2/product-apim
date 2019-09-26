@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -71,7 +70,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
     private String applicationId;
     private String apiId;
     private String newApiId;
-    APIRequest apiRequest;
+    private APIRequest apiRequest;
     private Map<String, String> requestHeaders;
     private ArrayList<String> grantTypes;
 

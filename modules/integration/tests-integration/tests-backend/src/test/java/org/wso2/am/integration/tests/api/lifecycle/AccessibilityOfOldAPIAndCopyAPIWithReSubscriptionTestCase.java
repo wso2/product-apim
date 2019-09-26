@@ -69,7 +69,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     private String applicationId;
     private String apiId;
     private String newApiId;
-    APIRequest apiRequest;
+    private APIRequest apiRequest;
     private Map<String, String> requestHeaders;
     private ArrayList<String> grantTypes;
 
