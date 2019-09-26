@@ -11,7 +11,7 @@
                 <property name="messageType" scope="axis2" type="STRING" value="application/x-www-form-urlencoded"/>
                 <send>
                     <endpoint>
-                        <address format="rest" uri="https://localhost:9443/store/site/blocks/workflow/workflow-listener/ajax/workflow-listener.jag"/>
+                        <address format="rest" uri="https://localhost:9443/store-old/site/blocks/workflow/workflow-listener/ajax/workflow-listener.jag"/>
                     </endpoint>
                 </send>
             </inSequence>

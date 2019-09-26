@@ -214,7 +214,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + URL_SUFFIX + "listing/ajax/item-list.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + "",
                     requestHeaders);
         } catch (Exception e) {

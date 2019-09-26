@@ -130,7 +130,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
 
         HttpResponse a = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiName + "is available to the restricted user");
@@ -144,7 +144,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         String session = response.getHeaders().get("Set-Cookie");
         requestHeaders.put("Cookie", session);
         HttpResponse a = HttpRequestUtil
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
         Assert.assertFalse(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiName + "is not available to the authorised user");
@@ -160,7 +160,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         requestHeaders.clear();
         requestHeaders.put("Cookie", session);
         HttpResponse a = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiName + "is available to the unauthorised user");
@@ -215,7 +215,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         requestHeaders.clear();
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
         HttpResponse a = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiNameTenant + "is available to the restricted user in Tenant");
@@ -231,7 +231,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         String session = response.getHeaders().get("Set-Cookie");
         requestHeaders.put("Cookie", session);
         HttpResponse a = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertFalse(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiNameTenant + "is not available to the authorised user in Tenant");
@@ -250,7 +250,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         requestHeaders.clear();
         requestHeaders.put("Cookie", session);
         HttpResponse a = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
+                .doGet(getStoreURLHttps() + "/store-old/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
                 "API " + apiNameTenant + "is available to the unauthorised user in Tenant");
