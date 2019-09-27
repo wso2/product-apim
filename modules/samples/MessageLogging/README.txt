@@ -7,7 +7,7 @@ Steps :
 2. Go to <AM_HOME>/bin folder and start wso2am-2.6.0 by executing wso2am-2.6.0/bin/wso2server.sh
 
 3. You can log in to API Publisher Console.
-URL - https://localhost:9443/publisher/
+URL - https://localhost:9443/publisher-old/
 Username/password - admin/admin
 
 4. Create an API.

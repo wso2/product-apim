@@ -93,7 +93,6 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         APIListDTO apiFilteredWithTagsDTOs = restAPIStore.getAPIsFilteredWithTags(TEST_TAG);
         assertTrue(apiFilteredWithTagsDTOs.getCount() > 0,
                 "API: "+ API_NAME +" is not visible for tag: " + TEST_TAG);
-
     }
 
 

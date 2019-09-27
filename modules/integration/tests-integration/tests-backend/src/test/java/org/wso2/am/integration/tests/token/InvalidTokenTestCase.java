@@ -139,9 +139,9 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
             Object descriptionElement = xpath.selectSingleNode(element);
             Assert.assertNotNull("Error message doesn't contain a 'description'", descriptionElement);
             String description = ((OMElement)descriptionElement).getText();
-            Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have given the " +
-                            "correct access token' but received '" + description + "'",
-                    description.contains("Make sure you have given the correct access token"));
+            Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have " +
+                            "provided the correct security credentials' but received '" + description + "'",
+                    description.contains("Make sure you have provided the correct security credentials"));
         } catch (IOException e) {
             log.error("Error sending request to endpoint " + apiInvocationUrl, e);
             Assert.assertTrue("Could not send request to endpoint " + apiInvocationUrl + ": " + e.getMessage(), false);

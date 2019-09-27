@@ -98,7 +98,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
                                                          createSession(keyManagerContext));
         userManagementClient1.addRole(role, null, permissions);
         userManagementClient1.addUser(allowedUser, String.valueOf(allowedUserPass), new String[] {role }, null);
-        tagListUrl = new URL(getStoreURLHttp() + "store/site/blocks/tag/tag-cloud/ajax/list.jag");
+        tagListUrl = new URL(getStoreURLHttp() + "store-old/site/blocks/tag/tag-cloud/ajax/list.jag");
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and publish two apis with public and role based visibility")

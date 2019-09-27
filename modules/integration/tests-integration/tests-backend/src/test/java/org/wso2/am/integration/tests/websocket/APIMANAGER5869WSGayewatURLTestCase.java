@@ -177,7 +177,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
 
 
         HttpResponse serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store/apis/info?name=" + API_NAME + "&version=" + API_VERSION
+                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + API_NAME + "&version=" + API_VERSION
                         + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
 
@@ -193,7 +193,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
                     .matches("(.)*\"https://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
         }
         serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
+                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
                         + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -218,7 +218,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         String tenant = storeContext.getContextTenant().getDomain();
         String provider = user.getUserName();
         HttpResponse serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store/apis/info?name=" + API_NAME + "&version=" + API_VERSION
+                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + API_NAME + "&version=" + API_VERSION
                         + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
 
@@ -234,7 +234,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
                     .matches("(.)*\"http://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
         }
         serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
+                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
                         + "&tenant=" + tenant + "&provider=" + provider, null);
         assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {

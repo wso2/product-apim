@@ -26,7 +26,7 @@ describe(
     () => {
         let page;
         const port = 9443 + global.PORT_OFFSET;
-        const publisherURL = 'https://localhost:' + port + '/publisher-new';
+        const publisherURL = 'https://localhost:' + port + '/publisher';
         beforeAll(async () => {
             page = await global.__BROWSER__.newPage();
         }, timeout);
@@ -44,7 +44,10 @@ describe(
             await page.goto(publisherURL);
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
-            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
+            await Promise.all([
+                page.$eval('#loginForm', form => form.submit()),
+                page.waitForNavigation()
+            ]);
             const expectedCookies = [
                 'AM_ID_TOKEN_DEFAULT_P2',
                 'AM_ID_TOKEN_DEFAULT_P1',
@@ -52,11 +55,18 @@ describe(
                 'AM_ACC_TOKEN_DEFAULT_P2',
                 'AM_REF_TOKEN_DEFAULT_P2',
                 'WSO2_AM_TOKEN_1_Default',
-                'opbs',
+                'opbs'
             ];
-            let { cookies: availableCookies } = await page._client.send('Network.getAllCookies', {});
-            availableCookies = availableCookies.map(cookieObject => cookieObject.name);
-            expectedCookies.forEach(expectedCookie => expect(availableCookies).toContain(expectedCookie));
+            let { cookies: availableCookies } = await page._client.send(
+                'Network.getAllCookies',
+                {}
+            );
+            availableCookies = availableCookies.map(
+                cookieObject => cookieObject.name
+            );
+            expectedCookies.forEach(expectedCookie =>
+                expect(availableCookies).toContain(expectedCookie)
+            );
         });
 
         test('should not able to login with an invalid username', async () => {
@@ -66,7 +76,7 @@ describe(
 
             await Promise.all([
                 page.$eval('#loginForm', form => form.submit()),
-                page.waitForNavigation({ waitUntil: 'load' }),
+                page.waitForNavigation({ waitUntil: 'load' })
             ]);
             const { authFailure } = qs.parse(page.url().split('?')[1]);
             expect(authFailure).toEqual('true');
@@ -78,24 +88,34 @@ describe(
 
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
-            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
-
+            await Promise.all([
+                page.$eval('#loginForm', form => form.submit()),
+                page.waitForNavigation()
+            ]);
 
             const currentPageURL = await page.url();
             expect(currentPageURL).toContain(pathName);
         });
 
         test('should be able to logout without an error', async () => {
+            const LOGOUT_BUTTON = '#profile-menu-btn';
             await page.goto(publisherURL);
             await page.type('input[name="username"]', 'admin');
             await page.type('input[name="password"]', 'admin');
-            await Promise.all([page.$eval('#loginForm', form => form.submit()), page.waitForNavigation()]);
-            await page.click('#profile-menu-btn');
+            await Promise.all([
+                page.$eval('#loginForm', form => form.submit()),
+                page.waitForNavigation()
+            ]);
+            await page.waitForSelector(LOGOUT_BUTTON, {
+                visible: true
+            });
+            await page.click(LOGOUT_BUTTON);
             await page.click('#logout');
-            await page.waitForNavigation();
+            await page.waitForSelector("#approve")
+            await Promise.all([page.click('#approve'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
             const currentPageURL = await page.url();
             expect(currentPageURL).toContain('/authenticationendpoint/login');
         });
     },
-    timeout,
+    timeout
 );

@@ -27,7 +27,7 @@
          </filter>
          <filter source="boolean($trp:Access-Control-Expose-Headers)" regex="false">
             <then>
-               <property name="Access-Control-Expose-Headers" expression="$ctx:Access-Control-Allow-Headers" scope="transport" type="STRING"/>
+               <property name="Access-Control-Expose-Headers" expression="$ctx:Access-Control-Expose-Headers" scope="transport" type="STRING"/>
             </then>
          </filter>
       </then>

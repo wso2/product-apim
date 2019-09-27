@@ -24,8 +24,8 @@ public class APIMIntegrationConstants {
 
     //instance names
     public static final String AM_PRODUCT_GROUP_NAME = "APIM";
-    public static final String AM_STORE_INSTANCE = "store";
-    public static final String AM_PUBLISHER_INSTANCE = "publisher";
+    public static final String AM_STORE_INSTANCE = "store-old";
+    public static final String AM_PUBLISHER_INSTANCE = "publisher-old";
     public static final String AM_GATEWAY_MGT_INSTANCE = "gateway-mgt";
     public static final String AM_GATEWAY_WRK_INSTANCE = "gateway-wrk";
     public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
@@ -115,6 +115,13 @@ public class APIMIntegrationConstants {
         public static final String PASSWORD = "password";
         public static final String CLIENT_CREDENTIAL = "client_credentials";
     }
+
+    public static final String REST_API_ADMIN_CONTEXT = "api/am/admin/";
+    public static final String REST_API_ADMIN_VERSION = "v0.15";
+    public static final String REST_API_ADMIN_CONTEXT_FULL_0 = REST_API_ADMIN_CONTEXT + REST_API_ADMIN_VERSION;
+    public static final String REST_API_ADMIN_IMPORT_API_RESOURCE = "/import/api";
+    public static final String REST_API_ADMIN_EXPORT_API_RESOURCE = "/export/api";
+
 
     public enum ResourceAuthTypes {
         APPLICATION_USER("Application_User"), NONE("None"), APPLICATION("Application"),
