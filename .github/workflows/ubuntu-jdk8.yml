@@ -1,11 +1,8 @@
-name: APIM Product Build
+name: Ubuntu + JDK 8
 
 on:
   schedule:
-  - cron: 0 16 * * *
-  push:
-    branches:
-    - master
+  - cron: 0 0,8,16 * * *
 
 jobs:
   build:
