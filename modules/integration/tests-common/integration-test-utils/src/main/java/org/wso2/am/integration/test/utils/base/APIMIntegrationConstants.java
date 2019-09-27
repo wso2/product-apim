@@ -111,11 +111,17 @@ public class APIMIntegrationConstants {
         public static final int BASIC_LIMIT = 1;
     }
 
+    public static class GRANT_TYPE {
+        public static final String PASSWORD = "password";
+        public static final String CLIENT_CREDENTIAL = "client_credentials";
+    }
+
     public static final String REST_API_ADMIN_CONTEXT = "api/am/admin/";
     public static final String REST_API_ADMIN_VERSION = "v0.15";
     public static final String REST_API_ADMIN_CONTEXT_FULL_0 = REST_API_ADMIN_CONTEXT + REST_API_ADMIN_VERSION;
     public static final String REST_API_ADMIN_IMPORT_API_RESOURCE = "/import/api";
     public static final String REST_API_ADMIN_EXPORT_API_RESOURCE = "/export/api";
+
 
     public enum ResourceAuthTypes {
         APPLICATION_USER("Application_User"), NONE("None"), APPLICATION("Application"),

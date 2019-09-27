@@ -33,6 +33,8 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -75,6 +77,8 @@ public class APIMIntegrationBaseTest {
     private static final long WAIT_TIME = 45 * 1000;
     protected APIPublisherRestClient apiPublisher;
     protected APIStoreRestClient apiStore;
+    protected RestAPIPublisherImpl restAPIPublisher;
+    protected RestAPIStoreImpl restAPIStore;
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
@@ -150,6 +154,17 @@ public class APIMIntegrationBaseTest {
             storeURLHttp = storeUrls.getWebAppURLHttp();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new APIStoreRestClient(storeURLHttp);
+
+            restAPIPublisher = new RestAPIPublisherImpl(
+                    publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getContextUser().getPassword(),
+                    publisherContext.getContextTenant().getDomain());
+            restAPIStore = new RestAPIStoreImpl(
+                    storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                    storeContext.getContextTenant().getContextUser().getPassword(),
+                    storeContext.getContextTenant().getDomain());
+
+
 
             try {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();

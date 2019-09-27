@@ -1,20 +1,20 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*WSO2 Inc. licenses this file to you under the Apache License,
-*Version 2.0 (the "License"); you may not use this file except
-*in compliance with the License.
-*You may obtain a copy of the License at
-*
-*http://www.apache.org/licenses/LICENSE-2.0
-*
-*Unless required by applicable law or agreed to in writing,
-*software distributed under the License is distributed on an
-*"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-*KIND, either express or implied.  See the License for the
-*specific language governing permissions and limitations
-*under the License.
-*/
+ *Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *WSO2 Inc. licenses this file to you under the Apache License,
+ *Version 2.0 (the "License"); you may not use this file except
+ *in compliance with the License.
+ *You may obtain a copy of the License at
+ *
+ *http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *Unless required by applicable law or agreed to in writing,
+ *software distributed under the License is distributed on an
+ *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *KIND, either express or implied.  See the License for the
+ *specific language governing permissions and limitations
+ *under the License.
+ */
 
 package org.wso2.am.integration.test.utils.bean;
 
@@ -22,10 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Class to Provides basic API request.
@@ -42,7 +47,7 @@ public class APIRequest extends AbstractRequest {
 
     private String name;
     private String context;
-    private JSONObject endpoint;
+    private org.json.simple.JSONObject endpoint;
     private String visibility = "public";
     private String version = "1.0.0";
     private String description = "description";
@@ -70,6 +75,26 @@ public class APIRequest extends AbstractRequest {
     private String apiTier = "";
     private String accessControl;
     private String accessControlRoles;
+
+    public List<MediationPolicyDTO> getMediationPolicies() {
+        return mediationPolicies;
+    }
+
+    public void setMediationPolicies(List<MediationPolicyDTO> mediationPolicies) {
+        this.mediationPolicies = mediationPolicies;
+    }
+
+    private List<MediationPolicyDTO> mediationPolicies;
+
+    public List<APIOperationsDTO> getOperationsDTOS() {
+        return operationsDTOS;
+    }
+
+    public void setOperationsDTOS(List<APIOperationsDTO> operationsDTOS) {
+        this.operationsDTOS = operationsDTOS;
+    }
+
+    private List<APIOperationsDTO> operationsDTOS;
 
     public String getEnvironment() {
         return environment;
@@ -115,10 +140,22 @@ public class APIRequest extends AbstractRequest {
         this.name = apiName;
         this.context = context;
         try {
-            this.endpoint =
-                    new JSONObject("{\"production_endpoints\":{\"url\":\""
-                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                            + "http" + "\"}");
+            String endPointString = "{\n" +
+                    "  \"production_endpoints\": {\n" +
+                    "    \"template_not_supported\": false,\n" +
+                    "    \"config\": null,\n" +
+                    "    \"url\": \"" + endpointUrl + "\"\n" +
+                    "  },\n" +
+                    "  \"sandbox_endpoints\": {\n" +
+                    "    \"url\": \"" + endpointUrl + "\",\n" +
+                    "    \"config\": null,\n" +
+                    "    \"template_not_supported\": false\n" +
+                    "  },\n" +
+                    "  \"endpoint_type\": \"http\"\n" +
+                    "}";
+
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +
@@ -126,23 +163,36 @@ public class APIRequest extends AbstractRequest {
                     "[\"Access-Control-Allow-Origin\", \"authorization\", " +
                     "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
                     "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-        } catch (JSONException e) {
+        } catch (JSONException | ParseException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
         }
 
     }
 
-    public APIRequest(String apiName, String context, URI productionEndpointUri, URI sandboxEndpointUri )
+    public APIRequest(String apiName, String context, URI productionEndpointUri, URI sandboxEndpointUri)
             throws APIManagerIntegrationTestException {
         this.name = apiName;
         this.context = context;
         try {
-            this.endpoint =
-                    new JSONObject("{\"production_endpoints\":{\"url\":\""
-                            + productionEndpointUri + "\",\"config\":null}, \"sandbox_endpoints\":{\"url\":\""
-                            + sandboxEndpointUri + "\",\"config\":null},\"endpoint_type\":\""
-                            + productionEndpointUri.getScheme() + "\"}");
+            String endPointString = "{\n" +
+                    "  \"production_endpoints\": {\n" +
+                    "    \"template_not_supported\": false,\n" +
+                    "    \"config\": null,\n" +
+                    "    \"url\":\"" + productionEndpointUri + "\"\n" +
+                    "  },\n" +
+                    "  \"sandbox_endpoints\": {\n" +
+                    "    \"url\": \"" + sandboxEndpointUri + "\",\n" +
+                    "    \"config\": null,\n" +
+                    "    \"template_not_supported\": false\n" +
+                    "  },\n" +
+                    "  \"endpoint_type\": \"" + productionEndpointUri.getScheme() + "\"\n" +
+                    "}";
+
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
+
+
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +
@@ -150,13 +200,13 @@ public class APIRequest extends AbstractRequest {
                     "[\"Access-Control-Allow-Origin\", \"authorization\", " +
                     "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
                     "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-        } catch (JSONException e) {
+        } catch (JSONException | ParseException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
         }
 
     }
-    
+
 
     /**
      * This method will create API request.
@@ -170,11 +220,22 @@ public class APIRequest extends AbstractRequest {
         this.name = apiName;
         this.context = context;
         try {
-            this.endpoint =
-                    new JSONObject("{\"production_endpoints\":{\"url\":\""
-                            + productionEndpointUrl + "\",\"config\":null}, \"sandbox_endpoints\":{\"url\":\""
-                            + sandboxEndpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                            + productionEndpointUrl.getProtocol() + "\"}");
+            String endPointString = "{\n" +
+                    "  \"production_endpoints\": {\n" +
+                    "    \"template_not_supported\": false,\n" +
+                    "    \"config\": null,\n" +
+                    "    \"url\":\"" + productionEndpointUrl + "\"\n" +
+                    "  },\n" +
+                    "  \"sandbox_endpoints\": {\n" +
+                    "    \"url\": \"" + sandboxEndpointUrl + "\",\n" +
+                    "    \"config\": null,\n" +
+                    "    \"template_not_supported\": false\n" +
+                    "  },\n" +
+                    "  \"endpoint_type\": \"" + productionEndpointUrl.getProtocol() + "\"\n" +
+                    "}";
+
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +
@@ -182,7 +243,7 @@ public class APIRequest extends AbstractRequest {
                     "[\"Access-Control-Allow-Origin\", \"authorization\", " +
                     "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
                     "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-        } catch (JSONException e) {
+        } catch (JSONException | ParseException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
         }
@@ -256,7 +317,7 @@ public class APIRequest extends AbstractRequest {
         return name;
     }
 
-    public JSONObject getEndpointConfig() {
+    public org.json.simple.JSONObject getEndpointConfig() {
         return endpoint;
     }
 
