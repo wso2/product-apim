@@ -37,6 +37,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -49,6 +50,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -204,11 +207,12 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
      * @return
      * @throws APIManagerIntegrationTestException
      */
-    public void signUp(String userName, String password, String email) throws
+    public HttpResponse signUp(String userName, String password, String email) throws
             APIManagerIntegrationTestException {
         try {
-            UserManagementUtils.addUser(userName, password, serviceEndpoint,
-                    new String[]{"Internal/subscriber", "Internal/creator", "Internal/publisher"}, "admin", "admin", email);
+            Map<String, String> requestHeaders = new HashMap<String, String>();
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+
             return HttpRequestUtil.doPost(new URL(storeURLHttp + "store-old/site/blocks/user/sign-up/ajax/user-add.jag"),
                     "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
                             "||||" + email, requestHeaders);
