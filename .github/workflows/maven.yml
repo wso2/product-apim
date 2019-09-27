@@ -2,7 +2,10 @@ name: APIM Product Build
 
 on:
   schedule:
-  - cron: 0 15 * * *
+  - cron: 0 16 * * *
+  push:
+    branches:
+    - master
 
 jobs:
   build:
@@ -16,4 +19,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn clean install --file pom.xml
+      run: cd ../../ & mvn clean install
