@@ -18,7 +18,6 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.apache.tools.ant.taskdefs.condition.Http;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -27,29 +26,21 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.test.Constants;
-import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
-import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -118,7 +109,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     public void testInvokeAPIBeforeChangeAPILifecycleToRetired() throws Exception {
 
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT,  API_VERSION_1_0_0) +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before Retire");
@@ -128,7 +119,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     }
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
-            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToRetired") 
+            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToRetired")
     public void testChangeAPILifecycleToDepricated() throws Exception {
         //DEPRECATE the API version 1.0.0
         //Change API lifecycle  to DEPRECATED
@@ -141,7 +132,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     }
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
-            dependsOnMethods = "testChangeAPILifecycleToDepricated") 
+            dependsOnMethods = "testChangeAPILifecycleToDepricated")
     public void testChangeAPILifecycleToRetired() throws Exception {
         //RETIRE the API version 1.0.0
         HttpResponse blockAPIActionResponse = restAPIPublisher
@@ -172,10 +163,10 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
 
         //Invoke  old version
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0)  +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api after retire");

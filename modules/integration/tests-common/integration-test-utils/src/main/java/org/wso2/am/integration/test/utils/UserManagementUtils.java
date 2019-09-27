@@ -1,4 +1,4 @@
-package org.wso2.carbon.apimgt.test.utils;
+package org.wso2.am.integration.test.utils;
 
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.carbon.user.mgt.stub.UserAdminStub;

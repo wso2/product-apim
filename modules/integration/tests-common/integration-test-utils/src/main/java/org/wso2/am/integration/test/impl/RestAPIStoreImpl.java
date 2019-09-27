@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.apimgt.test.impl;
+package org.wso2.am.integration.test.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -26,14 +25,15 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.carbon.apimgt.test.ClientAuthenticator;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -62,7 +62,12 @@ public class RestAPIStoreImpl {
     public static final String tenantDomain = "";
     public static final String tokenEndpoint = "https://127.0.0.1:9943/oauth2/token";
 
-    public RestAPIStoreImpl() {
+
+    public RestAPIStoreImpl(){
+        this(username, password, tenantDomain);
+    }
+
+    public RestAPIStoreImpl(String username, String password, String tenantDomain) {
 
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage " +
                 "apim:self-signup apim:dedicated_gateway apim:store_settings";
@@ -95,7 +100,7 @@ public class RestAPIStoreImpl {
                 response = new HttpResponse(createdApp.getApplicationId(), 200);
             }
             return response;
-        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+        } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             }
@@ -113,7 +118,7 @@ public class RestAPIStoreImpl {
                 response = new HttpResponse(applicationId, 200);
             }
             return response;
-        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+        } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             }
@@ -137,7 +142,7 @@ public class RestAPIStoreImpl {
                 response = new HttpResponse(subscriptionResponse.getSubscriptionId(), 200);
             }
             return response;
-        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+        } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             }
@@ -160,7 +165,7 @@ public class RestAPIStoreImpl {
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
                                           ArrayList<String> grantTypes)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -193,7 +198,7 @@ public class RestAPIStoreImpl {
      * @param messageBody      - message body
      * @param tokenEndpointURL - token endpoint url
      * @return - http response of generate access token api call
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if generating APIM access token fails
+     * @throws APIManagerIntegrationTestException - throws if generating APIM access token fails
      */
     public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
                                               String messageBody, URL tokenEndpointURL)
@@ -221,7 +226,7 @@ public class RestAPIStoreImpl {
      * Get all published apis
      *
      * @return - http response of get all published apis
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if getting publish APIs fails
+     * @throws APIManagerIntegrationTestException - throws if getting publish APIs fails
      */
     public HttpResponse getAllPublishedAPIs() throws APIManagerIntegrationTestException {
 //        try {
@@ -240,7 +245,7 @@ public class RestAPIStoreImpl {
      * Get all the applications
      *
      * @return - http response of get get all applications
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all application fails.
+     * @throws APIManagerIntegrationTestException - throws if get all application fails.
      */
     public HttpResponse getAllApplications() throws APIManagerIntegrationTestException {
 //        try {
@@ -260,7 +265,7 @@ public class RestAPIStoreImpl {
      * Get application by ID
      *
      * @return - http response of get of application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get application fails.
+     * @throws APIManagerIntegrationTestException - throws if get application fails.
      */
     public HttpResponse getApplicationById(int applicationId) throws APIManagerIntegrationTestException {
 //        try {
@@ -281,7 +286,7 @@ public class RestAPIStoreImpl {
      *
      * @param applicationName - application name
      * @return - http response of get application request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get application by name fails
+     * @throws APIManagerIntegrationTestException - throws if get application by name fails
      */
     public HttpResponse getPublishedAPIsByApplication(String applicationName)
             throws APIManagerIntegrationTestException {
@@ -306,7 +311,7 @@ public class RestAPIStoreImpl {
      *
      * @param applicationName - application name
      * @return - http response of get application request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get application by name fails
+     * @throws APIManagerIntegrationTestException - throws if get application by name fails
      */
     public HttpResponse getPublishedAPIsByApplicationId(String applicationName, int applicationId)
             throws APIManagerIntegrationTestException {
@@ -332,7 +337,7 @@ public class RestAPIStoreImpl {
      * @param provider - provider of api
      * @param rating   - api rating
      * @return - http response of add rating request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if rating of api fails
+     * @throws APIManagerIntegrationTestException - throws if rating of api fails
      */
     public HttpResponse addRatingToAPI(String apiName, String version, String provider,
                                        String rating) throws APIManagerIntegrationTestException {
@@ -356,7 +361,7 @@ public class RestAPIStoreImpl {
      * @param version  - api version
      * @param provider - provider of api
      * @return - http response of remove rating request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if remove API rating fails
+     * @throws APIManagerIntegrationTestException - Throws if remove API rating fails
      */
     public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
@@ -379,7 +384,7 @@ public class RestAPIStoreImpl {
      * Check if API rating activated
      *
      * @return - http response of rating activated request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
+     * @throws APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
      */
     public HttpResponse isRatingActivated() throws APIManagerIntegrationTestException {
 //        try {
@@ -401,7 +406,7 @@ public class RestAPIStoreImpl {
      * @param version  - api version
      * @param provider - provider of api
      * @return - http response of get all documentation of APIs
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if retrieval of API documentation fails
+     * @throws APIManagerIntegrationTestException - throws if retrieval of API documentation fails
      */
     public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
@@ -449,7 +454,7 @@ public class RestAPIStoreImpl {
      * @param start  - starting index
      * @param end    - closing  index
      * @return - http response of paginated published APIs
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
+     * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
             throws APIManagerIntegrationTestException {
@@ -471,7 +476,7 @@ public class RestAPIStoreImpl {
      * @param applicationId   - application ID
      * @param applicationName - application name
      * @return - http response of paginated published APIs
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
+     * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
     public HttpResponse cleanUpApplicationRegistrationByApplicationId(int applicationId, String applicationName)
             throws APIManagerIntegrationTestException {
@@ -519,7 +524,7 @@ public class RestAPIStoreImpl {
      *
      * @param tenant - tenant name
      * @return - http response of published API
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if published API retrieval fails.
+     * @throws APIManagerIntegrationTestException - throws if published API retrieval fails.
      */
     public HttpResponse getAllPublishedAPIs(String tenant)
             throws APIManagerIntegrationTestException {
@@ -544,7 +549,7 @@ public class RestAPIStoreImpl {
      * @param callbackUrl - callback url
      * @param description - description of app
      * @return - http response of add application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplication(String application, String tier, String callbackUrl,
                                        String description)
@@ -575,7 +580,7 @@ public class RestAPIStoreImpl {
      * @param description - description of app
      * @param groupId     - group to share
      * @return - http response of add application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplicationWithGroup(String application, String tier, String callbackUrl,
                                                 String description, String groupId)
@@ -604,7 +609,7 @@ public class RestAPIStoreImpl {
      * @param description - description of app
      * @param tokenType   - token type of app (JWT ot DEFAULT)
      * @return - http response of add application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplicationWithTokenType(String application, String tier, String callbackUrl,
                                                     String description, String tokenType)
@@ -630,7 +635,7 @@ public class RestAPIStoreImpl {
      * Get application
      *
      * @return - http response of get applications
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if applications cannot be retrieved.
+     * @throws APIManagerIntegrationTestException - throws if applications cannot be retrieved.
      */
     public HttpResponse getApplications() throws APIManagerIntegrationTestException {
 //        try {
@@ -650,7 +655,7 @@ public class RestAPIStoreImpl {
      *
      * @param application - application name
      * @return - http response of remove application request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if remove application fails
+     * @throws APIManagerIntegrationTestException - throws if remove application fails
      */
     public HttpResponse removeApplication(String application)
             throws APIManagerIntegrationTestException {
@@ -672,7 +677,7 @@ public class RestAPIStoreImpl {
      *
      * @param applicationId - application Id
      * @return - http response of remove application request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if remove application fails
+     * @throws APIManagerIntegrationTestException - throws if remove application fails
      */
     public HttpResponse removeApplicationById(int applicationId)
             throws APIManagerIntegrationTestException {
@@ -697,7 +702,7 @@ public class RestAPIStoreImpl {
      * @param descriptionNew - updated description
      * @param tier           - access tier
      * @return - http response of update application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if update application fails
+     * @throws APIManagerIntegrationTestException - throws if update application fails
      */
     public HttpResponse updateApplication(String applicationOld, String applicationNew,
                                           String callbackUrlNew, String descriptionNew, String tier)
@@ -728,7 +733,7 @@ public class RestAPIStoreImpl {
      * @param descriptionNew - updated description
      * @param tier           - access tier
      * @return - http response of update application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if update application fails
+     * @throws APIManagerIntegrationTestException - throws if update application fails
      */
     public HttpResponse updateApplicationById(int applicationId, String applicationOld, String applicationNew,
                                               String callbackUrlNew, String descriptionNew, String tier) throws APIManagerIntegrationTestException {
@@ -906,7 +911,7 @@ public class RestAPIStoreImpl {
      * @param provider      - provider name
      * @param applicationId - application id
      * @return - http response of unsubscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
+     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
     public HttpResponse removeAPISubscription(String API, String version, String provider,
                                               String applicationId)
@@ -933,7 +938,7 @@ public class RestAPIStoreImpl {
      * @param provider        - provider name
      * @param applicationName - application Name
      * @return - http response of unsubscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
+     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
     public HttpResponse removeAPISubscriptionByApplicationName(String API, String version,
                                                                String provider,
@@ -961,7 +966,7 @@ public class RestAPIStoreImpl {
      * @param provider - provider name
      * @param appName  - application name
      * @return - http response of unsubscription request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
+     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
 
     public HttpResponse removeAPISubscriptionByName(String API, String version, String provider,
@@ -987,7 +992,7 @@ public class RestAPIStoreImpl {
      * Get all API tags
      *
      * @return - http response of get all api tags
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all tags fails
+     * @throws APIManagerIntegrationTestException - throws if get all tags fails
      */
     public HttpResponse getAllTags() throws APIManagerIntegrationTestException {
 //        try {
@@ -1013,7 +1018,7 @@ public class RestAPIStoreImpl {
      * @param provider - provider name
      * @param comment  - comment to  add
      * @return - http response of add comment
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if add comment fails
+     * @throws APIManagerIntegrationTestException - throws if add comment fails
      */
     public HttpResponse addComment(String apiName, String version, String provider, String comment)
             throws APIManagerIntegrationTestException {
@@ -1034,7 +1039,7 @@ public class RestAPIStoreImpl {
      * Check whether commenting is enabled
      *
      * @return - http response of comment status
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
+     * @throws APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
      */
     public HttpResponse isCommentActivated() throws APIManagerIntegrationTestException {
 //        try {
@@ -1055,7 +1060,7 @@ public class RestAPIStoreImpl {
      * @param tenant - tenant name
      * @param limit  - limit of result set
      * @return - http response of recently added API request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if
+     * @throws APIManagerIntegrationTestException - throws if
      */
     public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
             throws APIManagerIntegrationTestException {
@@ -1307,7 +1312,7 @@ public class RestAPIStoreImpl {
      * @param expectedResponse - Expected response of the API
      * @param executionMode    - Mode of the test execution (Standalone or Platform)
      * @throws IOException                              - Throws if Swagger document cannot be found
-     * @throws javax.xml.xpath.XPathExpressionException - Throws if Swagger document cannot be found
+     * @throws XPathExpressionException - Throws if Swagger document cannot be found
      */
     public void waitForSwaggerDocument(String userName, String apiName, String apiVersion,
                                        String expectedResponse, String executionMode)
@@ -1383,7 +1388,7 @@ public class RestAPIStoreImpl {
      * Get application page
      *
      * @return - http response of get application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to get application page
+     * @throws APIManagerIntegrationTestException - if fails to get application page
      */
     public HttpResponse getApplicationPage() throws APIManagerIntegrationTestException {
 //        try {
@@ -1464,7 +1469,7 @@ public class RestAPIStoreImpl {
      * @param description           - description of app
      * @param applicationAttributes - Json string of custom attributes defined by user
      * @return - http response of add application
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplicationWithCustomAttributes(String application, String tier, String callbackUrl,
                                                            String description, String applicationAttributes)

@@ -677,11 +677,6 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.carbon.apimgt.test.utils</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -689,6 +684,10 @@ under the License.
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
         <!--Jetty dependencies end -->
 

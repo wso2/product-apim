@@ -1,4 +1,4 @@
-package org.wso2.carbon.apimgt.test.utils;
+package org.wso2.am.integration.test.utils;
 
 /*
 * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
@@ -55,14 +55,14 @@ public class HTTPSClientUtils {
      *
      * @param url     request URL
      * @param headers headers to be send
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doGet(String url,
-                                                                 Map<String, String> headers) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doGet(String url,
+                                                                  Map<String, String> headers) throws IOException {
 
         CloseableHttpClient httpClient = getHttpsClient();
-        org.apache.http.HttpResponse response = sendGetRequest(httpClient, url, headers);
+        HttpResponse response = sendGetRequest(httpClient, url, headers);
         return constructResponse(response);
     }
 
@@ -72,13 +72,13 @@ public class HTTPSClientUtils {
      * @param url           request URL
      * @param headers       headers to be send
      * @param urlParameters parameters to be sent as payload
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doPost(String url,
-                                                                  Map<String, String> headers, List<NameValuePair> urlParameters) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doPost(String url,
+                                                                   Map<String, String> headers, List<NameValuePair> urlParameters) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
-        org.apache.http.HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
+        HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
     }
 
@@ -87,13 +87,13 @@ public class HTTPSClientUtils {
      *
      * @param url           request URL
      * @param headers       headers to be sent
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doPost(String url,
-                                                                  Map<String, String> headers, String payload) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doPost(String url,
+                                                                   Map<String, String> headers, String payload) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
-        org.apache.http.HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
+        HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
         return constructResponse(response);
     }
 
@@ -102,13 +102,13 @@ public class HTTPSClientUtils {
      *
      * @param url           request URL
      * @param headers       headers to be sent
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doPut(String url,
-                                                                 Map<String, String> headers, String payload) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doPut(String url,
+                                                                  Map<String, String> headers, String payload) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
-        org.apache.http.HttpResponse response = sendPUTMessage(httpClient, url, headers, payload);
+        HttpResponse response = sendPUTMessage(httpClient, url, headers, payload);
         return constructResponse(response);
     }
 
@@ -117,13 +117,13 @@ public class HTTPSClientUtils {
      * @param url
      * @param headers
      * @param json
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doPost(URL url,
-                                                                  Map<String, String> headers, String json) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doPost(URL url,
+                                                                   Map<String, String> headers, String json) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
-        org.apache.http.HttpResponse response = sendPOSTMessage(httpClient, url.toString(), headers, json);
+        HttpResponse response = sendPOSTMessage(httpClient, url.toString(), headers, json);
         return constructResponse(response);
     }
 
@@ -133,11 +133,11 @@ public class HTTPSClientUtils {
      * @param url       request URL
      * @param headers   headers to be send
      * @param urlParams parameter string to be sent as payload
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    public static org.wso2.carbon.apimgt.test.HttpResponse doPost(URL url, String urlParams,
-                                                                  Map<String, String> headers) throws IOException {
+    public static org.wso2.am.integration.test.HttpResponse doPost(URL url, String urlParams,
+                                                                   Map<String, String> headers) throws IOException {
         List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
         if (urlParams != null && urlParams.contains("=")) {
             String[] paramList = urlParams.split("&");
@@ -180,7 +180,7 @@ public class HTTPSClientUtils {
      * @return org.apache.http.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    private static org.apache.http.HttpResponse sendGetRequest(CloseableHttpClient httpClient, String url, Map<String, String> headers)
+    private static HttpResponse sendGetRequest(CloseableHttpClient httpClient, String url, Map<String, String> headers)
             throws IOException {
         HttpGet request = new HttpGet(url);
         if (headers != null) {
@@ -201,7 +201,7 @@ public class HTTPSClientUtils {
      * @return org.apache.http.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    private static org.apache.http.HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
+    private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
             List<NameValuePair> urlParameters) throws IOException {
         HttpPost post = new HttpPost(url);
         if (headers != null) {
@@ -223,7 +223,7 @@ public class HTTPSClientUtils {
      * @return org.apache.http.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    private static org.apache.http.HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
+    private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
             String body) throws IOException {
         HttpPost post = new HttpPost(url);
         if (headers != null) {
@@ -245,7 +245,7 @@ public class HTTPSClientUtils {
      * @return org.apache.http.HttpResponse
      * @throws IOException if connection issue occurred
      */
-    private static org.apache.http.HttpResponse sendPUTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
+    private static HttpResponse sendPUTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
             String body) throws IOException {
         HttpPut put = new HttpPut(url);
         if (headers != null) {
@@ -258,14 +258,14 @@ public class HTTPSClientUtils {
     }
 
     /**
-     * Construct the org.wso2.carbon.apimgt.test.HttpResponse
+     * Construct the org.wso2.carbon.apimgt.HttpResponse
      *
      * @param response org.apache.http.HttpResponse
-     * @return org.wso2.carbon.apimgt.test.HttpResponse
+     * @return org.wso2.carbon.apimgt.HttpResponse
      * @throws IOException if any exception occurred when reading payload
      */
-    private static org.wso2.carbon.apimgt.test.HttpResponse constructResponse(
-            org.apache.http.HttpResponse response) throws IOException {
+    private static org.wso2.am.integration.test.HttpResponse constructResponse(
+            HttpResponse response) throws IOException {
         int code = response.getStatusLine().getStatusCode();
         String body = getResponseBody(response);
         Header[] headers = response.getAllHeaders();
@@ -273,7 +273,7 @@ public class HTTPSClientUtils {
         for (Header header : headers) {
             heads.put(header.getName(), header.getValue());
         }
-        org.wso2.carbon.apimgt.test.HttpResponse res = new org.wso2.carbon.apimgt.test.HttpResponse(
+        org.wso2.am.integration.test.HttpResponse res = new org.wso2.am.integration.test.HttpResponse(
                 body, code, heads);
         return res;
     }

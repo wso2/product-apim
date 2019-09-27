@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.apimgt.test;
+package org.wso2.am.integration.test;
 
         import java.util.Map;
 

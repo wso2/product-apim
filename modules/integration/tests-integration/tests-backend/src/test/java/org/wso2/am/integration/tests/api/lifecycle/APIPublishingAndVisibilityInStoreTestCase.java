@@ -23,16 +23,13 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.carbon.apimgt.test.Constants;
-import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
-import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.MalformedURLException;
@@ -98,7 +95,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
     @Test(groups = {"wso2.am"}, description = "Check the visibility of API in Store before the API publish. " +
             "it should not be available in store.", dependsOnMethods = "testAvailabilityOfAPIInPublisher")
-    public void testVisibilityOfAPIInStoreBeforePublishing() throws  org.wso2.am.integration.clients.store.api.ApiException {
+    public void testVisibilityOfAPIInStoreBeforePublishing() throws org.wso2.am.integration.clients.store.api.ApiException {
 
         APIDTO apiDto = restAPIStore.getAPI(apiId);
         assertFalse(StringUtils.isNotEmpty(apiDto.getId()),

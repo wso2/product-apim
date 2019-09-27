@@ -31,7 +31,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.apimgt.test.impl;
+package org.wso2.am.integration.test.impl;
 
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -34,17 +34,16 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformati
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.carbon.apimgt.test.ClientAuthenticator;
-import org.wso2.carbon.apimgt.test.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
@@ -264,7 +263,7 @@ public class RestAPIPublisherImpl {
      * @param apiId      - existing API Id
      * @param isDefault  - make the default version
      * @return - http response object
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if error occurred at API copy operation
+     * @throws APIManagerIntegrationTestException - Throws if error occurred at API copy operation
      */
     public HttpResponse copyAPI(String newVersion, String apiId, Boolean isDefault) throws ApiException {
         APIDTO apiDto = apIsApi.apisCopyApiPost(newVersion, apiId, isDefault);
@@ -280,7 +279,7 @@ public class RestAPIPublisherImpl {
      *
      * @param apiRequest - constructed API request object
      * @return http response object
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if update API fails
+     * @throws APIManagerIntegrationTestException - throws if update API fails
      */
     public HttpResponse updateAPI(APIRequest apiRequest, String apiId) throws ApiException {
         APIDTO body = new APIDTO();
@@ -388,7 +387,7 @@ public class RestAPIPublisherImpl {
      * @param consumerKey -  consumer key returned
      * @param authUser    - user name
      * @return http response object
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if access token revoke fails
+     * @throws APIManagerIntegrationTestException - throws if access token revoke fails
      */
     public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser)
             throws APIManagerIntegrationTestException {
@@ -403,7 +402,7 @@ public class RestAPIPublisherImpl {
      * @param permissionType - permission type
      * @param roles          - roles of permission
      * @return http response object
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if permission update fails
+     * @throws APIManagerIntegrationTestException - throws if permission update fails
      */
     public HttpResponse updatePermissions(String tierName, String permissionType, String roles)
             throws APIManagerIntegrationTestException {
@@ -415,7 +414,7 @@ public class RestAPIPublisherImpl {
      *
      * @param apiId - API Id
      * @return http response object
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if API resource update fails
+     * @throws APIManagerIntegrationTestException - throws if API resource update fails
      */
     public HttpResponse updateResourceOfAPI(String apiId, String api)
             throws APIManagerIntegrationTestException {
@@ -429,7 +428,7 @@ public class RestAPIPublisherImpl {
      * @param endpointUrl url of the endpoint
      * @param type        type of Endpoint
      * @return HttpResponse -  Response of the getAPI request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Check for valid endpoint fails.
+     * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
     public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
                                            String apiVersion) throws APIManagerIntegrationTestException {

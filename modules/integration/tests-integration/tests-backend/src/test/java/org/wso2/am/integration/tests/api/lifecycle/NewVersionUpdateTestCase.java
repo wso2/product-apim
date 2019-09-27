@@ -1,21 +1,21 @@
 /*
-* Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-* WSO2 Inc. licenses this file to you under the Apache License,
-* Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*
-*/
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
 package org.wso2.am.integration.tests.api.lifecycle;
 
 import com.google.gson.Gson;
@@ -28,7 +28,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -44,7 +43,6 @@ import static org.testng.Assert.assertTrue;
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
-    private RestAPIPublisherImpl restAPIPublisher;
 
     private String apiName = "NewVersionUpdateTestCaseAPIName";
     private String APIContext = "NewVersionUpdateTestCaseContext";
@@ -67,7 +65,6 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
         endpointUrlNew =
                 backEndServerUrl.getWebAppURLHttp() + "https://localhost:9443/am/sample/calculator/v1/api/multiply";
-        restAPIPublisher = new RestAPIPublisherImpl();
 
     }
 

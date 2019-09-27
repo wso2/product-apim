@@ -27,22 +27,21 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.carbon.apimgt.test.Constants;
-import org.wso2.carbon.apimgt.test.impl.RestAPIPublisherImpl;
-import org.wso2.carbon.apimgt.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -80,7 +79,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         restAPIPublisher = new RestAPIPublisherImpl();
         restAPIStore = new RestAPIStoreImpl();
         grantTypes = new ArrayList<>();
-        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() +  API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
 
         apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
@@ -107,9 +106,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
             throws APIManagerIntegrationTestException {
         // Subscribe old api version (1.0.0)
         waitForAPIDeploymentSync(apiRequest.getProvider(),
-                                 apiRequest.getName(),
-                                 apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+                apiRequest.getName(),
+                apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse oldVersionSubscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
@@ -144,7 +143,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version before the new version" +
-            " is subscribed." ,dependsOnMethods = "testPublishCopiedAPIWithOutReSubscriptionRequired")
+            " is subscribed.", dependsOnMethods = "testPublishCopiedAPIWithOutReSubscriptionRequired")
     public void testInvokeNewAPIWithoutSubscribeTheNewVersion() throws Exception {
         //Invoke  old version
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_EXISTS);
@@ -160,7 +159,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_2_0_0) +
-                                      API_END_POINT_METHOD, requestHeaders);
+                        API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke new api before subscribe the new version when re-subscription" +
                         " is not required.");
@@ -172,7 +171,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
-        for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
         restAPIStore.removeApplication(APPLICATION_NAME);

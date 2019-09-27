@@ -1,4 +1,4 @@
-package org.wso2.carbon.apimgt.test;
+package org.wso2.am.integration.test;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -26,8 +26,6 @@ import java.security.cert.X509Certificate;
 public class ClientAuthenticator {
 
     public static final double JAVA_VERSION;
-    public static final boolean IS_ANDROID;
-    public static final int ANDROID_SDK_VERSION;
     private static TrustManager trustAll;
     private static String consumerKey = null;
     private static String consumerSecret = null;
@@ -35,26 +33,6 @@ public class ClientAuthenticator {
 
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
-        boolean isAndroid;
-        try {
-            Class.forName("android.app.Activity");
-            isAndroid = true;
-        } catch (ClassNotFoundException e) {
-            isAndroid = false;
-        }
-        IS_ANDROID = isAndroid;
-        int sdkVersion = 0;
-        if (IS_ANDROID) {
-            try {
-                sdkVersion = Class.forName("android.os.Build$VERSION").getField("SDK_INT").getInt(null);
-            } catch (Exception e) {
-                try {
-                    sdkVersion = Integer.parseInt((String) Class.forName("android.os.Build$VERSION").getField("SDK").get(null));
-                } catch (Exception e2) {
-                }
-            }
-        }
-        ANDROID_SDK_VERSION = sdkVersion;
 
         trustAll = new X509TrustManager() {
             @Override
@@ -71,16 +49,6 @@ public class ClientAuthenticator {
             }
         };
     }
-
-
-//    public String getAccessTokenForStore() {
-//        return getAccessToken("apim:subscribe apim:signup apim:workflow_approve");
-//    }
-//
-//    private String getAccessTokenForPublisher() {
-//        return getAccessToken("apim:api_view apim:api_update apim:api_delete apim:api_create apim:api_publish apim:tier_view apim:tier_manage " +
-//                "apim:subscription_view apim:subscription_block apim:apidef_update apim:workflow_approve");
-//    }
 
     public static String getAccessToken(String scopeList, String appName, String callBackURL, String tokenScope, String appOwner,
                                         String grantType, String dcrEndpoint, String username, String password, String tenantDomain, String tokenEndpoint) {
