@@ -2053,6 +2053,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-application-authentication.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
@@ -2525,6 +2529,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
+                                    <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
@@ -3160,16 +3168,16 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.identity.oauth.ui.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-oauth.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.auth.server.feature.group</id>
+                                    <version>${carbon.identity.auth.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.security.mgt.server.feature.group</id>
@@ -3226,8 +3234,6 @@
                                     <version>${jaggery.modules.uuid.feature.version}</version>
                                 </feature>
                                 
-
-                                <!--API Management related feature-->
                                 <!-- Dashboard Related feature-->
                                 <feature>
                                     <id>org.jaggeryjs.server.feature.group</id>
@@ -3253,12 +3259,6 @@
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${jaggery.modules.i18n.feature.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>${jaggery.modules.version}</version>
-                                </feature>-->
-                                <!-- Dashboard Related feature-->
-                                
                                 
                                 <!--Identity Feature-->
                                 <feature>
@@ -3314,12 +3314,6 @@
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-
-                                
-                                <!--<feature>
-                                    <id>org.wso2.ciphertool.feature.group</id>
-                                    <version>${cipher.tool.version}</version>
-                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
@@ -3415,8 +3409,6 @@
                             </features>
                         </configuration>
                     </execution>
-
-
                 </executions>
             </plugin>
             <plugin>

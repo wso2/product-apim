@@ -152,6 +152,7 @@
                 <exclude>**/repository/components/plugins/org.apache.aries.blueprint*.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.aries.proxy*.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.aries.util*.jar</exclude>
+                <exclude>**/repository/components/plugins/slf4j*.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>

@@ -422,7 +422,7 @@ case $1 in
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
 		replaceAxis2File $pathToAxis2TMXml
 		replaceRegistryXMLFile
-		replaceAxis2TemplateFile
+		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
 		disableIndexingConfiguration
 		replaceDeploymentConfiguration traffic-manager

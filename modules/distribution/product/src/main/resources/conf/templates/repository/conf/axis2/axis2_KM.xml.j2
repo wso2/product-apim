@@ -193,8 +193,6 @@
     <!--             Transport Ins (Listeners)             -->
     <!-- ================================================= -->
 
-    <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
-    
     <transportReceiver name="http"
                        class="org.wso2.carbon.core.transports.http.HttpTransportListener">
         <!--
@@ -225,14 +223,28 @@
         <!--<parameter name="proxyPort">443</parameter>-->
     </transportReceiver>
 
-    <!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)-->
-
+    <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
 
     <!-- ================================================= -->
     <!--             Transport Outs (Senders)              -->
     <!-- ================================================= -->
 
     <transportSender name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportSender"/>
+
+    <transportSender name="http"
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
+        <parameter name="PROTOCOL">HTTP/1.1</parameter>
+        <parameter name="Transfer-Encoding">chunked</parameter>
+        <!-- This parameter has been added to overcome problems encounted in SOAP action parameter -->
+        <parameter name="OmitSOAP12Action">true</parameter>
+    </transportSender>
+    <transportSender name="https"
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
+        <parameter name="PROTOCOL">HTTP/1.1</parameter>
+        <parameter name="Transfer-Encoding">chunked</parameter>
+        <!-- This parameter has been added to overcome problems encounted in SOAP action parameter -->
+        <parameter name="OmitSOAP12Action">true</parameter>
+    </transportSender>
 
     <!-- ================================================= -->
     <!--             Global Engaged Modules                -->
