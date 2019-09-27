@@ -2,7 +2,7 @@ name: APIM Product Build
 
 on:
   schedule:
-  - cron: 0 5/15/23 * * *
+  - cron: 0 15 * * *
 
 jobs:
   build:
