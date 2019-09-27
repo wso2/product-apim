@@ -1,4 +1,4 @@
-name: Ubuntu + JDK 11
+name: MacOS + JDK 11
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
 
     steps:
     - uses: actions/checkout@v1
