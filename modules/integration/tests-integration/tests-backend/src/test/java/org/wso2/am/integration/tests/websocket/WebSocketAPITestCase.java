@@ -358,14 +358,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        final int UNIT_TIME = 5; //5 minutes (The unit time is defined as 5 minutes in policy.json)
         /* Prevent API requests getting dispersed into two time units */
-        while (LocalDateTime.now().getMinute() % UNIT_TIME >= (UNIT_TIME - 1)) {
-            Thread.sleep(65000);
+        while (LocalDateTime.now().getSecond() > 20) {
+            Thread.sleep(5000L);
         }
-        int startingDistinctUnitTime = LocalDateTime.now().getMinute() / UNIT_TIME;
+        int startingDistinctUnitTime = LocalDateTime.now().getMinute();
 
-        int limit = 10;
+        int limit = 2;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -373,21 +372,21 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
         client.connect(socket, echoUri, request);
-        socket.getLatch().await(3, TimeUnit.SECONDS);
-        // Send 6 WebSocket messages when throttle limit is 4.
+        socket.getLatch().await(3L, TimeUnit.SECONDS);
+        // Send 3 WebSocket messages when throttle limit is 2.
         try {
             for (int count = 1; count <= limit + 1; count++) {
                 if (count > limit) {
                     // Set time gap to allow throttle to take place
-                    Thread.sleep(20000);
+                    Thread.sleep(15000L);
                 }
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
                 log.info("Count :" + count + " Message :" + socket.getResponseMessage());
-                // At the 6th message check frame is throttled out.
+                // At the 3rd message check frame is throttled out.
                 if (count > limit) {
                     //If throttling testing time duration is dispersed into two separate unit times, repeat the test
-                    if ((LocalDateTime.now().getMinute() / UNIT_TIME) != startingDistinctUnitTime) {
+                    if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
                         //repeat the test
                         log.info("Repeating the test as throttling testing time duration is dispersed into two " +
                                 "separate units of time");
@@ -399,7 +398,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 socket.setResponseMessage(null);
             }
         } catch (Exception ex) {
-            log.error("Error occurred while calling API : " + ex);
+            log.error("Error occurred while calling API.", ex);
             Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
