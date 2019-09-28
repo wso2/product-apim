@@ -215,7 +215,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
             Map<String, String> requestHeaders = new HashMap<String, String>();
             requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
-            return HttpRequestUtil.doPost(new URL(storeURLHttp + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
+            return HttpRequestUtil.doPost(new URL(storeURLHttp + "store-old/site/blocks/user/sign-up/ajax/user-add.jag"),
                     "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
                             "||||" + email, requestHeaders);
         } catch (Exception e) {

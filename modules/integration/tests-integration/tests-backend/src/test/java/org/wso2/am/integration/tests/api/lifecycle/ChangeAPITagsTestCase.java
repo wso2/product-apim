@@ -123,7 +123,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiLinkToTestInPage =
-                    "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 +
+                    "/store-old/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 +
                             "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
                 //API Link should be in page
@@ -169,7 +169,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                 " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapAfterChange.entrySet()) {
-            String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
+            String apiLinkToTestInPage = "/store-old/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
                     API_VERSION_1_0_0 + "&provider=" + providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
                 //API Link should be in page

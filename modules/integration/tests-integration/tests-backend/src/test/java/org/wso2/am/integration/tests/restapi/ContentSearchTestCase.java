@@ -249,7 +249,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test content Search with access control") public void testContentSearchWithAccessControl()
+            "wso2.am" }, description = "Test content Search with access control", enabled = false ) public void testContentSearchWithAccessControl()
             throws Exception {
         String apiName = "contentSearchTestAPIWithAccessControl";
         String apiContext = "/contentSearchTestAPIWithAccessControl";
@@ -304,7 +304,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
                 } else {
                     log.warn("Content search with access control failed. 1 results expected. Received response : "
                             + responseString + " Retrying...");
-                    Thread.sleep(5000);
+                    Thread.sleep(15000);
                 }
             }
         }
@@ -486,7 +486,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
         while ((line = reader.readLine()) != null) {
             jsonString = jsonString + line;
         }
-
+        log.info("ClientID and ClientSecret response:" + jsonString);
         JSONObject clientSecretResponseJSON = new JSONObject(jsonString);
         log.info("DCR Response: " + clientSecretResponseJSON.toString());
         String clientId = clientSecretResponseJSON.getString("clientId");

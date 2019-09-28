@@ -77,6 +77,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
+
         super.init(userMode);
 
         /*

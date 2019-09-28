@@ -26,9 +26,9 @@
         </context>
         <context>
             <context-id>default-additional-context</context-id>
-            <context-name>store</context-name>
+            <context-name>devportal</context-name>
             <protocol>https</protocol>
-            <description>API Store Default Context</description>
+            <description>API Developer Portal Default Context</description>
         </context>
     </contexts>
 </component>

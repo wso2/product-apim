@@ -138,7 +138,7 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
     public void checkAPIConsoleAvailability() throws Exception {
 
         driver.get(storeURL + "?tenant=" + TEST_DATA_TENANT);
-        // https://localhost/apimanager/store/apis/info?name=Test&version=1&provider=admin%40test.com&tenant=test.com
+        // https://localhost/apimanager/store-old/apis/info?name=Test&version=1&provider=admin%40test.com&tenant=test.com
         driver.get(storeURL + "/apis/info?name=" + TEST_DATA_API_NAME + "&version=" + TEST_DATA_API_VERSION + "&provider" +
                    "=" + TEST_DATA_TENANT_PUBLISHER + "&tenant=" + TEST_DATA_TENANT);
         WebElement imgElement = driver.findElement(By.cssSelector("div.thumbnail.span2 > img"));

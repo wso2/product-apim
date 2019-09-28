@@ -226,7 +226,7 @@
         -->
         <productGroup name="APIM" clusteringEnabled="false" default="true">
             <!--configuration of APIM Store instance -->
-            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="store-old" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
@@ -237,7 +237,7 @@
                 <properties>
                 </properties>
             </instance>
-            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="publisher-old" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>

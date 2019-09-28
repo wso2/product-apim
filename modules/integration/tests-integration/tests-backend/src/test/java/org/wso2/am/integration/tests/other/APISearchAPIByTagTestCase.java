@@ -207,7 +207,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
             File targetFile = new File(
                     carbonHome + File.separator + "repository" + File.separator + "deployment" + File.separator
                             + "server" + File.separator + "jaggeryapps" + File.separator +
-                            "store" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
+                            "store-old" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
             serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
         }
 

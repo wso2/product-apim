@@ -44,7 +44,7 @@ import java.util.Map;
 public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
     private String backendURL;
-    private static final String URL_SUFFIX = "publisher/site/blocks";
+    private static final String URL_SUFFIX = "publisher-old/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
     /**
@@ -191,7 +191,7 @@ public class APIPublisherRestClient {
             Thread.sleep(1000); // this is to make sure timestamps of current and next lifecycle states are different
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/life-cycles/ajax/life-cycles.jag"),
                     updateRequest.generateRequestParameters(),
                     requestHeaders);
 
@@ -214,7 +214,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + "",
                     requestHeaders);
         } catch (Exception e) {
@@ -238,7 +238,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/item-add/ajax/remove.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/item-add/ajax/remove.jag"),
                     "action=removeAPI&name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
@@ -284,7 +284,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/documentation/ajax/docs.jag"),
                     "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
                     apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
                     docType, requestHeaders);
@@ -308,7 +308,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/tokens/ajax/revokeToken.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/tokens/ajax/revokeToken.jag"),
                     "action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
                     authUser + "&consumerKey=" + consumerKey, requestHeaders);
         } catch (Exception e) {
@@ -332,7 +332,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/tiers/ajax/tiers.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/tiers/ajax/tiers.jag"),
                     "action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
                     permissionType + "&roles=" + roles, requestHeaders);
         } catch (Exception e) {
@@ -358,7 +358,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/item-design/ajax/add.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/item-design/ajax/add.jag"),
                     "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
                     version + "&swagger=" + swaggerRes, requestHeaders);
         } catch (Exception e) {
@@ -382,7 +382,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "",
                     requestHeaders);
         } catch (Exception e) {
@@ -404,7 +404,7 @@ public class APIPublisherRestClient {
             String apiVersion) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                     "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl + "&providerName=" + providerName
                             + "&apiName=" + apiName + "&apiVersion=" + apiVersion, requestHeaders);
         } catch (Exception e) {
@@ -437,7 +437,7 @@ public class APIPublisherRestClient {
             }
             String requestParameters = publishUpdateRequest.generateRequestParameters();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
+                    new URL(backendURL + "/publisher-old/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when change he lifecycle to publish"
@@ -460,7 +460,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag"), "action=getAPI&name=" +
+                    new URL(backendURL + "/publisher-old/site/blocks/listing/ajax/item-list.jag"), "action=getAPI&name=" +
                             apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving a API"
@@ -478,7 +478,7 @@ public class APIPublisherRestClient {
     public HttpResponse getTierPermissionsPage() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doGet(backendURL + "/publisher/site/pages/tiers.jag", requestHeaders);
+            return HTTPSClientUtils.doGet(backendURL + "/publisher-old/site/pages/tiers.jag", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                                                          + ". Error: " + e.getMessage(), e);
@@ -500,7 +500,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doGet(
-                    backendURL + "/publisher/manage?name=" + apiName + "&version=" + version + "&provider=" + provider,
+                    backendURL + "/publisher-old/manage?name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Manage page"
@@ -523,7 +523,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/info"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher-old/info"),
                     "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page"
@@ -553,7 +553,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
                             "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType+ "&newType="
@@ -588,7 +588,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
                             "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
@@ -611,7 +611,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
                             addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
                             addDocRequestBean.getDocName() + "&docType=" + addDocRequestBean.getDocType() + "&sourceType=" +
@@ -631,7 +631,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/documentation/ajax/docs.jag"),
                     "action=addInlineContent&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&content=" + content, requestHeaders);
         } catch (Exception e) {
@@ -652,7 +652,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doGet(
-                    backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag?action=getAllAPIs", requestHeaders);
+                    backendURL + "/publisher-old/site/blocks/listing/ajax/item-list.jag?action=getAllAPIs", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for " +
                                                          "the user in Publisher. Error: " + e.getMessage(), e);
@@ -672,7 +672,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
@@ -692,7 +692,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/item-design/ajax/add.jag"),
                     clientCertificateCreationBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
@@ -711,7 +711,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
@@ -733,7 +733,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
+                    new URL(backendURL + "/publisher-old/site/blocks/item-design/ajax/add.jag"),
                     designBean.generateRequestParameters("design"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to design API. Error: " + e.getMessage(), e);
@@ -746,7 +746,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag?"),
+                    new URL(backendURL + "/publisher-old/site/blocks/item-design/ajax/add.jag?"),
                     implementationBean.generateRequestParameters("implement"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to prototype API. Error: " + e.getMessage(), e);
@@ -769,7 +769,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doGet(
-                    backendURL + "/publisher/prototype?name=" + apiName + "&version=" + version + "&provider=" + provider,
+                    backendURL + "/publisher-old/prototype?name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Implement page"
@@ -787,7 +787,7 @@ public class APIPublisherRestClient {
     public HttpResponse checkValidAPIName(String apiName) throws APIManagerIntegrationTestException{
         try {
             checkAuthentication();
-            return  HTTPSClientUtils.doPost( new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+            return  HTTPSClientUtils.doPost( new URL(backendURL + "/publisher-old/site/blocks/item-add/ajax/add.jag"),
                     "action=isAPINameExist&apiName=" + apiName , requestHeaders);
         }catch (Exception e){
             throw new APIManagerIntegrationTestException("Exeption when adding a new API with existing API name"
@@ -803,7 +803,7 @@ public class APIPublisherRestClient {
     public HttpResponse getTiers() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher-old/site/blocks/item-add/ajax/add.jag"),
                                            "action=getTiers" ,requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
@@ -820,7 +820,7 @@ public class APIPublisherRestClient {
     public HttpResponse validateRoles(String role) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher-old/site/blocks/item-add/ajax/add.jag"),
                                            "action=validateRoles&roles=" + role ,requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"

@@ -27,7 +27,7 @@ Steps:
 
 3. Start WSO2AM by executing wso2am-2.6.0/bin/wso2server.sh
  You can login to API Publisher's console
-URL - https://localhost:9443/publisher/
+URL - https://localhost:9443/publisher-old/
 Username/password - admin/admin
 
 Take a note of the fact that there are no APIs published. Next step adds an API & publishes it to API store.

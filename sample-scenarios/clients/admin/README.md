@@ -88,7 +88,7 @@ public class AdvancedPolicyCollectionApiExample {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.14*
+All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.15*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

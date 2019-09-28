@@ -1,4 +1,6 @@
+#if(${soapAction})
 <header description="SOAPAction" name="SOAPAction" scope="transport" value="${soapAction}"/>
+#end
 <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
 $mapping.get('properties')
 
