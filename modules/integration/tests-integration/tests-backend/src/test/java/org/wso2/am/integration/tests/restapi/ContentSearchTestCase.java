@@ -249,7 +249,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test content Search with access control") public void testContentSearchWithAccessControl()
+            "wso2.am" }, description = "Test content Search with access control", enabled = false ) public void testContentSearchWithAccessControl()
             throws Exception {
         String apiName = "contentSearchTestAPIWithAccessControl";
         String apiContext = "/contentSearchTestAPIWithAccessControl";
