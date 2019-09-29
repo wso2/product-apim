@@ -243,30 +243,4 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         };
     }
 
-    public static void main(String[] args) throws Exception {
-        System.setProperty("javax.net.ssl.keyStore",
-                "/Users/rukshan/wso2/apim/product-apim/modules/distribution/product/target/wso2am-3.0.0-SNAPSHOT/repository/resources/security/wso2carbon.jks");
-        System.setProperty("javax.net.ssl.trustStore",
-                "/Users/rukshan/wso2/apim/product-apim/modules/distribution/product/target/wso2am-3.0.0-SNAPSHOT/repository/resources/security/client-truststore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-
-        System.setProperty("framework.resource.location", "/Users/rukshan/wso2/apim/test/");
-        System.setProperty("user.dir",
-                "/Users/rukshan/wso2/apim/product-apim/modules/integration/tests-integration/tests-backend/src");
-        OASTestCase aCase = new OASTestCase(TestUserMode.SUPER_TENANT_USER, OAS_V2);
-//        aCase.userMode = TestUserMode.SUPER_TENANT_ADMIN;
-        aCase.userMode = TestUserMode.TENANT_ADMIN;
-        aCase.oasVersion = "v2";
-        aCase.setEnvironment();
-
-        try {
-            aCase.testNewAPI();
-//            aCase.testAPIUpdate();
-//            aCase.testAPIDefinitionUpdate();
-//            aCase.testAPIDefinitionImport();
-        } finally {
-            aCase.destroy();
-        }
-    }
-
 }

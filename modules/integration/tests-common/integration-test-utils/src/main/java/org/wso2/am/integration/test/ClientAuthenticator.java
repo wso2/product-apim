@@ -67,11 +67,11 @@ public class ClientAuthenticator {
             String clientEncoded = DatatypeConverter.printBase64Binary(
                     (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
-            if(!"carbon.super".equalsIgnoreCase(tenantDomain)) {
-                username = username+"@"+tenantDomain;
+            if (!"carbon.super".equalsIgnoreCase(tenantDomain)) {
+                username = username + "@" + tenantDomain;
             }
 
-            String postParams = "grant_type=password&username="+username+"&password="+password;
+            String postParams = "grant_type=password&username=" + username + "&password=" + password;
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }

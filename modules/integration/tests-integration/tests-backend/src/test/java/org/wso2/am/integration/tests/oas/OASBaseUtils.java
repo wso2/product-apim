@@ -29,9 +29,7 @@ import java.util.Map;
 
 public class OASBaseUtils {
 
-
     public static void validateSwaggerExtensionDataInPublisher(Map<String, Object> extensions, APIDTO apidto) {
-
         String authorizationHeader = apidto.getAuthorizationHeader();
         if(authorizationHeader == null){
             Assert.assertFalse(extensions.containsKey("x-wso2-auth-header"));

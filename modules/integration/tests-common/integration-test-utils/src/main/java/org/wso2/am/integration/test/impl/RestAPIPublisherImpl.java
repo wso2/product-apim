@@ -61,15 +61,15 @@ import java.util.List;
 public class RestAPIPublisherImpl {
 
     public ApIsApi apIsApi = new ApIsApi();
-    public  ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
-    public  ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
-    public  ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
-    public  EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
-    public  ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
-    public  RolesApi rolesApi = new RolesApi();
-    public  ValidationApi validationApi = new ValidationApi();
+    public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
+    public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
+    public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
+    public EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
+    public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
+    public RolesApi rolesApi = new RolesApi();
+    public ValidationApi validationApi = new ValidationApi();
 
-    public  ApiClient apiPublisherClient = new ApiClient();
+    public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";

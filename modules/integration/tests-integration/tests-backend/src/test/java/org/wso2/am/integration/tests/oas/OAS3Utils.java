@@ -147,7 +147,6 @@ public class OAS3Utils {
         SwaggerParseResult parseAttemptForV3 = openAPIV3Parser.readContents(original, null, null);
         OpenAPI originalObj = parseAttemptForV3.getOpenAPI();
 
-
         Map<String, Map<String, APIOperationsDTO>> updatedPaths = OASBaseUtils.getMapFromDTO(apidto);
         Assert.assertEquals(originalObj.getPaths().size(), updatedPaths.size());
 
