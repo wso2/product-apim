@@ -691,5 +691,10 @@ under the License.
         </dependency>
         <!--Jetty dependencies end -->
 
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -17,6 +17,8 @@
 package org.wso2.am.integration.test.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpStatus;
+import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -45,10 +47,10 @@ import java.util.ArrayList;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
-    public static ApIsApi apIsApi = new ApIsApi();
-    public static ApplicationsApi applicationsApi = new ApplicationsApi();
-    public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
-    public static ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
+    public ApIsApi apIsApi = new ApIsApi();
+    public ApplicationsApi applicationsApi = new ApplicationsApi();
+    public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
+    public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -1493,5 +1495,10 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-
+    public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
+        ApiResponse<String> response =
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox", null, tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
 }
