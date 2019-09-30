@@ -83,8 +83,9 @@ public class RestAPIPublisherImpl {
     public static final String password = "admin";
     public String tenantDomain;
 
+    @Deprecated
     public RestAPIPublisherImpl() {
-        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:9943", "https://127.0.0.1:9943");
+        this(username, password, "", "https://127.0.0.1:9943/", "https://127.0.0.1:8743/", "https://127.0.0.1:9943/");
     }
 
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String publisherURL) {
@@ -712,6 +713,12 @@ public class RestAPIPublisherImpl {
         body.setEndpointConfig(jsonObject);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
+        if (apiCreationRequestBean.getSubPolicyCollection() != null) {
+            String[] tiers = apiCreationRequestBean.getSubPolicyCollection().split(",");
+            for (String tier : tiers) {
+                tierList.add(tier);
+            }
+        }
         body.setPolicies(tierList);
         ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());

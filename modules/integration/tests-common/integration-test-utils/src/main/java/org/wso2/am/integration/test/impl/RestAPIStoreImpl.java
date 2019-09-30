@@ -63,8 +63,9 @@ public class RestAPIStoreImpl {
     public String storeURL;
     public String tenantDomain;
 
+    @Deprecated
     public RestAPIStoreImpl() {
-        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:9943", "https://127.0.0.1:9943");
+        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:8743", "https://127.0.0.1:9943");
     }
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
@@ -565,24 +566,16 @@ public class RestAPIStoreImpl {
      * @return - http response of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
-    public HttpResponse addApplication(String application, String tier, String callbackUrl,
-                                       String description)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
+    public ApplicationDTO addApplication(String application, String tier, String callbackUrl, String description)
+            throws ApiException {
+        ApplicationDTO dto = new ApplicationDTO();
+        dto.setName(application);
+        dto.setThrottlingPolicy(tier);
+        dto.setDescription(description);
+
+        ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -1156,6 +1149,17 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException {
+        SubscriptionDTO subscription = new SubscriptionDTO();
+        subscription.setApplicationId(appID);
+        subscription.setApiId(apiID);
+        subscription.setThrottlingPolicy(tier);
+        subscription.setType(SubscriptionDTO.TypeEnum.API);
+        ApiResponse<SubscriptionDTO> subscriptionResponse =
+                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription);
+        Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
+        return subscriptionResponse.getData();
+    }
 
 //    /**
 //     * Retrieve the API store page as anonymous user.

@@ -141,6 +141,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         return storeRestClient.subscribeToAPI(subscriptionRequest);
     }
 
+    protected SubscriptionDTO subscribeToAPI(String apiID, String applicationID, String tier,
+            RestAPIStoreImpl storeRestClient)
+            throws org.wso2.am.integration.clients.store.api.ApiException {
+        return storeRestClient.subscribeToAPI(apiID, applicationID, tier);
+    }
+
     /**
      * Subscribe  a API
      *
@@ -386,7 +392,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @throws APIManagerIntegrationTestException
      * @throws ApiException
      */
-    public void createAndPublishAPI(APICreationRequestBean apiCreationRequestBean,
+    public APIDTO createAndPublishAPI(APICreationRequestBean apiCreationRequestBean,
             RestAPIPublisherImpl publisherRestClient, boolean isRequireReSubscription)
             throws APIManagerIntegrationTestException, ApiException {
         //Create the API
@@ -395,14 +401,14 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             log.info("API Created :" + apiCreationRequestBean.getName());
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apidto.getId(), publisherRestClient, isRequireReSubscription);
-            if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK && verifyAPIStatusChange(
-                    publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED))) {
+            if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK)) {
                 throw new APIManagerIntegrationTestException(
                         "Error in API Publishing" + apiCreationRequestBean.getName() + "Response Code:"
                                 + publishAPIResponse.getResponseCode() + " Response Data :" + publishAPIResponse
                                 .getData());
             }
             log.info("API Published :" + apiCreationRequestBean.getName());
+            return apidto;
         } else {
             throw new APIManagerIntegrationTestException("Error in API Creation." + apiCreationRequestBean.getName());
         }
@@ -547,30 +553,22 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     }
 
     /**
-     *
      * @param apiIdentifier
      * @param apiCreationRequestBean
      * @param publisherRestClient
      * @param storeRestClient
-     * @param applicationName
      * @throws APIManagerIntegrationTestException
      * @throws ApiException
      */
     protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier,
             APICreationRequestBean apiCreationRequestBean, RestAPIPublisherImpl publisherRestClient,
-            APIStoreRestClient storeRestClient, String applicationName)
-            throws APIManagerIntegrationTestException, ApiException {
-        createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
+            RestAPIStoreImpl storeRestClient, String applicationID, String tier)
+            throws APIManagerIntegrationTestException, ApiException,
+            org.wso2.am.integration.clients.store.api.ApiException {
+        APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
-        if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK && getValueFromJSON(
-                httpResponseSubscribeAPI, "error").equals("false"))) {
-            throw new APIManagerIntegrationTestException(
-                    "Error in API Subscribe." + getAPIIdentifierString(apiIdentifier) + "Response Code:"
-                            + httpResponseSubscribeAPI.getResponseCode() + " Response Data :" + httpResponseSubscribeAPI
-                            .getData());
-        }
+        SubscriptionDTO httpResponseSubscribeAPI = subscribeToAPI(apidto.getId(), applicationID, tier, storeRestClient);
         log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
     }
 
