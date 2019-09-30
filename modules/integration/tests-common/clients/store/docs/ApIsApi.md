@@ -4,72 +4,14 @@ All URIs are relative to *https://apis.wso2.com/api/am/store/v1.0*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apiProductsApiProductIdSubscriptionPoliciesGet**](ApIsApi.md#apiProductsApiProductIdSubscriptionPoliciesGet) | **GET** /api-products/{apiProductId}/subscription-policies | Get details of the subscription throttling policies of an API Product 
 [**apisApiIdGet**](ApIsApi.md#apisApiIdGet) | **GET** /apis/{apiId} | Get details of an API 
 [**apisApiIdGraphqlSchemaGet**](ApIsApi.md#apisApiIdGraphqlSchemaGet) | **GET** /apis/{apiId}/graphql-schema | Get graphQL definition 
 [**apisApiIdSubscriptionPoliciesGet**](ApIsApi.md#apisApiIdSubscriptionPoliciesGet) | **GET** /apis/{apiId}/subscription-policies | Get details of the subscription throttling policies of an API 
 [**apisApiIdSwaggerGet**](ApIsApi.md#apisApiIdSwaggerGet) | **GET** /apis/{apiId}/swagger | Get swagger definition 
 [**apisApiIdThumbnailGet**](ApIsApi.md#apisApiIdThumbnailGet) | **GET** /apis/{apiId}/thumbnail | Get thumbnail image
-[**apisApiIdWsdlGet**](ApIsApi.md#apisApiIdWsdlGet) | **GET** /apis/{apiId}/wsdl | Get API WSDL definition
 [**apisGet**](ApIsApi.md#apisGet) | **GET** /apis | Retrieve/Search APIs 
+[**getWSDLOfAPI**](ApIsApi.md#getWSDLOfAPI) | **GET** /apis/{apiId}/wsdl | Get API WSDL definition
 
-
-<a name="apiProductsApiProductIdSubscriptionPoliciesGet"></a>
-# **apiProductsApiProductIdSubscriptionPoliciesGet**
-> ThrottlingPolicyDTO apiProductsApiProductIdSubscriptionPoliciesGet(apiProductId, xWSO2Tenant, ifNoneMatch)
-
-Get details of the subscription throttling policies of an API Product 
-
-This operation can be used to retrieve details of the subscription throttling policy of an API Product by specifying the API Product Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API Product subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
-
-### Example
-```java
-// Import classes:
-//import org.wso2.am.integration.clients.store.api.ApiClient;
-//import org.wso2.am.integration.clients.store.api.ApiException;
-//import org.wso2.am.integration.clients.store.api.Configuration;
-//import org.wso2.am.integration.clients.store.api.auth.*;
-//import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
-
-ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-// Configure OAuth2 access token for authorization: OAuth2Security
-OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-ApIsApi apiInstance = new ApIsApi();
-String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. 
-String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
-String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
-try {
-    ThrottlingPolicyDTO result = apiInstance.apiProductsApiProductIdSubscriptionPoliciesGet(apiProductId, xWSO2Tenant, ifNoneMatch);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling ApIsApi#apiProductsApiProductIdSubscriptionPoliciesGet");
-    e.printStackTrace();
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product.  |
- **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
- **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
-
-### Return type
-
-[**ThrottlingPolicyDTO**](ThrottlingPolicyDTO.md)
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
 
 <a name="apisApiIdGet"></a>
 # **apisApiIdGet**
@@ -243,7 +185,7 @@ Name | Type | Description  | Notes
 
 <a name="apisApiIdSwaggerGet"></a>
 # **apisApiIdSwaggerGet**
-> apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
+> String apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
 
 Get swagger definition 
 
@@ -271,7 +213,8 @@ String environmentName = "environmentName_example"; // String | Name of the API 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    apiInstance.apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    String result = apiInstance.apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisApiIdSwaggerGet");
     e.printStackTrace();
@@ -290,7 +233,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**String**
 
 ### Authorization
 
@@ -357,62 +300,6 @@ null (empty response body)
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="apisApiIdWsdlGet"></a>
-# **apisApiIdWsdlGet**
-> apisApiIdWsdlGet(apiId, ifNoneMatch, xWSO2Tenant)
-
-Get API WSDL definition
-
-This operation can be used to retrieve the swagger definition of an API. 
-
-### Example
-```java
-// Import classes:
-//import org.wso2.am.integration.clients.store.api.ApiClient;
-//import org.wso2.am.integration.clients.store.api.ApiException;
-//import org.wso2.am.integration.clients.store.api.Configuration;
-//import org.wso2.am.integration.clients.store.api.auth.*;
-//import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
-
-ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-// Configure OAuth2 access token for authorization: OAuth2Security
-OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-ApIsApi apiInstance = new ApIsApi();
-String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
-String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
-try {
-    apiInstance.apisApiIdWsdlGet(apiId, ifNoneMatch, xWSO2Tenant);
-} catch (ApiException e) {
-    System.err.println("Exception when calling ApIsApi#apisApiIdWsdlGet");
-    e.printStackTrace();
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
- **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/octet-stream
-
 <a name="apisGet"></a>
 # **apisGet**
 > APIListDTO apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch)
@@ -473,4 +360,64 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: application/json
  - **Accept**: application/json
+
+<a name="getWSDLOfAPI"></a>
+# **getWSDLOfAPI**
+> getWSDLOfAPI(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
+
+Get API WSDL definition
+
+This operation can be used to retrieve the swagger definition of an API. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApIsApi apiInstance = new ApIsApi();
+String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+String labelName = "labelName_example"; // String | Name of the API microgateway labels 
+String environmentName = "environmentName_example"; // String | Name of the API gateway environment. 
+String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
+try {
+    apiInstance.getWSDLOfAPI(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApIsApi#getWSDLOfAPI");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **labelName** | **String**| Name of the API microgateway labels  | [optional]
+ **environmentName** | **String**| Name of the API gateway environment.  | [optional]
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json, application/wsdl, application/zip
 

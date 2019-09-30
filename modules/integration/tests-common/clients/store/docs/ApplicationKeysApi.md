@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**applicationsApplicationIdGenerateKeysPost**](ApplicationKeysApi.md#applicationsApplicationIdGenerateKeysPost) | **POST** /applications/{applicationId}/generate-keys | Generate application keys
 [**applicationsApplicationIdKeysGet**](ApplicationKeysApi.md#applicationsApplicationIdKeysGet) | **GET** /applications/{applicationId}/keys | Retrieve all application keys
+[**applicationsApplicationIdKeysKeyTypeCleanUpPost**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypeCleanUpPost) | **POST** /applications/{applicationId}/keys/{keyType}/clean-up | Clean up application keys
 [**applicationsApplicationIdKeysKeyTypeGet**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypeGet) | **GET** /applications/{applicationId}/keys/{keyType} | Get key details of a given type 
 [**applicationsApplicationIdKeysKeyTypePut**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypePut) | **PUT** /applications/{applicationId}/keys/{keyType} | Update grant types and callback url of an application 
 [**applicationsApplicationIdKeysKeyTypeRegenerateSecretPost**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypeRegenerateSecretPost) | **POST** /applications/{applicationId}/keys/{keyType}/regenerate-secret | Re-generate consumer secret 
@@ -110,6 +111,62 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ApplicationKeyListDTO**](ApplicationKeyListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdKeysKeyTypeCleanUpPost"></a>
+# **applicationsApplicationIdKeysKeyTypeCleanUpPost**
+> applicationsApplicationIdKeysKeyTypeCleanUpPost(applicationId, keyType, ifMatch)
+
+Clean up application keys
+
+Clean up keys after failed key generation of an application 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+String keyType = "keyType_example"; // String | **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
+String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+try {
+    apiInstance.applicationsApplicationIdKeysKeyTypeCleanUpPost(applicationId, keyType, ifMatch);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdKeysKeyTypeCleanUpPost");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **keyType** | **String**| **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  | [enum: PRODUCTION, SANDBOX]
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+
+### Return type
+
+null (empty response body)
 
 ### Authorization
 

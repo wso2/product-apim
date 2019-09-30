@@ -16,7 +16,10 @@
 
 package org.wso2.am.integration.test.impl;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.protocol.HTTP;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -111,19 +114,17 @@ public class RestAPIStoreImpl {
 
     public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
         try {
-
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
+            applicationsApi.applicationsApplicationIdGet(applicationId, null);
+
+            return null;
+        } catch (ApiException e) {
             HttpResponse response = null;
-            if ((applicationsApi.applicationsApplicationIdGet(applicationId, null) == null)) {
+            if (HttpStatus.SC_NOT_FOUND == e.getCode()) {
                 response = new HttpResponse(applicationId, 200);
             }
             return response;
-        } catch (ApiException e) {
-            if (e.getResponseBody().contains("already exists")) {
-                return null;
-            }
         }
-        return null;
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
@@ -267,17 +268,21 @@ public class RestAPIStoreImpl {
      * @return - http response of get of application
      * @throws APIManagerIntegrationTestException - throws if get application fails.
      */
-    public HttpResponse getApplicationById(int applicationId) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/application/application-list/ajax/" +
-//                            "application-list.jag?action=getApplicationById&appId=" + applicationId,
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve all applications. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
+    public HttpResponse getApplicationById(String applicationId) throws APIManagerIntegrationTestException {
+        try {
+            ApplicationDTO applicationDTO = applicationsApi.applicationsApplicationIdGet(applicationId, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(applicationDTO.getApplicationId())) {
+                Gson gson = new Gson();
+                response = new HttpResponse(gson.toJson(applicationDTO), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+
         return null;
     }
 
@@ -474,25 +479,21 @@ public class RestAPIStoreImpl {
      * Clean up application registration by ID
      *
      * @param applicationId   - application ID
-     * @param applicationName - application name
+     * @param keyType - key type
      * @return - http response of paginated published APIs
      * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
-    public HttpResponse cleanUpApplicationRegistrationByApplicationId(int applicationId, String applicationName)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            String requestData =
-//                    "action=cleanUpApplicationRegistrationByApplicationId&appId=" + applicationId + "&applicationName="
-//                            + applicationName + "&keyType=PRODUCTION";
-//            return HTTPSClientUtils.doPost(new URL(
-//                    backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"
-//                            + requestData), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to cleanup application - "
-//                    + applicationName + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse cleanUpApplicationRegistrationByApplicationId(String applicationId, String keyType)
+            throws APIManagerIntegrationTestException, ApiException {
+
+        ApiResponse<Void> httpInfo = applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypeCleanUpPostWithHttpInfo(applicationId, keyType, null);
+
+        HttpResponse response = null;
+        if (httpInfo.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully cleaned up the application registration", 200);
+        }
+        return response;
     }
 
 
@@ -789,31 +790,27 @@ public class RestAPIStoreImpl {
     /**
      * Update given Auth application
      *
-     * @param application       auth application name
-     * @param keyType           type of the key
-     * @param authorizedDomains authorized domains
-     * @param retryAfterFailure retry after fail
-     * @param jsonParams        json parameters for grant type
-     * @param callbackUrl       call back url
+     * @param applicationId       auth application id
+     * @param applicationDTO      DTO of the application
      * @return Http response of the update request
      * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
-    public HttpResponse updateClientApplicationById(int applicationId, String application, String keyType, String authorizedDomains,
-                                                    String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(
-//                    backendURL + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"
-//                            + "action=updateClientApplicationByAppId&appId=" + applicationId + "&application="
-//                            + application + "&keytype=" + keyType + "&authorizedDomains=" + authorizedDomains
-//                            + "&retryAfterFailure=" + retryAfterFailure + "&jsonParams=" + URLEncoder
-//                            .encode(jsonParams, "UTF-8") + "&callbackUrl=" + callbackUrl), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
-//
-//        }
+    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO  applicationDTO) {
+
+        try {
+            ApplicationDTO responseApplicationDTO = applicationsApi.applicationsApplicationIdPut(applicationId, applicationDTO, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(responseApplicationDTO.getApplicationId())) {
+                Gson gson = new Gson();
+                response = new HttpResponse(gson.toJson(responseApplicationDTO), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+
         return null;
     }
 

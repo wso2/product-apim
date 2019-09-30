@@ -27,8 +27,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import org.wso2.am.integration.clients.store.api.v1.dto.AlertTypesListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.TenantListDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -36,14 +36,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TenantsApi {
+public class AlertsApi {
     private ApiClient apiClient;
 
-    public TenantsApi() {
+    public AlertsApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public TenantsApi(ApiClient apiClient) {
+    public AlertsApi(ApiClient apiClient) {
         this.apiClient = apiClient;
     }
 
@@ -56,29 +56,20 @@ public class TenantsApi {
     }
 
     /**
-     * Build call for tenantsGet
-     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * Build call for getStoreAlertTypes
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call tenantsGetCall(String state, Integer limit, Integer offset, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getStoreAlertTypesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/tenants";
+        String localVarPath = "/alert-types";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (state != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("state", state));
-        if (limit != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("limit", limit));
-        if (offset != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("offset", offset));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
 
@@ -113,54 +104,45 @@ public class TenantsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call tenantsGetValidateBeforeCall(String state, Integer limit, Integer offset, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getStoreAlertTypesValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = tenantsGetCall(state, limit, offset, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getStoreAlertTypesCall(progressListener, progressRequestListener);
         return call;
 
     }
 
     /**
-     * Get get tenants by state 
-     * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @return TenantListDTO
+     * Get the list of API Store alert types. 
+     * This operation is used to get the list of supportd alert types for the &#39;subscriber&#39; agent. 
+     * @return AlertTypesListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public TenantListDTO tenantsGet(String state, Integer limit, Integer offset) throws ApiException {
-        ApiResponse<TenantListDTO> resp = tenantsGetWithHttpInfo(state, limit, offset);
+    public AlertTypesListDTO getStoreAlertTypes() throws ApiException {
+        ApiResponse<AlertTypesListDTO> resp = getStoreAlertTypesWithHttpInfo();
         return resp.getData();
     }
 
     /**
-     * Get get tenants by state 
-     * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @return ApiResponse&lt;TenantListDTO&gt;
+     * Get the list of API Store alert types. 
+     * This operation is used to get the list of supportd alert types for the &#39;subscriber&#39; agent. 
+     * @return ApiResponse&lt;AlertTypesListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<TenantListDTO> tenantsGetWithHttpInfo(String state, Integer limit, Integer offset) throws ApiException {
-        com.squareup.okhttp.Call call = tenantsGetValidateBeforeCall(state, limit, offset, null, null);
-        Type localVarReturnType = new TypeToken<TenantListDTO>(){}.getType();
+    public ApiResponse<AlertTypesListDTO> getStoreAlertTypesWithHttpInfo() throws ApiException {
+        com.squareup.okhttp.Call call = getStoreAlertTypesValidateBeforeCall(null, null);
+        Type localVarReturnType = new TypeToken<AlertTypesListDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
-     * Get get tenants by state  (asynchronously)
-     * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * Get the list of API Store alert types.  (asynchronously)
+     * This operation is used to get the list of supportd alert types for the &#39;subscriber&#39; agent. 
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call tenantsGetAsync(String state, Integer limit, Integer offset, final ApiCallback<TenantListDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call getStoreAlertTypesAsync(final ApiCallback<AlertTypesListDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -181,8 +163,8 @@ public class TenantsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = tenantsGetValidateBeforeCall(state, limit, offset, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<TenantListDTO>(){}.getType();
+        com.squareup.okhttp.Call call = getStoreAlertTypesValidateBeforeCall(progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<AlertTypesListDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
