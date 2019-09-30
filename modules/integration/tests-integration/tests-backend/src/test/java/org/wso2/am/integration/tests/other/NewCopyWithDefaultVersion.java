@@ -72,8 +72,11 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        restAPIPublisher = new RestAPIPublisherImpl();
+        super.init(userMode);
+        String userName = gatewayContextWrk.getContextTenant().getTenantAdmin().getUserNameWithoutDomain();
+        String password = gatewayContextWrk.getContextTenant().getTenantAdmin().getPassword();
+        String tenantDomain = gatewayContextWrk.getContextTenant().getDomain();
+        restAPIPublisher = new RestAPIPublisherImpl(userName, password, tenantDomain);
     }
 
     @Test(groups = {"webapp"}, description = "New Copy with Default Version")
