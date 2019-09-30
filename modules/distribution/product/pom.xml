@@ -235,6 +235,20 @@
                                 <delete dir="features" />
                                 <delete dir="plugins" />
                                 <delete dir="${tempdir}" />
+                                <!-- Explode the authenticationendpoint.war -->
+                                <unzip dest="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/authenticationendpoint">
+                                    <fileset dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps">
+                                        <include name="authenticationendpoint.war" />
+                                    </fileset>
+                                </unzip>
+                                <delete file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/authenticationendpoint.war" />
+                                <!-- Explode the accountrecoveryendpoint.war -->
+                                <unzip dest="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint">
+                                    <fileset dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps">
+                                        <include name="accountrecoveryendpoint.war" />
+                                    </fileset>
+                                </unzip>
+                                <delete file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint.war" />
                             </tasks>
                         </configuration>
                     </execution>
