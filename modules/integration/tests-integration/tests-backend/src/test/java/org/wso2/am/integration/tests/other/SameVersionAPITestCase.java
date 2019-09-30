@@ -23,7 +23,6 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -35,7 +34,14 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import javax.ws.rs.core.Response;
 import java.net.URL;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 
 public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
 
@@ -65,7 +71,6 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init();
         restAPIPublisher = new RestAPIPublisherImpl();
-
     }
 
     @Test(groups = "webapp", description = "Copy Same Version")
@@ -104,9 +109,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
         try {
             restAPIPublisher.copyAPI(newVersion, apiId, false);
             assertTrue(false, "Same version API test case failed");
-
         } catch (Exception e) {
-
             if (((ApiException) e).getResponseBody().contains("Resource Already Exists")) {
                 log.info("Same version API test case passed");
             } else {

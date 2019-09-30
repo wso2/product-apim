@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 
 public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
@@ -115,8 +114,8 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
                 "Response Code Mismatch");
 
         HttpResponse newVersionApi = restAPIPublisher.getAPI(defaultApiId);
-        Gson g = new Gson();
-        APIDTO apidto = g.fromJson(newVersionApi.getData(), APIDTO.class);
+        Gson gson = new Gson();
+        APIDTO apidto = gson.fromJson(newVersionApi.getData(), APIDTO.class);
         boolean version = apidto.isIsDefaultVersion();
 
         assertEquals(version, true, "Copied API is not the default version");
