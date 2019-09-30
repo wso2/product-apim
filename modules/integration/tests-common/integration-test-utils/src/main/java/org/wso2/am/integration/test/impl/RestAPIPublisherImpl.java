@@ -127,7 +127,7 @@ public class RestAPIPublisherImpl {
         APIDTO apidto = this.addAPI(apiRequest, osVersion);
 
         HttpResponse response = null;
-        if (StringUtils.isNotEmpty(apidto.getId())) {
+        if (apidto != null && StringUtils.isNotEmpty(apidto.getId())) {
             response = new HttpResponse(apidto.getId(), 201);
         }
         return response;
@@ -172,7 +172,8 @@ public class RestAPIPublisherImpl {
 //        body.setMediationPolicies(apiRe);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
-        body.setPolicies(tierList);
+        body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
+        body.isDefaultVersion(Boolean.valueOf(apiRequest.getDefault_version_checked()));
         APIDTO apidto;
         try {
             ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, osVersion);
@@ -377,10 +378,15 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Throws if api information cannot be retrieved.
      */
     public HttpResponse getAPI(String apiId) throws ApiException {
-        APIDTO apidto = apIsApi.apisApiIdGet(apiId, null, null);
+        APIDTO apidto = null;
         HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+             apidto = apIsApi.apisApiIdGet(apiId, null, null);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
         if (StringUtils.isNotEmpty(apidto.getId())) {
-            Gson gson = new Gson();
             response = new HttpResponse(gson.toJson(apidto), 200);
         }
         return response;

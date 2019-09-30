@@ -44,4 +44,11 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
         </classes>
     </test>
+
+    <test name="apim-integration-tests-other" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion" />
+            <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase" />
+        </classes>
+    </test>
 </suite>
