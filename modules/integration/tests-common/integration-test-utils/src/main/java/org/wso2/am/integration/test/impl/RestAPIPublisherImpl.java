@@ -122,7 +122,7 @@ public class RestAPIPublisherImpl {
         APIDTO apidto = this.addAPI(apiRequest, osVersion);
 
         HttpResponse response = null;
-        if (StringUtils.isNotEmpty(apidto.getId())) {
+        if (apidto != null && StringUtils.isNotEmpty(apidto.getId())) {
             response = new HttpResponse(apidto.getId(), 201);
         }
         return response;
