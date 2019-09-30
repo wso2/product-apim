@@ -16,10 +16,13 @@
 
 package org.wso2.am.integration.test.impl;
 
+
 import com.google.gson.Gson;
+import org.apache.http.protocol.HTTP;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.http.protocol.HTTP;
+import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -37,21 +40,24 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
-    public static ApIsApi apIsApi = new ApIsApi();
-    public static ApplicationsApi applicationsApi = new ApplicationsApi();
-    public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
-    public static ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
+    public ApIsApi apIsApi = new ApIsApi();
+    public ApplicationsApi applicationsApi = new ApplicationsApi();
+    public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
+    public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -188,39 +194,6 @@ public class RestAPIStoreImpl {
      */
     public APIDTO getAPI(String apiId) throws ApiException {
         return apIsApi.apisApiIdGet(apiId, null, null);
-    }
-
-
-    /**
-     * Generate user access key
-     *
-     * @param consumeKey       - consumer  key of user
-     * @param consumerSecret   - consumer secret key
-     * @param messageBody      - message body
-     * @param tokenEndpointURL - token endpoint url
-     * @return - http response of generate access token api call
-     * @throws APIManagerIntegrationTestException - throws if generating APIM access token fails
-     */
-    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
-                                              String messageBody, URL tokenEndpointURL)
-            throws APIManagerIntegrationTestException {
-
-//        try {
-//            //checkAuthentication();
-//            Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
-//            String basicAuthHeader = consumeKey + ":" + consumerSecret;
-//            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
-//
-//            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
-//
-//            return HTTPSClientUtils.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-
-        return null;
     }
 
     /**
@@ -1490,5 +1463,41 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
+        ApiResponse<String> response =
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox", null, tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
 
+
+
+    /**
+     * Generate user access key
+     *
+     * @param consumeKey       - consumer  key of user
+     * @param consumerSecret   - consumer secret key
+     * @param messageBody      - message body
+     * @param tokenEndpointURL - token endpoint url
+     * @return - http response of generate access token api call
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if generating APIM access token fails
+     */
+    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
+                                              String messageBody, URL tokenEndpointURL)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
+            String basicAuthHeader = consumeKey + ":" + consumerSecret;
+            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
+
+            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
+
+            return HTTPSClientUtils.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
+                    "Error: " + e.getMessage(), e);
+        }
+    }
 }

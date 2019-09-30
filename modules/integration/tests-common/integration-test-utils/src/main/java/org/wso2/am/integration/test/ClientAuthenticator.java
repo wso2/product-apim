@@ -52,9 +52,9 @@ public class ClientAuthenticator {
 
     public static String getAccessToken(String scopeList, String appName, String callBackURL, String tokenScope, String appOwner,
                                         String grantType, String dcrEndpoint, String username, String password, String tenantDomain, String tokenEndpoint) {
-        if (consumerKey == null) {
+       // if (consumerKey == null) {
             makeDCRRequest(appName,  callBackURL,  tokenScope,  appOwner, grantType,  dcrEndpoint,  username,  password,  tenantDomain);
-        }
+       // }
         URL url;
         HttpsURLConnection urlConn = null;
         //calling token endpoint
@@ -67,7 +67,11 @@ public class ClientAuthenticator {
             String clientEncoded = DatatypeConverter.printBase64Binary(
                     (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
-            String postParams = "grant_type=client_credentials";
+            if (!"carbon.super".equalsIgnoreCase(tenantDomain)) {
+                username = username + "@" + tenantDomain;
+            }
+
+            String postParams = "grant_type=password&username=" + username + "&password=" + password;
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
@@ -115,6 +119,7 @@ public class ClientAuthenticator {
             json.addProperty("clientName", applicationName);
             json.addProperty("tokenScope", tokenScope);
             json.addProperty("grantType", grantType);
+            json.addProperty("saasApp", true);
 
             String clientEncoded;
 
