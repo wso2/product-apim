@@ -68,8 +68,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private String apiId;
     private ArrayList<String> grantTypes;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     private ApplicationDTO applicationDTO;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -88,15 +86,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
 
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
-
-        restAPIPublisher = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain());
-        restAPIStore = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain());
 
         grantTypes = new ArrayList<>();
         String uri = "customers/{id}/";
