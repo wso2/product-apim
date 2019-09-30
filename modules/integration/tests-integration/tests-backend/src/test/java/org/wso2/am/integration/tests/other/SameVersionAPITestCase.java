@@ -22,117 +22,110 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.*;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
+import static org.testng.Assert.*;
 
-    private static final Log log= LogFactory.getLog(SameVersionAPITestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private static final String API_NAME="SameVersionAPITest";
-    private static final String API_CONTEXT="SameVersionAPI";
-    private String version="1.0.0";
-    private String newVersion="1.0.0";
-    private String TAGS="testtag1, testtag2";
+public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
+
+    private static final Log log = LogFactory.getLog(SameVersionAPITestCase.class);
+    private static final String API_NAME = "SameVersionAPITest";
+    private static final String API_CONTEXT = "SameVersionAPI";
+    private String version = "1.0.0";
+    private String newVersion = "1.0.0";
+    private String TAGS = "testtag1, testtag2";
     private String providerName;
-    private String visibility="public";
-    private String description="Test Description";
-    private String tier= APIMIntegrationConstants.API_TIER.GOLD;
-    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
-    private String endPointType="http";
+    private String visibility = "public";
+    private String description = "Test Description";
+    private String tier = APIMIntegrationConstants.API_TIER.GOLD;
+    private String resTier = APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
+    private String endPointType = "http";
+    private RestAPIPublisherImpl restAPIPublisher;
+    private String apiId;
+    private String resourceMethodAuthType = "Application & Application User";
+    private String uriTemplate = "customers/{id}/";
 
     @Factory(dataProvider = "userModeDataProvider")
-    public SameVersionAPITestCase(TestUserMode userMode){
-        this.userMode=userMode;
+    public SameVersionAPITestCase(TestUserMode userMode) {
+        this.userMode = userMode;
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception{
+    public void setEnvironment() throws Exception {
         super.init();
-
-        String publisherUrlHttp=publisherUrls.getWebAppURLHttp();
-        apiPublisher=new APIPublisherRestClient(publisherUrlHttp);
-
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        restAPIPublisher = new RestAPIPublisherImpl();
 
     }
 
     @Test(groups = "webapp", description = "Copy Same Version")
-    public void copySameVersion() throws Exception{
+    public void copySameVersion() throws Exception {
         String gatewayUrl;
-        if(gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")){
-            gatewayUrl=gatewayUrlsWrk.getWebAppURLNhttp();
+        if (gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
+        } else {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + gatewayContextWrk.getContextTenant().getDomain() +
+                    "/";
         }
-        else{
-            gatewayUrl=gatewayUrlsWrk.getWebAppURLNhttp()+ "t/" + gatewayContextWrk.getContextTenant().getDomain() + "/";
 
+        String endpointUrl = gatewayUrl + "jaxrs_basic/services/customers/customerservice";
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+
+        //API request
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
+        apiRequest.setTags(TAGS);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(version);
+        apiRequest.setProvider(providerName);
+        apiRequest.setEndpointType(endPointType);
+        apiRequest.setResourceMethodAuthType(resourceMethodAuthType);
+        apiRequest.setTier(tier);
+        apiRequest.setResourceMethodThrottlingTier(resTier);
+        apiRequest.setUriTemplate(uriTemplate);
+        apiRequest.setVisibility(visibility);
+
+        //Add API
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = serviceResponse.getData();
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Invalid Response Code");
+
+        //try to copy api with same version
+        try {
+            restAPIPublisher.copyAPI(newVersion, apiId, false);
+            assertTrue(false, "Same version API test case failed");
+
+        } catch (Exception e) {
+
+            if (((ApiException) e).getResponseBody().contains("Resource Already Exists")) {
+                log.info("Same version API test case passed");
+            } else {
+                assertTrue(false, "Same version API test case failed");
+            }
         }
-
-        String endpointUrl=gatewayUrl+"jaxrs_basic/services/customers/customerservice";
-        providerName=publisherContext.getContextTenant().getContextUser().getUserName();
-
-        List<APIResourceBean> resourceBeanList=new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET","Application & Application User", resTier, "customers/{id}/"));
-        resourceBeanList.add(new APIResourceBean("POST","Application & Application User", resTier, "customers/name/"));
-
-        APICreationRequestBean apiCreationRequestBean=new APICreationRequestBean(API_NAME,API_CONTEXT,
-                version,providerName,new URL(endpointUrl));
-        apiCreationRequestBean.setResourceBeanList(resourceBeanList);
-        apiCreationRequestBean.setTags(TAGS);
-        apiCreationRequestBean.setDescription(description);
-        apiCreationRequestBean.setTier(tier);
-        apiCreationRequestBean.setVisibility(visibility);
-        apiCreationRequestBean.setEndpointType(endPointType);
-
-        //add api
-        HttpResponse apiAddRequest=apiPublisher.addAPI(apiCreationRequestBean);
-        assertEquals(apiAddRequest.getResponseCode(), Response.Status.OK.getStatusCode(),"Invalid Response Code");
-        assertTrue(apiAddRequest.getData().contains("{\"error\" : false}"), "Response Data Mismatched");
-
-        //Copy api with same version
-        HttpResponse copyAPIResponse=apiPublisher.copyAPI(providerName,API_NAME,version,newVersion,"");
-        assertEquals(copyAPIResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatched");
-        assertTrue(copyAPIResponse.getData().contains("\"error\" : true"), "Response Data Mismatched. No error thrown.");
-        assertTrue(copyAPIResponse.getData().contains("API already exists with version: " + version),
-                   "Response Data Mismatched.");
-
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception{
-        apiPublisher.deleteAPI(API_NAME,version,providerName);
+    public void destroy() throws Exception {
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 
-
     @DataProvider
-    public static Object[][] userModeDataProvider(){
+    public static Object[][] userModeDataProvider() {
         return new Object[][]{
-               new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-               new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
-
     }
-
 }
