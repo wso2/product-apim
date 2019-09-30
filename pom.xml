@@ -1147,6 +1147,11 @@
                 <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
                 <version>${identity.outbound.auth.oidc.version`}</version>
             </dependency>
+            <dependency>
+                <groupId>io.swagger.parser.v3</groupId>
+                <artifactId>swagger-parser</artifactId>
+                <version>${swagger-parser-version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1157,7 +1162,7 @@
         <carbon.analytics.common.version>5.2.11</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.140</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.147</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1302,7 +1307,7 @@
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
         <jackson-version>2.9.9</jackson-version>
-        <jodatime-version>2.10.3</jodatime-version>
+        <jodatime-version>2.10.4</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
         <com.squareup.okhttp.version>2.7.5</com.squareup.okhttp.version>
@@ -1333,6 +1338,7 @@
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.3.2</identity.outbound.auth.oidc.version>
+        <swagger-parser-version>2.0.14</swagger-parser-version>
     </properties>
 
 </project>

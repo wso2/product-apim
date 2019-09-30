@@ -677,10 +677,12 @@ public class ApIsApi {
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public void apisApiIdSwaggerGet(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        apisApiIdSwaggerGetWithHttpInfo(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    public String apisApiIdSwaggerGet(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        ApiResponse<String> resp = apisApiIdSwaggerGetWithHttpInfo(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+        return resp.getData();
     }
 
     /**
@@ -691,12 +693,13 @@ public class ApIsApi {
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<Void> apisApiIdSwaggerGetWithHttpInfo(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+    public ApiResponse<String> apisApiIdSwaggerGetWithHttpInfo(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
         com.squareup.okhttp.Call call = apisApiIdSwaggerGetValidateBeforeCall(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant, null, null);
-        return apiClient.execute(call);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
     }
 
     /**
@@ -711,7 +714,7 @@ public class ApIsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSwaggerGetAsync(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<Void> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSwaggerGetAsync(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<String> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -733,7 +736,8 @@ public class ApIsApi {
         }
 
         com.squareup.okhttp.Call call = apisApiIdSwaggerGetValidateBeforeCall(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**

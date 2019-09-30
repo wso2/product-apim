@@ -19,6 +19,7 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -30,6 +31,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -37,6 +39,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.Constants;
@@ -57,20 +60,21 @@ import java.util.List;
  */
 public class RestAPIPublisherImpl {
 
-    public static ApIsApi apIsApi = new ApIsApi();
-    public static ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
-    public static ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
-    public static ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
-    public static EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
-    public static ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
-    public static RolesApi rolesApi = new RolesApi();
+    public ApIsApi apIsApi = new ApIsApi();
+    public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
+    public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
+    public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
+    public EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
+    public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
+    public RolesApi rolesApi = new RolesApi();
+    public ValidationApi validationApi = new ValidationApi();
 
-    public static ApiClient apiPublisherClient = new ApiClient();
+    public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
-    public static final String grantType = "client_credentials";
+    public static final String grantType = "password";
     public static final String dcrEndpoint = "http://127.0.0.1:10263/client-registration/v0.14/register";
     public static final String username = "admin";
     public static final String password = "admin";
@@ -101,6 +105,7 @@ public class RestAPIPublisherImpl {
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
         apiLifecycleApi.setApiClient(apiPublisherClient);
         rolesApi.setApiClient(apiPublisherClient);
+        validationApi.setApiClient(apiPublisherClient);
     }
 
 
@@ -177,6 +182,11 @@ public class RestAPIPublisherImpl {
         return apidto;
     }
 
+    public APIDTO addAPI(APIDTO apidto, String osVersion) throws ApiException {
+        ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(apidto, osVersion);
+        Assert.assertEquals(201, httpInfo.getStatusCode());
+        return httpInfo.getData();
+    }
 
     /**
      * This method is used to create a new API of the existing API.
@@ -187,7 +197,7 @@ public class RestAPIPublisherImpl {
      * @return apiID of the newly created api version.
      * @throws ApiException Throws if an error occurs when creating the new API version.
      */
-    public static String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
+    public String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
         String apiLocation = apIsApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders().get("Location").get(0);
         String[] splitValues = apiLocation.split("/");
         return splitValues[splitValues.length - 1];
@@ -199,7 +209,7 @@ public class RestAPIPublisherImpl {
      * @return API definition.
      * @throws IOException throws if an error occurred when creating the API.
      */
-    private static String getJsonContent(String fileName) throws IOException {
+    private String getJsonContent(String fileName) throws IOException {
         if (StringUtils.isNotEmpty(fileName)) {
             return IOUtils.toString(RestAPIPublisherImpl.class.getClassLoader().getResourceAsStream(fileName),
                     StandardCharsets.UTF_8.name());
@@ -225,13 +235,20 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    public WorkflowResponseDTO changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
+        ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse =
+                this.apiLifecycleApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
+        return workflowResponseDTOApiResponse.getData();
+    }
+
     /**
      * This method is used to deprecate the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public static void deprecateAPI(String apiId) throws ApiException {
+    public void deprecateAPI(String apiId) throws ApiException {
 
         apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
     }
@@ -242,7 +259,7 @@ public class RestAPIPublisherImpl {
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public static void blockAPI(String apiId) throws ApiException {
+    public void blockAPI(String apiId) throws ApiException {
         apiLifecycleApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
     }
 
@@ -328,6 +345,11 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    public APIDTO updateAPI(APIDTO apidto, String apiId) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdPutWithHttpInfo(apiId, apidto, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
 
     /**
      * Method to get API information
@@ -575,5 +597,36 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Successfully validate the role", 200);
         }
         return response;
+    }
+
+    public String getSwaggerByID(String apiId) throws ApiException {
+        ApiResponse<String> response = apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public String updateSwagger(String apiId, String definition) throws ApiException {
+        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+    public OpenAPIDefinitionValidationResponseDTO validateOASDefinition(File oasDefinition) throws ApiException {
+        ApiResponse<OpenAPIDefinitionValidationResponseDTO> response =
+                validationApi.validateOpenAPIDefinitionWithHttpInfo(null, oasDefinition, false);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO getAPIByID(String apiId, String tenantDomain) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdGetWithHttpInfo(apiId, tenantDomain, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public APIDTO importOASDefinition(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
     }
 }

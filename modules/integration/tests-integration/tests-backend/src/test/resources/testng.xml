@@ -40,6 +40,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
         </classes>
     </test>
 </suite>

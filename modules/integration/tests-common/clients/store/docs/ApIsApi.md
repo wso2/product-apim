@@ -243,7 +243,7 @@ Name | Type | Description  | Notes
 
 <a name="apisApiIdSwaggerGet"></a>
 # **apisApiIdSwaggerGet**
-> apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
+> String apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
 
 Get swagger definition 
 
@@ -271,7 +271,8 @@ String environmentName = "environmentName_example"; // String | Name of the API 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    apiInstance.apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    String result = apiInstance.apisApiIdSwaggerGet(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisApiIdSwaggerGet");
     e.printStackTrace();
@@ -290,7 +291,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**String**
 
 ### Authorization
 
