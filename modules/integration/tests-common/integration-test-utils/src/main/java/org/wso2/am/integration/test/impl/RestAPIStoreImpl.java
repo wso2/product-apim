@@ -58,32 +58,33 @@ public class RestAPIStoreImpl {
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
     public static final String grantType = "password client_credentials";
-    public static final String dcrEndpoint = "http://127.0.0.1:10263/client-registration/v0.14/register";
     public static final String username = "admin";
     public static final String password = "admin";
-    public static final String tenantDomain = "";
-    public static final String tokenEndpoint = "https://127.0.0.1:9943/oauth2/token";
+    public String storeURL;
+    public String tenantDomain;
 
-
-    public RestAPIStoreImpl(){
-        this(username, password, tenantDomain);
+    public RestAPIStoreImpl() {
+        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:9943", "https://127.0.0.1:9943");
     }
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain) {
-
-        String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage " +
-                "apim:self-signup apim:dedicated_gateway apim:store_settings";
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
+        String tokenURL = gatewayURL + "token";
+        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+        String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
+                + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 
         String accessToken = ClientAuthenticator
-                .getAccessToken(scopes,
-                        appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
+                .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
+                        password, tenantDomain, tokenURL);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath("https://localhost:9943/api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
+        this.storeURL = storeURL;
+        this.tenantDomain = tenantDomain;
     }
 
 
@@ -241,6 +242,17 @@ public class RestAPIStoreImpl {
 //                    "Error: " + e.getMessage(), e);
 //        }
         return null;
+    }
+
+    /**
+     *
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAllAPIs() throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -1163,25 +1175,21 @@ public class RestAPIStoreImpl {
 //        }
 //    }
 
-    public HttpResponse getAPIListFromStoreAsAnonymousUser(String tenantDomain)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            HttpResponse httpResponse = HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/recently-added/ajax/list.jag"
-//                    + "?action=getRecentlyAddedAPIs&tenant=" + tenantDomain, new HashMap<String, String>());
-//
-//            if (new JSONObject(httpResponse.getData()).getBoolean("error")) {
-//                throw new APIManagerIntegrationTestException("Error when getting API list as AsAnonymousUser");
-//            }
-//
-//            return httpResponse;
-//        } catch (IOException ioE) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Exception when retrieve the API list as anonymous user. Error: " + ioE.getMessage(), ioE);
-//        } catch (JSONException e) {
-//            throw new APIManagerIntegrationTestException("Response message is not JSON Response"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    /**
+     *
+     * @param tenantDomain
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
+        ApIsApi apIsApi = new ApIsApi();
+        ApiClient apiStoreClient = new ApiClient();
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apIsApi.setApiClient(apiStoreClient);
+
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
 

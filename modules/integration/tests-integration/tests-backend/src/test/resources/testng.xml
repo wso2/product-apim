@@ -41,6 +41,7 @@
             <!--<class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>-->
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
         </classes>
     </test>
 </suite>
