@@ -75,6 +75,12 @@ public class APIRequest extends AbstractRequest {
     private String apiTier = "";
     private String accessControl;
     private String accessControlRoles;
+    private String businessOwner;
+    private String businessOwnerEmail;
+    private String technicalOwner;
+    private String technicalOwnerEmail;
+    
+    
 
     public List<MediationPolicyDTO> getMediationPolicies() {
         return mediationPolicies;
@@ -500,4 +506,37 @@ public class APIRequest extends AbstractRequest {
     public void setAccessControlRoles(String accessControlRoles) {
         this.accessControlRoles = accessControlRoles;
     }
+
+    public String getBusinessOwner() {
+        return businessOwner;
+    }
+
+    public void setBusinessOwner(String businessOwner) {
+        this.businessOwner = businessOwner;
+    }
+
+    public String getBusinessOwnerEmail() {
+        return businessOwnerEmail;
+    }
+
+    public void setBusinessOwnerEmail(String businessOwnerEmail) {
+        this.businessOwnerEmail = businessOwnerEmail;
+    }
+
+    public String getTechnicalOwner() {
+        return technicalOwner;
+    }
+
+    public void setTechnicalOwner(String technicalOwner) {
+        this.technicalOwner = technicalOwner;
+    }
+
+    public String getTechnicalOwnerEmail() {
+        return technicalOwnerEmail;
+    }
+
+    public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
+        this.technicalOwnerEmail = technicalOwnerEmail;
+    }
+    
 }
