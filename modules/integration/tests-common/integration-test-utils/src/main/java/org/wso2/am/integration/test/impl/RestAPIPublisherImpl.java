@@ -328,7 +328,7 @@ public class RestAPIPublisherImpl {
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
-        body.setPolicies(tierList);
+        body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
         APIDTO apidto;
         try {
             apidto = apIsApi.apisApiIdPut(apiId, body, null);
