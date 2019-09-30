@@ -47,10 +47,10 @@ import java.util.ArrayList;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
-    public static ApIsApi apIsApi = new ApIsApi();
-    public static ApplicationsApi applicationsApi = new ApplicationsApi();
-    public static SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
-    public static ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
+    public ApIsApi apIsApi = new ApIsApi();
+    public ApplicationsApi applicationsApi = new ApplicationsApi();
+    public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
+    public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";

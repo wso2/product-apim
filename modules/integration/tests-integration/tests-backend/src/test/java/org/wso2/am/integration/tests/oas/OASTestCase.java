@@ -120,7 +120,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
 
             OAS2Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
             OAS2Utils.validateUpdatedDefinition(originalDefinition, responseDefinition);
-//            OAS2Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
+            OAS2Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
             OAS2Utils.validateUpdatedDefinition(originalDefinition, apidto);
         } else {
             OAS3Utils.validateSwaggerDataInPublisher(apidto, responseDefinition);
@@ -129,7 +129,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
 
             OAS3Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, responseDefinition);
-//            OAS3Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
+            OAS3Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, apidto);
         }
     }
@@ -196,11 +196,11 @@ public class OASTestCase extends APIMIntegrationBaseTest {
 
         if (OAS_V2.equalsIgnoreCase(oasVersion)) {
             OAS2Utils.validateOperationCount(apidto, oasDefinition);
-//            OAS2Utils.validateResourcesOfOASDefinition(apidto, oasDefinition);
+            OAS2Utils.validateResourcesOfOASDefinition(apidto, oasDefinition);
             OAS2Utils.validateSwaggerDataInStore(oasDefinition);
         } else {
             OAS3Utils.validateOperationCount(apidto, oasDefinition);
-//            OAS3Utils.validateResourcesOfOASDefinition(apidto, oasDefinition);
+            OAS3Utils.validateResourcesOfOASDefinition(apidto, oasDefinition);
             OAS3Utils.validateSwaggerDataInStore(oasDefinition);
         }
     }
