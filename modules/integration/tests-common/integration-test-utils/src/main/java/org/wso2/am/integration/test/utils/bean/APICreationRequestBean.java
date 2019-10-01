@@ -106,6 +106,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String environment = "Production and Sandbox";
     private String destinationStats = null;
     private String productionTps = null;
+    private URL endpointUrl = null;
 
     public String getEnvironment() {
         return environment;
@@ -218,6 +219,7 @@ public class APICreationRequestBean extends AbstractRequest {
         this.context = context;
         this.version = version;
         this.provider = provider;
+        this.endpointUrl = endpointUrl;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
@@ -803,5 +805,13 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setProductionTps(String productionTps) {
         this.productionTps = productionTps;
+    }
+
+    public URL getEndpointUrl() {
+        return endpointUrl;
+    }
+
+    public void setEndpointUrl(URL endpointUrl) {
+        this.endpointUrl = endpointUrl;
     }
 }

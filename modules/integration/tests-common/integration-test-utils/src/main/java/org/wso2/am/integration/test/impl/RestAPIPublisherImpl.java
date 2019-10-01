@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.json.simple.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -36,6 +37,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformati
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
@@ -44,7 +46,9 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyList
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
@@ -75,18 +79,19 @@ public class RestAPIPublisherImpl {
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
     public static final String grantType = "password";
-    public static final String dcrEndpoint = "http://127.0.0.1:10263/client-registration/v0.14/register";
     public static final String username = "admin";
     public static final String password = "admin";
-    public static final String tenantDomain = "";
-    public static final String tokenEndpoint = "https://127.0.0.1:9943/oauth2/token";
+    public String tenantDomain;
 
+    @Deprecated
     public RestAPIPublisherImpl() {
-        this(username, password, tenantDomain);
+        this(username, password, "", "https://127.0.0.1:9943/", "https://127.0.0.1:8743/", "https://127.0.0.1:9943/");
     }
 
-    public RestAPIPublisherImpl(String username, String password, String tenantDomain) {
+    public RestAPIPublisherImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String publisherURL) {
 
+        String tokenURL = gatewayURL + "token";
+        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +
@@ -96,16 +101,17 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings apim:pub_alert_manage",
-                        appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
+                        appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiPublisherClient.setBasePath("https://localhost:9943/api/am/publisher/v1.0");
+        apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
         apIsApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
         apiLifecycleApi.setApiClient(apiPublisherClient);
         rolesApi.setApiClient(apiPublisherClient);
         validationApi.setApiClient(apiPublisherClient);
+        this.tenantDomain = tenantDomain;
     }
 
 
@@ -293,6 +299,19 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     *
+     * @param newVersion
+     * @param apiId
+     * @param isDefault
+     * @return
+     * @throws ApiException
+     */
+    public APIDTO copyAPIWithReturnDTO(String newVersion, String apiId, Boolean isDefault) throws ApiException {
+        ApiResponse<APIDTO> response = apIsApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, isDefault);
+        Assert.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
+        return response.getData();
+    }
+    /**
      * Facilitate update API
      *
      * @param apiRequest - constructed API request object
@@ -388,6 +407,16 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Successfully deleted the API", 200);
         }
         return response;
+    }
+
+    /**
+     *
+     * @param apiId
+     * @throws ApiException
+     */
+    public void deleteAPIByID(String apiId) throws ApiException {
+        ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
+        Assert.assertEquals(HttpStatus.SC_OK, deleteResponse.getStatusCode());
     }
 
     /**
@@ -549,6 +578,13 @@ public class RestAPIPublisherImpl {
         return null;
     }
 
+    public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
+        APIListDTO apis = apIsApi.apisGet(null, null, this.tenantDomain, null, null, null, null, this.tenantDomain);
+        if (apis.getCount() > 0) {
+            return apis;
+        }
+        return null;
+    }
 
     /**
      * This method is used to upload certificates
@@ -634,5 +670,58 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
+    }
+
+    public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
+        APIDTO body = new APIDTO();
+
+        body.setName(apiCreationRequestBean.getName());
+        body.setContext(apiCreationRequestBean.getContext());
+        body.setVersion(apiCreationRequestBean.getVersion());
+        body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        body.setDescription(apiCreationRequestBean.getDescription());
+        body.setProvider(apiCreationRequestBean.getProvider());
+        body.setTransport(new ArrayList<String>() {{
+            add(Constants.PROTOCOL_HTTP);
+            add(Constants.PROTOCOL_HTTPS);
+        }});
+        body.isDefaultVersion(false);
+        body.setCacheTimeout(100);
+        ArrayList<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add(apiCreationRequestBean.getEnvironment());
+        body.setGatewayEnvironments(gatewayEnvironments);
+        List<APIOperationsDTO> operations = new ArrayList<>();
+        for (APIResourceBean resourceBean : apiCreationRequestBean.getResourceBeanList()) {
+            APIOperationsDTO dto = new APIOperationsDTO();
+            dto.setTarget(resourceBean.getUriTemplate());
+            dto.setAuthType(resourceBean.getResourceMethodAuthType());
+            dto.setVerb(resourceBean.getResourceMethod());
+            dto.setThrottlingPolicy(resourceBean.getResourceMethodThrottlingTier());
+            operations.add(dto);
+        }
+        body.setOperations(operations);
+        body.setBusinessInformation(new APIBusinessInformationDTO());
+        body.setCorsConfiguration(new APICorsConfigurationDTO());
+        body.setTags(Arrays.asList(apiCreationRequestBean.getTags().split(",")));
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        JSONObject sandUrl = new JSONObject();
+        sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        body.setEndpointConfig(jsonObject);
+        List<String> tierList = new ArrayList<>();
+        tierList.add(Constants.TIERS_UNLIMITED);
+        if (apiCreationRequestBean.getSubPolicyCollection() != null) {
+            String[] tiers = apiCreationRequestBean.getSubPolicyCollection().split(",");
+            for (String tier : tiers) {
+                tierList.add(tier);
+            }
+        }
+        body.setPolicies(tierList);
+        ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
+        Assert.assertEquals(201, httpInfo.getStatusCode());
+        return httpInfo.getData();
     }
 }
