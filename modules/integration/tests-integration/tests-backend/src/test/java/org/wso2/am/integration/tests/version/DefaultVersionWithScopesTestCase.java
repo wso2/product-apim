@@ -142,9 +142,6 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
                     ApplicationDTO.TokenTypeEnum.OAUTH);
             applicationID = applicationResponse.getData();
 
-            restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                    SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
-
             apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
                     APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
                     SubscriptionDTO.TypeEnum.API);
