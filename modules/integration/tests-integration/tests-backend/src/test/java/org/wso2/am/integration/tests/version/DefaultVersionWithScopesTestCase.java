@@ -19,24 +19,19 @@
 package org.wso2.am.integration.tests.version;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import javax.ws.rs.core.Response;
@@ -44,26 +39,22 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
-public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
+public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(DefaultVersionWithScopesTestCase.class);
-
-    private APIPublisherRestClient apiPublisher;
-
-    private APIStoreRestClient apiStore;
 
     private static final String API_NAME = "DefaultVersionScopeAPI";
 
     private static final String API_VERSION = "1.0.0";
-
-    private static final String API_PROVIDER = "admin";
 
     private static final String APP_NAME = "DefVersionScopeApp";
 
@@ -73,56 +64,61 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
     private static final String SUBSCRIBER_ROLE = "subscriber";
 
+    private String apiId;
+    private String applicationID;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DefaultVersionWithScopesTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
-
+        super.init(userMode);
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
-                                              "synapseconfigs" + File.separator + "rest" + File.separator +
-                                              "dummy_api.xml", gatewayContextMgt, createSession(gatewayContextMgt));
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        }
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
     public void testDefaultVersionAPIWithScopes()
-            throws UserAdminUserAdminException, RemoteException,
-                   XPathExpressionException, APIManagerIntegrationTestException {
+            throws XPathExpressionException, APIManagerIntegrationTestException {
 
+        String user_mike_password = "mike123";
+        String user_sam_password = "sam123";
+        String apiContext = "defaultversionscope";
+        String user_scope = "user_scope";
+        String endpointUrl = getGatewayURLNhttp() + "response";
+        String userAccessToken;
         //Add a user called mike and assign him to the subscriber role.
         try {
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                                                                                       "/permission/admin/manage/api/subscribe"});
-
+                    "/permission/admin/manage/api/subscribe"});
             //creating user mike
-            userManagementClient.addUser(USER_MIKE, "mike123", new String[]{}, USER_MIKE);
-
+            userManagementClient.addUser(USER_MIKE, user_mike_password, new String[]{}, USER_MIKE);
             //creating user sam
-            userManagementClient.addUser(USER_SAM, "sam123", new String[]{SUBSCRIBER_ROLE}, "sam");
+            userManagementClient.addUser(USER_SAM, user_sam_password, new String[]{SUBSCRIBER_ROLE}, USER_SAM);
 
         } catch (AxisFault axisFault) {
             log.error("Error while creating UserManagementClient " + axisFault.getMessage());
-            //Fail the test case.
-            assertTrue(false, axisFault.getMessage());
-        } catch (RemoteException e) {
-            log.error("Error while adding role 'subscriber' or user 'mike'" + e.getMessage());
-            //Fail the test case.
-            assertTrue(false, e.getMessage());
-        } catch (UserAdminUserAdminException e) {
-            log.error("Error while adding role 'subscriber' or user 'mike'" + e.getMessage());
-            //Fail the test case.
-            assertTrue(false, e.getMessage());
+            fail(axisFault.getMessage());
+        } catch (RemoteException | UserAdminUserAdminException e) {
+            log.error("Error while adding roles or users" + e.getMessage());
+            fail(e.getMessage());
         }
-
-        String apiProviderPassword = "admin";
-
-        // Adding API
-        String apiContext = "defaultversionscope";
-        String endpointUrl = "http://localhost:8280/response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -130,132 +126,99 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             apiRequest = new APIRequest(API_NAME, apiContext, new URL(endpointUrl));
         } catch (MalformedURLException e) {
             log.error("Invalid URL " + endpointUrl, e);
-            //Fail the test case
-            assertTrue(false);
+            fail();
         }
+
+        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
         apiRequest.setDefault_version("default_version");
-        apiRequest.setDefault_version_checked("default_version");
+        apiRequest.setDefault_version_checked("true");
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setTiersCollection("Unlimited");
-        apiRequest.setTier("Unlimited");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         try {
-            apiPublisher.login(API_PROVIDER, apiProviderPassword);
+            HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                    "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                    ApplicationDTO.TokenTypeEnum.OAUTH);
+            applicationID = applicationResponse.getData();
 
-            apiPublisher.addAPI(apiRequest);
+            restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
+                    SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
 
-            //publishing API
-            APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, API_PROVIDER,
-                                                                                  APILifeCycleState.PUBLISHED);
-            apiPublisher.changeAPILifeCycleStatus(updateRequest);
+            apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
+                    APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
+                    SubscriptionDTO.TypeEnum.API);
 
-            //resources are modified using swagger doc.
-            String modifiedResource = "{\"apiVersion\":\"1.0.0\",\"swaggerVersion\":\"1.2\"," +
-                                      "\"authorizations\":{\"oauth2\":{\"scopes\":[{\"description\":\"\", " +
-                                      "\"name\":\"admin_scope\",\"roles\":\"admin\",\"key\":\"admin_scope\"}," +
-                                      "{\"description\":\"\",\"name\":\"user_scope\",\"roles\":\"subscriber\"," +
-                                      "\"key\":\"user_scope\"}]," +
-                                      "\"type\":\"oauth2\"}},\"apis\":[{\"index\":0,\"file\":{\"apiVersion\":\"1.0.0\"," +
-                                      "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"index\":0," +
-                                      "\"path\":\"/*\",\"operations\":[{\"scope\":\"user_scope\"," +
-                                      "\"auth_type\":\"Application User\"," +
-                                      "\"throttling_tier\":\"Unlimited\",\"method\":\"GET\",\"parameters\":[]}," +
-                                      "{\"scope\":\"\",\"auth_type\":\"Application User\"," +
-                                      "\"throttling_tier\":\"Unlimited\"," +
-                                      "\"method\":\"POST\",\"parameters\":[]},{\"scope\":\"\",\"auth_type\":\"Application" +
-                                      " User\"," +
-                                      "\"throttling_tier\":\"Unlimited\",\"method\":\"PUT\",\"parameters\":[]}," +
-                                      "{\"auth_type\":\"Application User\",\"throttling_tier\":\"Unlimited\"," +
-                                      "\"method\":\"DELETE\"," +
-                                      "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
-                                      "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
-                                      "\"/default\"}],\"info\":{\"title\":\"" + API_NAME + "\",\"termsOfServiceUrl\":\"" +
-                                      "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
+            String resourcePath = "oas" + File.separator + "v3" + File.separator + "defaultVersionScopes.json";
+            String modifiedResource = IOUtils.toString(getClass().getClassLoader()
+                            .getResourceAsStream(resourcePath), StandardCharsets.UTF_8);
+            restAPIPublisher.updateSwagger(apiId, modifiedResource);
 
-            apiPublisher.updateResourceOfAPI(API_PROVIDER, API_NAME, API_VERSION, modifiedResource
-            );
+            ArrayList grantTypes = new ArrayList();
+            grantTypes.add("client_credentials");
+            grantTypes.add("password");
 
-            // For Admin user
-            // create new application and subscribing
-            apiStore.login("admin", "admin");
-            apiStore.addApplication(APP_NAME, "Unlimited", "", "");
-            SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, API_PROVIDER);
-            subscriptionRequest.setApplicationName(APP_NAME);
-            apiStore.subscribe(subscriptionRequest);
+            ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null,
+                    ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+            String consumerKey = applicationKeyDTO.getConsumerKey();
+            String consumerSecret = applicationKeyDTO.getConsumerSecret();
 
-            //Generate production token and invoke with that
-            APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-            String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-            JSONObject jsonResponse = new JSONObject(responseString);
-
-            // get Consumer Key and Consumer Secret
-            String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
-            String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
-
+            String requestBody = "grant_type=password&username=" + USER_SAM + "@" + storeContext.getContextTenant()
+                    .getDomain() + "&password=" + user_sam_password + "&scope=" + user_scope;
             URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
-            String accessToken;
+            JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
+                    consumerSecret, requestBody, tokenEndpointURL).getData());
+            userAccessToken = accessTokenGenerationResponse.getString("access_token");
+
             Map<String, String> requestHeaders;
-            HttpResponse response;
-            String requestBody;
-            JSONObject accessTokenGenerationResponse;
+            requestHeaders = new HashMap<>();
+            requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
-            //Obtain user access token for sam, request scope 'user_scope'
-            requestBody = "grant_type=password&username=" + USER_SAM + "&password=sam123&scope=user_scope";
-            accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                                                          requestBody, tokenEndpointURL)
-                                                                   .getData());
-            accessToken = accessTokenGenerationResponse.getString("access_token");
-
-            requestHeaders = new HashMap<String, String>();
-            requestHeaders.put("Authorization", "Bearer " + accessToken);
-
+            String apiInvocationUrl = getAPIInvocationURLHttp(apiContext);
             //Accessing GET method without the version in the URL using the token sam received
-            response = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
+            HttpResponse response = HttpRequestUtil.doGet(apiInvocationUrl, requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
-                         "sam cannot access the GET Method. Response = "
-                         + response.getData());
+                    USER_SAM + " cannot access the GET Method. Response = "
+                            + response.getData());
 
             //Obtaining user access token for mike, request scope 'user_scope'
-            requestBody = "grant_type=password&username=" + USER_MIKE + "&password=mike123&scope=user_scope";
-            accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                                                          requestBody, tokenEndpointURL)
-                                                                   .getData());
-            accessToken = accessTokenGenerationResponse.getString("access_token");
+            requestBody = "grant_type=password&username=" + USER_MIKE + "@" + storeContext.getContextTenant().getDomain()
+                    + "&password=" + user_mike_password + "&scope=" + user_scope;
+            accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
+                    requestBody, tokenEndpointURL)
+                    .getData());
+            userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
-            requestHeaders = new HashMap<String, String>();
-            requestHeaders.put("Authorization", "Bearer " + accessToken);
+            requestHeaders = new HashMap<>();
+            requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
             //Accessing GET method without the version in the URL using the token mike received.
-            response = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(apiInvocationUrl, requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
-                         "Mike should receive an HTTP 403 when trying to access"
-                         + " the GET resource. But the response code was " + response.getResponseCode());
+                    USER_MIKE + " should receive an HTTP 403 when trying to access"
+                            + " the GET resource. But the response code was " + response.getResponseCode());
         }
         //Catching generic Exception since apiPublisherApi and apiStore classes throw Exception from their methods.
         catch (Exception e) {
             log.error("Error while executing test case " + e.getMessage(), e);
-            //fail the test case.
-            assertTrue(false, e.getMessage());
+            fail(e.getMessage());
         }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
-        if (apiStore != null) {
-            apiStore.removeApplication(APP_NAME);
+        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
+            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-
-        if (apiPublisher != null) {
-            apiPublisher.deleteAPI(API_NAME, API_VERSION, API_PROVIDER);
-        }
+        restAPIStore.deleteApplication(applicationID, null);
+        restAPIPublisher.deleteAPI(apiId);
 
         if (userManagementClient != null) {
             userManagementClient.deleteUser(USER_SAM);
             userManagementClient.deleteUser(USER_MIKE);
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
-
         super.cleanUp();
     }
 }
