@@ -184,8 +184,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
           dependsOnMethods = "testAvailabilityOfOldAndNewAPIVersionsInStore")
     public void testSubscribeOldVersion() throws APIManagerIntegrationTestException {
         HttpResponse oldVersionSubscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         apiRequest.setVersion(API_VERSION_1_0_0);
 
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -200,8 +199,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
           dependsOnMethods = "testSubscribeOldVersion")
     public void testSubscribeNewVersion() throws APIManagerIntegrationTestException {
         HttpResponse newVersionSubscribeResponse = subscribeToAPIUsingRest(newApiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         apiRequest.setVersion(API_VERSION_2_0_0);
 
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,

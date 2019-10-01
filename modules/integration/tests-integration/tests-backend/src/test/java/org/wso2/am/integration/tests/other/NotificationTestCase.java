@@ -138,8 +138,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         applicationId = applicationResponse.getData();
 
         //Subscribe the API to the Application
-        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         subscriptionId = responseStore.getData();
 

@@ -111,8 +111,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse oldVersionSubscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
                         getAPIIdentifierStringFromAPIRequest(apiRequest));

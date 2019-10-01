@@ -151,10 +151,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      *                                            APIStoreRestClient.java
      */
     protected HttpResponse subscribeToAPIUsingRest(String apiId, String applicationId, String tier,
-                                                   SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum,
-                                                   RestAPIStoreImpl storeRestClient) throws APIManagerIntegrationTestException {
-        return storeRestClient.createSubscription(apiId, applicationId, tier,
-                statusEnum, typeEnum);
+           RestAPIStoreImpl storeRestClient) throws APIManagerIntegrationTestException {
+        return storeRestClient.createSubscription(apiId, applicationId, tier);
     }
 
     /**
@@ -288,7 +286,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                       boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
         APILifeCycleStateRequest publishUpdateRequest =
                 new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
-                        APILifeCycleState.PUBLISHED);
+                        APILifeCycleState.PUBLISHED_JAG);
         publishUpdateRequest.setVersion(apiIdentifier.getVersion());
         return publisherRestClient.changeAPILifeCycleStatusToPublish(apiIdentifier, isRequireReSubscription);
 
@@ -337,7 +335,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED))) {
+                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED_JAG,
+                            APILifeCycleState.PUBLISHED_JAG))) {
                 throw new APIManagerIntegrationTestException("Error in API Publishing" +
                         getAPIIdentifierString(apiIdentifier) + "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());
@@ -495,19 +494,16 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param storeRestClient     - Instance of APIStoreRestClient
      * @param applicationId       - UUID of the Application that the API need to subscribe.
      * @param tier                - Tier that needs to be subscribed.
-     * @param statusEnum          - Status of the subscription.
-     * @param typeEnum            - Type, whether an API or an API Product
      * @throws APIManagerIntegrationTestException - Exception throws by API create publish and subscribe a API activities.
      */
     protected String createPublishAndSubscribeToAPIUsingRest(APIRequest apiRequest,
                                                              RestAPIPublisherImpl publisherRestClient, RestAPIStoreImpl storeRestClient, String applicationId,
-                                                             String tier, SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum)
+                                                             String tier)
             throws APIManagerIntegrationTestException, ApiException {
         String apiId = createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        HttpResponse httpResponseSubscribeAPI = subscribeToAPIUsingRest(apiId, applicationId, tier, statusEnum,
-                typeEnum, storeRestClient);
+        HttpResponse httpResponseSubscribeAPI = subscribeToAPIUsingRest(apiId, applicationId, tier, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 !StringUtils.isEmpty(httpResponseSubscribeAPI.getData()))) {
             throw new APIManagerIntegrationTestException("Error in API Subscribe." +

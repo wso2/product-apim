@@ -128,15 +128,13 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
-                                           SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum) {
+    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
-            subscription.setStatus(statusEnum);
-            subscription.setType(typeEnum);
+            subscription.setType(SubscriptionDTO.TypeEnum.API);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription);
 
             HttpResponse response = null;

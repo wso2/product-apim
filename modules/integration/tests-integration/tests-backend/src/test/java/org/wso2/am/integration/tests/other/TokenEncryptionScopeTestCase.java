@@ -189,8 +189,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             String applicationID = applicationResponse.getData();
 
             //Subscribe the API to the Application
-            HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                    SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+            HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
             //Generate production token and invoke with that
             ArrayList grantTypes = new ArrayList();
