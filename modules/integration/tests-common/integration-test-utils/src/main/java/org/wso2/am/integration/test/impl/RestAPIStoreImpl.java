@@ -120,7 +120,7 @@ public class RestAPIStoreImpl {
     }
 
 
-    public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
+    public HttpResponse deleteApplication(String applicationId) {
         try {
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
             applicationsApi.applicationsApplicationIdGet(applicationId, null);

@@ -52,12 +52,13 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 
+import static org.testng.Assert.assertNotNull;
+
 public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(LocationHeaderTestCase.class);
-
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    String applicationId;
+    String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -110,9 +111,10 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
                 .generateKeys(applicationId, "36000", "",
                         ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
-
+        assertNotNull(applicationKeyDTO.getToken(), "Generated Keys doesn't include a token");
         //Get the accessToken which was generated.
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        assertNotNull(accessToken, "Production access token is Empty");
 
         //Going to access the API with the version in the request url.
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
@@ -138,5 +140,7 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
     }
 }

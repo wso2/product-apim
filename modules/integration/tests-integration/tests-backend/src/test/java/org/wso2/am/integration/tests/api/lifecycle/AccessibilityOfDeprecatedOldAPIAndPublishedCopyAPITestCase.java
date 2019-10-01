@@ -249,7 +249,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws ApiException, InterruptedException {
-        restAPIStore.deleteApplication(applicationID, null);
+        restAPIStore.deleteApplication(applicationID);
         Thread.sleep(2000);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);

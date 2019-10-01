@@ -143,7 +143,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.deleteApplication(applicationID, null);
+        restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
