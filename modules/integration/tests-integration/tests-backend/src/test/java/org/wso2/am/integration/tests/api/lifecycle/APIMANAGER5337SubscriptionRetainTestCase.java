@@ -98,8 +98,7 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             String applicationID = applicationResponse.getData();
 
             //Subscribe the API to the Application
-            response = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                    StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+            response = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
             //verifyResponse(response);
 
             //Demote the API to the Created State

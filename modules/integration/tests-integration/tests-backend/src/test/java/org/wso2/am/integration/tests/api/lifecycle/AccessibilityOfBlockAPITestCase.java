@@ -155,7 +155,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        restAPIStore.deleteApplication(applicationId, "carbon.super");
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

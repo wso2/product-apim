@@ -107,8 +107,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
         //Create api and subscribe the API to the DefaultApplication
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Generate production token and invoke with that
         ArrayList grantTypes = new ArrayList();
@@ -143,7 +142,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.deleteApplication(applicationID, null);
+        restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

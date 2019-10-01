@@ -185,8 +185,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     public void testAddSubscriptionApplicationById() throws Exception {
         //subscribe to the api
         HttpResponse subscriptionResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                tier, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                tier, restAPIStore);
         assertEquals(subscriptionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when adding an application");
     }
@@ -219,7 +218,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"webapp" }, description = "Remove application By Application Id",
             dependsOnMethods = "testCleanupApplicationRegistrationById")
     public void testRemoveApplicationById() {
-        HttpResponse removeAppResponse = restAPIStore.deleteApplication(applicationId, null);
+        HttpResponse removeAppResponse = restAPIStore.deleteApplication(applicationId);
         assertEquals(removeAppResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when deleting an application");
     }

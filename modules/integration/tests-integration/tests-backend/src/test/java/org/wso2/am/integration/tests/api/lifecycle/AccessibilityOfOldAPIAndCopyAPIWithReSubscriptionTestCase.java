@@ -111,8 +111,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse oldVersionSubscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
                         getAPIIdentifierStringFromAPIRequest(apiRequest));
@@ -189,8 +188,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     public void testSubscribeTheNewVersion() throws Exception {
         //subscribe new version
         HttpResponse newVersionSubscribeResponse = subscribeToAPIUsingRest(newApiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of New API version  when re-subscription required not successful. Invalid Response Code " +
                         getAPIIdentifierStringFromAPIRequest(apiRequest));

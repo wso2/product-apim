@@ -95,8 +95,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        HttpResponse subscription = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+        HttpResponse subscription = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId1 = subscription.getData();
 
         ResourceAdminServiceClient resourceAdminServiceClient =
