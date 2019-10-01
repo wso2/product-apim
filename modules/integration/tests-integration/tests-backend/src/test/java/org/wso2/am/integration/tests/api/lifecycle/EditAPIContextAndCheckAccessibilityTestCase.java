@@ -96,8 +96,8 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "", "");
         applicationId = applicationDTO.getApplicationId();
         ArrayList grantTypes = new ArrayList();
-        grantTypes.add("client_credentials");
-        grantTypes.add("password");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         consumerKey = applicationKeyDTO.getConsumerKey();
