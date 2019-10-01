@@ -121,10 +121,24 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
 
 
         //Check availability of the API in publisher
-        Thread.sleep(5000);
-        APIListDTO apiResponsePublisher = restAPIPublisher
-                .getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName));
-        JSONObject jsonObject = new JSONObject(apiResponsePublisher);
+        JSONObject jsonObject = null;
+        boolean available = false;
+        int maxRetry = 10;
+        int currentTry = 0;
+        do {
+            Thread.sleep(2000);
+            APIListDTO apiResponsePublisher = restAPIPublisher
+                    .getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName));           
+            if (apiResponsePublisher != null) {
+                jsonObject = new JSONObject(apiResponsePublisher);
+                available = true;
+                break;
+            }
+            
+            currentTry++;
+        } while (currentTry <= maxRetry);
+
+        assertTrue(available, "API not available");
         assertTrue(jsonObject.getString("list").contains(apiNameTest),
                 apiNameTest + " is not visible in publisher");
         assertTrue(jsonObject.getString("list").contains(apiOldVersion),
@@ -138,9 +152,23 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
 
 
         //Check if the New Version of the API is available in Publisher
-        Thread.sleep(5000);
-        APIListDTO allApiResponse = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName));
-        JSONObject allApiObject = new JSONObject(allApiResponse);
+ 
+        JSONObject allApiObject = null;
+        available = false;
+        maxRetry = 10;
+        currentTry = 0;
+        do {
+            Thread.sleep(2000);
+            APIListDTO allApiResponse = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName)); 
+            if (allApiResponse != null) {
+                allApiObject = new JSONObject(allApiResponse);
+                available = true;
+                break;
+            }
+            currentTry++;
+        } while (currentTry <= maxRetry);
+        
+        assertTrue(available, "API not available");
         JSONArray jsonArray = allApiObject.getJSONArray("list");
         List<String> allApiList = new ArrayList<String>();
 
