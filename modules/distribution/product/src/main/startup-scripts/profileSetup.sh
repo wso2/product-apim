@@ -333,7 +333,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -364,7 +364,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#publisher#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'api#am#publisher#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -397,7 +397,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#store#*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'api#am#store#*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -430,7 +430,7 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -457,7 +457,7 @@ case $1 in
 		disableIndexingConfiguration
      	replaceDeploymentConfiguration gateway-worker
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'am#sample#pizzashack#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'am#sample#pizzashack#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
