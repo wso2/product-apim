@@ -1162,7 +1162,7 @@
         <carbon.analytics.common.version>5.2.11</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.147</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.152</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1184,7 +1184,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.16</carbon.mediation.version>
+        <carbon.mediation.version>4.7.17</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.14.76</carbon.identity.version>
@@ -1225,7 +1225,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v125</synapse.version>
+        <synapse.version>2.1.7-wso2v126</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v38</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>

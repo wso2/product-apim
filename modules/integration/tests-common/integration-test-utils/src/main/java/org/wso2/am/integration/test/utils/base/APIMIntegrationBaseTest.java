@@ -82,6 +82,8 @@ public class APIMIntegrationBaseTest {
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
+    protected String keyManagerHTTPSURL;
+    protected String gatewayHTTPSURL;
     protected String storeURLHttp;
     protected String keymanagerSessionCookie;
     protected String keymanagerSuperTenantSessionCookie;
@@ -151,18 +153,22 @@ public class APIMIntegrationBaseTest {
 
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
+            gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+
             storeURLHttp = storeUrls.getWebAppURLHttp();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new APIStoreRestClient(storeURLHttp);
-
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
-                    publisherContext.getContextTenant().getDomain());
-            restAPIStore = new RestAPIStoreImpl(
-                    storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                    storeContext.getContextTenant().getContextUser().getPassword(),
-                    storeContext.getContextTenant().getDomain());
+                    publisherContext.getContextTenant().getDomain(), keyManagerHTTPSURL, gatewayHTTPSURL,
+                    publisherURLHttp);
+            restAPIStore =
+                    new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                            storeContext.getContextTenant().getContextUser().getPassword(),
+                            storeContext.getContextTenant().getDomain(), keyManagerHTTPSURL, gatewayHTTPSURL,
+                            storeURLHttp);
 
 
 

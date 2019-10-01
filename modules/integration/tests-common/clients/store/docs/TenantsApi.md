@@ -9,7 +9,7 @@ Method | HTTP request | Description
 
 <a name="tenantsGet"></a>
 # **tenantsGet**
-> tenantsGet(state, limit, offset)
+> TenantListDTO tenantsGet(state, limit, offset)
 
 Get get tenants by state 
 
@@ -35,7 +35,8 @@ String state = "active"; // String | The state represents the current state of t
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 try {
-    apiInstance.tenantsGet(state, limit, offset);
+    TenantListDTO result = apiInstance.tenantsGet(state, limit, offset);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling TenantsApi#tenantsGet");
     e.printStackTrace();
@@ -52,7 +53,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**TenantListDTO**](TenantListDTO.md)
 
 ### Authorization
 

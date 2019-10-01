@@ -16,6 +16,10 @@
 
 package org.wso2.am.integration.test.impl;
 
+
+import com.google.gson.Gson;
+import org.apache.http.protocol.HTTP;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
@@ -36,12 +40,15 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -58,32 +65,34 @@ public class RestAPIStoreImpl {
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
     public static final String grantType = "password client_credentials";
-    public static final String dcrEndpoint = "http://127.0.0.1:10263/client-registration/v0.14/register";
     public static final String username = "admin";
     public static final String password = "admin";
-    public static final String tenantDomain = "";
-    public static final String tokenEndpoint = "https://127.0.0.1:9943/oauth2/token";
+    public String storeURL;
+    public String tenantDomain;
 
-
-    public RestAPIStoreImpl(){
-        this(username, password, tenantDomain);
+    @Deprecated
+    public RestAPIStoreImpl() {
+        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:8743", "https://127.0.0.1:9943");
     }
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain) {
-
-        String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage " +
-                "apim:self-signup apim:dedicated_gateway apim:store_settings";
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
+        String tokenURL = gatewayURL + "token";
+        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+        String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
+                + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 
         String accessToken = ClientAuthenticator
-                .getAccessToken(scopes,
-                        appName, callBackURL, tokenScope, appOwner, grantType, dcrEndpoint, username, password, tenantDomain, tokenEndpoint);
+                .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
+                        password, tenantDomain, tokenURL);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath("https://localhost:9943/api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
+        this.storeURL = storeURL;
+        this.tenantDomain = tenantDomain;
     }
 
 
@@ -113,19 +122,17 @@ public class RestAPIStoreImpl {
 
     public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
         try {
-
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
+            applicationsApi.applicationsApplicationIdGet(applicationId, null);
+
+            return null;
+        } catch (ApiException e) {
             HttpResponse response = null;
-            if ((applicationsApi.applicationsApplicationIdGet(applicationId, null) == null)) {
+            if (HttpStatus.SC_NOT_FOUND == e.getCode()) {
                 response = new HttpResponse(applicationId, 200);
             }
             return response;
-        } catch (ApiException e) {
-            if (e.getResponseBody().contains("already exists")) {
-                return null;
-            }
         }
-        return null;
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
@@ -191,39 +198,6 @@ public class RestAPIStoreImpl {
         return apIsApi.apisApiIdGet(apiId, null, null);
     }
 
-
-    /**
-     * Generate user access key
-     *
-     * @param consumeKey       - consumer  key of user
-     * @param consumerSecret   - consumer secret key
-     * @param messageBody      - message body
-     * @param tokenEndpointURL - token endpoint url
-     * @return - http response of generate access token api call
-     * @throws APIManagerIntegrationTestException - throws if generating APIM access token fails
-     */
-    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
-                                              String messageBody, URL tokenEndpointURL)
-            throws APIManagerIntegrationTestException {
-
-//        try {
-//            //checkAuthentication();
-//            Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
-//            String basicAuthHeader = consumeKey + ":" + consumerSecret;
-//            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
-//
-//            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
-//
-//            return HTTPSClientUtils.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-
-        return null;
-    }
-
     /**
      * Get all published apis
      *
@@ -241,6 +215,17 @@ public class RestAPIStoreImpl {
 //                    "Error: " + e.getMessage(), e);
 //        }
         return null;
+    }
+
+    /**
+     *
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAllAPIs() throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -269,17 +254,21 @@ public class RestAPIStoreImpl {
      * @return - http response of get of application
      * @throws APIManagerIntegrationTestException - throws if get application fails.
      */
-    public HttpResponse getApplicationById(int applicationId) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/application/application-list/ajax/" +
-//                            "application-list.jag?action=getApplicationById&appId=" + applicationId,
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve all applications. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
+    public HttpResponse getApplicationById(String applicationId) throws APIManagerIntegrationTestException {
+        try {
+            ApplicationDTO applicationDTO = applicationsApi.applicationsApplicationIdGet(applicationId, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(applicationDTO.getApplicationId())) {
+                Gson gson = new Gson();
+                response = new HttpResponse(gson.toJson(applicationDTO), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+
         return null;
     }
 
@@ -476,25 +465,21 @@ public class RestAPIStoreImpl {
      * Clean up application registration by ID
      *
      * @param applicationId   - application ID
-     * @param applicationName - application name
+     * @param keyType - key type
      * @return - http response of paginated published APIs
      * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
-    public HttpResponse cleanUpApplicationRegistrationByApplicationId(int applicationId, String applicationName)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            String requestData =
-//                    "action=cleanUpApplicationRegistrationByApplicationId&appId=" + applicationId + "&applicationName="
-//                            + applicationName + "&keyType=PRODUCTION";
-//            return HTTPSClientUtils.doPost(new URL(
-//                    backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"
-//                            + requestData), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to cleanup application - "
-//                    + applicationName + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse cleanUpApplicationRegistrationByApplicationId(String applicationId, String keyType)
+            throws APIManagerIntegrationTestException, ApiException {
+
+        ApiResponse<Void> httpInfo = applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypeCleanUpPostWithHttpInfo(applicationId, keyType, null);
+
+        HttpResponse response = null;
+        if (httpInfo.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully cleaned up the application registration", 200);
+        }
+        return response;
     }
 
 
@@ -553,24 +538,16 @@ public class RestAPIStoreImpl {
      * @return - http response of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
-    public HttpResponse addApplication(String application, String tier, String callbackUrl,
-                                       String description)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
+    public ApplicationDTO addApplication(String application, String tier, String callbackUrl, String description)
+            throws ApiException {
+        ApplicationDTO dto = new ApplicationDTO();
+        dto.setName(application);
+        dto.setThrottlingPolicy(tier);
+        dto.setDescription(description);
+
+        ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -791,31 +768,27 @@ public class RestAPIStoreImpl {
     /**
      * Update given Auth application
      *
-     * @param application       auth application name
-     * @param keyType           type of the key
-     * @param authorizedDomains authorized domains
-     * @param retryAfterFailure retry after fail
-     * @param jsonParams        json parameters for grant type
-     * @param callbackUrl       call back url
+     * @param applicationId       auth application id
+     * @param applicationDTO      DTO of the application
      * @return Http response of the update request
      * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
-    public HttpResponse updateClientApplicationById(int applicationId, String application, String keyType, String authorizedDomains,
-                                                    String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(
-//                    backendURL + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"
-//                            + "action=updateClientApplicationByAppId&appId=" + applicationId + "&application="
-//                            + application + "&keytype=" + keyType + "&authorizedDomains=" + authorizedDomains
-//                            + "&retryAfterFailure=" + retryAfterFailure + "&jsonParams=" + URLEncoder
-//                            .encode(jsonParams, "UTF-8") + "&callbackUrl=" + callbackUrl), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
-//
-//        }
+    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO  applicationDTO) {
+
+        try {
+            ApplicationDTO responseApplicationDTO = applicationsApi.applicationsApplicationIdPut(applicationId, applicationDTO, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(responseApplicationDTO.getApplicationId())) {
+                Gson gson = new Gson();
+                response = new HttpResponse(gson.toJson(responseApplicationDTO), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+
         return null;
     }
 
@@ -1144,6 +1117,17 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException {
+        SubscriptionDTO subscription = new SubscriptionDTO();
+        subscription.setApplicationId(appID);
+        subscription.setApiId(apiID);
+        subscription.setThrottlingPolicy(tier);
+        subscription.setType(SubscriptionDTO.TypeEnum.API);
+        ApiResponse<SubscriptionDTO> subscriptionResponse =
+                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription);
+        Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
+        return subscriptionResponse.getData();
+    }
 
 //    /**
 //     * Retrieve the API store page as anonymous user.
@@ -1163,25 +1147,21 @@ public class RestAPIStoreImpl {
 //        }
 //    }
 
-    public HttpResponse getAPIListFromStoreAsAnonymousUser(String tenantDomain)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            HttpResponse httpResponse = HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/recently-added/ajax/list.jag"
-//                    + "?action=getRecentlyAddedAPIs&tenant=" + tenantDomain, new HashMap<String, String>());
-//
-//            if (new JSONObject(httpResponse.getData()).getBoolean("error")) {
-//                throw new APIManagerIntegrationTestException("Error when getting API list as AsAnonymousUser");
-//            }
-//
-//            return httpResponse;
-//        } catch (IOException ioE) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Exception when retrieve the API list as anonymous user. Error: " + ioE.getMessage(), ioE);
-//        } catch (JSONException e) {
-//            throw new APIManagerIntegrationTestException("Response message is not JSON Response"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    /**
+     *
+     * @param tenantDomain
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
+        ApIsApi apIsApi = new ApIsApi();
+        ApiClient apiStoreClient = new ApiClient();
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apIsApi.setApiClient(apiStoreClient);
+
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
 
@@ -1500,5 +1480,36 @@ public class RestAPIStoreImpl {
                 apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox", null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
+    }
+
+
+
+    /**
+     * Generate user access key
+     *
+     * @param consumeKey       - consumer  key of user
+     * @param consumerSecret   - consumer secret key
+     * @param messageBody      - message body
+     * @param tokenEndpointURL - token endpoint url
+     * @return - http response of generate access token api call
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if generating APIM access token fails
+     */
+    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
+                                              String messageBody, URL tokenEndpointURL)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
+            String basicAuthHeader = consumeKey + ":" + consumerSecret;
+            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
+
+            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
+
+            return HTTPSClientUtils.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
+                    "Error: " + e.getMessage(), e);
+        }
     }
 }
