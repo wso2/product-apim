@@ -126,7 +126,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
             apiRequest = new APIRequest(API_NAME, apiContext, new URL(endpointUrl));
         } catch (MalformedURLException e) {
             log.error("Invalid URL " + endpointUrl, e);
-            fail();
+            fail(e.getMessage());
         }
 
         apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
