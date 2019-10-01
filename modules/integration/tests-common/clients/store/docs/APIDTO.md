@@ -23,12 +23,14 @@ Name | Type | Description | Notes
 **tiers** | [**List&lt;APITiersDTO&gt;**](APITiersDTO.md) | The subscription tiers selected for the particular API |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
 **additionalProperties** | **Map&lt;String, String&gt;** | Custom(user defined) properties of API  |  [optional]
+**monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
 **endpointURLs** | [**List&lt;APIEndpointURLsDTO&gt;**](APIEndpointURLsDTO.md) |  |  [optional]
 **businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
 **labels** | [**List&lt;LabelDTO&gt;**](LabelDTO.md) | Labels of micro-gateway environments attached to the API.  |  [optional]
 **environmentList** | **List&lt;String&gt;** | The environment list configured with non empty endpoint URLs for the particular API. |  [optional]
 **scopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **avgRating** | **String** | The average rating of the API |  [optional]
+**advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
 
 
 

@@ -8,8 +8,6 @@ Name | Type | Description | Notes
 **applicationId** | **String** | The UUID of the application | 
 **apiId** | **String** | The unique identifier of the API. |  [optional]
 **apiInfo** | [**APIInfoDTO**](APIInfoDTO.md) |  |  [optional]
-**apiProductId** | **String** | The unique identifier of the API Product. |  [optional]
-**apiProductInfo** | [**APIProductInfoDTO**](APIProductInfoDTO.md) |  |  [optional]
 **applicationInfo** | [**ApplicationInfoDTO**](ApplicationInfoDTO.md) |  |  [optional]
 **throttlingPolicy** | **String** |  | 
 **type** | [**TypeEnum**](#TypeEnum) |  |  [optional]

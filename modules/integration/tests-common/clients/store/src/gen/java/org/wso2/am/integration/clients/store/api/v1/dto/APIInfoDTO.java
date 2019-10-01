@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.store.api.v1.dto.AdvertiseInfoDTO;
 
 /**
  * APIInfoDTO
@@ -63,6 +64,9 @@ public class APIInfoDTO {
 
   @SerializedName("throttlingPolicies")
   private List<String> throttlingPolicies = null;
+
+  @SerializedName("advertiseInfo")
+  private AdvertiseInfoDTO advertiseInfo = null;
 
   public APIInfoDTO id(String id) {
     this.id = id;
@@ -270,6 +274,24 @@ public class APIInfoDTO {
     this.throttlingPolicies = throttlingPolicies;
   }
 
+  public APIInfoDTO advertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+    this.advertiseInfo = advertiseInfo;
+    return this;
+  }
+
+   /**
+   * The advertise info of the API
+   * @return advertiseInfo
+  **/
+  @ApiModelProperty(value = "The advertise info of the API")
+  public AdvertiseInfoDTO getAdvertiseInfo() {
+    return advertiseInfo;
+  }
+
+  public void setAdvertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+    this.advertiseInfo = advertiseInfo;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -290,12 +312,13 @@ public class APIInfoDTO {
         Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
         Objects.equals(this.thumbnailUri, apIInfo.thumbnailUri) &&
         Objects.equals(this.avgRating, apIInfo.avgRating) &&
-        Objects.equals(this.throttlingPolicies, apIInfo.throttlingPolicies);
+        Objects.equals(this.throttlingPolicies, apIInfo.throttlingPolicies) &&
+        Objects.equals(this.advertiseInfo, apIInfo.advertiseInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, type, provider, lifeCycleStatus, thumbnailUri, avgRating, throttlingPolicies);
+    return Objects.hash(id, name, description, context, version, type, provider, lifeCycleStatus, thumbnailUri, avgRating, throttlingPolicies, advertiseInfo);
   }
 
 
@@ -315,6 +338,7 @@ public class APIInfoDTO {
     sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    throttlingPolicies: ").append(toIndentedString(throttlingPolicies)).append("\n");
+    sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
     sb.append("}");
     return sb.toString();
   }

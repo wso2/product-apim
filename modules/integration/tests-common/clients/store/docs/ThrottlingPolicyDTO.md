@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **unitTime** | **Long** |  | 
 **tierPlan** | [**TierPlanEnum**](#TierPlanEnum) | This attribute declares whether this tier is available under commercial or free  | 
 **stopOnQuotaReach** | **Boolean** | If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time  | 
+**monetizationAttributes** | [**MonetizationInfoDTO**](MonetizationInfoDTO.md) |  |  [optional]
 **throttlingPolicyPermissions** | [**ThrottlingPolicyPermissionInfoDTO**](ThrottlingPolicyPermissionInfoDTO.md) |  |  [optional]
 
 
