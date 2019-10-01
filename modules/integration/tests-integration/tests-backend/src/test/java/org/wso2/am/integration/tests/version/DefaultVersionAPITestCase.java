@@ -107,8 +107,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
         //Create api and subscribe the API to the DefaultApplication
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Generate production token and invoke with that
         ArrayList grantTypes = new ArrayList();

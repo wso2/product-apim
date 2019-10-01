@@ -185,8 +185,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     public void testAddSubscriptionApplicationById() throws Exception {
         //subscribe to the api
         HttpResponse subscriptionResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                tier, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                tier, restAPIStore);
         assertEquals(subscriptionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when adding an application");
     }

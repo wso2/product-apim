@@ -117,8 +117,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         //get access token
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
                 + user.getPassword();

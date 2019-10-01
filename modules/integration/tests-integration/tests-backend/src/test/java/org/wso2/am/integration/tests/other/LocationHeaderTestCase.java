@@ -57,8 +57,8 @@ import static org.testng.Assert.assertNotNull;
 public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(LocationHeaderTestCase.class);
-    String applicationId;
-    String apiId;
+    private String applicationId;
+    private String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -88,6 +88,7 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
+        apiId = createdAPI.getId();
 
         WorkflowResponseDTO lifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(
                 createdAPI.getId(), Constants.PUBLISHED);
@@ -96,9 +97,10 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED.getState(),
                 "Lifecycle State was not changed to " + APILifeCycleState.PUBLISHED.getState());
 
+
         HttpResponse appCreateResponse = restAPIStore.createApplication("LocHeaderAPP", "",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
-        String applicationId = appCreateResponse.getData();
+        applicationId = appCreateResponse.getData();
 
         //Subscribe the API to the LocHeaderAPP
         HttpResponse subscriptionResponse = restAPIStore.createSubscription(createdAPI.getId(), applicationId,
@@ -139,8 +141,8 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
+        super.cleanUp();
     }
 }
