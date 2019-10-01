@@ -132,8 +132,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
 
 
-        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         subscriptionId1 = oldVersionSubscribeResponse.getData();
 
@@ -145,8 +144,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     @Test(groups = {"wso2.am"}, description = "Test subscribe of new API version before deprecate the old version",
             dependsOnMethods = "testSubscribeOldVersionBeforeDeprecate")
     public void testSubscribeNewVersion() {
-        HttpResponse newVersionSubscribeResponse = restAPIStore.createSubscription(apiId2, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+        HttpResponse newVersionSubscribeResponse = restAPIStore.createSubscription(apiId2, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         subscriptionId2 = newVersionSubscribeResponse.getData();
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -210,8 +208,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
             dependsOnMethods = "testVisibilityOfNewAPIInStore")
     public void testSubscribeOldVersionAfterDeprecate() {
         //subscribe deprecated old version
-        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED,
-                SubscriptionDTO.StatusEnum.UNBLOCKED, SubscriptionDTO.TypeEnum.API);
+        HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         assertEquals(oldVersionSubscribeResponse, null,
                 "Subscribe of old API version  after deprecate success, which should fail." +
@@ -252,7 +249,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws ApiException, InterruptedException {
-        restAPIStore.deleteApplication(applicationID, null);
+        restAPIStore.deleteApplication(applicationID);
         Thread.sleep(2000);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);

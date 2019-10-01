@@ -115,10 +115,9 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiRequest.setVersion(API_VERSION_1_0_0);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        
+
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         //get access token
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
                 + user.getPassword();
@@ -195,7 +194,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        restAPIStore.deleteApplication(applicationId, MultitenantUtils.getTenantDomain(providerName));
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

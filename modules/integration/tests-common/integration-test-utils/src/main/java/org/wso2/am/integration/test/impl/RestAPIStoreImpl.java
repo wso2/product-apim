@@ -120,7 +120,7 @@ public class RestAPIStoreImpl {
     }
 
 
-    public HttpResponse deleteApplication(String applicationId, String tenantDomain) {
+    public HttpResponse deleteApplication(String applicationId) {
         try {
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
             applicationsApi.applicationsApplicationIdGet(applicationId, null);
@@ -135,15 +135,13 @@ public class RestAPIStoreImpl {
         }
     }
 
-    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
-                                           SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum) {
+    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
-            subscription.setStatus(statusEnum);
-            subscription.setType(typeEnum);
+            subscription.setType(SubscriptionDTO.TypeEnum.API);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription);
 
             HttpResponse response = null;
