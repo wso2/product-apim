@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -170,20 +171,6 @@ public class RestAPIStoreImpl {
             if (applicationList.getCount() != 0) {
                 applicationList.getList().forEach(appDTO -> applicationIdList.add(appDTO.getApplicationId()));
                 response = new HttpResponse(applicationIdList.toString(), 200);
-            }
-            return response;
-        } catch(ApiException e) {
-
-        }
-        return null;
-    }
-
-    public HttpResponse getApplicationByID(String applicationId){
-        try {
-            ApplicationDTO application = applicationsApi.applicationsApplicationIdGet(applicationId, null);
-            HttpResponse response = null;
-            if (StringUtils.isNotEmpty(application.getApplicationId())) {
-                response = new HttpResponse(application.getApplicationId(), 200);
             }
             return response;
         } catch(ApiException e) {

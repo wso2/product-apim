@@ -22,6 +22,7 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -31,7 +32,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -46,7 +46,6 @@ import static org.testng.Assert.*;
 public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIM678ApplicationCreationTestCase.class);
-    private APIStoreRestClient apiStore;
     private String applicationName = "NewApplication1";
     private static final String description = "NewApplicationCreation";
     private static final String appTier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
@@ -71,7 +70,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                //TODO: Add tenant user
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -109,12 +108,12 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         log.info("Test Starting user mode:" + userMode);
         restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain());
+                storeContext.getContextTenant().getDomain(),keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
 
     }
 
     //create application with valid data
-    @Test(groups = "webapp", dataProvider = "createApplicationWithValidData", description = "Create an Application")
+    @Test(dataProvider = "createApplicationWithValidData", description = "Create an Application")
     public void testApplicationCreation(String applicationName, String tier, String description)
             throws Exception {
 
@@ -147,7 +146,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 //    }
 
     //Create already created application
-    @Test(groups = "webapp", description = "Create already created application",
+    @Test(description = "Create already created application",
             dependsOnMethods = "testApplicationCreation")
     public void testAlreadyCreatedApplication() throws Exception {
 
@@ -158,7 +157,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 + applicationName);
     }
 
-    @Test(groups = "webapp", description = "Get all created applications", dependsOnMethods = "testApplicationCreation")
+    @Test(description = "Get all created applications", dependsOnMethods = "testApplicationCreation")
     public void getAllCreatedApplications() throws Exception {
         HttpResponse getResponse = restAPIStore.getAllApp();
         assertEquals(getResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -167,7 +166,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Update application
-    @Test(groups = "webapp", description = "Update an application")
+    @Test(description = "Update an application")
     public void testUpdateApplication() throws Exception {
 
         String applicationName = "testApplication";
@@ -206,7 +205,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     }
 
     //Remove a application
-    @Test(groups = "webapp", description = "Remove application")
+    @Test(description = "Remove application")
     public void testRemoveApplication() throws Exception {
 
         String applicationName = "RemoveMeApp";
@@ -216,23 +215,25 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertEquals(createApplicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched in add application " + applicationName);
 
-        HttpResponse applicationResponse = restAPIStore.getApplicationByID(createApplicationResponse.getData());
+        HttpResponse applicationResponse = restAPIStore.getApplicationById(createApplicationResponse.getData());
         assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched get application " + applicationName);
 
         //remove created application
-        HttpResponse deleteApplicationResponse = restAPIStore.deleteApplication(createApplicationResponse.getData(),
+        HttpResponse deleteApplicationResponse = restAPIStore.
+                deleteApplication(new JSONObject(applicationResponse.getData()).getString("applicationId"),
                 "carbon.super");
-        assertNull(deleteApplicationResponse);
+        assertEquals(deleteApplicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response Code is mismatched get application " + applicationName);
 
 
-        HttpResponse deleteVerifyResponse = restAPIStore.getApplicationByID(createApplicationResponse.getData());
+        HttpResponse deleteVerifyResponse = restAPIStore.getApplicationById(createApplicationResponse.getData());
         assertNull(deleteVerifyResponse, "Error occur while deleting the application" + applicationName);
     }
 
 
     // Create application with custom attributes
-    @Test(groups = "webapp", dataProvider = "createApplicationWithCustomAttributes",
+    @Test(dataProvider = "createApplicationWithCustomAttributes",
             description = "Create an Application")
     public void testApplicationCreationWithCustomAttributes(String applicationName, String tier, String description,
                                                             ApplicationDTO.TokenTypeEnum token,

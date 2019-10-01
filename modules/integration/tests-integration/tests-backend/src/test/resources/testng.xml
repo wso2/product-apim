@@ -49,6 +49,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion" />
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase" />
+            <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase" />
         </classes>
     </test>
 
