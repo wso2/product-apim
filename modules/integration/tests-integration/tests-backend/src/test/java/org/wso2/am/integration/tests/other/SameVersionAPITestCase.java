@@ -67,7 +67,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
     }
 
     @Test(groups = "webapp", description = "Copy Same Version")
