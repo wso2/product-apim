@@ -94,7 +94,7 @@ public class ApplicationDTO {
   }
 
   @SerializedName("tokenType")
-  private TokenTypeEnum tokenType = TokenTypeEnum.OAUTH;
+  private TokenTypeEnum tokenType = TokenTypeEnum.JWT;
 
   @SerializedName("status")
   private String status = "";
@@ -198,7 +198,7 @@ public class ApplicationDTO {
    * Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. 
    * @return tokenType
   **/
-  @ApiModelProperty(example = "OAUTH", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. ")
+  @ApiModelProperty(example = "JWT", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token which is issued by default. **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments. ")
   public TokenTypeEnum getTokenType() {
     return tokenType;
   }

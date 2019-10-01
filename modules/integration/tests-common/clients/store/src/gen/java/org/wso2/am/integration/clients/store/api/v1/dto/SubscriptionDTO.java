@@ -24,7 +24,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIProductInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 
 /**
@@ -43,12 +42,6 @@ public class SubscriptionDTO {
 
   @SerializedName("apiInfo")
   private APIInfoDTO apiInfo = null;
-
-  @SerializedName("apiProductId")
-  private String apiProductId = null;
-
-  @SerializedName("apiProductInfo")
-  private APIProductInfoDTO apiProductInfo = null;
 
   @SerializedName("applicationInfo")
   private ApplicationInfoDTO applicationInfo = null;
@@ -234,42 +227,6 @@ public class SubscriptionDTO {
     this.apiInfo = apiInfo;
   }
 
-  public SubscriptionDTO apiProductId(String apiProductId) {
-    this.apiProductId = apiProductId;
-    return this;
-  }
-
-   /**
-   * The unique identifier of the API Product.
-   * @return apiProductId
-  **/
-  @ApiModelProperty(value = "The unique identifier of the API Product.")
-  public String getApiProductId() {
-    return apiProductId;
-  }
-
-  public void setApiProductId(String apiProductId) {
-    this.apiProductId = apiProductId;
-  }
-
-  public SubscriptionDTO apiProductInfo(APIProductInfoDTO apiProductInfo) {
-    this.apiProductInfo = apiProductInfo;
-    return this;
-  }
-
-   /**
-   * Get apiProductInfo
-   * @return apiProductInfo
-  **/
-  @ApiModelProperty(value = "")
-  public APIProductInfoDTO getApiProductInfo() {
-    return apiProductInfo;
-  }
-
-  public void setApiProductInfo(APIProductInfoDTO apiProductInfo) {
-    this.apiProductInfo = apiProductInfo;
-  }
-
   public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
     this.applicationInfo = applicationInfo;
     return this;
@@ -356,8 +313,6 @@ public class SubscriptionDTO {
         Objects.equals(this.applicationId, subscription.applicationId) &&
         Objects.equals(this.apiId, subscription.apiId) &&
         Objects.equals(this.apiInfo, subscription.apiInfo) &&
-        Objects.equals(this.apiProductId, subscription.apiProductId) &&
-        Objects.equals(this.apiProductInfo, subscription.apiProductInfo) &&
         Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
         Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
         Objects.equals(this.type, subscription.type) &&
@@ -366,7 +321,7 @@ public class SubscriptionDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, apiProductId, apiProductInfo, applicationInfo, throttlingPolicy, type, status);
+    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, type, status);
   }
 
 
@@ -379,8 +334,6 @@ public class SubscriptionDTO {
     sb.append("    applicationId: ").append(toIndentedString(applicationId)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
     sb.append("    apiInfo: ").append(toIndentedString(apiInfo)).append("\n");
-    sb.append("    apiProductId: ").append(toIndentedString(apiProductId)).append("\n");
-    sb.append("    apiProductInfo: ").append(toIndentedString(apiProductInfo)).append("\n");
     sb.append("    applicationInfo: ").append(toIndentedString(applicationInfo)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");

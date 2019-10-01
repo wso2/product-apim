@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -57,7 +56,6 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     private String tier = APIMIntegrationConstants.API_TIER.GOLD;
     private String resTier = APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType = "http";
-    private RestAPIPublisherImpl restAPIPublisher;
     private String apiId;
     private String resourceMethodAuthType = "Application & Application User";
     private String uriTemplate = "customers/{id}/";
@@ -69,8 +67,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        restAPIPublisher = new RestAPIPublisherImpl();
+        super.init(userMode);
     }
 
     @Test(groups = "webapp", description = "Copy Same Version")

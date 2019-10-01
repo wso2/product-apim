@@ -52,9 +52,9 @@ public class ClientAuthenticator {
 
     public static String getAccessToken(String scopeList, String appName, String callBackURL, String tokenScope, String appOwner,
                                         String grantType, String dcrEndpoint, String username, String password, String tenantDomain, String tokenEndpoint) {
-        if (consumerKey == null) {
+       // if (consumerKey == null) {
             makeDCRRequest(appName,  callBackURL,  tokenScope,  appOwner, grantType,  dcrEndpoint,  username,  password,  tenantDomain);
-        }
+       // }
         URL url;
         HttpsURLConnection urlConn = null;
         //calling token endpoint
