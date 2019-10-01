@@ -1,27 +1,34 @@
 /*
- *Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- *WSO2 Inc. licenses this file to you under the Apache License,
- *Version 2.0 (the "License"); you may not use this file except
- *in compliance with the License.
- *You may obtain a copy of the License at
- *
- *http://www.apache.org/licenses/LICENSE-2.0
- *
- *Unless required by applicable law or agreed to in writing,
- *software distributed under the License is distributed on an
- *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.  See the License for the
- *specific language governing permissions and limitations
- *under the License.
- */
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+*WSO2 Inc. licenses this file to you under the Apache License,
+*Version 2.0 (the "License"); you may not use this file except
+*in compliance with the License.
+*You may obtain a copy of the License at
+*
+*http://www.apache.org/licenses/LICENSE-2.0
+*
+*Unless required by applicable law or agreed to in writing,
+*software distributed under the License is distributed on an
+*"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+*KIND, either express or implied.  See the License for the
+*specific language governing permissions and limitations
+*under the License.
+*/
 package org.wso2.am.integration.tests.version;
 
-import org.testng.annotations.*;
+import org.json.JSONObject;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -47,7 +54,8 @@ import static org.testng.Assert.assertEquals;
  * </p>
  */
 public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
-
+    private String applicationID;
+    private String apiId;
     @Factory(dataProvider = "userModeDataProvider")
     public DefaultVersionAPITestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -91,15 +99,14 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-
         //Add an Application in the Store.
         HttpResponse applicationResponse = restAPIStore
                 .createApplication("DefaultVersionAPP", "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
 
-        String applicationID = applicationResponse.getData();
+        applicationID = applicationResponse.getData();
 
         //Create api and subscribe the API to the DefaultApplication
-        String apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
                 APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
                 SubscriptionDTO.TypeEnum.API);
 
@@ -132,6 +139,12 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
+            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+        }
+        restAPIStore.deleteApplication(applicationID, null);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 
