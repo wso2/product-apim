@@ -18,22 +18,31 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,9 +71,15 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
     private String newContext;
+    private String applicationId = null;
+    private String apiId;
+    private String consumerKey;
+    private String consumerSecret;
+    private String userAccessToken;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize()
+            throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException, ApiException {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
@@ -75,30 +90,48 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "", "");
+        ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "", "");
+        applicationId = applicationDTO.getApplicationId();
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        grantTypes.add("password");
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invoke the API before the context change")
     public void testInvokeAPIBeforeChangeAPIContext() throws Exception {
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                apiStoreClientUser1, APPLICATION_NAME);
+
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
+                SubscriptionDTO.TypeEnum.API);
         //get access token
-        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
+                + user.getPassword();
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
+        JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
+            consumerSecret, requestBody, tokenEndpointURL).getData());
+
+        userAccessToken = accessTokenGenerationResponse.getString("access_token");
+
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         //Invoke  old version
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
@@ -116,31 +149,27 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API context",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPIContext")
-    public void testEditAPIContext() throws APIManagerIntegrationTestException, MalformedURLException {
+    public void testEditAPIContext() throws APIManagerIntegrationTestException, MalformedURLException,
+            org.wso2.am.integration.clients.publisher.api.ApiException {
         //Create the API Request with new context
         newContext = "new" + API_CONTEXT;
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, newContext, API_VERSION_1_0_0,
-                providerName, new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        APIRequest apiBean = new APIRequest(API_NAME, newContext, new URL(apiEndPointUrl));
+        apiBean.setVersion(API_VERSION_1_0_0);
+        apiCreationRequestBean.setDescription("update " + API_DESCRIPTION);
         //Update API with Edited information
-        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        HttpResponse updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiBean , apiId);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
-        assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
-                "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
-                        "Response Data:" + updateAPIHTTPResponse.getData());
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using old context after Context change" +
-            " after the API context change", dependsOnMethods = "testEditAPIContext")
-    public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
+            dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext")
+    public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws Exception {
         //Invoke  old context
         waitForAPIDeployment();
 
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(newContext, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api before changing the context");
@@ -150,12 +179,12 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
-            dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext")
-    public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using old context after Context change" +
+            " after the API context change", dependsOnMethods = "testEditAPIContext")
+    public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(newContext, API_VERSION_1_0_0)  + "/" +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api after changing the context");
@@ -166,14 +195,10 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        restAPIStore.deleteApplication(applicationId, MultitenantUtils.getTenantDomain(providerName));
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 
 
 }
-
-
-
-
