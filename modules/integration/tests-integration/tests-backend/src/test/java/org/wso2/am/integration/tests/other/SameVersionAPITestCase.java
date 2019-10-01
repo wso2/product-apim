@@ -57,7 +57,6 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     private String tier = APIMIntegrationConstants.API_TIER.GOLD;
     private String resTier = APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType = "http";
-    private RestAPIPublisherImpl restAPIPublisher;
     private String apiId;
     private String resourceMethodAuthType = "Application & Application User";
     private String uriTemplate = "customers/{id}/";
@@ -70,10 +69,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String userName = gatewayContextWrk.getContextTenant().getTenantAdmin().getUserNameWithoutDomain();
-        String password = gatewayContextWrk.getContextTenant().getTenantAdmin().getPassword();
-        String tenantDomain = gatewayContextWrk.getContextTenant().getDomain();
-        restAPIPublisher = new RestAPIPublisherImpl(userName, password, tenantDomain);
+
     }
 
     @Test(groups = "webapp", description = "Copy Same Version")

@@ -63,7 +63,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     private String uriTemplate = "customers/{id}/";
     private String apiId;
     private String defaultApiId;
-    private RestAPIPublisherImpl restAPIPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public NewCopyWithDefaultVersion(TestUserMode userMode) {
@@ -73,10 +72,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String userName = gatewayContextWrk.getContextTenant().getTenantAdmin().getUserNameWithoutDomain();
-        String password = gatewayContextWrk.getContextTenant().getTenantAdmin().getPassword();
-        String tenantDomain = gatewayContextWrk.getContextTenant().getDomain();
-        restAPIPublisher = new RestAPIPublisherImpl(userName, password, tenantDomain);
     }
 
     @Test(groups = {"webapp"}, description = "New Copy with Default Version")
