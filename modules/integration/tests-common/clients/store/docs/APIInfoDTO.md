@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **thumbnailUri** | **String** |  |  [optional]
 **avgRating** | **String** | Average rating of the API |  [optional]
 **throttlingPolicies** | **List&lt;String&gt;** | List of throttling policies of the API |  [optional]
+**advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
 
 
 

@@ -28,6 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TenantListDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -126,10 +127,12 @@ public class TenantsApi {
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @return TenantListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public void tenantsGet(String state, Integer limit, Integer offset) throws ApiException {
-        tenantsGetWithHttpInfo(state, limit, offset);
+    public TenantListDTO tenantsGet(String state, Integer limit, Integer offset) throws ApiException {
+        ApiResponse<TenantListDTO> resp = tenantsGetWithHttpInfo(state, limit, offset);
+        return resp.getData();
     }
 
     /**
@@ -138,12 +141,13 @@ public class TenantsApi {
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;TenantListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<Void> tenantsGetWithHttpInfo(String state, Integer limit, Integer offset) throws ApiException {
+    public ApiResponse<TenantListDTO> tenantsGetWithHttpInfo(String state, Integer limit, Integer offset) throws ApiException {
         com.squareup.okhttp.Call call = tenantsGetValidateBeforeCall(state, limit, offset, null, null);
-        return apiClient.execute(call);
+        Type localVarReturnType = new TypeToken<TenantListDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
     }
 
     /**
@@ -156,7 +160,7 @@ public class TenantsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call tenantsGetAsync(String state, Integer limit, Integer offset, final ApiCallback<Void> callback) throws ApiException {
+    public com.squareup.okhttp.Call tenantsGetAsync(String state, Integer limit, Integer offset, final ApiCallback<TenantListDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -178,7 +182,8 @@ public class TenantsApi {
         }
 
         com.squareup.okhttp.Call call = tenantsGetValidateBeforeCall(state, limit, offset, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
+        Type localVarReturnType = new TypeToken<TenantListDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
 }

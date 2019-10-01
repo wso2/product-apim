@@ -29,8 +29,10 @@ import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.AdvertiseInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.LabelDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
 
@@ -96,6 +98,9 @@ public class APIDTO {
   @SerializedName("additionalProperties")
   private Map<String, String> additionalProperties = null;
 
+  @SerializedName("monetization")
+  private APIMonetizationInfoDTO monetization = null;
+
   @SerializedName("endpointURLs")
   private List<APIEndpointURLsDTO> endpointURLs = null;
 
@@ -113,6 +118,9 @@ public class APIDTO {
 
   @SerializedName("avgRating")
   private String avgRating = null;
+
+  @SerializedName("advertiseInfo")
+  private AdvertiseInfoDTO advertiseInfo = null;
 
   public APIDTO id(String id) {
     this.id = id;
@@ -504,6 +512,24 @@ public class APIDTO {
     this.additionalProperties = additionalProperties;
   }
 
+  public APIDTO monetization(APIMonetizationInfoDTO monetization) {
+    this.monetization = monetization;
+    return this;
+  }
+
+   /**
+   * Get monetization
+   * @return monetization
+  **/
+  @ApiModelProperty(value = "")
+  public APIMonetizationInfoDTO getMonetization() {
+    return monetization;
+  }
+
+  public void setMonetization(APIMonetizationInfoDTO monetization) {
+    this.monetization = monetization;
+  }
+
   public APIDTO endpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
     this.endpointURLs = endpointURLs;
     return this;
@@ -644,6 +670,24 @@ public class APIDTO {
     this.avgRating = avgRating;
   }
 
+  public APIDTO advertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+    this.advertiseInfo = advertiseInfo;
+    return this;
+  }
+
+   /**
+   * The advertise info of the API
+   * @return advertiseInfo
+  **/
+  @ApiModelProperty(value = "The advertise info of the API")
+  public AdvertiseInfoDTO getAdvertiseInfo() {
+    return advertiseInfo;
+  }
+
+  public void setAdvertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+    this.advertiseInfo = advertiseInfo;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -673,17 +717,19 @@ public class APIDTO {
         Objects.equals(this.tiers, API.tiers) &&
         Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
         Objects.equals(this.additionalProperties, API.additionalProperties) &&
+        Objects.equals(this.monetization, API.monetization) &&
         Objects.equals(this.endpointURLs, API.endpointURLs) &&
         Objects.equals(this.businessInformation, API.businessInformation) &&
         Objects.equals(this.labels, API.labels) &&
         Objects.equals(this.environmentList, API.environmentList) &&
         Objects.equals(this.scopes, API.scopes) &&
-        Objects.equals(this.avgRating, API.avgRating);
+        Objects.equals(this.avgRating, API.avgRating) &&
+        Objects.equals(this.advertiseInfo, API.advertiseInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo);
   }
 
 
@@ -711,12 +757,14 @@ public class APIDTO {
     sb.append("    tiers: ").append(toIndentedString(tiers)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
     sb.append("    endpointURLs: ").append(toIndentedString(endpointURLs)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    environmentList: ").append(toIndentedString(environmentList)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
+    sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
     sb.append("}");
     return sb.toString();
   }

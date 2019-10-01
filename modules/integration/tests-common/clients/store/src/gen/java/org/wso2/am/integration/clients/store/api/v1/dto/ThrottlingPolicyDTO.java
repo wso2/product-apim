@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.wso2.am.integration.clients.store.api.v1.dto.MonetizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ThrottlingPolicyPermissionInfoDTO;
 
 /**
@@ -150,6 +151,9 @@ public class ThrottlingPolicyDTO {
 
   @SerializedName("stopOnQuotaReach")
   private Boolean stopOnQuotaReach = null;
+
+  @SerializedName("monetizationAttributes")
+  private MonetizationInfoDTO monetizationAttributes = null;
 
   @SerializedName("throttlingPolicyPermissions")
   private ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions = null;
@@ -306,6 +310,24 @@ public class ThrottlingPolicyDTO {
     this.stopOnQuotaReach = stopOnQuotaReach;
   }
 
+  public ThrottlingPolicyDTO monetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
+    this.monetizationAttributes = monetizationAttributes;
+    return this;
+  }
+
+   /**
+   * Get monetizationAttributes
+   * @return monetizationAttributes
+  **/
+  @ApiModelProperty(value = "")
+  public MonetizationInfoDTO getMonetizationAttributes() {
+    return monetizationAttributes;
+  }
+
+  public void setMonetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
+    this.monetizationAttributes = monetizationAttributes;
+  }
+
   public ThrottlingPolicyDTO throttlingPolicyPermissions(ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions) {
     this.throttlingPolicyPermissions = throttlingPolicyPermissions;
     return this;
@@ -342,12 +364,13 @@ public class ThrottlingPolicyDTO {
         Objects.equals(this.unitTime, throttlingPolicy.unitTime) &&
         Objects.equals(this.tierPlan, throttlingPolicy.tierPlan) &&
         Objects.equals(this.stopOnQuotaReach, throttlingPolicy.stopOnQuotaReach) &&
+        Objects.equals(this.monetizationAttributes, throttlingPolicy.monetizationAttributes) &&
         Objects.equals(this.throttlingPolicyPermissions, throttlingPolicy.throttlingPolicyPermissions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, description, policyLevel, attributes, requestCount, unitTime, tierPlan, stopOnQuotaReach, throttlingPolicyPermissions);
+    return Objects.hash(name, description, policyLevel, attributes, requestCount, unitTime, tierPlan, stopOnQuotaReach, monetizationAttributes, throttlingPolicyPermissions);
   }
 
 
@@ -364,6 +387,7 @@ public class ThrottlingPolicyDTO {
     sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
     sb.append("    tierPlan: ").append(toIndentedString(tierPlan)).append("\n");
     sb.append("    stopOnQuotaReach: ").append(toIndentedString(stopOnQuotaReach)).append("\n");
+    sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
     sb.append("    throttlingPolicyPermissions: ").append(toIndentedString(throttlingPolicyPermissions)).append("\n");
     sb.append("}");
     return sb.toString();

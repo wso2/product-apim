@@ -22,7 +22,6 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -63,7 +62,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     private String uriTemplate = "customers/{id}/";
     private String apiId;
     private String defaultApiId;
-    private RestAPIPublisherImpl restAPIPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public NewCopyWithDefaultVersion(TestUserMode userMode) {
@@ -72,8 +70,7 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        restAPIPublisher = new RestAPIPublisherImpl();
+        super.init(userMode);
     }
 
     @Test(groups = {"webapp"}, description = "New Copy with Default Version")
