@@ -150,7 +150,7 @@ public class RestAPIPublisherImpl {
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
         if (apiRequest.getVisibility() != null) {
-            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility()));
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility().toUpperCase()));
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }

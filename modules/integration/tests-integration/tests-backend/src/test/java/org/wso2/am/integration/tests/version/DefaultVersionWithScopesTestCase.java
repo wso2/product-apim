@@ -143,8 +143,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
             applicationID = applicationResponse.getData();
 
             apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
-                    APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                    SubscriptionDTO.TypeEnum.API);
+                    APIMIntegrationConstants.API_TIER.UNLIMITED);
 
             String resourcePath = "oas" + File.separator + "v3" + File.separator + "defaultVersionScopes.json";
             String modifiedResource = IOUtils.toString(getClass().getClassLoader()
