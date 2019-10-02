@@ -98,7 +98,8 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         List<APIOperationsDTO> apiOperationsDTOS = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb(RESTAPITestConstants.GET_METHOD);
-        apiOperationsDTO.setAuthType("Application & Application User");
+        apiOperationsDTO
+                .setAuthType(APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType());
         apiOperationsDTO.setThrottlingPolicy(tier);
         apiOperationsDTO.setTarget(uri);
         apiOperationsDTOS.add(apiOperationsDTO);
@@ -126,7 +127,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         applicationId = applicationResponse.getData();
-        grantTypes.add("client_credentials");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
     }
 
@@ -154,7 +155,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     public void testUpdateApplicationById() throws Exception {
         String callbackUrl = "test-callback";
         List<String> grantTypes = new ArrayList<>();
-        grantTypes.add("password");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
         applicationDTO.setApplicationId(applicationId);
         applicationDTO.setName(newApplicationName);

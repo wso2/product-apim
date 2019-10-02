@@ -252,6 +252,13 @@ public class RestAPIStoreImpl {
 
     }
 
+    public ApiResponse<ApplicationKeyDTO> updateKeys(String applicationId, String keyType,
+            ApplicationKeyDTO applicationKeyDTO) throws Exception{
+
+        return  applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypePutWithHttpInfo(applicationId, keyType, applicationKeyDTO);
+    }
+
 
     /**
      * Get api which are published
