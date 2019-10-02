@@ -947,7 +947,7 @@
 
         <!-- Copying the in-place update tools-->
         <fileSet>
-            <directory>../resources/updates/in-place/</directory>
+            <directory>target/update/</directory>
             <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
             <fileMode>744</fileMode>
         </fileSet>
