@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -119,6 +120,30 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
+                                          ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setAttributes(attribute);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
 
     public HttpResponse deleteApplication(String applicationId) {
         try {
@@ -133,6 +158,48 @@ public class RestAPIStoreImpl {
             }
             return response;
         }
+    }
+
+    public HttpResponse getAllApp() {
+        try {
+            ApplicationListDTO applicationList = applicationsApi.applicationsGet(null, null, null,
+                    null, null, null, null);
+            HttpResponse response = null;
+            ArrayList applicationIdList = new ArrayList<>();
+
+            if (applicationList.getCount() != 0) {
+                applicationList.getList().forEach(appDTO -> applicationIdList.add(appDTO.getApplicationId()));
+                response = new HttpResponse(applicationIdList.toString(), 200);
+            }
+            return response;
+        } catch(ApiException e) {
+
+        }
+        return null;
+    }
+
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
+                                              String throttleTier,
+                                              ApplicationDTO.TokenTypeEnum tokenType){
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
