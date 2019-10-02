@@ -207,7 +207,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.deleteApplication(applicationID, null);
+        restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
 
         if (userManagementClient != null) {
