@@ -25,9 +25,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -35,15 +35,18 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 
+import javax.ws.rs.core.Response;
+
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNull;
 
 @SetEnvironment (executionEnvironments = { ExecutionEnvironment.STANDALONE})
 public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMANAGER3226APINameWithDifferentCaseTestCase.class);
 
-    private APIPublisherRestClient apiPublisher;
+    private RestAPIPublisherImpl restAPIPublisher;
+    private String apiID;
     String apiName = "echo";
     String providerName;
     String apiVersion = "1.0.0";
@@ -65,11 +68,9 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
     public void setEnvironment() throws Exception {
         super.init(userMode);
         providerName = user.getUserName();
-        String publisherURLHttp = getPublisherURLHttp();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiPublisher.login(user.getUserName(), user.getPassword());
+        String tenantDomain = storeContext.getContextTenant().getDomain();
+        restAPIPublisher = new RestAPIPublisherImpl(user.getUserName(), user.getPassword(), tenantDomain,
+                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
     }
 
     @Test (groups = {"wso2.am"}, description = "Test validation of adding api with same name and different case"
@@ -83,24 +84,23 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
-        HttpResponse addResponse = apiPublisher.addAPI(apiRequest);
-        assertEquals(addResponse.getResponseCode(), 200, "Error while adding API");
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        assertEquals(addResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Error while adding API");
+        apiID = addResponse.getData();
 
         String apiNameWithUppercaseLetters = "ECho";
         apiRequest = new APIRequest(apiNameWithUppercaseLetters, apiContext, new URL(url));
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
-        HttpResponse addDuplicateAPIResponse = apiPublisher.addAPI(apiRequest);
-        log.info("Response: " + addDuplicateAPIResponse.getData());
-        assertTrue(addDuplicateAPIResponse.getData().contains("A duplicate API already exists for ECho"),
-                "Validation fails for adding API with same name with different case");
-
+        HttpResponse addDuplicateAPIResponse = restAPIPublisher.addAPI(apiRequest);
+        assertNull(addDuplicateAPIResponse, "Validation fails for adding API with same name with different case");
     }
 
     @AfterClass (alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(apiName,apiVersion,providerName);
+        restAPIPublisher.deleteAPIByID(apiID);
         super.cleanUp();
     }
 }
