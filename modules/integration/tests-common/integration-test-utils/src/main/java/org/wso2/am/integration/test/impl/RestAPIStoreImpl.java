@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
@@ -1321,17 +1322,19 @@ public class RestAPIStoreImpl {
      * @return HttpResponse - Response with APIs which are deployed as a Prototyped APIs
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse getPrototypedAPI(String tenant) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/pages/list-prototyped-apis.jag?"
-//                    + "tenant=" +tenant , requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public APIListDTO getPrototypedAPIs(String tenant) throws APIManagerIntegrationTestException {
+        try {
+            APIListDTO prototypedAPIs = new APIListDTO();
+            APIListDTO apiListDTO = apIsApi.apisGet(null, null, tenant, null, null);
+            for (APIInfoDTO apidto : apiListDTO.getList()) {
+                if (apidto.getLifeCycleStatus().equals("PROTOTYPED")) {
+                    prototypedAPIs.addListItem(apidto);
+                }
+            }
+            return prototypedAPIs;
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
+        }
     }
 
 
