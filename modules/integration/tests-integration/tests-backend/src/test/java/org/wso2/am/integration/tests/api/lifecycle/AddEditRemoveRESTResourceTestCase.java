@@ -83,7 +83,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
 
     @Test(groups = {"webapp"}, description = "Test the invocation of GET resource")
-    public void testInvokeGETResource() throws Exception {
+    public void testInvokeGETResource(ITestContext ctx) throws Exception {
         //get the  access token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -94,6 +94,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                         grantTypes);
 
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        ctx.setAttribute("accessToken", accessToken);
         System.setProperty(APPLICATION_NAME + "-accessToken", accessToken);
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
