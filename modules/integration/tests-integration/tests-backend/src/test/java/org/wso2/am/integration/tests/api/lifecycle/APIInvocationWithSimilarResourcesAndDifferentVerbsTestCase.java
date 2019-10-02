@@ -116,8 +116,7 @@ import static org.testng.Assert.assertTrue;
         apiRequest.setDescription(API_DESCRIPTION);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicarionId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -152,7 +151,7 @@ import static org.testng.Assert.assertTrue;
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException {
-        restAPIStore.deleteApplication(applicarionId, "");
+        restAPIStore.deleteApplication(applicarionId);
         restAPIPublisher.deleteAPI(apiId);
     }
 
