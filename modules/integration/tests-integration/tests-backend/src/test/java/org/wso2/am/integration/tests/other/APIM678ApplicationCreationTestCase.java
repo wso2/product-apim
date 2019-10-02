@@ -221,8 +221,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         //remove created application
         HttpResponse deleteApplicationResponse = restAPIStore.
-                deleteApplication(new JSONObject(applicationResponse.getData()).getString("applicationId"),
-                "carbon.super");
+                deleteApplication(new JSONObject(applicationResponse.getData()).getString("applicationId"));
         assertEquals(deleteApplicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched get application " + applicationName);
 
@@ -260,7 +259,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         String[] array = getAllAppResponse.getData().replace("[", "")
                 .replace("]", "").split(",");
         for (int app = 0; (array.length - 1) > app; app++) {
-            restAPIStore.deleteApplication(array[app], null);
+            restAPIStore.deleteApplication(array[app]);
         }
 
     }

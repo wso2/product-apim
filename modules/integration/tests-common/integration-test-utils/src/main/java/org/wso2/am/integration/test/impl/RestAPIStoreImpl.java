@@ -160,7 +160,6 @@ public class RestAPIStoreImpl {
         }
     }
 
-    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
     public HttpResponse getAllApp() {
         try {
             ApplicationListDTO applicationList = applicationsApi.applicationsGet(null, null, null,
@@ -203,8 +202,7 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier,
-                                           SubscriptionDTO.StatusEnum statusEnum, SubscriptionDTO.TypeEnum typeEnum) {
+    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
