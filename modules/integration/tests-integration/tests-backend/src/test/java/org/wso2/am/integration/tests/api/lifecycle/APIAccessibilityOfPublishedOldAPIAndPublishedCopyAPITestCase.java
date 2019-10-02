@@ -249,7 +249,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         restAPIStore.removeApplication(APPLICATION_NAME);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
-        super.cleanUp();
     }
 
 }
