@@ -22,6 +22,8 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.ITestContext;
+import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
@@ -47,7 +49,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     private String applicationID;
 
     @BeforeTest(alwaysRun = true)
-    public void deployWebApps() throws Exception {
+    public void deployWebApps(ITestContext ctx) throws Exception {
         super.init();
         String fileFormat = ".war";
         String webApp = "jaxrs_basic";
@@ -76,22 +78,22 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                 .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
         log.info("Web App Deployed");
 
-        initialize();
+        initialize(ctx);
     }
 
     @AfterTest(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        restAPIStore.deleteApplication(applicationID, "");
+        restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
     }
 
-    private void initialize() throws Exception {
+    private void initialize(ITestContext ctx) throws Exception {
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        createAPIs();
+        createAPIs(ctx);
     }
 
-    private void createAPIs() throws Exception {
+    private void createAPIs(ITestContext ctx) throws Exception {
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
@@ -107,10 +109,11 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
         apiRequest.setTags(API_TAGS);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        ctx.setAttribute("apiId", apiId);
+        ctx.setAttribute("applicationID", applicationID);
     }
 
 }
