@@ -3,6 +3,7 @@ package org.wso2.am.integration.test;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang.StringUtils;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -67,11 +68,15 @@ public class ClientAuthenticator {
             String clientEncoded = DatatypeConverter.printBase64Binary(
                     (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
-            if (!"carbon.super".equalsIgnoreCase(tenantDomain)) {
+            if (!"carbon.super".equalsIgnoreCase(tenantDomain) && !username.contains("@")) {
                 username = username + "@" + tenantDomain;
             }
-
-            String postParams = "grant_type=password&username=" + username + "&password=" + password;
+            String postParams;
+            if (APIMIntegrationConstants.GRANT_TYPE.PASSWORD.equals(grantType)) {
+                postParams = "grant_type=password&username=" + username + "&password=" + password;
+            } else {
+                postParams = "grant_type=client_credentials";
+            }
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList;
             }
@@ -129,9 +134,15 @@ public class ClientAuthenticator {
                         username) + ':' + System.getProperty("systemUserPwd", password))
                         .getBytes(StandardCharsets.UTF_8));
             } else {
-                json.addProperty("owner", username + '@' + tenantDomain);
-                clientEncoded = DatatypeConverter.printBase64Binary((username + '@' + tenantDomain + ':' + password)
-                        .getBytes(StandardCharsets.UTF_8));
+                if (username.contains("@")){
+                    json.addProperty("owner", username);
+                    clientEncoded = DatatypeConverter.printBase64Binary((username + ':' + password)
+                            .getBytes(StandardCharsets.UTF_8));
+                } else {
+                    json.addProperty("owner", username + '@' + tenantDomain);
+                    clientEncoded = DatatypeConverter.printBase64Binary((username + '@' + tenantDomain + ':' + password)
+                            .getBytes(StandardCharsets.UTF_8));
+                }
             }
 
             // Calling DCR endpoint

@@ -280,7 +280,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAdminInOtherDomainInStore")
     public void testVisibilityForAnonymousUserInOtherDomainInStore() throws Exception {
         List<APIIdentifier> apiStoreAPIIdentifierList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
-                apiStoreClientAdminOtherDomain.getAPIListFromStoreAsAnonymousUser(otherDomain));
+                apiStoreClientAdminOtherDomain.getAPIListFromStoreAsAnonymousUser(otherDomain, storeURLHttp));
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),
                 "API is  visible to admin in other domain in API Store. When Visibility is public. "
                         + getAPIIdentifierString(apiIdentifier));
@@ -301,7 +301,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
             }
             currentTime = System.currentTimeMillis();
             List<APIIdentifier> apiStoreAPIIdentifierList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
-                    apiStoreClientAdminOtherDomain.getAPIListFromStoreAsAnonymousUser(apiCreatorStoreDomain));
+                    apiStoreClientAdminOtherDomain.getAPIListFromStoreAsAnonymousUser(apiCreatorStoreDomain, storeURLHttp));
             if (APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList)) {
                 apiFound = true;
                 break;
