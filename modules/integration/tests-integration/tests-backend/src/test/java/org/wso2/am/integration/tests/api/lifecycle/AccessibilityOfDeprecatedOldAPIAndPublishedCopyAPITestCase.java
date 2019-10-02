@@ -68,8 +68,6 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     private String apiEndPointUrl;
     private String providerName;
 
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     APIIdentifier apiIdentifierAPI1Version1;
     APIIdentifier apiIdentifierAPI1Version2;
     private String apiId, apiId2;
@@ -84,8 +82,6 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         providerName = user.getUserName();
         apiIdentifierAPI1Version1 = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifierAPI1Version2 = new APIIdentifier(providerName, API_NAME, API_VERSION_2_0_0);
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
