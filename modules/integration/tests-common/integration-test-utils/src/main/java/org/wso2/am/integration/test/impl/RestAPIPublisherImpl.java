@@ -85,13 +85,13 @@ public class RestAPIPublisherImpl {
 
     @Deprecated
     public RestAPIPublisherImpl() {
-        this(username, password, "", "https://127.0.0.1:9943/", "https://127.0.0.1:8743/", "https://127.0.0.1:9943/");
+        this(username, password, "", "https://localhost:9943");
     }
 
-    public RestAPIPublisherImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String publisherURL) {
-
-        String tokenURL = gatewayURL + "token";
-        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+    public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
+        // token/DCR of Publisher node itself will be used
+        String tokenURL = publisherURL + "oauth2/token";
+        String dcrURL = publisherURL + "client-registration/v0.14/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +
@@ -511,7 +511,7 @@ public class RestAPIPublisherImpl {
                 .apisChangeLifecyclePostWithHttpInfo(Constants.PUBLISHED, apiId, "Re-Subscription:" + isRequireReSubscription, null);
         HttpResponse response = null;
         if (responseDTOApiResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully deleted the API", 200);
+            response = new HttpResponse("Successfully changed the lifecycle of the API", 200);
         }
         return response;
     }
@@ -588,6 +588,20 @@ public class RestAPIPublisherImpl {
             return apis;
         }
         return null;
+    }
+
+    /**
+     * Get APIs for the given limit and offset values
+     *
+     * @param offset starting position
+     * @param limit maximum number of APIs to return
+     * @return APIs for the given limit and offset values
+     */
+    public APIListDTO getAPIs(int offset, int limit) throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null,
+                null, false, null, this.tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
