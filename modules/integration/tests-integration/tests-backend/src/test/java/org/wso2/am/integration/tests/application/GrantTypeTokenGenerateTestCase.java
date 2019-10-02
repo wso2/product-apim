@@ -32,7 +32,6 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -131,8 +130,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setDescription(DESCRIPTION);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API);
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE);
@@ -297,8 +295,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
 
         //subscribing to the application
         HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId, applicationIdWithoutCallback,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, SubscriptionDTO.StatusEnum.UNBLOCKED,
-                SubscriptionDTO.TypeEnum.API, restAPIStore);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
 
         assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
@@ -360,8 +357,8 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(applicationId, null);
-        restAPIStore.deleteApplication(applicationIdWithoutCallback, null);
+        restAPIStore.deleteApplication(applicationId);
+        restAPIStore.deleteApplication(applicationIdWithoutCallback);
         restAPIPublisher.deleteAPI(apiId);
     }
 
