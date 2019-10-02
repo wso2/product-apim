@@ -173,9 +173,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.deleteApplication(applicationId, null);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
-        super.cleanUp();
     }
 }
