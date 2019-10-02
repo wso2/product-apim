@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -84,6 +85,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
+        apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
         assertEquals(addResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Error while adding API");
@@ -94,6 +96,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
+        apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         HttpResponse addDuplicateAPIResponse = restAPIPublisher.addAPI(apiRequest);
         assertNull(addDuplicateAPIResponse, "Validation fails for adding API with same name with different case");
     }

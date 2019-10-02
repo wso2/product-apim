@@ -54,7 +54,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBaseTest {
-    private final Log log = LogFactory.getLog(AuthApplicationUpdateTestCase.class);
+    private final Log log = LogFactory.getLog(APIMANAGER3706ApplicationUpdateTestCase.class);
     private final String APP_NAME = "CallBackUrlUpdateTestApp";
     private final String APP_NAME_TO_UPDATE = "AuthApplicationNameToUpdateApp";
     private final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
