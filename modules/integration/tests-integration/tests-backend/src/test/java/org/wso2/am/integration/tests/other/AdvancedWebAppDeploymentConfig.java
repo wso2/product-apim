@@ -27,6 +27,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -37,6 +38,8 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(AdvancedWebAppDeploymentConfig.class);
@@ -107,6 +110,16 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
         apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb("GET");
+        apiOperationsDTO1.setTarget("/customers/{id}");
+        apiOperationsDTO1.setAuthType("Application & Application User");
+        apiOperationsDTO1.setThrottlingPolicy("Unlimited");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
