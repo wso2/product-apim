@@ -629,4 +629,29 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             }
         }
     }
+
+    /**
+     * Delete a API from API Publisher.
+     *
+     * @param apiIdentifier       - Instance of APIIdentifier object that include the API Name, API Version and
+     *                            API Provider.
+     * @param publisherRestClient - Instance of RestAPIPublisherImpl.
+     * @throws APIManagerIntegrationTestException - Exception throws by the method call of deleteApi() in
+     *                                            APIPublisherRestClient.java.
+     */
+    protected void deleteAPI(String apiID, APIIdentifier apiIdentifier, RestAPIPublisherImpl publisherRestClient)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            HttpResponse deleteHTTPResponse = publisherRestClient.deleteAPI(apiID);
+            if (!(deleteHTTPResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK)) {
+                throw new APIManagerIntegrationTestException("Error in API Deletion." +
+                        getAPIIdentifierString(apiIdentifier) + " API Context :" + deleteHTTPResponse +
+                        "Response Code:" + deleteHTTPResponse.getResponseCode() +
+                        " Response Data :" + deleteHTTPResponse.getData());
+            }
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Error when deleting API with ID: " + apiID, e);
+        }
+    }
 }

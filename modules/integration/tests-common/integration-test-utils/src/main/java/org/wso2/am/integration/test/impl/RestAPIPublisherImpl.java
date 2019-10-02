@@ -149,7 +149,11 @@ public class RestAPIPublisherImpl {
         body.setName(apiRequest.getName());
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
-        body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        if (apiRequest.getVisibility() != null) {
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility()));
+        } else {
+            body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        }
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         body.setTransport(new ArrayList<String>() {{

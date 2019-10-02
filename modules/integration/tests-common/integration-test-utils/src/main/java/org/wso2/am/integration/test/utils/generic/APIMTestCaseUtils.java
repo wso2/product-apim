@@ -1813,4 +1813,49 @@ public class APIMTestCaseUtils {
         }
         return buf.toString();
     }
+
+    /**
+     * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
+     *
+     * @param apiIdentifier - API DTO to verify
+     * @param apiListDTO    - API Info DTO list
+     * @return - Status of API availability
+     */
+    public static boolean isAPIAvailable(APIIdentifier apiIdentifier, APIListDTO apiListDTO) {
+        boolean isFound = false;
+        if (apiListDTO != null) {
+            for (APIInfoDTO api : apiListDTO.getList()) {
+                if (apiIdentifier.getName().equals(api.getName()) &&
+                        apiIdentifier.getVersion().equals(api.getVersion()) &&
+                        apiIdentifier.getProviderName().equals(api.getProvider())) {
+                    isFound = true;
+                    break;
+                }
+            }
+        }
+        return isFound;
+    }
+
+    /**
+     * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
+     *
+     * @param apiIdentifier - API DTO to verify
+     * @param apiListDTO    - API Info DTO list
+     * @return - Status of API availability
+     */
+    public static boolean isAPIAvailableInStore(APIIdentifier apiIdentifier,
+                            org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO apiListDTO) {
+        boolean isFound = false;
+        if (apiListDTO != null) {
+            for (org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO api : apiListDTO.getList()) {
+                if (apiIdentifier.getName().equals(api.getName()) &&
+                        apiIdentifier.getVersion().equals(api.getVersion()) &&
+                        apiIdentifier.getProviderName().equals(api.getProvider())) {
+                    isFound = true;
+                    break;
+                }
+            }
+        }
+        return isFound;
+    }
 }

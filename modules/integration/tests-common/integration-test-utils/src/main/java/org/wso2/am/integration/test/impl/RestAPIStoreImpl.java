@@ -18,7 +18,6 @@ package org.wso2.am.integration.test.impl;
 
 
 import com.google.gson.Gson;
-import org.apache.http.protocol.HTTP;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -276,17 +275,12 @@ public class RestAPIStoreImpl {
      * @return - http response of get all published apis
      * @throws APIManagerIntegrationTestException - throws if getting publish APIs fails
      */
-    public HttpResponse getAllPublishedAPIs() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs",
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get retrieve all published APIs. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public APIListDTO getAllPublishedAPIs() throws APIManagerIntegrationTestException {
+        try {
+            return apIsApi.apisGet(null, 0, null, null, null);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Error when retrieving APIs " + e.getResponseBody(), e);
+        }
     }
 
     /**
