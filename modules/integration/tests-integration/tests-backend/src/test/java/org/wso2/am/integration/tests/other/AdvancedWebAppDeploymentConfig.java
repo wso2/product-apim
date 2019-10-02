@@ -113,12 +113,19 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
 
         APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
         apiOperationsDTO1.setVerb("GET");
-        apiOperationsDTO1.setTarget("/customers/{id}");
+        apiOperationsDTO1.setTarget("/");
         apiOperationsDTO1.setAuthType("Application & Application User");
         apiOperationsDTO1.setThrottlingPolicy("Unlimited");
 
+        APIOperationsDTO apiOperationsDTO2 = new APIOperationsDTO();
+        apiOperationsDTO2.setVerb("GET");
+        apiOperationsDTO2.setTarget("/customers/{id}");
+        apiOperationsDTO2.setAuthType("Application & Application User");
+        apiOperationsDTO2.setThrottlingPolicy("Unlimited");
+
         List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
         operationsDTOS.add(apiOperationsDTO1);
+        operationsDTOS.add(apiOperationsDTO2);
         apiRequest.setOperationsDTOS(operationsDTOS);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
