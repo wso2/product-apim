@@ -64,8 +64,6 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     private String applicationId;
     private String apiId;
     private String newApiId;
@@ -77,8 +75,6 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
         grantTypes = new ArrayList<>();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() +  API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();

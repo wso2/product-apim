@@ -26,7 +26,6 @@ import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -60,15 +59,11 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     private String applicationId;
     private ArrayList<String> grantTypes;
     private Map<String, String> requestHeaders;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
         grantTypes = new ArrayList<>();
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
