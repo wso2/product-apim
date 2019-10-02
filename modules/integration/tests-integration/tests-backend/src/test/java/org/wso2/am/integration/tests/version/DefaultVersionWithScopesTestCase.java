@@ -167,8 +167,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
                     consumerSecret, requestBody, tokenEndpointURL).getData());
             userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
-            Map<String, String> requestHeaders;
-            requestHeaders = new HashMap<>();
+            Map<String, String> requestHeaders = new HashMap<>();
             requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
             String apiInvocationUrl = getAPIInvocationURLHttp(apiContext);
