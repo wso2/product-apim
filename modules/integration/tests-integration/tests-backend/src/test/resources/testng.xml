@@ -64,6 +64,7 @@
     <test name="apim-integration-tests-version" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase" />
+            <class name="org.wso2.am.integration.tests.version.DefaultVersionWithScopesTestCase" />
         </classes>
     </test>
 </suite>
