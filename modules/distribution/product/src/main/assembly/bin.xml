@@ -224,38 +224,10 @@
             <directory>src/main/resources/conf/deployment-templates</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/conf/deployment-templates</outputDirectory>
         </fileSet>
-        <!--fileSet>
-            <directory>./src/main/resources</directory>
-            <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>
-            <includes>
-                <include>**/saxon9he.jar</include>
-            </includes>
+        <fileSet>
+            <directory>./src/main/lib</directory>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
         </fileSet>
-	<fileSet>
-            <directory>./src/main/resources</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
-            <includes>
-                <include>**/httpmime-4.2.5.jar</include>
-            </includes>
-        </fileSet>
-	<fileSet>
-            <directory>./src/main/resources</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
-            <includes>
-                <include>**/encoder-1.1.jar</include>
-            </includes>
-        </fileSet-->
-        <!--fileSet>
-          <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/security</directory>
-          <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
-
-          <excludes>
-                  <exclude>authenticators.xml</exclude>
-                  <exclude>application-authentication.xml</exclude>
-                  <exclude>cipher-text.properties</exclude>
-                  <exclude>cipher-tool.properties</exclude>
-          </excludes>
-        </fileSet-->
         <fileSet>
             <directory>src/main/assembly</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store-old/site/tenant_themes
