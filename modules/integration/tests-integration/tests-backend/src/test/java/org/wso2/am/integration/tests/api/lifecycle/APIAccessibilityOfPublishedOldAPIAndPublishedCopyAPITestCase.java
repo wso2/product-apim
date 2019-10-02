@@ -214,7 +214,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
                                               " new API versions.", dependsOnMethods = "testSubscribeNewVersion")
     public void testAccessibilityOfPublishedOldAPIAndPublishedCopyAPI() throws Exception {
         //get access token
-        //get access token
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
