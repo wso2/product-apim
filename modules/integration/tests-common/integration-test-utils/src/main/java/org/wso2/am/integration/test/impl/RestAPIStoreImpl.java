@@ -1147,7 +1147,7 @@ public class RestAPIStoreImpl {
      * @return
      * @throws ApiException
      */
-    public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain, String storeURL) throws ApiException {
+    public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");

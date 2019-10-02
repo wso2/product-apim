@@ -33,6 +33,7 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.net.URL;
 
@@ -78,24 +79,22 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
-        restAPIPublisherCarbonSuperAdmin = new RestAPIPublisherImpl("admin", "admin", "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+        restAPIPublisherCarbonSuperAdmin = new RestAPIPublisherImpl("admin", "admin",
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
 
-        restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl("admin", "admin", "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+        restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl("admin", "admin",
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         restAPIPublisherCarbonSuperUser1 = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
 
         restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
 
         providerName =
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
@@ -104,14 +103,12 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
-                "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
 
         restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
-                "carbon.super",
-                keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
 
         //Creating Tenant contexts
         init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
@@ -165,7 +162,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         waitForAPIDeployment();
 
-        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser1.getAllAPIs("carbon.super");
+        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser1
+                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to creator in APi Publisher. When Visibility is private. ");
     }
@@ -185,7 +183,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForCreatorInStore")
     public void testVisibilityForAdminInSameDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
-        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperAdmin.getAllAPIs("carbon.super");
+        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperAdmin
+                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to admin in same domain in API Publisher. When Visibility is private. " +
                         getAPIIdentifierString(apiIdentifier));
@@ -207,7 +206,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAdminInSameDomainInStore")
     public void testVisibilityForAnotherUserInSameDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
-        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser2.getAllAPIs("carbon.super");
+        APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser2
+                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to another user in same domain in API Publisher. When Visibility is private." +
                         getAPIIdentifierString(apiIdentifier));
@@ -228,7 +228,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAnotherUserInSameDomainInStore")
     public void testVisibilityForAnotherUserInOtherDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
-        APIListDTO getAllApisResponse = restAPIPublisherOtherDomainUser.getAllAPIs("carbon.super");
+        APIListDTO getAllApisResponse = restAPIPublisherOtherDomainUser
+                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is  visible to another user in other domain in API Publisher. When Visibility is private."
                         + getAPIIdentifierString(apiIdentifier));
@@ -250,7 +251,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAnotherUserInOtherDomainInStore")
     public void testVisibilityForAdminInOtherDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
-        APIListDTO getAllApisResponse = restAPIPublisherOtherDomainAdmin.getAllAPIs("carbon.super");
+        APIListDTO getAllApisResponse = restAPIPublisherOtherDomainAdmin
+                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is  visible to admin in other domain in API Publisher. When Visibility is private. " +
                         getAPIIdentifierString(apiIdentifier));
@@ -272,7 +274,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAdminInOtherDomainInStore")
     public void testVisibilityForAnonymousUserInSameDomainInStore() throws Exception {
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO apiListDTO =
-                restAPIStoreCarbonSuperAdmin.getAPIListFromStoreAsAnonymousUser("carbon.super",storeURLHttp);
+                restAPIStoreCarbonSuperAdmin
+                        .getAPIListFromStoreAsAnonymousUser(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         assertFalse(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, apiListDTO),
                 "API is  visible to anonymous in same domain in API Store. When Visibility is private. " +
                         getAPIIdentifierString(apiIdentifier));
@@ -283,7 +286,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testVisibilityForAnonymousUserInSameDomainInStore")
     public void testVisibilityForAnonymousUserInOtherDomainInStore() throws Exception {
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO apiListDTO =
-                restAPIStoreOtherDomainAdmin.getAPIListFromStoreAsAnonymousUser(otherDomain, storeURLHttp);
+                restAPIStoreOtherDomainAdmin.getAPIListFromStoreAsAnonymousUser(otherDomain);
         assertFalse(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, apiListDTO),
                 "API is visible to anonymous user in other " +
                         "domain API Store. When Visibility is private. " + getAPIIdentifierString(apiIdentifier));
