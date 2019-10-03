@@ -108,7 +108,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         log.info("Test Starting user mode:" + userMode);
         restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(),keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                storeContext.getContextTenant().getDomain(), storeURLHttps);
 
     }
 

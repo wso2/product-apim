@@ -73,12 +73,13 @@ public class RestAPIStoreImpl {
 
     @Deprecated
     public RestAPIStoreImpl() {
-        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:8743", "https://127.0.0.1:9943");
+        this(username, password, "", "https://localhost:9943");
     }
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
-        String tokenURL = gatewayURL + "token";
-        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+        // token/DCR of Store node itself will be used
+        String tokenURL = storeURL + "oauth2/token";
+        String dcrURL = storeURL + "client-registration/v0.14/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 
@@ -291,6 +292,20 @@ public class RestAPIStoreImpl {
      */
     public APIListDTO getAllAPIs() throws ApiException {
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+    /**
+     * Get APIs for the given limit and offset values
+     *
+     * @param offset starting position
+     * @param limit maximum number of APIs to return
+     * @return APIs for the given limit and offset values
+     * @throws ApiException
+     */
+    public APIListDTO getAPIs(int offset, int limit) throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }

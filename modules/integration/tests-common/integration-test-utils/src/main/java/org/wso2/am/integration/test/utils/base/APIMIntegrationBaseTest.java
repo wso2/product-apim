@@ -82,9 +82,11 @@ public class APIMIntegrationBaseTest {
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
+    protected String publisherURLHttps;
     protected String keyManagerHTTPSURL;
     protected String gatewayHTTPSURL;
     protected String storeURLHttp;
+    protected String storeURLHttps;
     protected String keymanagerSessionCookie;
     protected String keymanagerSuperTenantSessionCookie;
     protected final int inboundWebSocketPort = 9099;
@@ -153,24 +155,22 @@ public class APIMIntegrationBaseTest {
 
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
 
             storeURLHttp = storeUrls.getWebAppURLHttp();
+            storeURLHttps = storeUrls.getWebAppURLHttps();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new APIStoreRestClient(storeURLHttp);
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
-                    publisherContext.getContextTenant().getDomain(), keyManagerHTTPSURL, gatewayHTTPSURL,
-                    publisherURLHttp);
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
-                            storeContext.getContextTenant().getDomain(), keyManagerHTTPSURL, gatewayHTTPSURL,
-                            storeURLHttp);
-
-
+                            storeContext.getContextTenant().getDomain(), storeURLHttps);
 
             try {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
