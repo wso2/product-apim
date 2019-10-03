@@ -42,7 +42,6 @@ import static org.testng.Assert.assertNotNull;
 public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         extends APIMIntegrationBaseTest {
 
-    private APIPublisherRestClient apiPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
