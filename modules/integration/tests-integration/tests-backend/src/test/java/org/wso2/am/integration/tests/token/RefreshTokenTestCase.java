@@ -125,7 +125,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         tokenTestApiAppId = applicationDTO.getApplicationId();
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
                 APIMIntegrationConstants.API_TIER.GOLD);
-        assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Gold"));
+        assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals(APIMIntegrationConstants.API_TIER.GOLD));
 
         //Get Consumer Key and Consumer Secret//Generate production token and invoke with that
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -217,6 +217,6 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(tokenTestApiAppId);
-        restAPIStore.deleteApplication(apiId);
+        restAPIPublisher.deleteAPI(apiId);
     }
 }
