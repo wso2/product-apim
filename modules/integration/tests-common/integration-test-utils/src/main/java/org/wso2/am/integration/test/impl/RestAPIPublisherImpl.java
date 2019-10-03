@@ -696,7 +696,17 @@ public class RestAPIPublisherImpl {
         body.setName(apiCreationRequestBean.getName());
         body.setContext(apiCreationRequestBean.getContext());
         body.setVersion(apiCreationRequestBean.getVersion());
-        body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        if (apiCreationRequestBean.getVisibility() != null) {
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiCreationRequestBean.getVisibility()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equals(apiCreationRequestBean.getVisibility())
+                    && StringUtils.isNotEmpty(apiCreationRequestBean.getRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiCreationRequestBean.getRoles().split(" , ")));
+                body.setVisibleRoles(roleList);
+            }
+        } else {
+            body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        }
         body.setDescription(apiCreationRequestBean.getDescription());
         body.setProvider(apiCreationRequestBean.getProvider());
         body.setTransport(new ArrayList<String>() {{
