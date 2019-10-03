@@ -31,7 +31,9 @@
   "oauth.grant_type.uma_ticket.grant_handler": "org.wso2.carbon.identity.oauth.uma.grant.UMA2GrantHandler",
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
   "oauth.extensions.callback_handlers": [
-    "org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler"
+    {
+      "class": "org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler"
+    }
   ],
   "system.parameter.'org.wso2.CipherTransformation'": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
   "server.userAgent": "WSO2 AM 3.0.0",
