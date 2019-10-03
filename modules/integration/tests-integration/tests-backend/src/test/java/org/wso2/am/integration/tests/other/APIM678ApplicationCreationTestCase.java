@@ -238,8 +238,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
             description = "Create an Application")
     public void testApplicationCreationWithCustomAttributes(String applicationName, String tier, String description,
                                                             ApplicationDTO.TokenTypeEnum token,
-                                                            Map<String, String> applicationAttributes) throws Exception
-    {
+                                                            Map<String, String> applicationAttributes) throws Exception {
         HttpResponse applicationResponse = restAPIStore.createApplicationWithCustomAttribute(applicationName,
                 description, appTier,
                 token, applicationAttributes);
@@ -257,12 +256,9 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public void removeAllApps() throws Exception {
         //delete created applications
         ApplicationListDTO getAllAppResponse = restAPIStore.getAllApps();
-        List<ApplicationInfoDTO> array = getAllAppResponse.getList();
-        for (int app = 0; array.size() > app; app++) {
-            restAPIStore.deleteApplication(array.get(app).getApplicationId());
+        List<ApplicationInfoDTO> applicationInfoDTOs = getAllAppResponse.getList();
+        for (ApplicationInfoDTO applicationInfoDTO : applicationInfoDTOs) {
+            restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
         }
-
     }
-
-
 }
