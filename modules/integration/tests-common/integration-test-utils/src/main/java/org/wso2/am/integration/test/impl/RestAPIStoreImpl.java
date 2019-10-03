@@ -161,22 +161,11 @@ public class RestAPIStoreImpl {
         }
     }
 
-    public HttpResponse getAllApp() {
-        try {
-            ApplicationListDTO applicationList = applicationsApi.applicationsGet(null, null, null,
-                    null, null, null, null);
-            HttpResponse response = null;
-            ArrayList applicationIdList = new ArrayList<>();
-
-            if (applicationList.getCount() != 0) {
-                applicationList.getList().forEach(appDTO -> applicationIdList.add(appDTO.getApplicationId()));
-                response = new HttpResponse(applicationIdList.toString(), 200);
-            }
-            return response;
-        } catch(ApiException e) {
-
-        }
-        return null;
+    public ApplicationListDTO getAllApps() throws ApiException {
+        ApiResponse<ApplicationListDTO> appResponse = applicationsApi.applicationsGetWithHttpInfo(null,
+                null, null, null, null, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, appResponse.getStatusCode());
+        return appResponse.getData();
     }
 
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
