@@ -22,25 +22,29 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
+import org.testng.annotations.*;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
+import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import com.google.gson.Gson;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 
 public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
@@ -55,83 +59,107 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     private String providerName;
     private String visibility = "public";
     private String description = "Test Description";
-    private String tier = APIMIntegrationConstants.API_TIER.GOLD;
-    private String resTier = APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
+    private String tier= APIMIntegrationConstants.API_TIER.GOLD;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType = "http";
-    private String resourceMethodAuthType = "Application & Application User";
-    private String uriTemplate = "customers/{id}/";
-    private String apiId;
-    private String defaultApiId;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public NewCopyWithDefaultVersion(TestUserMode userMode) {
-        this.userMode = userMode;
+    public NewCopyWithDefaultVersion(TestUserMode userMode){
+        this.userMode=userMode;
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        super.init(userMode);
+    public void setEnvironment() throws Exception{
+        super.init();
+
+        String publisherUrlHttp=publisherUrls.getWebAppURLHttp();
+        apiPublisher=new APIPublisherRestClient(publisherUrlHttp);
+
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+
+
     }
 
-    @Test(groups = {"webapp"}, description = "New Copy with Default Version")
-    public void setDefaultVersionToNewcopy() throws Exception {
+    @Test(groups = {"webapp"},description = "New Copy with Default Version")
+    public void setDefaultVersionToNewcopy() throws Exception{
         String gatewayUrl;
-        if (gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")) {
+        if(gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")){
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
-        } else {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
-                    gatewayContextWrk.getContextTenant().getDomain() + "/";
         }
-        String endpointUrl = gatewayUrl + "jaxrs_basic/services/customers/customerservice";
+        else{
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp()+ "t/" +
+                    gatewayContextWrk.getContextTenant().getDomain() + "/";
+
+        }
+
+        String endpointUrl = gatewayUrl+"jaxrs_basic/services/customers/customerservice";
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
 
-        //API request
-        APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(endpointUrl));
-        apiRequest.setTags(TAGS);
-        apiRequest.setDescription(description);
-        apiRequest.setVersion(version);
-        apiRequest.setProvider(providerName);
-        apiRequest.setEndpointType(endPointType);
-        apiRequest.setResourceMethodAuthType(resourceMethodAuthType);
-        apiRequest.setTier(tier);
-        apiRequest.setResourceMethodThrottlingTier(resTier);
-        apiRequest.setUriTemplate(uriTemplate);
-        apiRequest.setVisibility(visibility);
 
-        //Add API
-        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = serviceResponse.getData();
-        assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        List<APIResourceBean> apiResourceBeanList=new ArrayList<APIResourceBean>();
+        apiResourceBeanList.add(new APIResourceBean("GET","Application & Application User", resTier,
+                "customers/{id}/"));
+
+        APICreationRequestBean apiCreationRequestBean=new APICreationRequestBean(API_NAME,apiContext,
+                version,providerName,new URL((endpointUrl)));
+        apiCreationRequestBean.setEndpointType(endPointType);
+        apiCreationRequestBean.setResourceBeanList(apiResourceBeanList);
+        apiCreationRequestBean.setTier(tier);
+        apiCreationRequestBean.setDescription(description);
+        apiCreationRequestBean.setDefault_version(version);
+        apiCreationRequestBean.setTags(TAGS);
+        apiCreationRequestBean.setVisibility(visibility);
+
+        //add api
+        HttpResponse apiAddRequest = apiPublisher.addAPI(apiCreationRequestBean);
+        assertEquals(apiAddRequest.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Invalid Response Code");
+        assertTrue(apiAddRequest.getData().contains("{\"error\" : false}"),
+                "Response Data Mismatched");
 
         //copy api with default version
-        HttpResponse apiCopyResponse = restAPIPublisher.copyAPI(newVersion, apiId, true);
-        defaultApiId = apiCopyResponse.getData();
-        assertEquals(apiCopyResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        HttpResponse apiCopyResponse = apiPublisher.copyAPI(providerName,API_NAME,version,newVersion,
+                "default_version");
+        assertEquals(apiCopyResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
                 "Response Code Mismatch");
+        assertTrue(apiCopyResponse.getData().contains("{\"error\" : false}"),
+                "Response Data Mismatched");
 
-        HttpResponse newVersionApi = restAPIPublisher.getAPI(defaultApiId);
-        Gson gson = new Gson();
-        APIDTO apidto = gson.fromJson(newVersionApi.getData(), APIDTO.class);
-        boolean version = apidto.isIsDefaultVersion();
+        HttpResponse newVersionApi = apiPublisher.getAPI(API_NAME,providerName,newVersion);
+        assertEquals(newVersionApi.getResponseCode(),Response.Status.OK.getStatusCode(),
+                "Response Code Mismatched");
 
-        assertEquals(version, true, "Copied API is not the default version");
-        assertEquals(apidto.getName(), API_NAME, "API name is mismatched");
-        assertEquals(apidto.getVersion(), newVersion, "API Version is mismatched");
+        JSONObject jsonObject = new JSONObject(newVersionApi.getData());
+
+        String name = jsonObject.getJSONObject("api").getString("name");
+        assertEquals(name,API_NAME,"API name is mismatched");
+
+        String version = jsonObject.getJSONObject("api").getString("version");
+        assertEquals(version,newVersion,"API Version is mismatched");
+
+        boolean defaultVersion = jsonObject.getJSONObject("api").getBoolean("isDefaultVersion");
+        assertEquals(defaultVersion,true,"Error in Default Version selection");
+
+        String currentDefaultVersionCheck = jsonObject.getJSONObject("api").getString("currentDefaultVersion");
+        assertEquals(currentDefaultVersionCheck,newVersion,"Error in Default Version");
+
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        restAPIPublisher.deleteAPI(apiId);
-        restAPIPublisher.deleteAPI(defaultApiId);
+    public void destroy() throws Exception{
+        apiPublisher.deleteAPI(API_NAME,version,providerName);
+        apiPublisher.deleteAPI(API_NAME,newVersion,providerName);
         super.cleanUp();
     }
 
     @DataProvider
-    public static Object[][] userModeDataProvider() {
+    public static Object[][] userModeDataProvider(){
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
+
+
 }
