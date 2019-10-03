@@ -20,169 +20,150 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Test to check some security issues in Error responses
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL })
-public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL }) public class ErrorResponseCheckTestCase
+        extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(ErrorResponseCheckTestCase.class);
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private String apiId;
+    private String applicationId;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public ErrorResponseCheckTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN } };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        loadSynapseConfigurationFromClasspath(
+                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                        + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt,
+                gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "testing error responses")
     public void testAPIErrorResponse() throws Exception {
-
-        //Login to the API Publisher
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse response;
-        response = apiPublisher.login(user.getUserName(), user.getPassword());
-        verifyResponse(response);
-
         String apiName = "ErrorResponseSecAPI";
         String apiVersion = "1.0.0";
         String apiContext = "sec";
-        String endpointUrl = getAPIInvocationURLHttp("response");
+        String endpointUrl = getGatewayURLNhttp() + "response";
+        String applicationName = "SecApp";
+        String providerName = user.getUserName();
 
         try {
             //Create the api creation request object
-            APIRequest apiRequest;
-            apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
 
+            APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
             apiRequest.setVersion(apiVersion);
+            apiRequest.setProvider(providerName);
             apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
             apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-            //Add the API using the API publisher.
-            response = apiPublisher.addAPI(apiRequest);
-            verifyResponse(response);
+            //add api
+            HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+            apiId = serviceResponse.getData();
 
-            APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                    user.getUserName(), APILifeCycleState.PUBLISHED);
-            //Publish the API
-            response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-            verifyResponse(response);
+            //publish the api
+            restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-            //Login to the API Store
-            response = apiStore.login(user.getUserName(), user.getPassword());
-            verifyResponse(response);
+            //create an application
+            HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, "Test Application",
+                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+            applicationId = applicationResponse.getData();
 
-            //Add an Application in the Store.
-            response = apiStore.addApplication("SecApp", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-            verifyResponse(response);
+            waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
-            //Subscribe the API to the Application
-            SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                    user.getUserName(), "SecApp",
-                    APIMIntegrationConstants.API_TIER.UNLIMITED);
-            response = apiStore.subscribe(subscriptionRequest);
-            verifyResponse(response);
+            //Subscribe to the new application
+            restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-            //Generate production token and invoke with that
-            APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("SecApp");
-            String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-            JSONObject responseJson = new JSONObject(responseString);
+            ArrayList grantTypes = new ArrayList();
+            grantTypes.add("client_credentials");
 
-            //Get the accessToken which was generated.
-            String accessToken = responseJson.getJSONObject("data").getJSONObject("key").getString("accessToken");
+            //get access token
+            ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                    .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                            null, grantTypes);
+            String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+            // Create requestHeaders
+            Map<String, String> requestHeaders = new HashMap<String, String>();
+            requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Going to access the API with the version in the request url.
-            String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
-
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpUriRequest getRequest1 = new HttpGet(apiInvocationUrl);
-            getRequest1.addHeader(new BasicHeader("Authorization", "Bearer " + accessToken));
-
-            waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                    APIMIntegrationConstants.IS_API_EXISTS);
-
-            org.apache.http.HttpResponse httpResponse = httpclient.execute(getRequest1);
-            Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
+            HttpResponse apiInvokeResponse = HttpRequestUtil
+                    .doGet(getAPIInvocationURLHttp(apiContext, apiVersion), requestHeaders);
+            assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                    "Response Code Mismatched");
 
 
-        /* -----------------test 1 : invoke with invalid resource path wit invalid context --------------- */
-            String invalidApiInvocationUrl = getAPIInvocationURLHttp("invalidContext", apiVersion);
+            /* -----------------test 1 : invoke with invalid resource path with invalid context --------------- */
 
-            HttpUriRequest getRequest2 = new HttpGet(invalidApiInvocationUrl);
-            getRequest2.addHeader(new BasicHeader("Authorization", "Bearer " + accessToken));
+            HttpResponse apiInvokeResponseInvalidContext = HttpRequestUtil
+                    .doGet(getAPIInvocationURLHttp("invalidContext", apiVersion), requestHeaders);
+            assertEquals(apiInvokeResponseInvalidContext.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
+                    "Response Code Mismatched");
+            Assert.assertFalse(apiInvokeResponseInvalidContext.getData().contains("invalidContext/1.0.0"),
+                    "The message contains the resource path requested.");
 
-            waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                    APIMIntegrationConstants.IS_API_EXISTS);
+            /* ----------------------------test 2 : invoke with invalid access token ---------------------------- */
 
-            //releasing the connection
-            if( httpResponse.getEntity() != null ) {
-                httpResponse.getEntity().consumeContent();
-            }
+            // Modified requestHeaders
+            Map<String, String> requestHeadersModified = new HashMap<String, String>();
+            requestHeaders.put("Authorization", "Bearer invalid_access_token");
 
-            org.apache.http.HttpResponse httpResponse2 = httpclient.execute(getRequest2);
-            Assert.assertEquals(httpResponse2.getStatusLine().getStatusCode(), 404, "Response Code Mismatched");
-            Assert.assertEquals(httpResponse2.toString().contains("invalidContext/1.0.0"),
-                    false, "The message contains the resource path requested.");
-
-        /* ----------------------------test 2 : invoke with invalid access token ---------------------------- */
-
-            HttpUriRequest getRequest3 = new HttpGet(apiInvocationUrl);
-            getRequest3.addHeader(new BasicHeader("Authorization", "Bearer " + "invalidAccessToken"));
-
-            waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                    APIMIntegrationConstants.IS_API_EXISTS);
-
-            //releasing the connection
-            if( httpResponse2.getEntity() != null ) {
-                httpResponse2.getEntity().consumeContent();
-            }
-
-            org.apache.http.HttpResponse httpResponse3 = httpclient.execute(getRequest3);
-            Assert.assertEquals(httpResponse3.getStatusLine().getStatusCode(), 401, "Response Code Mismatched");
-            Assert.assertEquals(httpResponse3.toString().contains("invalid_access_token"),
-                    false, "Access token entered is valid");
-
+            HttpResponse apiInvokeResponseInvalidToken = HttpRequestUtil
+                    .doGet(getAPIInvocationURLHttp(apiContext, apiVersion), requestHeadersModified);
+            assertEquals(apiInvokeResponseInvalidToken.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                    "Response Code Mismatched");
+            Assert.assertFalse(apiInvokeResponseInvalidToken.getData().contains("invalid_access_token"),
+                    "Access token entered is valid");
 
         } catch (APIManagerIntegrationTestException e) {
             log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (JSONException e) {
-            log.error("Error parsing JSON to get access token " + e.getMessage(), e);
             Assert.assertTrue(false);
         } catch (XPathExpressionException e) {
             log.error("XPathExpressionException " + e.getMessage(), e);
@@ -191,12 +172,12 @@ public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
             log.error("IOException " + e.getMessage(), e);
             Assert.assertTrue(false);
         }
-
-
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 }

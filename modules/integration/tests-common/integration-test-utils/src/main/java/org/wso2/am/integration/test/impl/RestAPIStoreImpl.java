@@ -28,6 +28,8 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
+import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
@@ -37,6 +39,8 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerate
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
@@ -60,6 +64,8 @@ public class RestAPIStoreImpl {
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
     public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
+    public CommentsApi commentsApi = new CommentsApi();
+    public RatingsApi ratingsApi = new RatingsApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -94,6 +100,8 @@ public class RestAPIStoreImpl {
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
+        commentsApi.setApiClient(apiStoreClient);
+        ratingsApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -431,26 +439,40 @@ public class RestAPIStoreImpl {
     /**
      * Add rating into api
      *
-     * @param apiName  - name of api
-     * @param version  - api version
-     * @param provider - provider of api
-     * @param rating   - api rating
+     * @param apiId  - api Id
+     * @param rating - api rating
      * @return - http response of add rating request
-     * @throws APIManagerIntegrationTestException - throws if rating of api fails
+     * @throws ApiException - throws if rating of api fails
      */
-    public HttpResponse addRatingToAPI(String apiName, String version, String provider,
-                                       String rating) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
-//                            provider + "&rating=" + rating, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to rate API -  " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse addRating(String apiId, Integer rating, String tenantDomain) throws ApiException {
+        RatingDTO ratingDTO = new RatingDTO();
+        ratingDTO.setRating(rating);
+        Gson gson = new Gson();
+        ApiResponse<RatingDTO> apiResponse = ratingsApi.apisApiIdUserRatingPutWithHttpInfo(apiId, ratingDTO, tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        HttpResponse response = null;
+        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getRatingId())) {
+            response = new HttpResponse(gson.toJson(apiResponse.getData()), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Remove comment in given API
+     *
+     * @param commentId - comment Id
+     * @param apiId   - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse removeRating(String commentId, String apiId) throws ApiException {
+        HttpResponse response;
+        try {
+            commentsApi.deleteComment(commentId, apiId, null);
+            response = new HttpResponse("Successfully deleted the comment", 200);
+        } catch (ApiException e) {
+            response = new HttpResponse("Failed to delete the comment", e.getCode());
+        }
+        return response;
     }
 
     /**
@@ -1087,30 +1109,65 @@ public class RestAPIStoreImpl {
 
     }
 
-
     /**
      * Add comment to given API
      *
-     * @param apiName  - name of the api
-     * @param version  - api version
-     * @param provider - provider name
-     * @param comment  - comment to  add
+     * @param apiId   - api Id
+     * @param comment - comment to  add
      * @return - http response of add comment
-     * @throws APIManagerIntegrationTestException - throws if add comment fails
+     * @throws ApiException - throws if add comment fails
      */
-    public HttpResponse addComment(String apiName, String version, String provider, String comment)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-//                            "action=addComment&name=" + apiName + "&version=" + version + "&provider=" +
-//                            provider + "&comment=" + comment), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable add a comment in to API - " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse addComment(String apiId, String comment) throws ApiException {
+        CommentDTO commentDTO = new CommentDTO();
+        commentDTO.setContent(comment);
+        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, commentDTO);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        HttpResponse response = null;
+        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getId())) {
+            response = new HttpResponse(apiResponse.getData().getId(), 201);
+        }
+        return response;
+    }
+
+    /**
+     * Remove comment in given API
+     *
+     * @param commentId - comment Id
+     * @param apiId   - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
+        HttpResponse response;
+        try {
+            commentsApi.deleteComment(commentId, apiId, null);
+            response = new HttpResponse("Successfully deleted the comment", 200);
+        } catch (ApiException e) {
+            response = new HttpResponse("Failed to delete the comment", e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId   - comment Id
+     * @param apiId - api Id
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
     }
 
     /**

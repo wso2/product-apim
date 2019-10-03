@@ -1,51 +1,61 @@
 /*
-*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*WSO2 Inc. licenses this file to you under the Apache License,
-*Version 2.0 (the "License"); you may not use this file except
-*in compliance with the License.
-*You may obtain a copy of the License at
-*
-*http://www.apache.org/licenses/LICENSE-2.0
-*
-*Unless required by applicable law or agreed to in writing,
-*software distributed under the License is distributed on an
-*"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-*KIND, either express or implied.  See the License for the
-*specific language governing permissions and limitations
-*under the License.
-*/
+ *Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *WSO2 Inc. licenses this file to you under the Apache License,
+ *Version 2.0 (the "License"); you may not use this file except
+ *in compliance with the License.
+ *You may obtain a copy of the License at
+ *
+ *http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *Unless required by applicable law or agreed to in writing,
+ *software distributed under the License is distributed on an
+ *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *KIND, either express or implied.  See the License for the
+ *specific language governing permissions and limitations
+ *under the License.
+ */
 
 package org.wso2.am.integration.tests.other;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONObject;
-import org.testng.annotations.*;
+
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 
 /**
- * This class is used to check the functionality of sending an HTTP PATCH request and receiving a 200 OK response from the backend.
+ * This class is used to check the functionality of sending an HTTP PATCH request and receiving a 200 OK response from
+ * the backend.
  */
 
 public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private String apiId;
+    private String applicationId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HttpPATCHSupportTestCase(TestUserMode userMode) {
@@ -54,18 +64,14 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN } };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN } };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath(
@@ -75,72 +81,76 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = "wso2.am", description = "Check functionality of HTTP PATCH support for APIM")
     public void testHttpPatchSupport() throws Exception {
-        //Login to the API Publisher
-        apiPublisher.login(user.getUserName(), user.getPassword());
 
-        String APIName = "HttpPatchAPI";
-        String APIContext = "patchTestContext";
+        String apiName = "HttpPatchAPI";
+        String apiContext = "patchTestContext";
         String url = getGatewayURLNhttp() + "httpPatchSupportContext";
         String providerName = user.getUserName();
-        String APIVersion = "1.0.0";
+        String apiVersion = "1.0.0";
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
-        apiRequest.setVersion(APIVersion);
+        String applicationName = "HttpPatchSupportAPP";
+
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(url));
+        apiRequest.setVersion(apiVersion);
         apiRequest.setProvider(providerName);
-        apiRequest.setResourceMethod("PATCH");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Adding the API to the publisher
-        apiPublisher.addAPI(apiRequest);
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("PATCH");
+        apiOperationsDTO.setTarget("/*");
 
-        //Publish the API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiRequest.setOperationsDTOS(operationsDTOS);
 
-        waitForAPIDeploymentSync(providerName, APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
+        //add api
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = serviceResponse.getData();
 
-        //Login to the API Store
-        apiStore.login(user.getUserName(), user.getPassword());
+        //publish the api
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        //Add an Application in the Store.
-        apiStore.addApplication("HttpPatchSupportAPP", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "",
-                "Test-HTTP-PATCH");
+        //create an application
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, "Test Application",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
+
+        waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         //Subscribe to the new application
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, APIVersion, providerName,
-                "HttpPatchSupportAPP", APIMIntegrationConstants.API_TIER.GOLD);
-        apiStore.subscribe(subscriptionRequest);
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Generate a production token and invoke the API
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("HttpPatchSupportAPP");
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
 
-        //Get the accessToken generated.
-        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").getString("accessToken");
-
-        String apiInvocationUrl = getAPIInvocationURLHttp(APIContext, APIVersion);
+        //get access token
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         //Invoke the API by sending a PATCH request;
 
         HttpClient client = HttpClientBuilder.create().build();
-        HttpPatch request = new HttpPatch(apiInvocationUrl);
+        HttpPatch request = new HttpPatch(getAPIInvocationURLHttp(apiContext, apiVersion));
         request.setHeader("Accept", "application/json");
         request.setHeader("Authorization", "Bearer " + accessToken);
         StringEntity payload = new StringEntity("{\"first\":\"Greg\"}", "UTF-8");
         payload.setContentType("application/json");
         request.setEntity(payload);
 
-        HttpResponse httpResponsePatch = client.execute(request);
+        org.apache.http.HttpResponse httpResponsePatch = client.execute(request);
 
         //Assertion
         assertEquals(httpResponsePatch.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "The response code is not 200 OK");
-
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 
