@@ -75,4 +75,10 @@
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
         </classes>
     </test>
+
+    <test name="apim-integration-tests-token" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase" />
+        </classes>
+    </test>
 </suite>
