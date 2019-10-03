@@ -30,11 +30,9 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 
 import static org.testng.Assert.*;
 
@@ -54,8 +52,6 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     private String apiEndPointUrl;
     private String providerName;
     private String apiId;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
 
 
     @BeforeClass(alwaysRun = true)
@@ -64,8 +60,6 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
 
         APIRequest apiRequest;
         apiRequest = new APIRequest(API_NAME, API_NAME.toLowerCase(), new URL(apiEndPointUrl));
@@ -88,10 +82,24 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test the filter by Tags before changing the Tags")
     public void testFilterByTagsBeforeTagChange()
-            throws APIManagerIntegrationTestException, ApiException {
+            throws APIManagerIntegrationTestException, ApiException, InterruptedException {
 
-        APIListDTO apiFilteredWithTagsDTOs = restAPIStore.getAPIsFilteredWithTags(TEST_TAG);
-        assertTrue(apiFilteredWithTagsDTOs.getCount() > 0,
+        APIListDTO apiFilteredWithTagsDTOs;
+        boolean isAvailable = false;
+        int maxRetry = 10;
+        int currentTry = 0;
+        do {
+            Thread.sleep(2000);
+            apiFilteredWithTagsDTOs = restAPIStore.getAPIsFilteredWithTags(TEST_TAG);
+            if (apiFilteredWithTagsDTOs != null) {
+                isAvailable = true;
+                break;
+            }
+
+            currentTry++;
+        } while (currentTry <= maxRetry);
+
+        assertTrue(isAvailable,
                 "API: "+ API_NAME +" is not visible for tag: " + TEST_TAG);
     }
 
@@ -129,7 +137,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
+        super.cleanUpUsingRest();
     }
 
 

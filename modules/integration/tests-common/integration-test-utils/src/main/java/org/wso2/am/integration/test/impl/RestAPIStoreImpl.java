@@ -299,25 +299,6 @@ public class RestAPIStoreImpl {
         return apiResponse.getData();
     }
 
-    /**
-     * Get all the applications
-     *
-     * @return - http response of get get all applications
-     * @throws APIManagerIntegrationTestException - throws if get all application fails.
-     */
-    public HttpResponse getAllApplications() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/application/application-list/ajax/" +
-//                            "application-list.jag?action=getApplications",
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve all applications. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
 
     /**
      * Get application by ID

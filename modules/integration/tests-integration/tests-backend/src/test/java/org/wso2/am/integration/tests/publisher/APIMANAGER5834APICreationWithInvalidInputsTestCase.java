@@ -26,7 +26,6 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import java.net.MalformedURLException;
@@ -35,7 +34,6 @@ import java.net.URL;
 
 public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMIntegrationBaseTest {
     private final String apiNameTest = "APIM18PublisherTest";
-    private APIPublisherRestClient apiPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5834APICreationWithInvalidInputsTestCase(TestUserMode userMode) {

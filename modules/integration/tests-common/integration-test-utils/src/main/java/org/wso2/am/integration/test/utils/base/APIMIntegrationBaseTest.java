@@ -27,6 +27,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -493,6 +499,34 @@ public class APIMIntegrationBaseTest {
 //            verifyResponse(publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName()));
             publisherRestClient.deleteAPI(api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
                     , api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION), user.getUserName());
+        }
+    }
+
+    /**
+     * Cleaning up the API manager by removing all APIs and applications other than default application
+     *
+     * @throws APIManagerIntegrationTestException - occurred when calling the apis
+     */
+    protected void cleanUpUsingRest() throws Exception {
+        ApplicationListDTO applicationListDTO = restAPIStore.getAllApps();
+        for (ApplicationInfoDTO applicationInfoDTO: applicationListDTO.getList()) {
+            SubscriptionListDTO subsDTO = restAPIStore
+                    .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
+            if (subsDTO != null) {
+                for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
+                    restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+                }
+            }
+            if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
+                restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
+            }
+        }
+
+        APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+        if (apiListDTO != null) {
+            for (APIInfoDTO apiInfoDTO: apiListDTO.getList()) {
+                restAPIPublisher.deleteAPI(apiInfoDTO.getId());
+            }
         }
     }
 
