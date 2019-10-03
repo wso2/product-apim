@@ -29,6 +29,8 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -159,9 +161,9 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     @Test(description = "Get all created applications", dependsOnMethods = "testApplicationCreation")
     public void getAllCreatedApplications() throws Exception {
-        HttpResponse getResponse = restAPIStore.getAllApp();
-        assertEquals(getResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Response Code is mismatched in get applications");
+        ApplicationListDTO applicationListDTO = restAPIStore.getAllApps();
+        assertNotNull(applicationListDTO,
+                "Error while get all applications");
 
     }
 
@@ -236,8 +238,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
             description = "Create an Application")
     public void testApplicationCreationWithCustomAttributes(String applicationName, String tier, String description,
                                                             ApplicationDTO.TokenTypeEnum token,
-                                                            Map<String, String> applicationAttributes) throws Exception
-    {
+                                                            Map<String, String> applicationAttributes) throws Exception {
         HttpResponse applicationResponse = restAPIStore.createApplicationWithCustomAttribute(applicationName,
                 description, appTier,
                 token, applicationAttributes);
@@ -250,19 +251,14 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         removeAllApps();
-        super.cleanUp();
     }
 
     public void removeAllApps() throws Exception {
         //delete created applications
-        HttpResponse getAllAppResponse = restAPIStore.getAllApp();
-        String[] array = getAllAppResponse.getData().replace("[", "")
-                .replace("]", "").split(",");
-        for (int app = 0; (array.length - 1) > app; app++) {
-            restAPIStore.deleteApplication(array[app]);
+        ApplicationListDTO getAllAppResponse = restAPIStore.getAllApps();
+        List<ApplicationInfoDTO> applicationInfoDTOs = getAllAppResponse.getList();
+        for (ApplicationInfoDTO applicationInfoDTO : applicationInfoDTOs) {
+            restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
         }
-
     }
-
-
 }
