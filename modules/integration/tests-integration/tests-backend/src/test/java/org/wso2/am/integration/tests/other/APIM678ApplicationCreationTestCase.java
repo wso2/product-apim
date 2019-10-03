@@ -129,7 +129,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertNotNull(applicationResponse, "Error in Application Creation: "
                 + applicationName);
         //add applications to a list (for get all applications and deletion purpose when test finished)
-        applicationsList.add(applicationName);
+        applicationsList.add(applicationResponse.getData());
     }
 
     //TODO: Commented until fix: https://github.com/wso2/product-apim/issues/6012
@@ -177,6 +177,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched in add application " + applicationName);
+        applicationsList.add(applicationResponse.getData());
 
         String newAppName = "UpdateApplication";
         String newappDescription = "Application updated";
@@ -246,6 +247,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 "Response Code is mismatched in add application with custom attributes " + applicationName);
         assertNotNull(applicationResponse, "Error in Application Creation: "
                 + applicationName);
+        applicationsList.add(applicationResponse.getData());
     }
 
     @AfterClass(alwaysRun = true)
@@ -255,10 +257,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     public void removeAllApps() throws Exception {
         //delete created applications
-        ApplicationListDTO getAllAppResponse = restAPIStore.getAllApps();
-        List<ApplicationInfoDTO> applicationInfoDTOs = getAllAppResponse.getList();
-        for (ApplicationInfoDTO applicationInfoDTO : applicationInfoDTOs) {
-            restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
+        for (String appId : applicationsList) {
+            restAPIStore.deleteApplication(appId);
         }
     }
 }
