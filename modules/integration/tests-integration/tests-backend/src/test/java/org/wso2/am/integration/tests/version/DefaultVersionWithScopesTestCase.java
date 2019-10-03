@@ -231,7 +231,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
                          "Mike should receive an HTTP 403 when trying to access"
                          + " the GET resource. But the response code was " + response.getResponseCode());
         }
-        //Catching generic Exception since apiPublisher and apiStore classes throw Exception from their methods.
+        //Catching generic Exception since apiPublisherApi and apiStore classes throw Exception from their methods.
         catch (Exception e) {
             log.error("Error while executing test case " + e.getMessage(), e);
             //fail the test case.

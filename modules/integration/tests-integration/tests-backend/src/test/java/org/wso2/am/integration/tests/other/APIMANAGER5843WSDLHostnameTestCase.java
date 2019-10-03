@@ -27,12 +27,15 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.ServerConstants;
 //import sun.misc.BASE64Encoder;
@@ -45,12 +48,13 @@ import java.util.Map;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIMANAGER5843WSDLHostnameTestCase.class);
-    private APIPublisherRestClient apiPublisher;
     private String apiName = "APIMANAGER5843";
     private String apiContext = "apimanager5843";
+    private String apiVersion = "1.0.0";
     private String backendEndWSDL;
     private String backendEndUrl;
-    APIRequest apiRequest;
+    private String apiId;
+    private RestAPIPublisherImpl restAPIPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5843WSDLHostnameTestCase(TestUserMode userMode) {
@@ -63,22 +67,29 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             super.init();
         }
-
-        String publisherURLHttp = getPublisherURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-
         backendEndWSDL = getGatewayURLNhttp() + "services/echo?wsdl";
         backendEndUrl = getGatewayURLNhttp() + "services/echo";
+        restAPIPublisher = new RestAPIPublisherImpl();
 
-        apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndUrl));
     }
 
     @Test(groups = {"wso2.am"}, description = "API creation with wsdl")
     public void testAPICreationWithWSDL() throws Exception {
+
+
+        APIRequest apiRequest;
+        apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndUrl));
+
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setWsdl(backendEndWSDL);
         apiRequest.setProvider(user.getUserName());
-        apiPublisher.addAPI(apiRequest);
+
+        //Add the API using the API publisher.
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = apiResponse.getData();
+
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("Authorization", "Basic " + new String(Base64.encodeBase64((user.getUserName() + ':' + user.getPassword()).getBytes())));
@@ -102,7 +113,7 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(apiName, apiRequest.getVersion(), apiRequest.getProvider());
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 

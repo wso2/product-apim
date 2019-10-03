@@ -100,6 +100,11 @@ public class APIMIntegrationConstants {
 
     }
 
+    public static class GRANT_TYPE {
+        public static final String PASSWORD = "password";
+        public static final String CLIENT_CREDENTIAL = "client_credentials";
+    }
+
     public static class RESOURCE_TIER {
         public static final String UNLIMITED = "Unlimited";
         public static final String TENK_PER_MIN = "10KPerMin";
