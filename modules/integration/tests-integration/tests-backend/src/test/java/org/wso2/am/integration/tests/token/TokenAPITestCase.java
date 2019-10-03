@@ -257,8 +257,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(),
-                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
-                null, grantTypes);
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes);
 
         String sandboxAccessToken = applicationKeyDTO.getToken().getAccessToken();
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
