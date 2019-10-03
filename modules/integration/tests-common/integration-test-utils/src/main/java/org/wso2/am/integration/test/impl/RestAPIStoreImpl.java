@@ -661,24 +661,19 @@ public class RestAPIStoreImpl {
      * @return - http response of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
-    public HttpResponse addApplicationWithTokenType(String application, String tier, String callbackUrl,
+    public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
                                                     String description, String tokenType)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application + "&tokenType=" + tokenType), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
+            throws ApiException {
+
+        ApplicationDTO dto = new ApplicationDTO();
+        dto.setName(application);
+        dto.setThrottlingPolicy(tier);
+        dto.setDescription(description);
+        dto.setTokenType(ApplicationDTO.TokenTypeEnum.fromValue(tokenType));
+
+        ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
