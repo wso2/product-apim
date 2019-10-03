@@ -280,7 +280,16 @@ public class RestAPIStoreImpl {
      * @throws ApiException
      */
     public APIListDTO getAllAPIs() throws ApiException {
-        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, null, null);
+        return getAllAPIs(this.tenantDomain);
+    }
+
+    /**
+     *
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAllAPIs(String tenantDomain) throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
