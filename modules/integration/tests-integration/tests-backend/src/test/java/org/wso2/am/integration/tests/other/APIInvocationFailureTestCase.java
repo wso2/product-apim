@@ -24,7 +24,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -55,13 +54,13 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     private String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private String description = "This is test API create by API manager integration test";
     private String APIVersion = "1.0.0";
-    private String apiID;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
         publisherURLHttp = getPublisherURLHttp();
-
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
@@ -76,16 +75,14 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         apiRequest.setResourceMethod("GET");
 
         //add test api
-        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
-        assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        apiID = serviceResponse.getData();
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(serviceResponse);
 
-        String updateRequest;
         //publish the api
-
-        serviceResponse = restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
-
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, user.getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
@@ -103,7 +100,6 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
 

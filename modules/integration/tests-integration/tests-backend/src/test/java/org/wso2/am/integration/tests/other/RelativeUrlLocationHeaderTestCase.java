@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
@@ -25,12 +25,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -51,10 +45,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+
 
 /**
  * Test to check the Http 201 response when location header is a relative URL
@@ -62,22 +55,32 @@ import static org.testng.Assert.assertNotNull;
 public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(RelativeUrlLocationHeaderTestCase.class);
-    private String applicationId;
-    private String apiId;
+
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
         String gatewaySessionCookie = createSession(gatewayContextMgt);
+        //Initialize publisher and store.
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
+                                              + File.separator + "synapseconfigs" + File.separator + "rest"
+                                              + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the API for relative URL location header")
     public void testAPIWithRelativeUrlLocationHeader() throws Exception {
+
+        //Login to the API Publisher
+        HttpResponse response;
+        response = apiPublisher.login(user.getUserName(), user.getPassword());
+        verifyResponse(response);
 
         String apiName = "RelativeUrlLocationHeaderAPI";
         String apiVersion = "1.0.0";
@@ -95,40 +98,44 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Add the API using the API publisher.
-        APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
-        apiId = createdAPI.getId();
+        response = apiPublisher.addAPI(apiRequest);
+        verifyResponse(response);
+
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
+
 
         //Publish the API
-        WorkflowResponseDTO lifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(
-                createdAPI.getId(), Constants.PUBLISHED);
-        Assert.assertNotNull(lifecycleChangeResponse.getLifecycleState());
-        Assert.assertEquals(lifecycleChangeResponse.getLifecycleState().getState(),
-                APILifeCycleState.PUBLISHED.getState(),
-                "Lifecycle State was not changed to " + APILifeCycleState.PUBLISHED.getState());
+        response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(),
-                apiRequest.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(updateRequest.getProvider(), updateRequest.getName(),
+                                 updateRequest.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
 
-        //create an application 'LocHeaderAPP'
-        HttpResponse appCreateResponse = restAPIStore.createApplication(appName, "",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicationId = appCreateResponse.getData();
+        verifyResponse(response);
 
-        //Subscribe the API to the LocHeaderAPP
-        HttpResponse subscriptionResponse = restAPIStore.createSubscription(createdAPI.getId(), applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        //Login to the API Store
+        response = apiStore.login(user.getUserName(), user.getPassword());
+        verifyResponse(response);
 
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationId, "36000", "",
-                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //Add an Application in the Store.
+        response = apiStore.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        verifyResponse(response);
 
-        assertNotNull(applicationKeyDTO.getToken(), "Generated Keys doesn't include a token");
+        //Subscribe the API to the DefaultApplication
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, user.getUserName()
+                , appName, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        response = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(response);
+
+        //Generate production token and invoke with that
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(appName);
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject responseProduction = new JSONObject(responseString);
+
         //Get the accessToken which was generated.
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        assertNotNull(accessToken, "Production access token is Empty");
+        String accessToken = responseProduction.getJSONObject("data").getJSONObject("key").getString("accessToken");
+
+        assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
 
         //Going to access the API with the version in the request url.
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
@@ -147,8 +154,10 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
+
+        apiStore.removeApplication("RelativeLocHeaderAPP");
+        apiPublisher.deleteAPI("RelativeUrlLocationHeaderAPI", "1.0.0", user.getUserName());
+
         super.cleanUp();
     }
 

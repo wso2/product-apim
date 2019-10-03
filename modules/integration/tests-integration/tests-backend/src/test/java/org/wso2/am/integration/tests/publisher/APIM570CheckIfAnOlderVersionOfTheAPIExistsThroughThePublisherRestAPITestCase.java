@@ -20,6 +20,9 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,25 +37,34 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Update an API through the REST api
+ * APIM2-570:Check if an older version of the API exists through the publisher REST API
  */
 
-public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIntegrationBaseTest {
+public class APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase
+        extends APIMIntegrationBaseTest {
 
-    private final String apiNameTest = "APIM520PublisherTest";
-    private final String apiVersion = "1.0.0";
+    private static final Log log = LogFactory.
+            getLog(APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase.class);
+    private static final String apiNameTest = "APIM570PublisherTest";
+    private static final String apiVersion1 = "1.0.0";
+    private static final String apiVersion2 = "2.0.0";
+    private static final String apiVersion3 = "3.0.0";
+    private static final String apiDefaultVersion = "default_version";
     private APIPublisherRestClient apiPublisher;
-    private String apiProviderName;
+    private static String apiProviderName;
     private String apiProductionEndPointUrl;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public APIM520UpdateAnAPIThroughThePublisherRestAPITestCase(TestUserMode userMode) {
+    public APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase
+            (TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -60,10 +72,19 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
+//                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
+
+    @DataProvider(name = "copyAPI")
+    public static Object[][] copyanApiWithValidDataProvider() throws Exception {
+
+        return new Object[][]{
+                {apiProviderName, apiNameTest, apiVersion1, apiVersion2, apiDefaultVersion},
+                {apiProviderName, apiNameTest, apiVersion1, apiVersion3, apiDefaultVersion},
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -84,26 +105,26 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Update an API Through the Publisher Rest API")
-    public void testUpdateAnAPIThroughThePublisherRest() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Create an API using valid data and get the API")
+    public void testCreateAnApiUsingValidDataAndGetThroughThePublisherRest() throws Exception {
 
-        String apiContextTest = "apim520PublisherTestAPI";
+        String apiContextTest = "apim570PublisherTestAPI";
         String apiDescription = "This is Test API Created by API Manager Integration Test";
-        String apiTag = "tag520-1, tag520-2, tag520-3";
+        String apiTag = "tag570-1, tag570-2, tag570-3";
 
         //Create an API
         APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(apiNameTest, apiContextTest, apiVersion, apiProviderName,
+                new APICreationRequestBean(apiNameTest, apiContextTest, apiVersion1, apiProviderName,
                         new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
         apiCreationRequestBean.setDefaultVersion("default_version");
         apiCreationRequestBean.setDefaultVersionChecked("default_version");
-        apiCreationRequestBean.setBizOwner("api520b");
-        apiCreationRequestBean.setBizOwnerMail("api520b@ee.com");
-        apiCreationRequestBean.setTechOwner("api520t");
-        apiCreationRequestBean.setTechOwnerMail("api520t@ww.com");
+        apiCreationRequestBean.setBizOwner("api570b");
+        apiCreationRequestBean.setBizOwnerMail("api570b@ee.com");
+        apiCreationRequestBean.setTechOwner("api570t");
+        apiCreationRequestBean.setTechOwnerMail("api570t@ww.com");
 
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
@@ -112,43 +133,53 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         assertFalse(apiResponse.getBoolean("error"), apiNameTest + "is not created as expected");
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiNameTest, apiProviderName, apiVersion);
+        HttpResponse apiResponsePublisher = apiPublisher.getAllAPIs();
         JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
         assertFalse(jsonObject.getBoolean("error"), apiNameTest + " is not visible in publisher");
-        assertTrue(apiResponsePublisher.getData().contains(apiNameTest),
+        assertTrue(jsonObject.getString("apis").contains(apiNameTest),
                 apiNameTest + " is not visible in publisher");
+        assertTrue(jsonObject.getString("apis").contains(apiVersion1),
+                "Version of the " + apiNameTest + "is not a valid version");
 
-        //Update API with the description and tiersCollection & validate the result
-        apiCreationRequestBean.setDescription("Description Changed");
-        apiCreationRequestBean.setTiersCollection("Unlimited,Gold,Bronze");
+    }
 
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        assertTrue(apiUpdateResponse.getData().contains("\"error\" : false"),
-                apiNameTest + " is not updated properly");
-        waitForAPIDeployment();
+    @Test(dataProvider = "copyAPI", description = "Copy an API with the multiple version check " +
+            "if the older version exist through Publisher Rest API",
+            dependsOnMethods = "testCreateAnApiUsingValidDataAndGetThroughThePublisherRest")
+    public void testCheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPI
+            (String provider, String apiName, String oldVersion, String newVersion,
+             String defaultVersion) throws Exception {
 
-        //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiNameTest, apiProviderName, apiVersion);
-        assertTrue(apiUpdateResponsePublisher.getData().contains(apiNameTest),
-                apiNameTest + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Description Changed"),
-                "Description of the " + apiNameTest + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Unlimited"),
-                "Tier Collection of the " + apiNameTest + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Bronze"),
-                "Tier Collection of the " + apiNameTest + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Gold"),
-                "Tier Collection of the " + apiNameTest + " is not updated");
+        //Create two new copies of the API and validate the result
+        JSONObject jsonObjectCopy = new JSONObject(apiPublisher.copyAPI
+                (provider, apiName, oldVersion, newVersion, defaultVersion).getData());
+        log.info("API Name: " + apiName + " Old Version: " + oldVersion +
+                " New Version: " + newVersion);
+        assertFalse(jsonObjectCopy.getBoolean("error"), " New copy of the " + apiNameTest +
+                " is not created as expected");
+
+
+        //Check availability of the APIs with the copies
+        HttpResponse allApiResponse = apiPublisher.getAllAPIs();
+        JSONObject allApiObject = new JSONObject(allApiResponse.getData());
+        JSONArray jsonArray = allApiObject.getJSONArray("apis");
+        List<String> allApiList = new ArrayList<String>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String name = jsonArray.getJSONObject(i).toString();
+            allApiList.add(name);
+            log.info("API List :" + allApiList);
+
+        }
 
     }
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest, apiVersion1, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest, apiVersion2, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest, apiVersion3, apiProviderName);
         super.cleanUp();
     }
-
 
 }

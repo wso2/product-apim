@@ -18,7 +18,6 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -37,17 +36,27 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
     private static final Log log = LogFactory.getLog(PluggableVersioningStrategyTestCase.class);
 
     private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
+    private APIPublisherRestClient apiPublisherClientUser;
+    private APIStoreRestClient apiStoreClientUser;
     private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
     private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
 
 
     @BeforeClass(alwaysRun = true)
-    public void initialize(ITestContext ctx) throws Exception {
+    public void initialize() throws Exception {
         super.init();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser = new APIStoreRestClient(storeURLHttp);
+        //Login to API Publisher with  admin
+        apiPublisherClientUser.login(user.getUserName(), user.getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = {"webapp"}, description = "This test method tests the pluggable versioning stratergy")
-    public void testPluggableVersioningStratergy(ITestContext ctx) throws Exception,
+    public void testPluggableVersioningStratergy() throws Exception,
                                                           IOException {
 
         //Add request headers
@@ -55,7 +64,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         requestHeadersGet.put("accept", "text/xml");
 
         //Get the  access token
-        String accessToken = (String) ctx.getAttribute("accessToken");
+        String accessToken = System.getProperty(APPLICATION_NAME + "-accessToken");
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
 
         //Send GET Request
