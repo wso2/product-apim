@@ -18,7 +18,7 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "indexing.enable": false,
-      "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
+      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
       "system.parameter.profile": "api-key-manager"
     },
     "api-publisher": {
@@ -41,7 +41,7 @@
       "system.parameter.profile": "traffic-manager"
     },
     "default": {
-      "oauth.extension.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
+      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
     }
   },
   "apim.jwt.encoding": {
