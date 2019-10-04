@@ -243,6 +243,15 @@ public class RestAPIStoreImpl {
 
     }
 
+    /**
+     * Regenerate consumer secret of an application
+     *
+     * @param applicationId - ID of the application
+     * @param keyType       - PRODUCTION or SANDBOX
+     * @param applicationKeyDTO - application DTO to be updated
+     * @return - APIResponse of update request
+     * @throws ApiException - throws if update keys fails.
+     */
     public ApiResponse<ApplicationKeyDTO> updateKeys(String applicationId, String keyType,
             ApplicationKeyDTO applicationKeyDTO) throws Exception{
 
@@ -262,6 +271,20 @@ public class RestAPIStoreImpl {
                                                                                      String keyType) throws Exception {
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeRegenerateSecretPostWithHttpInfo(applicationId, keyType);
+    }
+
+    /**
+     * Regenerate consumer secret of an application
+     *
+     * @param applicationId - ID of the application
+     * @param keyType       - PRODUCTION or SANDBOX
+     * @return - APIResponse of get application keys request
+     * @throws ApiException - throws if get application keys fails.
+     */
+    public ApiResponse<ApplicationKeyDTO> getApplicationKeysByKeyType(String applicationId,
+            String keyType) throws Exception {
+        return applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypeGetWithHttpInfo(applicationId, keyType, null);
     }
 
     /**

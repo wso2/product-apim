@@ -34,7 +34,6 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.net.URL;
 
@@ -42,7 +41,6 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private ServerConfigurationManager serverConfigurationManager;
     private final int apiCount = 24;
     private static final String PROVIDER = "admin";
     private static final String TENANT_DOMAIN = "carbon.super";
