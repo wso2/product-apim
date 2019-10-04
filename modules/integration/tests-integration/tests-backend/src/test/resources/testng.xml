@@ -75,4 +75,10 @@
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
         </classes>
     </test>
+    
+    <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.ApplicationConsumerSecretRegenerateTestCase"/>
+        </classes>
+    </test>
 </suite>
