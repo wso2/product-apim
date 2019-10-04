@@ -144,7 +144,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         }
         restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
+        super.cleanUpUsingRest();
     }
 
 }
