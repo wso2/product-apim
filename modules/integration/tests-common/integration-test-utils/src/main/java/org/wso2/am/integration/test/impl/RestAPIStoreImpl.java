@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -249,6 +250,19 @@ public class RestAPIStoreImpl {
                 .applicationsApplicationIdKeysKeyTypePutWithHttpInfo(applicationId, keyType, applicationKeyDTO);
     }
 
+    /**
+     * Regenerate consumer secret of an application
+     *
+     * @param applicationId - ID of the application
+     * @param keyType       - PRODUCTION or SANDBOX
+     * @return - APIResponse of re-generate request
+     * @throws ApiException - throws if consumer secret re-generationx fails.
+     */
+    public ApiResponse<ApplicationKeyReGenerateResponseDTO> regenerateConsumerSecret(String applicationId,
+                                                                                     String keyType) throws Exception {
+        return applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypeRegenerateSecretPostWithHttpInfo(applicationId, keyType);
+    }
 
     /**
      * Get api which are published

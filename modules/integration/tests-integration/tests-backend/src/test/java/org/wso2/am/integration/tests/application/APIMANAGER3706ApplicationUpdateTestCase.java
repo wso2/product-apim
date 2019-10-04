@@ -29,23 +29,27 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
 import java.rmi.RemoteException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-3706
@@ -56,25 +60,14 @@ import javax.xml.xpath.XPathExpressionException;
 public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIMANAGER3706ApplicationUpdateTestCase.class);
     private final String APP_NAME = "CallBackUrlUpdateTestApp";
-    private final String APP_NAME_TO_UPDATE = "AuthApplicationNameToUpdateApp";
-    private final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
-    private final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
-    private final String GRANT_TYPE_PASSWORD = "password";
-    private final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
-    private final String GRANT_TYPE_IMPLICIT = "implicit";
     private final String APP_DESCRIPTION = "description";
     private final String APP_CALLBACK_URL = "http://wso2.com/";
     private final String UPDATE_APP_CALLBACK_URL = "https://www.google.lk/";
-    private final String API_VERSION = "1.0.0";
-    private final String API_NAME = "CallBackUrlUpdateAPI";
-    private final String API_CONTEXT = "callBackUrlUpdateAPI";
 
-    private String storeURLHttp;
-    private APIStoreRestClient apiStore;
     private String consumerKey;
     private String consumerSecret;
-    private String regeneratedConsumerSecret;
-    private String publisherURLHttps;
+    private RestAPIStoreImpl restAPIStore;
+    private String applicationID;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER3706ApplicationUpdateTestCase(TestUserMode userMode) {
@@ -84,53 +77,56 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        storeURLHttp = getStoreURLHttp();
-        publisherURLHttps = publisherUrls.getWebAppURLHttp();
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(user.getUserName(), user.getPassword());
-        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
-        apiPublisher.login(user.getUserName(), user.getPassword());
+        restAPIStore = new RestAPIStoreImpl(user.getUserName(), user.getPassword(),
+                publisherContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps());
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")
     public void testApplicationCreation() throws Exception {
 
-        apiStore.addApplication(APP_NAME,
+        ApplicationDTO application = restAPIStore.addApplication(APP_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, APP_CALLBACK_URL,
                 APP_DESCRIPTION);
+        applicationID = application.getApplicationId();
         //generate keys for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-        HttpResponse response = apiStore.generateApplicationKey(generateAppKeyRequest);
-        verifyResponse(response);
-        String responseString = response.getData();
-        consumerKey = getConsumerKey(responseString);
-        consumerSecret = getConsumerSecret(responseString);
-        Assert.assertNotNull(consumerKey);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        ApplicationKeyDTO generatedKeys = restAPIStore.generateKeys(applicationID, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        consumerKey = generatedKeys.getConsumerKey();
+        consumerSecret = generatedKeys.getConsumerSecret();
+        Assert.assertNotNull(consumerKey, "Error in generating keys for application: " + APP_NAME);
 
         OAuthConsumerAppDTO authApp = getAuthAppDetails(consumerKey);
-        String grantTypes = authApp.getGrantTypes();
-        Assert.assertTrue(grantTypes.contains(GRANT_TYPE_AUTHORIZATION_CODE));
-        Assert.assertTrue(grantTypes.contains(GRANT_TYPE_CLIENT_CREDENTIALS));
-        Assert.assertTrue(grantTypes.contains(GRANT_TYPE_PASSWORD));
-        Assert.assertTrue(grantTypes.contains(GRANT_TYPE_REFRESH_TOKEN));
-        Assert.assertTrue(grantTypes.contains(GRANT_TYPE_IMPLICIT));
+        String appGrantTypes = authApp.getGrantTypes();
+        Assert.assertTrue(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL));
+        Assert.assertTrue(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.PASSWORD));
+        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE));
+        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE));
+        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.IMPLICIT));
     }
 
     @Test(groups = {
-            "wso2.am" }, description = " Application update", dependsOnMethods = "testApplicationCreation")
+            "wso2.am" }, description = "Test update grantTypes and callback URL of application",
+            dependsOnMethods = "testApplicationCreation")
     public void testApplicationUpdate() throws Exception {
 
-        String application = APP_NAME;
-        String keyType = "PRODUCTION";
-        String authorizedDomains = "ALL";
-        String retryAfterFailure = String.valueOf(false);
-        String jsonParams = "{\"grant_types\":\"urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm\"}";
+        ArrayList grantTypesNew = new ArrayList();
+        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.SAML2);
+        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.NTLM);
 
-        String callbackUrl = UPDATE_APP_CALLBACK_URL;
-        HttpResponse response = apiStore
-                .updateClientApplication(application, keyType, authorizedDomains, retryAfterFailure, jsonParams,
-                        callbackUrl);
-        verifyResponse(response);
+        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
+        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
+        applicationKeyDTO.setCallbackUrl(UPDATE_APP_CALLBACK_URL);
+        applicationKeyDTO.setSupportedGrantTypes(grantTypesNew);
+
+        ApiResponse<ApplicationKeyDTO> updateKeysResponse = restAPIStore
+                .updateKeys(applicationID, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue(), applicationKeyDTO);
+
+        assertEquals(updateKeysResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Error occurred when updating keys of an application");
     }
 
      @Test(groups = { "wso2.am" }, description = "Test Application name update after key generate",
@@ -147,75 +143,26 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
             dependsOnMethods = "testApplicationCreation")
     public void testRegenerateConsumerSecret() throws Exception {
 
-        HttpResponse response = apiStore.regenerateConsumerSecret(consumerKey);
-        verifyResponse(response);
-        String responseString = response.getData();
-        regeneratedConsumerSecret = getRegeneratedConsumerSecret(responseString);
-        Assert.assertNotNull(regeneratedConsumerSecret);
-        Assert.assertNotEquals(consumerSecret, regeneratedConsumerSecret);
+        ApiResponse<ApplicationKeyReGenerateResponseDTO> regenerateResponse = restAPIStore
+                    .regenerateConsumerSecret(applicationID, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
+
+        Assert.assertEquals(regenerateResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Error when re-generating consumer secret for application: " + applicationID);
+        Assert.assertNotNull(regenerateResponse.getData().getConsumerSecret());
+        Assert.assertNotEquals(consumerSecret, regenerateResponse.getData().getConsumerSecret());
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(APP_NAME_TO_UPDATE);
-        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        restAPIStore.deleteApplication(applicationID);
         super.cleanUp();
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
-    }
 
-    /**
-     * get the consumer key from the key generated response
-     *
-     * @param response key generated response
-     * @return consumer key
-     */
-    private String getConsumerKey(String response) {
-        Pattern pattern = Pattern.compile("\"consumerKey\" : \"(\\w|\\d)+\"");
-        Matcher matcher = pattern.matcher(response);
-        String key = null;
-        if (matcher.find()) {
-            key = matcher.group(0).split(":")[1].trim().replace("\"", "");
-        }
-        return key;
-    }
-
-    /**
-     * Get the consumer secret from the generated response.
-     *
-     * @param response Generated response.
-     * @return Consumer Secret.
-     */
-    private String getConsumerSecret(String response) {
-
-        Pattern pattern = Pattern.compile("\"consumerSecret\" : \"(\\w|\\d)+\"");
-        Matcher matcher = pattern.matcher(response);
-        String key = null;
-        if (matcher.find()) {
-            key = matcher.group(0).split(":")[1].trim().replace("\"", "");
-        }
-        return key;
-    }
-
-    /**
-     * Get the regenerated consumer secret from the generated response.
-     *
-     * @param response Generated response.
-     * @return Regenerated Consumer Secret.
-     */
-    private String getRegeneratedConsumerSecret(String response) {
-
-        Pattern pattern = Pattern.compile("\"key\" : \"(\\w|\\d)+\"");
-        Matcher matcher = pattern.matcher(response);
-        String key = null;
-        if (matcher.find()) {
-            key = matcher.group(0).split(":")[1].trim().replace("\"", "");
-        }
-        return key;
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},};
     }
 
     /**
