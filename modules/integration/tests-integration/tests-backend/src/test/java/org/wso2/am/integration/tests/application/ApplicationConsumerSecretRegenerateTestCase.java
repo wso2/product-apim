@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -18,9 +18,6 @@
 */
 package org.wso2.am.integration.tests.application;
 
-import org.apache.axis2.client.Options;
-import org.apache.axis2.client.ServiceClient;
-import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
@@ -40,29 +37,16 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
-import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
-import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import javax.ws.rs.core.Response;
-import javax.xml.xpath.XPathExpressionException;
-
-import static org.testng.Assert.assertEquals;
-
-/**
- * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-3706
- * This test class check Application updates getting reflected in database which are done after token generation
- */
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBaseTest {
-    private final Log log = LogFactory.getLog(APIMANAGER3706ApplicationUpdateTestCase.class);
+public class ApplicationConsumerSecretRegenerateTestCase extends APIMIntegrationBaseTest {
+    private final Log log = LogFactory.getLog(ApplicationConsumerSecretRegenerateTestCase.class);
     private final String APP_NAME = "CallBackUrlUpdateTestApp";
     private final String APP_DESCRIPTION = "description";
     private final String APP_CALLBACK_URL = "http://wso2.com/";
-    private final String UPDATE_APP_CALLBACK_URL = "https://www.google.lk/";
 
     private String consumerKey;
     private String consumerSecret;
@@ -70,7 +54,7 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
     private String applicationID;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public APIMANAGER3706ApplicationUpdateTestCase(TestUserMode userMode) {
+    public ApplicationConsumerSecretRegenerateTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -97,46 +81,6 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
         consumerKey = generatedKeys.getConsumerKey();
         consumerSecret = generatedKeys.getConsumerSecret();
         Assert.assertNotNull(consumerKey, "Error in generating keys for application: " + APP_NAME);
-
-        OAuthConsumerAppDTO authApp = getAuthAppDetails(consumerKey);
-        String appGrantTypes = authApp.getGrantTypes();
-        Assert.assertTrue(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL));
-        Assert.assertTrue(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.PASSWORD));
-        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE));
-        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE));
-        Assert.assertFalse(appGrantTypes.contains(APIMIntegrationConstants.GRANT_TYPE.IMPLICIT));
-    }
-
-    @Test(groups = {
-            "wso2.am" }, description = "Test update grantTypes and callback URL of application",
-            dependsOnMethods = "testApplicationCreation")
-    public void testApplicationUpdate() throws Exception {
-
-        ArrayList grantTypesNew = new ArrayList();
-        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.SAML2);
-        grantTypesNew.add(APIMIntegrationConstants.GRANT_TYPE.NTLM);
-
-        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
-        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
-        applicationKeyDTO.setCallbackUrl(UPDATE_APP_CALLBACK_URL);
-        applicationKeyDTO.setSupportedGrantTypes(grantTypesNew);
-
-        ApiResponse<ApplicationKeyDTO> updateKeysResponse = restAPIStore
-                .updateKeys(applicationID, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue(), applicationKeyDTO);
-
-        assertEquals(updateKeysResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Error occurred when updating keys of an application");
-    }
-
-     @Test(groups = { "wso2.am" }, description = "Test Application name update after key generate",
-            dependsOnMethods = "testApplicationUpdate")
-    public void testApplicationNameUpdateAfterKeyGeneration() throws Exception {
-
-         OAuthConsumerAppDTO authApp = getAuthAppDetails(consumerKey);
-         String currentCallbackURL = authApp.getCallbackUrl();
-
-         Assert.assertEquals(currentCallbackURL, UPDATE_APP_CALLBACK_URL, "CallBack URL has not updated.");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test regenerate consumer secret after application key generate",
@@ -145,7 +89,6 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
 
         ApiResponse<ApplicationKeyReGenerateResponseDTO> regenerateResponse = restAPIStore
                     .regenerateConsumerSecret(applicationID, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
-
         Assert.assertEquals(regenerateResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Error when re-generating consumer secret for application: " + applicationID);
         Assert.assertNotNull(regenerateResponse.getData().getConsumerSecret());
@@ -163,30 +106,5 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
 
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},};
-    }
-
-    /**
-     * Invoke OAuthAdminService admin service for get the Auth application details
-     *
-     * @param consumerKey Auth application consumer key
-     * @return return OAuthConsumerAppDTO
-     * @throws RemoteException            occur if connection error occurred
-     * @throws OAuthAdminServiceIdentityOAuthAdminException occur if OAuthAdminService invocation error occurred
-     * @throws XPathExpressionException   occurred if xpath evaluation occurred
-     */
-    private OAuthConsumerAppDTO getAuthAppDetails(String consumerKey)
-            throws RemoteException, XPathExpressionException, OAuthAdminServiceIdentityOAuthAdminException {
-
-        OAuthAdminServiceStub stub = new OAuthAdminServiceStub(getKeyManagerURLHttps() + "services/OAuthAdminService");
-        ServiceClient client = stub._getServiceClient();
-        Options client_options = client.getOptions();
-        HttpTransportProperties.Authenticator authenticator = new HttpTransportProperties.Authenticator();
-        authenticator.setUsername(user.getUserName());
-        authenticator.setPassword(user.getPassword());
-        authenticator.setPreemptiveAuthentication(true);
-        client_options.setProperty(org.apache.axis2.transport.http.HTTPConstants.AUTHENTICATE, authenticator);
-        client.setOptions(client_options);
-
-        return stub.getOAuthApplicationData(consumerKey);
     }
 }
