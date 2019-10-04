@@ -98,7 +98,7 @@ public class ApplicationConsumerSecretRegenerateTestCase extends APIMIntegration
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationID);
-        super.cleanUp();
+        super.cleanUpUsingRest();
     }
 
     @DataProvider
