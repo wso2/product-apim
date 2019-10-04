@@ -125,7 +125,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
+        super.cleanUpUsingRest();
 
     }
 

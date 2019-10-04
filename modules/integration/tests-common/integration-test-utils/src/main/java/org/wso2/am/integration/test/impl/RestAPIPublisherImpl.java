@@ -153,13 +153,15 @@ public class RestAPIPublisherImpl {
         body.setVersion(apiRequest.getVersion());
         if (apiRequest.getVisibility() != null) {
             body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility().toUpperCase()));
-            body.setVisibleRoles(Arrays.asList(apiRequest.getRoles().split(",")));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getVisibility())
+                    && StringUtils.isNotEmpty(apiRequest.getRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getRoles().split(" , ")));
+                body.setVisibleRoles(roleList);
+            }
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
-        List<String> roleList = new ArrayList<>();
-        roleList.add(apiRequest.getRoles());
-        body.setVisibleRoles(roleList);
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
@@ -337,12 +339,15 @@ public class RestAPIPublisherImpl {
         body.setVersion(apiRequest.getVersion());
         if (apiRequest.getVisibility() != null) {
             body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility().toUpperCase()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getVisibility())
+                    && StringUtils.isNotEmpty(apiRequest.getRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getRoles().split(" , ")));
+                body.setVisibleRoles(roleList);
+            }
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
-        List<String> roleList = new ArrayList<>();
-        roleList.add(apiRequest.getRoles());
-        body.setVisibleRoles(roleList);
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
@@ -713,8 +718,8 @@ public class RestAPIPublisherImpl {
         body.setContext(apiCreationRequestBean.getContext());
         body.setVersion(apiCreationRequestBean.getVersion());
         if (apiCreationRequestBean.getVisibility() != null) {
-            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiCreationRequestBean.getVisibility()));
-            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equals(apiCreationRequestBean.getVisibility())
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiCreationRequestBean.getVisibility().toUpperCase()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiCreationRequestBean.getVisibility())
                     && StringUtils.isNotEmpty(apiCreationRequestBean.getRoles())) {
                 List<String> roleList = new ArrayList<>(
                         Arrays.asList(apiCreationRequestBean.getRoles().split(" , ")));

@@ -135,11 +135,10 @@ import static org.testng.Assert.assertTrue;
         assertEquals(ratingDTO.getRating(), rating, "Ratings do not match");
 
         //Test delete rating
-        String ratingId = ratingDTO.getRatingId();
-        HttpResponse deleteRatingResponse = restAPIStore.removeRating(ratingId, apiId);
+        HttpResponse deleteRatingResponse = restAPIStore
+                .removeRating(apiId, gatewayContextWrk.getContextTenant().getDomain());
         assertEquals(deleteRatingResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-
     }
 
     @AfterClass(alwaysRun = true)

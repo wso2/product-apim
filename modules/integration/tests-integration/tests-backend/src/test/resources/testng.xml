@@ -43,7 +43,6 @@
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
         </classes>
     </test>
 
@@ -61,8 +60,6 @@
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase" />
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase" />
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
         </classes>
     </test>
 
@@ -81,7 +78,6 @@
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.application.ApplicationConsumerSecretRegenerateTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
         </classes>
     </test>
 </suite>

@@ -439,8 +439,9 @@ public class RestAPIStoreImpl {
     /**
      * Add rating into api
      *
-     * @param apiId  - api Id
-     * @param rating - api rating
+     * @param apiId        - api Id
+     * @param rating       - api rating
+     * @param tenantDomain - tenant domain
      * @return - http response of add rating request
      * @throws ApiException - throws if rating of api fails
      */
@@ -448,7 +449,8 @@ public class RestAPIStoreImpl {
         RatingDTO ratingDTO = new RatingDTO();
         ratingDTO.setRating(rating);
         Gson gson = new Gson();
-        ApiResponse<RatingDTO> apiResponse = ratingsApi.apisApiIdUserRatingPutWithHttpInfo(apiId, ratingDTO, tenantDomain);
+        ApiResponse<RatingDTO> apiResponse = ratingsApi
+                .apisApiIdUserRatingPutWithHttpInfo(apiId, ratingDTO, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         HttpResponse response = null;
         if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getRatingId())) {
@@ -458,19 +460,19 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Remove comment in given API
+     * Remove rating from given API
      *
-     * @param commentId - comment Id
-     * @param apiId   - api Id
-     * @throws ApiException - throws if remove comment fails
+     * @param apiId        - api Id
+     * @param tenantDomain - tenant domain
+     * @throws ApiException - throws if remove rating fails
      */
-    public HttpResponse removeRating(String commentId, String apiId) throws ApiException {
+    public HttpResponse removeRating(String apiId, String tenantDomain) {
         HttpResponse response;
         try {
-            commentsApi.deleteComment(commentId, apiId, null);
-            response = new HttpResponse("Successfully deleted the comment", 200);
+            ratingsApi.apisApiIdUserRatingDelete(apiId, tenantDomain, null);
+            response = new HttpResponse("Successfully deleted the rating", 200);
         } catch (ApiException e) {
-            response = new HttpResponse("Failed to delete the comment", e.getCode());
+            response = new HttpResponse("Failed to delete the rating", e.getCode());
         }
         return response;
     }
@@ -1133,7 +1135,7 @@ public class RestAPIStoreImpl {
      * Remove comment in given API
      *
      * @param commentId - comment Id
-     * @param apiId   - api Id
+     * @param apiId     - api Id
      * @throws ApiException - throws if remove comment fails
      */
     public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
@@ -1150,8 +1152,9 @@ public class RestAPIStoreImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId   - comment Id
-     * @param apiId - api Id
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
