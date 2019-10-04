@@ -20,31 +20,28 @@
 
 package org.wso2.am.integration.tests.publisher;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Change the status of an API to PROTOTYPED and PUBLISHED through the publisher REST api
+ * Change the status of an API to PROTOTYPED, PUBLISHED, DEPRECATED and RETIRED through the publisher REST api
  * APIM2-574 /APIM2-587
  */
 
@@ -53,9 +50,9 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
     private final String apiNameTest = "APIM574PublisherTest";
     private final String apiVersion = "1.0.0";
-    private APIPublisherRestClient apiPublisher;
     private String apiProvider;
     private String apiEndPointUrl;
+    private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase
@@ -67,24 +64,21 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
-        String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
-                "customerservice/customers/123";
-
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-
-        apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiProductionEndpointPostfixUrl;
+        String gatewayUrl;
+        if (gatewayContextWrk.getContextTenant().getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
+        } else {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
+                    gatewayContextWrk.getContextTenant().getDomain() + "/";
+        }
+        apiEndPointUrl = gatewayUrl + "jaxrs_basic/services/customers/customerservice";
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 
     }
@@ -95,11 +89,9 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
         String apiContext = "apim574PublisherTestAPI";
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTags = "tag574-1, tag574-2, tag587-3";
-
         //Create an API
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(apiNameTest, apiContext, apiVersion, apiProvider,
-                        new URL(apiEndPointUrl));
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameTest, apiContext, apiVersion,
+                apiProvider, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(apiTags);
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
@@ -109,23 +101,16 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
         apiCreationRequestBean.setBizOwnerMail("api574b@ee.com");
         apiCreationRequestBean.setTechOwner("api574t");
         apiCreationRequestBean.setTechOwnerMail("api574t@ww.com");
-
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        assertFalse(apiResponse.getBoolean("error"), apiNameTest + "is not created as expected");
-
+        APIDTO apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        String status = apiCreationResponse.getLifeCycleStatus();
+        apiId = apiCreationResponse.getId();
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiNameTest, apiProvider, apiVersion);
-        JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
-        JSONObject apiObject = new JSONObject(jsonObject.getString("api"));
-        assertFalse(jsonObject.getBoolean("error"), apiNameTest + " is not visible in publisher");
-        assertTrue(apiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(apiObject.getString("status").equals("CREATED"),
-                "Status of the " + apiNameTest + "is not a valid status");
-
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
+        assertEquals(apiResponsePublisher.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
+                " is not visible in publisher");
+        assertTrue(apiNameTest.equals(apiCreationResponse.getName()), apiNameTest + " is not visible in publisher");
+        assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(status), "Status of the " + apiNameTest +
+                "is not a valid status");
     }
 
     @Test(groups = {"wso2.am"}, description = "Change the status of the API to PROTOTYPED through" +
@@ -133,51 +118,31 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     public void testChangeTheStatusOfTheAPIToPrototyped() throws Exception {
 
         //Change the status of the API from CREATED to PROTOTYPED
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNameTest, apiProvider,
-                APILifeCycleState.PROTOTYPED);
-        updateRequest.setRequireResubscription("true");
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("PROTOTYPED"),
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
+        assertTrue(APILifeCycleState.PROTOTYPED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
                 apiNameTest + "  status not updated as Prototyped");
-
         //Check whether Prototype API is available in publisher
-        HttpResponse prototypedApiResponse = (apiPublisher.getAPI
-                (apiNameTest, apiProvider, apiVersion));
-        JSONObject prototypedApiObject = new JSONObject(prototypedApiResponse.getData());
-        JSONObject allApiObject = new JSONObject(prototypedApiObject.getString("api"));
-        assertFalse(prototypedApiObject.getBoolean("error"), apiNameTest +
+        HttpResponse prototypedApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(prototypedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
                 " is not visible in publisher");
-        assertTrue(allApiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(allApiObject.getString("status").equals("PROTOTYPED"),
-                "Status of the " + apiNameTest + "is not a valid status");
+        assertTrue(prototypedApiResponse.getData().contains(apiNameTest), apiNameTest + " is not visible in " +
+                "publisher");
     }
-
 
     @Test(groups = {"wso2.am"}, description = "Change the status of the API to PUBLISHED through" +
             " the publisher rest API ", dependsOnMethods = "testChangeTheStatusOfTheAPIToPrototyped")
     public void testChangeTheStatusOfTheAPIToPublished() throws Exception {
 
         //Change the status PROTOTYPED to PUBLISHED
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest
-                (apiNameTest, apiProvider, APILifeCycleState.PUBLISHED);
-        updateRequest.setRequireResubscription("true");
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("PUBLISHED"),
-                apiNameTest + "  status not updated as Prototyped");
-
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
+        assertTrue(APILifeCycleState.PUBLISHED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "status not updated as Published");
         //Check whether published API is available in publisher
-        HttpResponse prototypedApiResponse = (apiPublisher.getAPI
-                (apiNameTest, apiProvider, apiVersion));
-        JSONObject prototypedApiObject = new JSONObject(prototypedApiResponse.getData());
-        JSONObject allApiObject = new JSONObject(prototypedApiObject.getString("api"));
-        assertFalse(prototypedApiObject.getBoolean("error"), apiNameTest +
+        HttpResponse publishedApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(publishedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
                 " is not visible in publisher");
-        assertTrue(allApiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(allApiObject.getString("status").equals("PUBLISHED"),
-                "Status of the " + apiNameTest + "is not a valid status");
-
+        assertTrue(publishedApiResponse.getData().contains(apiNameTest), apiNameTest + " is not visible in " +
+                "publisher");
     }
 
     @Test(groups = {"wso2.am"}, description = "Change the status of the API to DEPRECATED through" +
@@ -185,25 +150,15 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     public void testChangeTheStatusOfTheAPIToDeprecated() throws Exception {
 
         //Change the status PUBLISHED to DEPRECATED
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest
-                (apiNameTest, apiProvider, APILifeCycleState.DEPRECATED);
-        updateRequest.setRequireResubscription("true");
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("DEPRECATED"),
-                apiNameTest + "  status not updated as Prototyped");
-
-        //Check whether deprecated API is available in publisher
-        HttpResponse prototypedApiResponse = (apiPublisher.getAPI
-                (apiNameTest, apiProvider, apiVersion));
-        JSONObject prototypedApiObject = new JSONObject(prototypedApiResponse.getData());
-        JSONObject allApiObject = new JSONObject(prototypedApiObject.getString("api"));
-        assertFalse(prototypedApiObject.getBoolean("error"), apiNameTest +
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction());
+        assertTrue(APILifeCycleState.DEPRECATED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "  status not updated as Deprecate");
+        //Check whether published API is available in publisher
+        HttpResponse deprecatedApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(deprecatedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
                 " is not visible in publisher");
-        assertTrue(allApiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(allApiObject.getString("status").equals("DEPRECATED"),
-                "Status of the " + apiNameTest + "is not a valid status");
-
+        assertTrue(deprecatedApiResponse.getData().contains(apiNameTest), apiNameTest + " is not visible in " +
+                "publisher");
     }
 
     @Test(groups = {"wso2.am"}, description = "Change the status of the API to RETIRED through" +
@@ -211,30 +166,19 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     public void testChangeTheStatusOfTheAPIToRetired() throws Exception {
 
         //Change the status DEPRECATED to RETIRED
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest
-                (apiNameTest, apiProvider, APILifeCycleState.RETIRED);
-        updateRequest.setRequireResubscription("true");
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("RETIRED"),
-                apiNameTest + "  status not updated as Prototyped");
-
-        //Check whether deprecated API is available in publisher
-        HttpResponse prototypedApiResponse = (apiPublisher.getAPI
-                (apiNameTest, apiProvider, apiVersion));
-        JSONObject prototypedApiObject = new JSONObject(prototypedApiResponse.getData());
-        JSONObject allApiObject = new JSONObject(prototypedApiObject.getString("api"));
-        assertFalse(prototypedApiObject.getBoolean("error"), apiNameTest +
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.RETIRE.getAction());
+        assertTrue(APILifeCycleState.RETIRED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "status not updated as Retired");
+        //Check whether published API is available in publisher
+        HttpResponse retiredApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(retiredApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
                 " is not visible in publisher");
-        assertTrue(allApiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(allApiObject.getString("status").equals("RETIRED"),
-                "Status of the " + apiNameTest + "is not a valid status");
-
+        assertTrue(retiredApiResponse.getData().contains(apiNameTest), apiNameTest + " is not visible in " +
+                "publisher");
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanUp() throws Exception {
-        apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProvider);
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
     }
 }
