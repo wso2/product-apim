@@ -1186,6 +1186,27 @@ public class RestAPIStoreImpl {
     }
 
     /**
+     * Get the  web page with filtered API when  click the API Tag link
+     *
+     * @param limit - number of APIs needs to be returned
+     * @param offset - offset where the APIs needs to be returned should start
+     * @param tenantDomain - tenant domain of which the APIs to be returned
+     * @param query - query that needs to be passed to the backend
+     * @return APIListDTO - The DTO which contains the list of matching APIs
+     * @throws ApiException - Exception throws when check the Authentication and
+     *                                            HTTPSClientUtils.sendGetRequest() method call
+     */
+    public APIListDTO searchPaginatedAPIs(int limit, int offset, String tenantDomain, String query)
+            throws ApiException {
+
+        APIListDTO apis = apIsApi.apisGet(limit, offset, tenantDomain, query, null);
+        if (apis.getCount() > 0) {
+            return apis;
+        }
+        return null;
+    }
+
+    /**
      * Subscribe and API. This method return the response of the subscription server REST call.
      *
      * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
@@ -1363,22 +1384,6 @@ public class RestAPIStoreImpl {
         }
     }
 
-
-    public HttpResponse searchPaginateAPIs(String tenant, String start, String end,
-                                           String searchTerm)
-            throws Exception {
-//        checkAuthentication();
-//        HttpResponse response = HTTPSClientUtils.doPost(new URL(
-//                        backendURL + "/store/site/blocks/search/api-search/ajax/search.jag?")
-//                , "action=searchAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end + "&query=" + searchTerm
-//                , requestHeaders);
-//        if (response.getResponseCode() == 200) {
-//            return response;
-//        } else {
-//            throw new Exception("Get API Information failed> " + response.getData());
-//        }
-        return null;
-    }
 
     /**
      * Wait for swagger document until its updated.
