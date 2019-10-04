@@ -29,9 +29,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
@@ -52,6 +53,7 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     private String apiProvider;
     private String apiEndPointUrl;
     private String apiId;
+    private String CREATED = "CREATED";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase
@@ -71,7 +73,7 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     public void setEnvironment() throws Exception {
         super.init(userMode);
         String gatewayUrl;
-        if (gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")) {
+        if (gatewayContextWrk.getContextTenant().getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
@@ -107,9 +109,9 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
         HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
         assertEquals(apiResponsePublisher.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
                 " is not visible in publisher");
-        assertTrue(apiCreationResponse.getName().equals(apiNameTest), apiNameTest + " is not visible in " +
-                "publisher");
-        assertTrue(status.equals("CREATED"), "Status of the " + apiNameTest + "is not a valid status");
+        assertTrue(apiNameTest.equals(apiCreationResponse.getName()), apiNameTest + " is not visible in publisher");
+        assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(status), "Status of the " + apiNameTest +
+                "is not a valid status");
     }
 
     @Test(groups = {"wso2.am"}, description = "Change the status of the API to PROTOTYPED through" +
@@ -118,8 +120,8 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
         //Change the status of the API from CREATED to PROTOTYPED
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
-        assertTrue(restAPIPublisher.getLifecycleStatus(apiId).getData().equals("Prototyped"), apiNameTest +
-                "  status not updated as Prototyped");
+        assertTrue(APILifeCycleState.PROTOTYPED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "  status not updated as Prototyped");
         //Check whether Prototype API is available in publisher
         HttpResponse prototypedApiResponse = restAPIPublisher.getAPI(apiId);
         assertEquals(prototypedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
@@ -134,8 +136,8 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
         //Change the status PROTOTYPED to PUBLISHED
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
-        assertTrue(restAPIPublisher.getLifecycleStatus(apiId).getData().equals("Published"), apiNameTest +
-                "status not updated as Published");
+        assertTrue(APILifeCycleState.PUBLISHED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "status not updated as Published");
         //Check whether published API is available in publisher
         HttpResponse publishedApiResponse = restAPIPublisher.getAPI(apiId);
         assertEquals(publishedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
@@ -150,8 +152,8 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
         //Change the status PUBLISHED to DEPRECATED
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPRECATE.getAction());
-        assertTrue(restAPIPublisher.getLifecycleStatus(apiId).getData().equals("Deprecated"), apiNameTest +
-                "  status not updated as Deprecate");
+        assertTrue(APILifeCycleState.DEPRECATED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "  status not updated as Deprecate");
         //Check whether published API is available in publisher
         HttpResponse deprecatedApiResponse = restAPIPublisher.getAPI(apiId);
         assertEquals(deprecatedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
@@ -166,8 +168,8 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
         //Change the status DEPRECATED to RETIRED
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.RETIRE.getAction());
-        assertTrue(restAPIPublisher.getLifecycleStatus(apiId).getData().equals("Retired"), apiNameTest +
-                "status not updated as Retired");
+        assertTrue(APILifeCycleState.RETIRED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "status not updated as Retired");
         //Check whether published API is available in publisher
         HttpResponse retiredApiResponse = restAPIPublisher.getAPI(apiId);
         assertEquals(retiredApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
