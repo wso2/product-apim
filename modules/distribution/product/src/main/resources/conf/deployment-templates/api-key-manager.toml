@@ -1,5 +1,5 @@
 [server]
-hostname = "km.wso2.com"
+#hostname = "km.wso2.com"
 node_ip = "127.0.0.1"
 server_role = "api-key-manager"
 
@@ -38,6 +38,15 @@ key_password =  "wso2carbon"
 file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
+
+[[apim.gateway.environment]]
+name= "Production and Sandbox"
+type= "hybrid"
+display_in_api_console= true
+description= "This is a hybrid gateway that handles both production and sandbox token traffic."
+service_url= "https://gw.mgt.wso2.com:443/services/"
+username= "${admin.username}"
+password= "${admin.password}"
 
 # Caches
 [apim.cache.km_token]

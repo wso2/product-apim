@@ -34,12 +34,10 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
-
 [truststore]
 file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
-
 
 [[apim.gateway.environment]]
 name= "Production and Sandbox"
@@ -47,9 +45,8 @@ type= "hybrid"
 display_in_api_console= true
 description= "This is a hybrid gateway that handles both production and sandbox token traffic."
 service_url= "https://gw.mgt.wso2.com:443/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-
+username= "${admin.username}"
+password= "${admin.password}"
 
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
@@ -64,7 +61,6 @@ analytics_auth_url="ssl://analytic1.local:7712"
 analytics_url="tcp://analytic2.local:7612"
 analytics_auth_url="ssl://analytic2.local:7712"
 
-
 # Traffic Manager configurations
 [apim.throttling]
 service_url = "https://tm.wso2.com:443/services/"
@@ -76,13 +72,13 @@ enable_policy_deploy = true
 enable_blacklist_condition = false
 # JMS connection also should be disable
 
-[[apim.throttling.nodes.group0]]
-traffic_manager_url="tcp://tm1.local:9611"
-traffic_manager_auth_url="ssl://tm1.local:9711"
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm1.local:9611"]
+traffic_manager_auth_urls=["ssl://tm1.local:9711"]
 
-[[apim.throttling.nodes.group1]]
-traffic_manager_url="tcp://tm2.local:9611"
-traffic_manager_auth_url="ssl://tm2.local:9711"
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm2.local:9611"]
+traffic_manager_auth_urls=["ssl://tm2.local:9711"]
 
 [apim.cache.scopes]
 enable = true

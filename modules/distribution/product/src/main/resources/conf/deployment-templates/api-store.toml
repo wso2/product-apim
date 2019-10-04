@@ -34,7 +34,6 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
-
 [truststore]
 file_name = "client-truststore.jks"
 type = "JKS"
@@ -46,13 +45,12 @@ type= "hybrid"
 display_in_api_console= true
 description= "This is a hybrid gateway that handles both production and sandbox token traffic."
 service_url= "https://gw.mgt.wso2.com:443/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
+username= "${admin.username}"
+password= "${admin.password}"
 ws_endpoint= "ws://api.gw.wso2.com:9099"
 http_endpoint = "http://api.gw.wso2.com:8280/"
 https_endpoint = "https://api.gw.wso2.com:8243/"
 show_as_token_endpoint_url = true
-
 
 [apim.key_manager]
 service_url = "https://km.wso2.com:443/services/"
@@ -77,7 +75,6 @@ analytics_auth_url="ssl://analytic1.local:7712"
 [[apim.analytics.analytics_node]]
 analytics_url="tcp://analytic2.local:7612"
 analytics_auth_url="ssl://analytic2.local:7712"
-
 
 [apim.cache.recent_apis]
 enable = false
