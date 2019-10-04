@@ -158,10 +158,14 @@ public class RestAPIPublisherImpl {
         }
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
-        body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTP);
-            add(Constants.PROTOCOL_HTTPS);
-        }});
+        ArrayList<String> transports = new ArrayList<>();
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
+            transports.add(Constants.PROTOCOL_HTTP);
+        }
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
+            transports.add(Constants.PROTOCOL_HTTPS);
+        }
+        body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
@@ -334,10 +338,14 @@ public class RestAPIPublisherImpl {
         body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
-        body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTPS);
-            add(Constants.PROTOCOL_HTTP);
-        }});
+        ArrayList<String> transports = new ArrayList<>();
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
+            transports.add(Constants.PROTOCOL_HTTP);
+        }
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
+            transports.add(Constants.PROTOCOL_HTTPS);
+        }
+        body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
