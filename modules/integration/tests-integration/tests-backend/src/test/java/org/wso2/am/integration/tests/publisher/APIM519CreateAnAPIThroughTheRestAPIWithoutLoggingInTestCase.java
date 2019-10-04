@@ -25,22 +25,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.rest.api.stub.types.carbon.APIException;
 
 import java.net.URL;
 
-import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -75,6 +67,9 @@ public class APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase extends
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
                 apiProductionEndpointPostfixUrl;
@@ -91,16 +86,27 @@ public class APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase extends
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTag = "tag519-1, tag519-2, tag519-3";
 
-        RestAPIPublisherImpl publisher = new RestAPIPublisherImpl();
-        APIRequest apiCreationRequestBean = new APIRequest(apiNameTest, apiContextTest,
-                new URL(apiProductionEndPointUrl));
-        apiCreationRequestBean.setVersion(apiVersion);
-        try {
-            HttpResponse apiCreationResponse = publisher.addAPI(apiCreationRequestBean);
-            assertFalse("API created without login in", false);
-        } catch (ApiException e) {
-            assertEquals(e.getCode(), Response.Status.UNAUTHORIZED.getStatusCode());
-        }
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiNameTest, apiContextTest, apiVersion, apiProviderName,
+                        new URL(apiProductionEndPointUrl));
+        apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
+        apiCreationRequestBean.setDefaultVersion("default_version");
+        apiCreationRequestBean.setDefaultVersionChecked("default_version");
+        apiCreationRequestBean.setBizOwner("api519b");
+        apiCreationRequestBean.setBizOwnerMail("api519b@ee.com");
+        apiCreationRequestBean.setTechOwner("api519t");
+        apiCreationRequestBean.setTechOwnerMail("api519t@ww.com");
+
+        apiPublisher.logout();
+
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
+        assertTrue(apiResponse.getBoolean("error"), apiNameTest +
+                "cannot be created without logging in");
+        assertTrue(apiResponse.getString("message").contains
+                ("timeout"), apiNameTest + "cannot be created without logging in");
     }
 
 

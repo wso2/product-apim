@@ -430,7 +430,7 @@ public class APIPublisherRestClient {
             checkAuthentication();
             APILifeCycleStateRequest publishUpdateRequest =
                     new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
-                            APILifeCycleState.PUBLISHED_JAG);
+                            APILifeCycleState.PUBLISHED);
             publishUpdateRequest.setVersion(apiIdentifier.getVersion());
             if (isRequireReSubscription) {
                 publishUpdateRequest.setRequireResubscription("true");
