@@ -78,9 +78,6 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
                     gatewayContextWrk.getContextTenant().getDomain() + "/";
         }
         apiEndPointUrl = gatewayUrl + "jaxrs_basic/services/customers/customerservice";
-
-        String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/customerservice/customers/123";
-//        apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiProductionEndpointPostfixUrl;
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 
     }
