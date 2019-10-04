@@ -18,32 +18,28 @@
 
 package org.wso2.am.integration.tests.rest;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.net.URL;
 
-public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrationBaseTest {
+import static org.testng.Assert.assertNotNull;
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIManagerLifecycleBaseTest {
+
     private final int apiCount = 24;
     private static final String PROVIDER = "admin";
-    private static final String TENANT_DOMAIN = "carbon.super";
     private static final String API_NAME_PREFIX = "YoutubeFeeds";
     private static final String API_CONTEXT_PREFIX = "youtube";
     private static final String API_VERSION = "1.0.0";
@@ -65,14 +61,6 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
-
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = { "wso2.am" }, description = "check paginated API count")
@@ -80,12 +68,12 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
         for (int i = 0; i < apiCount; i++) {
             APIRequest apiRequest = new APIRequest(API_NAME_PREFIX + i, API_CONTEXT_PREFIX + i,
                                                    new URL(API_URL));
-            apiPublisher.addAPI(apiRequest);
+            apiRequest.setVersion(API_VERSION);
+            apiRequest.setProvider(PROVIDER);
+            HttpResponse addApiResponse = restAPIPublisher.addAPI(apiRequest);
+            String apiId = addApiResponse.getData();
             if (i % 2 == 0) {
-
-                APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_PREFIX + i,
-                                                                                      user.getUserName(), APILifeCycleState.PUBLISHED);
-                apiPublisher.changeAPILifeCycleStatus(updateRequest);
+                restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
             }
             Thread.sleep(500);
         }
@@ -93,10 +81,11 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
         //Wait till APIs get indexed
         int returnApiCount = 0;
         for (int i = 0; i < 25; i++) {
-            HttpResponse response = apiStore.searchPaginateAPIs(TENANT_DOMAIN, "0", "10", API_NAME_PREFIX);
-            JSONObject responseJSON = new JSONObject(response.getData());
-            JSONArray returnedAPIs = responseJSON.getJSONArray("result");
-            returnApiCount = returnedAPIs.length();
+            APIListDTO apiListDTO = restAPIStore
+                    .searchPaginatedAPIs(PAGINATED_COUNT, 0, MultitenantConstants.SUPER_TENANT_DOMAIN_NAME,
+                            API_NAME_PREFIX);
+            assertNotNull(apiListDTO, "Unable to retrieve the requested APIs");
+            returnApiCount = apiListDTO.getCount();
             if (returnApiCount == PAGINATED_COUNT) {
                 break;
             }
@@ -107,9 +96,6 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrati
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        for (int i = 0; i < apiCount; i++) {
-            apiPublisher.deleteAPI(API_NAME_PREFIX + i, API_VERSION, PROVIDER);
-        }
-        super.cleanUp();
+        super.cleanUpUsingRest();
     }
 }
