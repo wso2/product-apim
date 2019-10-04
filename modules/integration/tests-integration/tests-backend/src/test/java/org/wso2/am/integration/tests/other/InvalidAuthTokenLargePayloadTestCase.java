@@ -27,11 +27,12 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -43,28 +44,29 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 
+import static org.testng.Assert.assertEquals;
+
 /**
  * This test case is used test the unauthorised response when large payload is sent
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTest {
+public class InvalidAuthTokenLargePayloadTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(InvalidAuthTokenLargePayloadTestCase.class);
     private final String API_NAME = "InvalidAuthTokenLargePayloadAPIName";
     private final String API_CONTEXT = "InvalidAuthTokenLargePayloadContext";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "InvalidAuthTokenLargePayloadApp";
-    private String publisherURLHttp;
     private APICreationRequestBean apiCreationRequestBean;
     private List<APIResourceBean> resList;
     private String endpointUrl;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private String tierCollection;
     private String testFile1KBFilePath;
     private String testFile100KBFilePath;
     private String testFile1MBFilePath;
+    private String apiId;
+    private String applicationId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public InvalidAuthTokenLargePayloadTestCase(TestUserMode userMode) {
@@ -74,12 +76,11 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        String providerName = user.getUserName();
 
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
@@ -87,11 +88,14 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
         testFile1KBFilePath = testArtifactPath + File.separator + "test1kb.db";
         testFile100KBFilePath = testArtifactPath + File.separator + "test100kb.db";
         testFile1MBFilePath = testArtifactPath + File.separator + "test1Mb.db";
-    }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation")
-    public void testApiCreation() throws Exception {
-        String providerName = user.getUserName();
+        //Create application
+        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                "Test Application", APIThrottlingTier.UNLIMITED.getState(),
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+
+        applicationId = applicationResponse.getData();
 
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
                 new URL(endpointUrl));
@@ -107,32 +111,32 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
 
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        //
+        List<APIOperationsDTO> apiOperationsDTOS = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb(RESTAPITestConstants.POST_METHOD);
+        apiOperationsDTO
+                .setAuthType(APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType());
+        apiOperationsDTO.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN);
+        apiOperationsDTO.setTarget("/post");
+        apiOperationsDTOS.add(apiOperationsDTO);
 
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
+
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(providerName);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setOperationsDTOS(apiOperationsDTOS);
+        apiRequest.setDescription(DESCRIPTION);
+
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.GOLD);
+
     }
 
-    @Test(groups = { "wso2.am" }, description = "Subscribe and invoke api", dependsOnMethods = "testApiCreation")
-    public void testApiInvocation() throws Exception {
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(user.getUserName(), String.valueOf(user.getPassword()));
-        //add a application
-        HttpResponse serviceResponse = apiStore
-                .addApplication(APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
-        verifyResponse(serviceResponse);
 
-        //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
+    @Test(groups = { "wso2.am" }, description = "Subscribe and invoke api")
+    public void testApiInvocation() throws Exception {
 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer invalid_token_key");
@@ -167,9 +171,9 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(APP_NAME);
-        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-        super.cleanUp();
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
+        super.cleanUpUsingRest();
     }
 
     @DataProvider
