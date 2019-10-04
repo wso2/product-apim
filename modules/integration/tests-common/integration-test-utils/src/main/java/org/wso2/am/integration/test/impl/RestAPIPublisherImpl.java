@@ -39,6 +39,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
@@ -111,6 +112,7 @@ public class RestAPIPublisherImpl {
         apiLifecycleApi.setApiClient(apiPublisherClient);
         rolesApi.setApiClient(apiPublisherClient);
         validationApi.setApiClient(apiPublisherClient);
+        clientCertificatesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -174,6 +176,7 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+        body.setSecurityScheme(apiRequest.getSecurityScheme());
 //        body.setMediationPolicies(apiRe);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
@@ -591,7 +594,7 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     * This method is used to upload certificates
+     * This method is used to upload endpoint certificates
      *
      * @param certificate certificate
      * @param alias       alis
@@ -599,7 +602,7 @@ public class RestAPIPublisherImpl {
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadCertificate(File certificate, String alias, String endpoint) throws ApiException {
+    public HttpResponse uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
 
         CertMetadataDTO certificateDTO = endpointCertificatesApi.endpointCertificatesPost(certificate, alias, endpoint);
         HttpResponse response = null;
@@ -727,5 +730,24 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
+    }
+
+    /**
+     * This method is used to upload certificates
+     *
+     * @param certificate certificate
+     * @param alias       alis
+     * @param endpoint    endpoint.
+     * @return
+     * @throws ApiException if an error occurred while uploading the certificate.
+     */
+    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier) throws ApiException {
+        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.apisApiIdClientCertificatesPost(certificate, alias, apiId, tier);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
+            response = new HttpResponse("Successfully uploaded the certificate", 200);
+        }
+        return response;
+
     }
 }

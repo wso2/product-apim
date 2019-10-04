@@ -79,8 +79,15 @@ public class APIRequest extends AbstractRequest {
     private String businessOwnerEmail;
     private String technicalOwner;
     private String technicalOwnerEmail;
-    
-    
+    private List<String> securityScheme;
+
+    public List<String> getSecurityScheme() {
+        return securityScheme;
+    }
+
+    public void setSecurityScheme(List<String> securityScheme) {
+        this.securityScheme = securityScheme;
+    }
 
     public List<MediationPolicyDTO> getMediationPolicies() {
         return mediationPolicies;
