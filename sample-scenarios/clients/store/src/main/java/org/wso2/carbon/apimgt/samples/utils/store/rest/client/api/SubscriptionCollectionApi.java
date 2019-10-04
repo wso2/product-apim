@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This specifies a **RESTful API** for WSO2 **API Manager** - Store.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.store/src/main/resources/store-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Store.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.store/src/main/resources/store-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: 0.11.0
  * Contact: architecture@wso2.com
@@ -58,7 +58,7 @@ public class SubscriptionCollectionApi {
     /* Build call for subscriptionsGet */
     private com.squareup.okhttp.Call subscriptionsGetCall(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/subscriptions".replaceAll("\\{format\\}","json");
 
@@ -109,33 +109,33 @@ public class SubscriptionCollectionApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call subscriptionsGetValidateBeforeCall(String apiId, String applicationId, String groupId, Integer offset, Integer limit, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling subscriptionsGet(Async)");
         }
-        
+
         // verify the required parameter 'applicationId' is set
         if (applicationId == null) {
             throw new ApiException("Missing the required parameter 'applicationId' when calling subscriptionsGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = subscriptionsGetCall(apiId, applicationId, groupId, offset, limit, accept, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
-     * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
+     * Get all subscriptions
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param groupId Application Group Id  (optional)
@@ -152,8 +152,8 @@ public class SubscriptionCollectionApi {
     }
 
     /**
-     * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
+     * Get all subscriptions
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param groupId Application Group Id  (optional)
@@ -172,7 +172,7 @@ public class SubscriptionCollectionApi {
 
     /**
      * Get all subscriptions  (asynchronously)
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.14/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://127.0.0.1:9443/api/am/store/v0.15/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param groupId Application Group Id  (optional)

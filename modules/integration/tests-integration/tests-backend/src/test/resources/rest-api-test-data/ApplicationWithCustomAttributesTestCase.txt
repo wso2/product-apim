@@ -6,7 +6,7 @@
 			},
 			"data": {
 				"method": "POST",
-				"url": "/api/am/store/v0.14//applications",
+				"url": "/api/am/store/v0.15//applications",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer",
@@ -46,7 +46,7 @@
 			},
 			"data": {
 				"method": "PUT",
-				"url": "/api/am/store/v0.14//applications/{applicationId}",
+				"url": "/api/am/store/v0.15//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer",
@@ -79,7 +79,7 @@
 			},
 			"data": {
 				"method": "GET",
-				"url": "/api/am/publisher/v0.14//applications/{applicationId}",
+				"url": "/api/am/publisher/v0.15//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"
@@ -101,7 +101,7 @@
 			},
 			"data": {
 				"method": "GET",
-				"url": "/api/am/store/v0.14//applications/{applicationId}",
+				"url": "/api/am/store/v0.15//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"
@@ -123,7 +123,7 @@
 			},
 			"data": {
 				"method": "DELETE",
-				"url": "/api/am/store/v0.14//applications/{applicationId}",
+				"url": "/api/am/store/v0.15//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"

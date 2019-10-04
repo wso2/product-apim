@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This specifies a **RESTful API** for WSO2 **API Manager** - Store.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.store/src/main/resources/store-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Store.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.store/src/main/resources/store-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: 0.11.0
  * Contact: architecture@wso2.com
@@ -116,7 +116,7 @@ public class ApiClient {
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final String TLS_PROTOCOL = "TLS";
 
-    private String basePath = "https://127.0.0.1:9443/api/am/store/v0.14";
+    private String basePath = "https://127.0.0.1:9443/api/am/store/v0.15";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -222,7 +222,7 @@ public class ApiClient {
     /**
      * Set base path
      *
-     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/store/v0.14
+     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/store/v0.15
      * @return An instance of OkHttpClient
      */
     public ApiClient setBasePath(String basePath) {
@@ -1462,7 +1462,7 @@ public class ApiClient {
             json.addProperty("owner", "admin");
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.14/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.15/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
@@ -1507,7 +1507,7 @@ public class ApiClient {
             json.addProperty("owner", adminUsername+ '@' + tenantDomain);
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.14/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.15/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);

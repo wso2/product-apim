@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: 0.11.0
  * Contact: architecture@wso2.com
@@ -59,7 +59,7 @@ public class DocumentIndividualApi {
     /* Build call for apisApiIdDocumentsDocumentIdContentGet */
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdContentGetCall(String apiId, String documentId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents/{documentId}/content".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()))
@@ -104,33 +104,33 @@ public class DocumentIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdContentGetValidateBeforeCall(String apiId, String documentId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsDocumentIdContentGet(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apisApiIdDocumentsDocumentIdContentGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsDocumentIdContentGetCall(apiId, documentId, accept, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get the content of an API document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -144,7 +144,7 @@ public class DocumentIndividualApi {
 
     /**
      * Get the content of an API document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -160,7 +160,7 @@ public class DocumentIndividualApi {
 
     /**
      * Get the content of an API document (asynchronously)
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type        _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://127.0.0.1:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -198,7 +198,7 @@ public class DocumentIndividualApi {
     /* Build call for apisApiIdDocumentsDocumentIdContentPost */
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdContentPostCall(String apiId, String documentId, String contentType, File file, String inlineContent, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents/{documentId}/content".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()))
@@ -247,38 +247,38 @@ public class DocumentIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdContentPostValidateBeforeCall(String apiId, String documentId, String contentType, File file, String inlineContent, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsDocumentIdContentPost(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apisApiIdDocumentsDocumentIdContentPost(Async)");
         }
-        
+
         // verify the required parameter 'contentType' is set
         if (contentType == null) {
             throw new ApiException("Missing the required parameter 'contentType' when calling apisApiIdDocumentsDocumentIdContentPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsDocumentIdContentPostCall(apiId, documentId, contentType, file, inlineContent, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Upload the content of an API document
-     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -296,7 +296,7 @@ public class DocumentIndividualApi {
 
     /**
      * Upload the content of an API document
-     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -315,7 +315,7 @@ public class DocumentIndividualApi {
 
     /**
      * Upload the content of an API document (asynchronously)
-     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -356,7 +356,7 @@ public class DocumentIndividualApi {
     /* Build call for apisApiIdDocumentsDocumentIdDelete */
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdDeleteCall(String apiId, String documentId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents/{documentId}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()))
@@ -399,33 +399,33 @@ public class DocumentIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdDeleteValidateBeforeCall(String apiId, String documentId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsDocumentIdDelete(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apisApiIdDocumentsDocumentIdDelete(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsDocumentIdDeleteCall(apiId, documentId, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Delete a document of an API
-     * This operation can be used to delete a document associated with an API. 
+     * This operation can be used to delete a document associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -438,7 +438,7 @@ public class DocumentIndividualApi {
 
     /**
      * Delete a document of an API
-     * This operation can be used to delete a document associated with an API. 
+     * This operation can be used to delete a document associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -453,7 +453,7 @@ public class DocumentIndividualApi {
 
     /**
      * Delete a document of an API (asynchronously)
-     * This operation can be used to delete a document associated with an API. 
+     * This operation can be used to delete a document associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -490,7 +490,7 @@ public class DocumentIndividualApi {
     /* Build call for apisApiIdDocumentsDocumentIdGet */
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdGetCall(String apiId, String documentId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents/{documentId}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()))
@@ -535,33 +535,33 @@ public class DocumentIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdGetValidateBeforeCall(String apiId, String documentId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsDocumentIdGet(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apisApiIdDocumentsDocumentIdGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsDocumentIdGetCall(apiId, documentId, accept, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get a document of an API
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -577,7 +577,7 @@ public class DocumentIndividualApi {
 
     /**
      * Get a document of an API
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -594,7 +594,7 @@ public class DocumentIndividualApi {
 
     /**
      * Get a document of an API (asynchronously)
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -633,7 +633,7 @@ public class DocumentIndividualApi {
     /* Build call for apisApiIdDocumentsDocumentIdPut */
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdPutCall(String apiId, String documentId, Document body, String contentType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents/{documentId}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()))
@@ -678,43 +678,43 @@ public class DocumentIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsDocumentIdPutValidateBeforeCall(String apiId, String documentId, Document body, String contentType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsDocumentIdPut(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apisApiIdDocumentsDocumentIdPut(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apisApiIdDocumentsDocumentIdPut(Async)");
         }
-        
+
         // verify the required parameter 'contentType' is set
         if (contentType == null) {
             throw new ApiException("Missing the required parameter 'contentType' when calling apisApiIdDocumentsDocumentIdPut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsDocumentIdPutCall(apiId, documentId, body, contentType, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update a document of an API
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)
@@ -731,7 +731,7 @@ public class DocumentIndividualApi {
 
     /**
      * Update a document of an API
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)
@@ -749,7 +749,7 @@ public class DocumentIndividualApi {
 
     /**
      * Update a document of an API (asynchronously)
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiId **API ID** consisting of the **UUID** of the API. Using the **UUID** in the API call is recommended. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)

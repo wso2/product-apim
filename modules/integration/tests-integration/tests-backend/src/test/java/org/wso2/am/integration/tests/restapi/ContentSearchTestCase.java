@@ -57,8 +57,8 @@ import java.util.HashMap;
 
 public class ContentSearchTestCase extends APIMIntegrationBaseTest {
     private Log log  = LogFactory.getLog(ContentSearchTestCase.class);
-    private String storeRestAPIBasePath = "api/am/store/v0.14/";
-    private String publisherRestAPIBasePath = "api/am/publisher/v0.14/";
+    private String storeRestAPIBasePath = "api/am/store/v0.15/";
+    private String publisherRestAPIBasePath = "api/am/publisher/v0.15/";
     private URL tokenApiUrl;
     private String endpointURL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private String version = "1.0.0";
@@ -469,7 +469,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
     private String getAccessToken(String clientName, String username, String password)
             throws IOException, JSONException, AutomationFrameworkException {
         HttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.14/register");
+        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.15/register");
         byte[] namePasswordPair = (username + ":" + password).getBytes();
         tokenPost.setHeader("Authorization", "Basic " + Base64Utils.encode(namePasswordPair));
         tokenPost.setHeader("Content-Type", "application/json");
