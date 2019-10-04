@@ -14,7 +14,7 @@ create_admin_account = true
 [database.apim_db]
 type = "mysql"
 hostname = "apim.mysql"
-name = "apimgtdb"
+name = "apimgt_db"
 port = "3306"
 username = "apimuser"
 password = "apimuser"
