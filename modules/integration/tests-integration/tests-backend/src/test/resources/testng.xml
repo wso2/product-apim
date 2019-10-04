@@ -59,6 +59,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase" />
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase" />
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
         </classes>
     </test>
 
@@ -66,6 +67,12 @@
         <classes>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase" />
             <class name="org.wso2.am.integration.tests.version.DefaultVersionWithScopesTestCase" />
+        </classes>
+    </test>
+
+    <test name="apim-publisher-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
         </classes>
     </test>
 </suite>

@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
@@ -72,12 +73,13 @@ public class RestAPIStoreImpl {
 
     @Deprecated
     public RestAPIStoreImpl() {
-        this(username, password, "", "https://127.0.0.1:9943", "https://127.0.0.1:8743", "https://127.0.0.1:9943");
+        this(username, password, "", "https://localhost:9943");
     }
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
-        String tokenURL = gatewayURL + "token";
-        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+        // token/DCR of Store node itself will be used
+        String tokenURL = storeURL + "oauth2/token";
+        String dcrURL = storeURL + "client-registration/v0.14/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 
@@ -159,22 +161,11 @@ public class RestAPIStoreImpl {
         }
     }
 
-    public HttpResponse getAllApp() {
-        try {
-            ApplicationListDTO applicationList = applicationsApi.applicationsGet(null, null, null,
-                    null, null, null, null);
-            HttpResponse response = null;
-            ArrayList applicationIdList = new ArrayList<>();
-
-            if (applicationList.getCount() != 0) {
-                applicationList.getList().forEach(appDTO -> applicationIdList.add(appDTO.getApplicationId()));
-                response = new HttpResponse(applicationIdList.toString(), 200);
-            }
-            return response;
-        } catch(ApiException e) {
-
-        }
-        return null;
+    public ApplicationListDTO getAllApps() throws ApiException {
+        ApiResponse<ApplicationListDTO> appResponse = applicationsApi.applicationsGetWithHttpInfo(null,
+                null, null, null, null, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, appResponse.getStatusCode());
+        return appResponse.getData();
     }
 
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
@@ -289,30 +280,34 @@ public class RestAPIStoreImpl {
      * @throws ApiException
      */
     public APIListDTO getAllAPIs() throws ApiException {
-        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, this.tenantDomain, null, null);
+        return getAllAPIs(this.tenantDomain);
+    }
+
+    /**
+     *
+     * @return
+     * @throws ApiException
+     */
+    public APIListDTO getAllAPIs(String tenantDomain) throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
 
     /**
-     * Get all the applications
+     * Get APIs for the given limit and offset values
      *
-     * @return - http response of get get all applications
-     * @throws APIManagerIntegrationTestException - throws if get all application fails.
+     * @param offset starting position
+     * @param limit maximum number of APIs to return
+     * @return APIs for the given limit and offset values
+     * @throws ApiException
      */
-    public HttpResponse getAllApplications() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/application/application-list/ajax/" +
-//                            "application-list.jag?action=getApplications",
-//                    requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve all applications. " +
-//                    "Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public APIListDTO getAPIs(int offset, int limit) throws ApiException {
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
+
 
     /**
      * Get application by ID
@@ -656,24 +651,19 @@ public class RestAPIStoreImpl {
      * @return - http response of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
-    public HttpResponse addApplicationWithTokenType(String application, String tier, String callbackUrl,
+    public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
                                                     String description, String tokenType)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application + "&tokenType=" + tokenType), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
+            throws ApiException {
+
+        ApplicationDTO dto = new ApplicationDTO();
+        dto.setName(application);
+        dto.setThrottlingPolicy(tier);
+        dto.setDescription(description);
+        dto.setTokenType(ApplicationDTO.TokenTypeEnum.fromValue(tokenType));
+
+        ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -1321,17 +1311,19 @@ public class RestAPIStoreImpl {
      * @return HttpResponse - Response with APIs which are deployed as a Prototyped APIs
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse getPrototypedAPI(String tenant) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/pages/list-prototyped-apis.jag?"
-//                    + "tenant=" +tenant , requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public APIListDTO getPrototypedAPIs(String tenant) throws APIManagerIntegrationTestException {
+        try {
+            APIListDTO prototypedAPIs = new APIListDTO();
+            APIListDTO apiListDTO = apIsApi.apisGet(null, null, tenant, null, null);
+            for (APIInfoDTO apidto : apiListDTO.getList()) {
+                if (apidto.getLifeCycleStatus().equals("PROTOTYPED")) {
+                    prototypedAPIs.addListItem(apidto);
+                }
+            }
+            return prototypedAPIs;
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
+        }
     }
 
 

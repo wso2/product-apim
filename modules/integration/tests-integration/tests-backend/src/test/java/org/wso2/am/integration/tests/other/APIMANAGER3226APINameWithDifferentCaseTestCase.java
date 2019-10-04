@@ -71,7 +71,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         providerName = user.getUserName();
         String tenantDomain = storeContext.getContextTenant().getDomain();
         restAPIPublisher = new RestAPIPublisherImpl(user.getUserName(), user.getPassword(), tenantDomain,
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                publisherURLHttps);
     }
 
     @Test (groups = {"wso2.am"}, description = "Test validation of adding api with same name and different case"

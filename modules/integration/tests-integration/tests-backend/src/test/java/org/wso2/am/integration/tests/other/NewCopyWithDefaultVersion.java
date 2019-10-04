@@ -124,7 +124,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(defaultApiId);
-        super.cleanUp();
     }
 
     @DataProvider

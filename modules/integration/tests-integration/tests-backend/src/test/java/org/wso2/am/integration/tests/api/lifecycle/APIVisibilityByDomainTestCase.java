@@ -80,21 +80,21 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
         restAPIPublisherCarbonSuperAdmin = new RestAPIPublisherImpl("admin", "admin",
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl("admin", "admin",
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         restAPIPublisherCarbonSuperUser1 = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         providerName =
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
@@ -103,12 +103,12 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         //Creating Tenant contexts
         init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
@@ -118,27 +118,23 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisherOtherDomainUser = new RestAPIPublisherImpl(
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword(),
-                otherDomain,
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainUser = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword(),
-                otherDomain,
-                keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                otherDomain, storeURLHttps);
 
         //Login to the API Publisher adn Store as Tenant admin
         restAPIPublisherOtherDomainAdmin = new RestAPIPublisherImpl(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                otherDomain,
-                keyManagerHTTPSURL, gatewayHTTPSURL, publisherURLHttp);
+                otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainAdmin = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                otherDomain,
-                keyManagerHTTPSURL, gatewayHTTPSURL, storeURLHttp);
+                otherDomain, storeURLHttps);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")

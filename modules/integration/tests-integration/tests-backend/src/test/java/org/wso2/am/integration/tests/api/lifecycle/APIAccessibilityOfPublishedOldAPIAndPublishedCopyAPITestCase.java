@@ -72,8 +72,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
     private String apiId;
     private String newApiId;
     private APIRequest apiRequest;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     private ArrayList<String> grantTypes;
     private Map<String, String> requestHeaders;
 
@@ -82,9 +80,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
         grantTypes = new ArrayList<>();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() +  API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
@@ -249,6 +244,8 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         restAPIStore.removeApplication(APPLICATION_NAME);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
+
+        super.cleanUpUsingRest();
     }
 
 }
