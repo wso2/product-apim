@@ -52,6 +52,7 @@
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase" />
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase" />
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
         </classes>
     </test>
 
