@@ -91,7 +91,7 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String publisherURL) {
 
         String tokenURL = gatewayURL + "token";
-        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+        String dcrURL = keyManagerURL + "client-registration/v0.15/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +

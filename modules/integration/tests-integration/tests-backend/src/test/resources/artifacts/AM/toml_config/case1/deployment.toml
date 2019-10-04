@@ -227,9 +227,9 @@ enable = true
 service_url = "https://localhost:9445/bpmn"
 wf_engine_user = "wf.user"
 wf_engine_pass = "wf.pass"
-callback_endpoint = "https://localhost:9443/api/am/publisher/v0.14/workflows/update-workflow-status"
+callback_endpoint = "https://localhost:9443/api/am/publisher/v0.15/workflows/update-workflow-status"
 token_endpoint = "https://localhost:8243/token"
-client_registration_endpoint = "https://localhost:9443/client-registration/v0.14/register"
+client_registration_endpoint = "https://localhost:9443/client-registration/v0.15/register"
 client_registration_username = "wf.user"
 client_registration_password = "wf.pass"
 

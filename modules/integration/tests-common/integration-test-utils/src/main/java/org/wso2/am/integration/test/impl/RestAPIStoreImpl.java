@@ -77,7 +77,7 @@ public class RestAPIStoreImpl {
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String keyManagerURL, String gatewayURL, String storeURL) {
         String tokenURL = gatewayURL + "token";
-        String dcrURL = keyManagerURL + "client-registration/v0.14/register";
+        String dcrURL = keyManagerURL + "client-registration/v0.15/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 

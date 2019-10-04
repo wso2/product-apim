@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.0.4/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.0.4/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -117,17 +117,17 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsDocumentIdContentGetValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdContentGet(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdContentGet(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsDocumentIdContentGetCall(apiProductId, documentId, accept, ifNoneMatch, progressListener, progressRequestListener);
         return call;
@@ -136,7 +136,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get the content of an API Product document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -149,7 +149,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get the content of an API Product document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -164,7 +164,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get the content of an API Product document (asynchronously)
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v0.15/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -261,17 +261,17 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsDocumentIdContentPostValidateBeforeCall(String apiProductId, String documentId, File file, String inlineContent, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdContentPost(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdContentPost(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsDocumentIdContentPostCall(apiProductId, documentId, file, inlineContent, ifMatch, progressListener, progressRequestListener);
         return call;
@@ -280,7 +280,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Upload the content of an API Product document
-     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param file Document to upload (optional)
@@ -296,7 +296,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Upload the content of an API Product document
-     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param file Document to upload (optional)
@@ -313,7 +313,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Upload the content of an API Product document (asynchronously)
-     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
+     * Thid operation can be used to upload a file or add inline content to an API Product document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param file Document to upload (optional)
@@ -406,17 +406,17 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsDocumentIdDeleteValidateBeforeCall(String apiProductId, String documentId, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdDelete(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdDelete(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsDocumentIdDeleteCall(apiProductId, documentId, ifMatch, progressListener, progressRequestListener);
         return call;
@@ -425,7 +425,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Delete a document of an API Product
-     * This operation can be used to delete a document associated with an API Product. 
+     * This operation can be used to delete a document associated with an API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -437,7 +437,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Delete a document of an API Product
-     * This operation can be used to delete a document associated with an API Product. 
+     * This operation can be used to delete a document associated with an API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -451,7 +451,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Delete a document of an API Product (asynchronously)
-     * This operation can be used to delete a document associated with an API Product. 
+     * This operation can be used to delete a document associated with an API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -544,17 +544,17 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsDocumentIdGetValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdGet(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdGet(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsDocumentIdGetCall(apiProductId, documentId, accept, ifNoneMatch, progressListener, progressRequestListener);
         return call;
@@ -563,7 +563,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a document of an API
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -578,7 +578,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a document of an API
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -594,7 +594,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a document of an API (asynchronously)
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -687,22 +687,22 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsDocumentIdPutValidateBeforeCall(String apiProductId, String documentId, DocumentDTO body, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
         }
-        
+
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
             throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsDocumentIdPutCall(apiProductId, documentId, body, ifMatch, progressListener, progressRequestListener);
         return call;
@@ -711,7 +711,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Update a document of an API Product
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)
@@ -726,7 +726,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Update a document of an API Product
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)
@@ -742,7 +742,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Update a document of an API Product (asynchronously)
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * This operation can be used to update metadata of an API&#39;s document.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param body Document object that needs to be added  (required)
@@ -841,12 +841,12 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsGetValidateBeforeCall(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsGet(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsGetCall(apiProductId, limit, offset, accept, ifNoneMatch, progressListener, progressRequestListener);
         return call;
@@ -855,7 +855,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a list of documents of an API Product
-     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
+     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -871,7 +871,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a list of documents of an API Product
-     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
+     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -888,7 +888,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Get a list of documents of an API Product (asynchronously)
-     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
+     * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -977,17 +977,17 @@ public class ApiProductDocumentsApi {
 
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apiProductsApiProductIdDocumentsPostValidateBeforeCall(String apiProductId, DocumentDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsPost(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apiProductsApiProductIdDocumentsPost(Async)");
         }
-        
+
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdDocumentsPostCall(apiProductId, body, progressListener, progressRequestListener);
         return call;
@@ -996,7 +996,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Add a new document to an API Product
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param body Document object that needs to be added  (required)
      * @return DocumentDTO
@@ -1009,7 +1009,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Add a new document to an API Product
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param body Document object that needs to be added  (required)
      * @return ApiResponse&lt;DocumentDTO&gt;
@@ -1023,7 +1023,7 @@ public class ApiProductDocumentsApi {
 
     /**
      * Add a new document to an API Product (asynchronously)
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation.
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param body Document object that needs to be added  (required)
      * @param callback The callback to be executed when the API call finishes

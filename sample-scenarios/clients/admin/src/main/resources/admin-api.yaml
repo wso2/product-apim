@@ -3,7 +3,7 @@ swagger: '2.0'
 # Prolog
 ######################################################
 info:
-  version: "0.14.0"
+  version: "0.15.0"
   title: "WSO2 API Manager - Admin"
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - Admin Portal.
@@ -12,7 +12,7 @@ info:
     name: "WSO2"
     url: "http://wso2.com/products/api-manager/"
     email: "architecture@wso2.com"
-  license: 
+  license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 
@@ -21,7 +21,7 @@ info:
 ######################################################
 
 # The schemes supported by the API
-schemes: 
+schemes:
   - https
 
 # The domain of the API.
@@ -37,17 +37,17 @@ basePath: /api/am/admin/v0.15
 # The actual media type must be specified in the Content-Type header field of the request.
 # The default is json, i.e. the Content-Type header is not needed to
 # be set, but supporting it serves extensibility.
-consumes: 
+consumes:
   - application/json
 
 # The following media types may be passed as output in message bodies of the API.
 # The media type(s) consumable by the requestor is specified in the Accept header field
-# of the corresponding request. 
-# The actual media type returned will be specfied in the Content-Type header field 
+# of the corresponding request.
+# The actual media type returned will be specfied in the Content-Type header field
 # of the of the response.
 # The default of the Accept header is json, i.e. there is not needed to
 # set the value, but supporting it serves extensibility.
-produces: 
+produces:
   - application/json
 
 x-wso2-security:
@@ -140,7 +140,7 @@ paths:
 
 #-----------------------------------------------------
 # Add a Application level Throttling Policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/application -d @data.json"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/application\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
@@ -196,8 +196,8 @@ paths:
 ######################################################
 # The "Individual Application Throttling Policy" resource API
 ######################################################
-  '/throttling/policies/application/{policyId}': 
-  
+  '/throttling/policies/application/{policyId}':
+
 #-----------------------------------------------------
 # Retrieve a certain Application Policy
 #-----------------------------------------------------
@@ -258,7 +258,7 @@ paths:
 
 #-----------------------------------------------------
 # Delete an Application level throttling policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479"
       x-wso2-request: |
@@ -718,7 +718,7 @@ paths:
 
 #-----------------------------------------------------
 # Add a Subscription level Throttling Policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/subscription -d @data.json"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/subscription\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n    \"policyName\": \"Platinum\",\r\n    \"displayName\": \"Platinum\",\r\n    \"description\": \"Allows 4000 requests per minute\",\r\n    \"defaultLimit\":          {\r\n       \"type\": \"RequestCountLimit\",\r\n       \"timeUnit\": \"min\",\r\n       \"unitTime\": 1,\r\n       \"requestCount\": 4000\r\n    },\r\n    \"rateLimitCount\": -1,\r\n    \"rateLimitTimeUnit\": \"NA\",\r\n    \"customAttributes\":          [\r\n                   {\r\n          \"name\": \"customAttr1\",\r\n          \"value\": \"value1\"\r\n       },\r\n                   {\r\n          \"name\": \"customAttr2\",\r\n          \"value\": \"value2\"\r\n       }\r\n    ],\r\n    \"stopOnQuotaReach\": true,\r\n    \"billingPlan\": \"COMMERCIAL\"\r\n}"
@@ -774,8 +774,8 @@ paths:
 ######################################################
 # The "Individual Subscription Throttling Policy" resource API
 ######################################################
-  '/throttling/policies/subscription/{policyId}': 
-  
+  '/throttling/policies/subscription/{policyId}':
+
 #-----------------------------------------------------
 # Retrieve a certain Subscription Policy
 #-----------------------------------------------------
@@ -836,7 +836,7 @@ paths:
 
 #-----------------------------------------------------
 # Delete a Subscription level throttling policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8"
       x-wso2-request: |
@@ -960,7 +960,7 @@ paths:
       summary: Get all Custom Rules
       description: |
         Retrieves all Custom Rules.
-        
+
         **NOTE:**
         * Only super tenant users are allowed for this operation.
       parameters:
@@ -1004,7 +1004,7 @@ paths:
 
 #-----------------------------------------------------
 # Add a Custom Rule
-#-----------------------------------------------------  
+#-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -H POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/custom -d @data.json"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/custom\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
@@ -1013,7 +1013,7 @@ paths:
       summary: Add a Custom Rule
       description: |
         Adds a new Custom Rule.
-        
+
         **NOTE:**
         * Only super tenant users are allowed for this operation.
       parameters:
@@ -1063,8 +1063,8 @@ paths:
 ######################################################
 # The "Individual Custom Rule" resource API
 ######################################################
-  '/throttling/policies/custom/{ruleId}': 
-  
+  '/throttling/policies/custom/{ruleId}':
+
 #-----------------------------------------------------
 # Retrieve a certain Custom Rule
 #-----------------------------------------------------
@@ -1078,7 +1078,7 @@ paths:
       summary: Get a Custom Rule
       description: |
         Retrieves a Custom Rule. We need to provide the policy Id as a path parameter.
-        
+
         **NOTE:**
         * Only super tenant users are allowed for this operation.
       parameters:
@@ -1128,7 +1128,7 @@ paths:
 
 #-----------------------------------------------------
 # Delete a Custom Rule
-#-----------------------------------------------------  
+#-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
       x-wso2-request: |
@@ -1139,7 +1139,7 @@ paths:
       summary: Delete a Custom Rule
       description: |
         Delete a Custom Rule. We need to provide the Id of the policy as a path parameter.
-        
+
         **NOTE:**
         * Only super tenant users are allowed for this operation.
       parameters:
@@ -1177,7 +1177,7 @@ paths:
       summary: Update a Custom Rule
       description: |
         Updates an existing Custom Rule.
-        
+
         **NOTE:**
         * Only super tenant users are allowed for this operation.
       parameters:
@@ -1299,7 +1299,7 @@ paths:
 
 #-----------------------------------------------------
 # Add an Advanced level throttling policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -H POST -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/advanced -d @data.json"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/advanced\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Location\",\r\n               \"headerValue\": \"google.com\"\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"lastAccess\",\r\n               \"parameterValue\": \"25-02-2016\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl1\",\r\n               \"attribute\": \"claimAttr\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      },\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\": [         {\r\n            \"type\": \"IPCondition\",\r\n            \"invertCondition\": true,\r\n            \"ipConditionType\": \"IPRange\",\r\n            \"specificIP\": null,\r\n            \"startingIP\": \"0.0.0.0\",\r\n            \"endingIP\": \"1.1.1.1\"\r\n         }],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
@@ -1355,8 +1355,8 @@ paths:
 ######################################################
 # The "Individual Advanced Throttling Policy" resource API
 ######################################################
-  '/throttling/policies/advanced/{policyId}': 
-  
+  '/throttling/policies/advanced/{policyId}':
+
 #-----------------------------------------------------
 # Retrieve a certain Advanced Throttling Policy
 #-----------------------------------------------------
@@ -1417,7 +1417,7 @@ paths:
 
 #-----------------------------------------------------
 # Delete an Advanced level throttling policy
-#-----------------------------------------------------  
+#-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208"
       x-wso2-request: |
@@ -1581,7 +1581,7 @@ paths:
 
 #-----------------------------------------------------
 # Add a Custom Rule
-#-----------------------------------------------------  
+#-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/blacklist"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.15/throttling/blacklist\r\nAuthorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\r\nContent-Type: application/json\r\n\r\n{\r\n   \"conditionType\": \"IP\",\r\n   \"conditionValue\": \"10.100.7.77\"\r\n}\r\n"
@@ -1637,8 +1637,8 @@ paths:
 ######################################################
 # The "Individual Blocking Condition" resource API
 ######################################################
-  '/throttling/blacklist/{conditionId}': 
-  
+  '/throttling/blacklist/{conditionId}':
+
 #-----------------------------------------------------
 # Retrieve a Blocking condition
 #-----------------------------------------------------
@@ -1699,7 +1699,7 @@ paths:
 
 #-----------------------------------------------------
 # Delete a Blocking condition
-#-----------------------------------------------------  
+#-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.15/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf"
       x-wso2-request: |
@@ -1765,7 +1765,7 @@ parameters:
     name: conditionId
     in: path
     description: |
-      Blocking condition identifier 
+      Blocking condition identifier
     type: string
     required: true
 
@@ -1937,11 +1937,11 @@ definitions:
         type: boolean
         default: false
         description: Indicates whether the policy is deployed successfully or not.
-  
+
 #-----------------------------------------------------
 # The Advanced Throttling Policy Info resource
 #-----------------------------------------------------
-  AdvancedThrottlePolicyInfo : 
+  AdvancedThrottlePolicyInfo :
     title: Advanced Throttling Policy
     required:
       - defaultLimit
@@ -1954,7 +1954,7 @@ definitions:
 #-----------------------------------------------------
 # The Advanced Throttling Policy resource
 #-----------------------------------------------------
-  AdvancedThrottlePolicy : 
+  AdvancedThrottlePolicy :
     title: Advanced Throttling Policy
     required:
       - defaultLimit
@@ -2080,7 +2080,7 @@ definitions:
       - properties:
           siddhiQuery:
             type: string
-            description: Siddhi query which represents the custom throttling policy 
+            description: Siddhi query which represents the custom throttling policy
             example: |
 
           keyTemplate:
@@ -2212,10 +2212,10 @@ definitions:
     allOf:
       - $ref: '#/definitions/ThrottleCondition'
       - properties:
-          claimUrl: 
+          claimUrl:
             type: string
             description: JWT claim URL
-          attribute: 
+          attribute:
             type: string
             description: Attribute to be matched
 
@@ -2268,7 +2268,7 @@ definitions:
         default: 0
         description: Time limit that the throttling limit applies.
         example: 10
-  
+
 #-----------------------------------------------------
 # The Throttling Bandwidth Limit resource
 #-----------------------------------------------------
@@ -2302,7 +2302,7 @@ definitions:
             type: integer
             format: int64
             example: 1000
-            description: Maximum number of requests allowed 
+            description: Maximum number of requests allowed
 
 #-----------------------------------------------------
 # The Throttling Blocking Condition resource

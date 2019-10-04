@@ -318,10 +318,10 @@ public class TomlBasedConfigurationTestCase {
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/ServerUser").isEqualTo("wf.user");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/ServerPassword").isEqualTo("wf.pass");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/WorkflowCallbackAPI")
-                .isEqualTo("https://localhost:9443/api/am/publisher/v0.14/workflows/update-workflow-status");
+                .isEqualTo("https://localhost:9443/api/am/publisher/v0.15/workflows/update-workflow-status");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/TokenEndPoint").isEqualTo("https://localhost:8243/token");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/DCREndPoint")
-                .isEqualTo("https://localhost:9443/client-registration/v0.14/register");
+                .isEqualTo("https://localhost:9443/client-registration/v0.15/register");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/DCREndPointUser").isEqualTo("wf.user");
         assertThat(apim).valueByXPath(wfConfigXpathPrefix + "/DCREndPointPassword").isEqualTo("wf.pass");
 
