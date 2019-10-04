@@ -53,7 +53,6 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     private String apiProvider;
     private String apiEndPointUrl;
     private String apiId;
-    private String CREATED = "CREATED";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase
