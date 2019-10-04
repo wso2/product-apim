@@ -159,10 +159,10 @@ public class RestAPIPublisherImpl {
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
-        if (apiRequest.getHttp_checked().equals(Constants.PROTOCOL_HTTP)){
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
             transports.add(Constants.PROTOCOL_HTTP);
         }
-        if (apiRequest.getHttps_checked().equals(Constants.PROTOCOL_HTTPS)){
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
             transports.add(Constants.PROTOCOL_HTTPS);
         }
         body.setTransport(transports);
@@ -339,10 +339,10 @@ public class RestAPIPublisherImpl {
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
-        if (apiRequest.getHttp_checked().equals(Constants.PROTOCOL_HTTP)) {
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
             transports.add(Constants.PROTOCOL_HTTP);
         }
-        if (apiRequest.getHttps_checked().equals(Constants.PROTOCOL_HTTPS)) {
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
             transports.add(Constants.PROTOCOL_HTTPS);
         }
         body.setTransport(transports);
