@@ -149,7 +149,7 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 
 }

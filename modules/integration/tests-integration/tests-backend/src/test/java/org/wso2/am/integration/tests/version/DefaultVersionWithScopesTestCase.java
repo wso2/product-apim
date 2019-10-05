@@ -214,6 +214,6 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
             userManagementClient.deleteUser(USER_MIKE);
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 }
