@@ -147,6 +147,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiCreationRequestBean.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         //Create API  with public visibility and publish.
         APIDTO apidto = apiPublisherClientUser2.addAPI(apiCreationRequestBean);
         apiID = apidto.getId();
@@ -314,35 +315,4 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         deleteAPI(apiID, apiPublisherClientUser1);
     }
 
-    public static void main(String[] args) throws Exception {
-        System.setProperty("javax.net.ssl.keyStore",
-                "/Users/rukshan/wso2/apim/product-apim/modules/distribution/product/target/wso2am-3.0.0-SNAPSHOT/repository/resources/security/wso2carbon.jks");
-        System.setProperty("javax.net.ssl.trustStore",
-                "/Users/rukshan/wso2/apim/product-apim/modules/distribution/product/target/wso2am-3.0.0-SNAPSHOT/repository/resources/security/client-truststore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-
-        System.setProperty("framework.resource.location", "/Users/rukshan/wso2/apim/test/");
-        System.setProperty("user.dir",
-                "/Users/rukshan/wso2/apim/product-apim/modules/integration/tests-integration/tests-backend/src");
-        APIVisibilityByPublicTestCase aCase = new APIVisibilityByPublicTestCase();
-        aCase.userMode = TestUserMode.SUPER_TENANT_USER;
-        aCase.initialize();
-
-        try {
-            aCase.testVisibilityForCreatorInPublisher();
-            aCase.testVisibilityForCreatorInStore();
-            aCase.testVisibilityForAdminInSameDomainInPublisher();
-            aCase.testVisibilityForAdminInSameDomainInStore();
-            aCase.testVisibilityForAnotherUserInSameDomainInPublisher();
-            aCase.testVisibilityForAnotherUserInSameDomainInStore();
-            aCase.testVisibilityForAnotherUserInOtherDomainInPublisher();
-            aCase.testVisibilityForAnotherUserInOtherDomainInStore();
-            aCase.testVisibilityForAdminInOtherDomainInPublisher();
-            aCase.testVisibilityForAdminInOtherDomainInStore();
-            aCase.testVisibilityForAnonymousUserInOtherDomainInStore();
-            aCase.testVisibilityForAnonymousUserInSameDomainInStore();
-        } finally {
-            aCase.cleanUpArtifacts();
-        }
-    }
 }

@@ -99,6 +99,16 @@ public class RestAPIStoreImpl {
     }
 
 
+    public RestAPIStoreImpl(String tenantDomain, String storeURL) {
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apIsApi.setApiClient(apiStoreClient);
+        applicationsApi.setApiClient(apiStoreClient);
+        subscriptionIndividualApi.setApiClient(apiStoreClient);
+        applicationKeysApi.setApiClient(apiStoreClient);
+        this.storeURL = storeURL;
+        this.tenantDomain = tenantDomain;
+    }
+
     public HttpResponse createApplication(String appName, String description, String throttleTier,
                                           ApplicationDTO.TokenTypeEnum tokenType) {
         try {
