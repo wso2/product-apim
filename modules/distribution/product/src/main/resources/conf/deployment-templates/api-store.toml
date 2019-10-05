@@ -57,12 +57,6 @@ service_url = "https://km.wso2.com:443/services/"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
-[apim.throttling]
-enable_data_publishing = false
-enable_policy_deploy = false
-enable_blacklist_condition = false
-# JMS connection also should be disable
-
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
 username= "$ref{super_admin.username}"
