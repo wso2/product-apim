@@ -161,7 +161,7 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
     public void destroy() throws Exception {
         user1ApiStore.deleteApplication(user1ApplicationId);
         user2ApiStore.deleteApplication(user2ApplicationId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
         userManagementClient.deleteUser(TEST_USER_1);
         userManagementClient.deleteUser(TEST_USER_2);
     }

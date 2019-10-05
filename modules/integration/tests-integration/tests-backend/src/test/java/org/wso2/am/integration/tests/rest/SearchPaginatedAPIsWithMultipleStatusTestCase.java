@@ -96,6 +96,6 @@ public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIManagerLif
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 }

@@ -269,6 +269,6 @@ public class UriTemplateReservedCharacterEncodingTest extends APIMIntegrationBas
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 }
