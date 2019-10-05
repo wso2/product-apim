@@ -45,11 +45,6 @@ password= "$ref{super_admin.password}"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
-#derive based on the profile
-enable_data_publishing = true
-enable_policy_deploy = false
-enable_blacklist_condition = true
-
 enable_unlimited_tier = true
 enable_header_based_throttling = false
 enable_jwt_claim_based_throttling = false
@@ -81,7 +76,6 @@ analytics_auth_url="ssl://analytics2.local:7712"
 enable = true
 expiry_time = 15
 
-#todo: remove the cache config. infer form dev mode
 [apim.cache.resource]
 enable = true
 

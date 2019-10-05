@@ -2,6 +2,9 @@
   "server.server_role": {
     "gateway-worker": {
       "apim.throttling.enable_policy_deploy": false,
+      "apim.throttling.enable_data_publishing": true,
+      "apim.throttling.enable_decision_connection": true,
+      "apim.throttling.enable_blacklist_condition": true,
       "indexing.enable": false,
       "system.parameter.profile": "gateway-worker",
       "enabled_global_handlers": [
@@ -22,6 +25,8 @@
       "system.parameter.profile": "api-key-manager"
     },
     "api-publisher": {
+      "apim.throttling.enable_policy_deploy": true,
+      "apim.throttling.enable_data_publishing": true,
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
