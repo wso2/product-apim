@@ -268,7 +268,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 
 }

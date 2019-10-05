@@ -173,7 +173,7 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIManagerLifecycleBas
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 
     @DataProvider

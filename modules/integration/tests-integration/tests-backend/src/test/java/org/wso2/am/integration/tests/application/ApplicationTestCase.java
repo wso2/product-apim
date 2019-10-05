@@ -227,6 +227,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 }
