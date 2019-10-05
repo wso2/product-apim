@@ -705,4 +705,16 @@ public class APIMIntegrationBaseTest {
         }
         return null;
     }
+
+    protected RestAPIPublisherImpl getRestAPIPublisherForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
+        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
+    }
 }
