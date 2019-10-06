@@ -41,8 +41,9 @@
                    compression="on"
                    compressionMinSize="2048"
                    noCompressionUserAgents="gozilla, traviata"
-                   compressableMimeType="text/html,text/javascript,application/x-javascript,application/javascript,application/xml,text/css,application/xslt+xml,text/xsl,image/gif,image/jpg,image/jpeg"
-                   URIEncoding="UTF-8"/>
+                   compressibleMimeType="text/html,text/javascript,application/x-javascript,application/javascript,application/xml,text/css,application/xslt+xml,text/xsl,image/gif,image/jpg,image/jpeg"
+                   URIEncoding="UTF-8">
+        </Connector>
 
         <!--
         optional attributes:
@@ -53,8 +54,6 @@
         <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
                    port="9443"
                    bindOnInit="false"
-                   sslProtocol="TLS"
-                   sslEnabledProtocols="TLSv1,TLSv1.1,TLSv1.2"
                    maxHttpHeaderSize="8192"
                    acceptorThreadCount="2"
                    maxThreads="250"
@@ -65,31 +64,45 @@
                    maxKeepAliveRequests="200"
                    acceptCount="200"
                    server="WSO2 Carbon Server"
-                   clientAuth="false"
                    compression="on"
                    scheme="https"
                    secure="true"
                    SSLEnabled="true"
                    compressionMinSize="2048"
                    noCompressionUserAgents="gozilla, traviata"
-                   compressableMimeType="text/html,text/javascript,application/x-javascript,application/javascript,application/xml,text/css,application/xslt+xml,text/xsl,image/gif,image/jpg,image/jpeg"
-                   keystoreFile="${carbon.home}/repository/resources/security/wso2carbon.jks"
-                   keystorePass="wso2carbon"
-                   URIEncoding="UTF-8"/>
+                   compressibleMimeType="text/html,text/javascript,application/x-javascript,application/javascript,application/xml,text/css,application/xslt+xml,text/xsl,image/gif,image/jpg,image/jpeg"
+                   URIEncoding="UTF-8"
+        >
+            <SSLHostConfig
+                    protocols="+TLSv1,+TLSv1.1,+TLSv1.2"
+                    sslProtocol="TLS"
+                    certificateVerification="false"
+                    truststoreFile="${carbon.home}/repository/resources/security/client-truststore.jks"
+                    truststorePassword="wso2carbon"
+                    truststoreType="JKS"
+            >
+                <Certificate certificateKeystoreFile="${carbon.home}/repository/resources/security/wso2carbon.jks"
+                             certificateKeystorePassword="wso2carbon"
+                             certificateKeystoreType="JKS"
+                             certificateKeyAlias="wso2carbon"
+                             certificateKeyPassword="wso2carbon"
+                             />
+            </SSLHostConfig>
+        </Connector>
 
 
         <Engine name="Catalina" defaultHost="localhost">
-
-            <!--Realm className="org.apache.catalina.realm.MemoryRealm" pathname="${carbon.home}/repository/conf/tomcat/tomcat-users.xml"/-->
 
             <Realm className="org.wso2.carbon.tomcat.ext.realms.CarbonTomcatRealm"/>
 
             <Host name="localhost" unpackWARs="true" deployOnStartup="false" autoDeploy="false"
                   appBase="${carbon.home}/repository/deployment/server/webapps/">
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
+                       headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve"/>
                 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="${carbon.home}/repository/logs"
                        prefix="http_access_" suffix=".log"
-                       pattern="combined"/>
+                       pattern="%h %l %u %t %r %s %b %{Referer}i %{User-Agent}i %T"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve" threshold="600"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CompositeValve"/>
 
@@ -98,10 +111,8 @@
                 <Valve className="org.wso2.carbon.identity.authz.valve.AuthorizationValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
                 <!--Error pages -->
-                <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false"
-                       showReport="false"/>
+                <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false" showReport="false"/>
             </Host>
         </Engine>
     </Service>
 </Server>
-
