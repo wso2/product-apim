@@ -8073,8 +8073,8 @@ definitions:
         example: basic
         description: Accepts one of the following, basic or digest.
         enum:
-          - basic
-          - digest
+          - BASIC
+          - DIGEST
       username:
         type: string
         example: admin
