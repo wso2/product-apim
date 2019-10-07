@@ -1,0 +1,100 @@
+[server]
+offset = 1
+hostname = "localhost"
+node_ip = "127.0.0.1"
+base_path = "https://$ref{server.hostname}:${carbon.management.port}"
+serverDetails = "WSO2 IS as KM 5.9.0"
+mode = "single"
+userAgent = "WSO2 IS as KM 5.9.0"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database"
+
+[database.apim_db]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/am_db"
+username = "root"
+password = "root"
+
+
+[database.config]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/config_db"
+username = "root"
+password = "root"
+
+[database.shared_db]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/shared_db"
+username = "root"
+password = "root"
+
+
+[keystore.primary]
+name = "wso2carbon.jks"
+password = "wso2carbon"
+
+[identity]
+data_source = "jdbc/WSO2AM_DB"
+
+[authentication.consent]
+data_source = "jdbc/WSO2AM_DB"
+prompt = true
+
+[[apim.gateway.environment]]
+name = "Production and Sandbox"
+type = "hybrid"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+
+
+[apim.cors]
+allow_origins = "*"
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_credentials = false
+
+[transport.https.sslHostConfig.properties]
+certificateVerification = "want"
+
+[tasks]
+client_dispatch_address = "https://$ref{server.hostname}:9448"
+server_address = "https://localhost:9443"
+
+[oauth]
+prompt_consent = "$ref{authentication.consent.prompt}"
+
+[oauth.scope_validator.xacml]
+enable = true
+
+[oauth.grant_type.uma_ticket]
+enable = true
+
+[identity_mgt.user_self_registration]
+allow_self_registration = false
+
+[default_cache_timeout]
+force_local_cache = true
+
+[event.default_listener.mutual_tls_authenticator]
+priority = ""
+enable = false
+
+[[event_listener]]
+id = "mutual_tls_authenticator"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls.MutualTLSClientAuthenticator"
+order = "158"
+enable = false
