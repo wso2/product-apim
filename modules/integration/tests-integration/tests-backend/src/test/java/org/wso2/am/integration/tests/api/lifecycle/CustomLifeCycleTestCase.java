@@ -76,7 +76,7 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
         lifeCycleAdminClient.editLifeCycle(apiLifeCycleName, customizedAPILifecycleContent);
 
         String gatewayUrl;
-        if (gatewayContextWrk.getContextTenant().getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+        if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(gatewayContextWrk.getContextTenant().getDomain())) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
@@ -94,11 +94,11 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Check custom life cycle state.")
     public void testCustomLifeCycle() throws Exception {
         //Create and publish api
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
         Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).
                 getData(), "lifecycle not changed to published");
         restAPIPublisher.changeAPILifeCycleStatus(apiId, PROMOTE);
-        Assert.assertEquals(PROMOTE + "d", restAPIPublisher.getLifecycleStatus(apiId).getData(),
+        Assert.assertEquals(APILifeCycleState.PROMOTED.getState(), restAPIPublisher.getLifecycleStatus(apiId).getData(),
                 "lifecycle not changed to custom");
         restAPIPublisher.changeAPILifeCycleStatus(apiId, RE_PUBLISH);
         Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).
@@ -110,5 +110,6 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     public void cleanupArtifacts() throws Exception {
         //Remove test api and revert to original lifecycle config
         restAPIPublisher.deleteAPI(apiId);
+        super.cleanUp();
     }
 }
