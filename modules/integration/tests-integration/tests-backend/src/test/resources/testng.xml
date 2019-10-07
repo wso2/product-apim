@@ -32,53 +32,10 @@
         </classes>
     </test>
 
-    <test name="apim-integration-tests-api-application-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-other" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion" />
-            <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase" />
-            <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase" />
-            <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-samples" group-by-instances="true"  preserve-order="true" parallel="false">
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase" />
-            <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase" />
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-version" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase" />
-            <class name="org.wso2.am.integration.tests.version.DefaultVersionWithScopesTestCase" />
-        </classes>
-    </test>
 
     <test name="apim-publisher-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
-        </classes>
-    </test>
-    <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.application.ApplicationConsumerSecretRegenerateTestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase"/>
         </classes>
     </test>
 </suite>

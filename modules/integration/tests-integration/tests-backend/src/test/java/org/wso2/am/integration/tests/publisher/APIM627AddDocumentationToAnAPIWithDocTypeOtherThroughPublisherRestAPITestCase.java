@@ -26,8 +26,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -52,6 +55,8 @@ public class APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestA
     private APIPublisherRestClient apiPublisher;
     private String apiProvider;
     private String apiEndPointUrl;
+    private String apiId;
+    private String documentId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase
@@ -93,9 +98,7 @@ public class APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestA
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTags = "tag627-1, tag628-2";
         String docName = "APIM627PublisherTestHowTo-Inline-summary";
-        String docType = "other";
-        String sourceType = "inline";
-        String newType = "Type APIM627";
+        DocumentDTO documentDTO = new DocumentDTO();
 
 
         //Create an API
@@ -112,27 +115,32 @@ public class APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestA
         apiCreationRequestBean.setTechOwner("api620t");
         apiCreationRequestBean.setTechOwnerMail("api620t@ww.com");
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        assertFalse(apiResponse.getBoolean("error"), apiName + "is not created as expected");
+        APIDTO apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        String status = apiCreationResponse.getLifeCycleStatus();
+        apiId = apiCreationResponse.getId();
+        assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(status), "Status of the " + apiName +
+                "is not a valid status");
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, apiProvider, apiVersion);
-        JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
-        JSONObject apiObject = new JSONObject(jsonObject.getString("api"));
-        assertFalse(jsonObject.getBoolean("error"), apiName + " is not visible in publisher");
-        assertTrue(apiObject.getString("name").equals(apiName),
-                apiName + " is not visible in publisher");
-        assertTrue(apiObject.getString("status").equals("CREATED"),
-                "Status of the " + apiName + "is not a valid status");
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
+        assertEquals(apiResponsePublisher.getResponseCode(), Response.Status.OK.getStatusCode(), apiName +
+                " is not visible in publisher");
 
         //Add Documentation to an API "APIM627PublisherTest" - Other |Inline
-        HttpResponse docResponse = apiPublisher.addDocument(apiName, apiVersion, apiProvider,
-                docName, docType, sourceType, null, "Testing", null, "", newType);
-        JSONObject jsonObjectDoc1 = new JSONObject(docResponse.getData());
-        assertFalse(jsonObjectDoc1.getBoolean("error"), "Error when adding document to the API");
+
+        DocumentDTO.VisibilityEnum docVisibility = DocumentDTO.VisibilityEnum.API_LEVEL;
+        DocumentDTO.SourceTypeEnum sourceType = DocumentDTO.SourceTypeEnum.INLINE;
+        String summary = "This is a sample documentation";
+        DocumentDTO.TypeEnum type = DocumentDTO.TypeEnum.OTHER;
+        documentDTO.setName(docName);
+        documentDTO.setType(type);
+        documentDTO.setSourceType(sourceType);
+        documentDTO.setSummary(summary);
+        documentDTO.setVisibility(docVisibility);
+
+        HttpResponse documentationResponse = restAPIPublisher.addDocument(apiId, documentDTO);
+        assertEquals(documentationResponse.getResponseCode(), 200, "Error while add documentation to API");
+        documentId = documentationResponse.getData();
     }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type HowTo And" +
