@@ -18,10 +18,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.lifecycle.LifeCycleAdminClient;
-import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -35,18 +32,14 @@ import java.net.URL;
 public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
 
     private static final String API_NAME = "APICustomLifecycleTestApi";
-    String publisherURLHttp;
     private LifeCycleAdminClient lifeCycleAdminClient;
     private String customizedAPILifecyclePath =
             FrameworkPathUtil.getSystemResourceLocation() + "artifacts" + File.separator + "AM" + File.separator
                     + "configFiles" + File.separator + "customLifecycleTest" + File.separator + "APILifeCycle.xml";
     private String originalLifeCycleContent;
-    private APICreationRequestBean apiCreationRequestBean;
-    private APIIdentifier apiIdentifier;
     private String apiEndPointUrl;
     private AuthenticatorClient loginClient;
     private String backendUrl;
-    private APIPublisherRestClient apiPublisherClient;
     private String apiLifeCycleName = "APILifeCycle";
     private String PROMOTE = "Promote";
     private String RE_PUBLISH = "Re-Publish";
