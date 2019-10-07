@@ -31,6 +31,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
@@ -45,6 +46,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.Constants;
@@ -75,6 +77,7 @@ public class RestAPIPublisherImpl {
     public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
+    public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
 
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
@@ -115,6 +118,7 @@ public class RestAPIPublisherImpl {
         rolesApi.setApiClient(apiPublisherClient);
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
+        subscriptionsApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -871,5 +875,19 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
+    }
+
+    /**
+     * Get subscription of an API
+     *
+     * @param apiID
+     * @return
+     * @throws ApiException
+     */
+    public SubscriptionListDTO getSubscriptionByAPIID(String apiID) throws ApiException {
+        ApiResponse<SubscriptionListDTO> apiResponse =
+                subscriptionsApi.subscriptionsGetWithHttpInfo(apiID, 10, 0, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
     }
 }
