@@ -53,7 +53,6 @@
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase" />
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
         </classes>
     </test>
 
