@@ -30,8 +30,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIURLsDTO;
 import org.wso2.am.integration.test.Constants;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -56,8 +54,6 @@ import static org.testng.Assert.assertTrue;
 public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIM720GetAllEndPointsTestCase.class);
-    private RestAPIPublisherImpl apiPublisher;
-    private RestAPIStoreImpl apiStore;
     private static final String apiName = "EndPointTestAPI";
     private static final String apiVersion = "1.0.0";
     private static final String apiContext = "endpointtestapi";
@@ -90,19 +86,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
-
-        //publisher login
-        apiPublisher = new RestAPIPublisherImpl(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherUrls.getWebAppURLHttps());
-
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
-
-        //store login
-        apiStore = new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps());
-
         String uri = "customers/{id}/";
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uri));
@@ -127,34 +111,34 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         apiIdentifier = new APIIdentifier(apiProvider, apiName, apiVersion);
 
-        HttpResponse apiCreateResponse = apiPublisher.addAPI(apiRequest);
+        HttpResponse apiCreateResponse = restAPIPublisher.addAPI(apiRequest);
         assertEquals(apiCreateResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Error when creating API: "
                 + apiName);
         apiID = apiCreateResponse.getData();
 
-        HttpResponse getAPIResponse = apiPublisher.getAPI(apiID);
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiID);
         assertEquals(getAPIResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error when retrieving API: " + apiName);
 
         //publish API
-        HttpResponse changeLCStatusResponse = apiPublisher.changeAPILifeCycleStatus(apiID,
+        HttpResponse changeLCStatusResponse = restAPIPublisher.changeAPILifeCycleStatus(apiID,
                 APILifeCycleAction.PUBLISH.getAction(), null);
 
         assertEquals(changeLCStatusResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Error when publishing the API: " + apiName);
 
-        Thread.sleep(15000);
+        waitForAPIDeployment();
         if (gatewayContextWrk.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
-                         gatewayContextWrk.getContextTenant().getDomain() + "/";
+                    gatewayContextWrk.getContextTenant().getDomain() + "/";
         }
     }
 
     @Test(description = "Get All Endpoints")
     public void getAllEndpointUrlsTest() throws Exception {
-        HttpResponse getAPIResponse = apiPublisher.getAPI(apiID);
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiID);
         assertEquals(getAPIResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error when " +
                 "retrieving API: " + apiName);
         Gson gson = new Gson();
@@ -170,7 +154,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         assertEquals(endpointConfig.get("algoCombo"), "org.apache.synapse.endpoints.algorithms.RoundRobin",
                 "Endpoint selection algorithm mismatched");
 
-        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiFromStore = apiStore.getAPI(apiID);
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiFromStore = restAPIStore.getAPI(apiID);
         List<APIEndpointURLsDTO> endpointURLs = apiFromStore.getEndpointURLs();
         APIURLsDTO urls = endpointURLs.get(0).getUrLs();
 
@@ -183,13 +167,14 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
                 "endpoint URL");
         assertEquals(urls.getHttps(), gatewayHTTPSURL + apiContext + "/" + apiVersion, "Error in HTTPS" +
                 "endpoint URL");
-        APIListDTO getAllAPIsResponse = apiStore.getAllPublishedAPIs();
+
+        APIListDTO getAllAPIsResponse = restAPIStore.getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, getAllAPIsResponse));
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(apiID);
-        super.cleanUpUsingRest();
+        restAPIPublisher.deleteAPI(apiID);
+        super.cleanUp();
     }
 }
