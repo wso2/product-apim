@@ -78,7 +78,7 @@ public class APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestA
         super.init(userMode);
 
         String gatewayUrl;
-        if (gatewayContextWrk.getContextTenant().getDomain().equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+        if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(gatewayContextWrk.getContextTenant().getDomain())) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
