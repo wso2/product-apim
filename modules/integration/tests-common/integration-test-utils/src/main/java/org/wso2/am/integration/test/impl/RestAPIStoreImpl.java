@@ -225,9 +225,10 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId) throws ApiException {
-        ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo(apiId,
-                applicationId, apiType, groupId, null, null, null);
+    public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
+            throws ApiException {
+        ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
+                (apiId, applicationId, apiType, groupId, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
         return suscriptionResponse.getData();
     }

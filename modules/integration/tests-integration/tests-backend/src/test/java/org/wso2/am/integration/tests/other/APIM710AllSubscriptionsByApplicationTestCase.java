@@ -112,7 +112,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             apiList1.add(apiCount, createResponse.getData());
             //publish API
             restAPIPublisher
-                    .changeAPILifeCycleStatus(createResponse.getData(), APILifeCycleAction.PUBLISH.getAction(), null);
+                    .changeAPILifeCycleStatus(createResponse.getData(), APILifeCycleAction.PUBLISH.getAction(),
+                            null);
 
             restAPIStore.createSubscription(createResponse.getData(),
                     applicationList.get(0), "Unlimited");
@@ -137,7 +138,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             apiList2.add(apiCount, createResponse.getData());
             //publish API
             restAPIPublisher
-                    .changeAPILifeCycleStatus(createResponse.getData(), APILifeCycleAction.PUBLISH.getAction(), null);
+                    .changeAPILifeCycleStatus(createResponse.getData(), APILifeCycleAction.PUBLISH.getAction(),
+                            null);
 
             restAPIStore.createSubscription(createResponse.getData(),
                     applicationList.get(1), "Unlimited");
