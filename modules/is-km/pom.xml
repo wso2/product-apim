@@ -17,12 +17,13 @@
   ~  under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.wso2.am</groupId>
-        <artifactId>am-distribution-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <artifactId>am-parent</artifactId>
+        <version>3.0.0-alpha2</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -66,7 +67,7 @@
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
                                     <version>${carbon-governance.version}</version>
-                                </feature>                                                                
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -82,7 +83,8 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <replace token="false" value="true" dir="${is_folder_name}/repository/components/default/configuration/org.eclipse.equinox.simpleconfigurator">
+                                <replace token="false" value="true"
+                                         dir="${is_folder_name}/repository/components/default/configuration/org.eclipse.equinox.simpleconfigurator">
                                     <include name="**/bundles.info"/>
                                 </replace>
                             </tasks>
@@ -95,104 +97,215 @@
             </plugin>
 
             <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.2</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>replace-for-identity-xml-is-km</id>
-                        <phase>prepare-package</phase>
+                        <id>copy-installed</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>replace</goal>
+                            <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <file>${is_folder_name}/repository/conf/identity/identity.xml</file>
-                            <replacements>
-                                <!--replace datasource name as jdbc/WSO2AM_DB-->
-                                <replacement>
-                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                                    <token>(jdbc/WSO2CarbonDB)</token>
-                                    <value>jdbc/WSO2AM_DB</value>
-                                </replacement>
-                                <!--Replace identity OAuth token generator-->
-                                <!--This should be equal to the IdentityOAuthTokenGenerator value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/IdentityOAuthTokenGenerator</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.JWTTokenIssuer)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer</value>
-                                </replacement>
-                                <!--Replace authorization code grant type-->
-                                <!--This should be equal to the AuthorizationCodeGrantHandler value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.AuthorizationCodeGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler</value>
-                                </replacement>
-                                <!--Replace password grant type-->
-                                <!--This should be equal to the PasswordGrantHandler value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.PasswordGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</value>
-                                </replacement>
-                                <!--Replace client credentials grant type-->
-                                <!--This should be equal to the ClientCredentialsGrantHandler value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCredentialsGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</value>
-                                </replacement>
-                                <!--Replace SAML2 bearer grant handler-->
-                                <!--This should be equal to the SAML2BearerGrantHandler value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>
-                                </replacement>
-                                <!--Replace NTLM grant type handler-->
-                                <!--This should be equal to the NTLMAuthenticationGrantHandler value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler)</token>
-                                    <value>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake</value>
-                                </replacement>
-                                <!--Replace OAuth callback handler-->
-                                <!--This should be equal to the OAuthCallbackHandlers value of identity.xml in API Manager-->
-                                <replacement>
-                                    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
-                                    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
-                                    <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
-                                </replacement>
-                            </replacements>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.util</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${is_folder_name}/lib/runtimes/cxf3</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!--Add OAuthScopeValidator and NTLM grant type validator using identity_config_change.xml-->
             <plugin>
-                <groupId>com.google.code.maven-config-processor-plugin</groupId>
-                <artifactId>config-processor-maven-plugin</artifactId>
-                <version>2.6</version>
+                <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>add-scope-validator-ntlm-handler</id>
-                        <phase>prepare-package</phase>
+                        <id>copy-resource-one</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>process</goal>
+                            <goal>copy-resources</goal>
+                        </goals>
+
+                        <configuration>
+                            <outputDirectory>${basedir}/${is_folder_name}/repository/conf</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>deployment.toml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>wso2-maven-json-merge-plugin</artifactId>
+                <version>5.2.10</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>merge</goal>
                         </goals>
                         <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>${is_folder_name}/repository/conf/identity/identity.xml</input>
-                                    <config>../distribution/product/identity_config_change.xml</config>
-                                </transformation>
-                            </transformations>
-                            <namespaceContexts>
-                                <s>http://wso2.org/projects/carbon/carbon.xml</s>
-                            </namespaceContexts>
+                            <tasks>
+                                <task>
+                                    <base>${basedir}/../distribution/product/src/main/resources/conf/default.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/${is_folder_name}/repository/resources/conf/default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json
+                                    </target>
+                                    <mergeChildren>true</mergeChildren>
+                                </task>
+                                <task>
+                                    <base>${basedir}/../distribution/product/src/main/resources/conf/infer.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/${is_folder_name}/repository/resources/conf/infer.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/infer-merged.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/../distribution/product/src/main/resources/conf/key-mappings.json
+                                    </base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/${is_folder_name}/repository/resources/conf/key-mappings.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/key-mappings-merged.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/../distribution/product/src/main/resources/conf/unit-resolve.json
+                                    </base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/${is_folder_name}/repository/resources/conf/unit-resolve.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/unit-resolve-merged.json
+                                    </target>
+                                    <mergeChildren>true</mergeChildren>
+                                </task>
+                                <task>
+                                    <base>${basedir}/../distribution/product/src/main/resources/conf/validator.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/${is_folder_name}/repository/resources/conf/validator.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/validator-merged.json
+                                    </target>
+                                </task>
+                            </tasks>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-file</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <sourceFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json
+                                    </sourceFile>
+                                    <destinationFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/default.json
+                                    </destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/infer-merged.json
+                                    </sourceFile>
+                                    <destinationFile>${basedir}/${is_folder_name}/repository/resources/conf/infer.json
+                                    </destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/key-mappings-merged.json
+                                    </sourceFile>
+                                    <destinationFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/key-mappings.json
+                                    </destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/unit-resolve-merged.json
+                                    </sourceFile>
+                                    <destinationFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/unit-resolve.json
+                                    </destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/validator-merged.json
+                                    </sourceFile>
+                                    <destinationFile>
+                                        ${basedir}/${is_folder_name}/repository/resources/conf/validator.json
+                                    </destinationFile>
+                                </fileSet>
+                            </fileSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/infer-merged.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/key-mappings-merged.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/unit-resolve-merged.json"/>
+                                <delete file="${basedir}/${is_folder_name}/repository/resources/conf/validator-merged.json"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -224,9 +337,9 @@
     </pluginRepositories>
 
     <properties>
-		<is_folder_name>wso2is-5.9.0-beta2-SNAPSHOT</is_folder_name>
-		<p2_repo_folder>../p2-profile/product/target/p2-repo</p2_repo_folder>
-		<keymanager.feature.version>${carbon.apimgt.version}</keymanager.feature.version>
-		<carbon-governance.version>${carbon.governance.version}</carbon-governance.version>
+        <is_folder_name>wso2is-5.9.0</is_folder_name>
+        <p2_repo_folder>../p2-profile/product/target/p2-repo</p2_repo_folder>
+        <keymanager.feature.version>${carbon.apimgt.version}</keymanager.feature.version>
+        <carbon-governance.version>${carbon.governance.version}</carbon-governance.version>
     </properties>
 </project>
