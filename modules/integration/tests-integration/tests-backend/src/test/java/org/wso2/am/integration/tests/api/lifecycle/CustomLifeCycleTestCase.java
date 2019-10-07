@@ -41,8 +41,6 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     private AuthenticatorClient loginClient;
     private String backendUrl;
     private String apiLifeCycleName = "APILifeCycle";
-    private String PROMOTE = "Promote";
-    private String RE_PUBLISH = "Re-Publish";
     private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -90,10 +88,10 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
         Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).
                 getData(), "lifecycle not changed to published");
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, PROMOTE);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PROMOTE.getAction());
         Assert.assertEquals(APILifeCycleState.PROMOTED.getState(), restAPIPublisher.getLifecycleStatus(apiId).getData(),
                 "lifecycle not changed to custom");
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, RE_PUBLISH);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.RE_PUBLISH.getAction());
         Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).
                         getData(),
                 "lifecycle not changed to published");
