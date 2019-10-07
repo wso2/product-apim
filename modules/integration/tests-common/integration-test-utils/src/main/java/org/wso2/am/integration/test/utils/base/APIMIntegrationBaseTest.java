@@ -448,66 +448,9 @@ public class APIMIntegrationBaseTest {
      * Cleaning up the API manager by removing all APIs and applications other than default application
      *
      * @throws APIManagerIntegrationTestException - occurred when calling the apis
-     * @throws org.json.JSONException             - occurred when reading the json
      */
     protected void cleanUp() throws Exception {
 
-        APIStoreRestClient apiStore = new APIStoreRestClient(getStoreURLHttp());
-        apiStore.login(user.getUserName(), user.getPassword());
-        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
-        publisherRestClient.login(user.getUserName(), user.getPassword());
-        HttpResponse subscriptionDataResponse = apiStore.getAllSubscriptions();
-        verifyResponse(subscriptionDataResponse);
-        JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
-
-        if (!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
-            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
-            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
-
-            //Remove API Subscriptions
-            for (int i = 0; i < jsonApplicationsArray.length(); i++) {
-                JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
-                int id = appObject.getInt(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ID);
-                JSONArray subscribedAPIJSONArray = appObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
-                for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
-                    JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
-                    verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
-                            , subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION),
-                                                                  subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
-                }
-            }
-        }
-
-        //delete all application other than default application
-        String applicationData = apiStore.getAllApplications().getData();
-        JSONObject jsonApplicationData = new JSONObject(applicationData);
-        JSONArray applicationArray = jsonApplicationData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
-        for (int i = 0; i < applicationArray.length(); i++) {
-            JSONObject jsonApplication = applicationArray.getJSONObject(i);
-            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals(APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME)) {
-                verifyResponse(apiStore.removeApplication(jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)));
-            }
-        }
-
-        String apiData = apiStore.getAPI().getData();
-        JSONObject jsonAPIData = new JSONObject(apiData);
-        JSONArray jsonAPIArray = jsonAPIData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APIS);
-
-        //delete all APIs
-        for (int i = 0; i < jsonAPIArray.length(); i++) {
-            JSONObject api = jsonAPIArray.getJSONObject(i);
-//            verifyResponse(publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName()));
-            publisherRestClient.deleteAPI(api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
-                    , api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION), user.getUserName());
-        }
-    }
-
-    /**
-     * Cleaning up the API manager by removing all APIs and applications other than default application
-     *
-     * @throws APIManagerIntegrationTestException - occurred when calling the apis
-     */
-    protected void cleanUpUsingRest() throws Exception {
         ApplicationListDTO applicationListDTO = restAPIStore.getAllApps();
         for (ApplicationInfoDTO applicationInfoDTO: applicationListDTO.getList()) {
             SubscriptionListDTO subsDTO = restAPIStore
@@ -704,5 +647,17 @@ public class APIMIntegrationBaseTest {
             }
         }
         return null;
+    }
+
+    protected RestAPIPublisherImpl getRestAPIPublisherForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
+        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
     }
 }

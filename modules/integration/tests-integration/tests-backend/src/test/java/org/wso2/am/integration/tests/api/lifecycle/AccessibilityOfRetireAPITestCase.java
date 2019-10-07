@@ -175,7 +175,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.removeApplication(APPLICATION_NAME);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 
 

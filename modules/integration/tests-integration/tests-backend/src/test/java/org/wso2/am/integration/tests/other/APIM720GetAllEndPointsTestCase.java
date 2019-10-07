@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 
@@ -127,7 +128,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         assertEquals(changeLCStatusResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Error when publishing the API: " + apiName);
 
-        waitForAPIDeployment();
+        waitForAPIDeploymentSync(apiProvider, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
         if (gatewayContextWrk.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
@@ -167,9 +168,8 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
                 "endpoint URL");
         assertEquals(urls.getHttps(), gatewayHTTPSURL + apiContext + "/" + apiVersion, "Error in HTTPS" +
                 "endpoint URL");
-
-        APIListDTO getAllAPIsResponse = restAPIStore.getAllAPIs();
-        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, getAllAPIsResponse));
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponse = restAPIStore.getAPI(apiID);
+        assertNotNull(apiResponse);
     }
 
     @AfterClass(alwaysRun = true)

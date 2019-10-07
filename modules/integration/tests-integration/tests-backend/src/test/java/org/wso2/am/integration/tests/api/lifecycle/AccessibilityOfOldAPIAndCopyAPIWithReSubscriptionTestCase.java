@@ -216,7 +216,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
 
-        super.cleanUpUsingRest();
+        super.cleanUp();
     }
 
 

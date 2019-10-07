@@ -41,6 +41,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
@@ -153,31 +154,37 @@ public class RestAPIPublisherImpl {
         body.setVersion(apiRequest.getVersion());
         if (apiRequest.getVisibility() != null) {
             body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility().toUpperCase()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getVisibility())
+                    && StringUtils.isNotEmpty(apiRequest.getRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getRoles().split(" , ")));
+                body.setVisibleRoles(roleList);
+            }
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
-        body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTP);
-            add(Constants.PROTOCOL_HTTPS);
-        }});
+        ArrayList<String> transports = new ArrayList<>();
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
+            transports.add(Constants.PROTOCOL_HTTP);
+        }
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
+            transports.add(Constants.PROTOCOL_HTTPS);
+        }
+        body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
         body.setOperations(apiRequest.getOperationsDTOS());
-//        body.setSubscriptionAvailability(ALL_TENANTS);
-//        body.setVisibleRoles(visibleRoles);
-//        body.setSubscriptionAvailableTenants();
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
-//        body.setMediationPolicies(apiRe);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -331,21 +338,32 @@ public class RestAPIPublisherImpl {
         body.setName(apiRequest.getName());
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
-        body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        if (apiRequest.getVisibility() != null) {
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiRequest.getVisibility().toUpperCase()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getVisibility())
+                    && StringUtils.isNotEmpty(apiRequest.getRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getRoles().split(" , ")));
+                body.setVisibleRoles(roleList);
+            }
+        } else {
+            body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        }
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
-        body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTPS);
-            add(Constants.PROTOCOL_HTTP);
-        }});
+        ArrayList<String> transports = new ArrayList<>();
+        if (Constants.PROTOCOL_HTTP.equals(apiRequest.getHttp_checked())) {
+            transports.add(Constants.PROTOCOL_HTTP);
+        }
+        if (Constants.PROTOCOL_HTTPS.equals(apiRequest.getHttps_checked())) {
+            transports.add(Constants.PROTOCOL_HTTPS);
+        }
+        body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
-//        body.setSubscriptionAvailability();
-//        body.setVisibleRoles(visibleRoles);
-//        body.setSubscriptionAvailableTenants(apiRequest.getV);
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setOperations(apiRequest.getOperationsDTOS());
         body.setBusinessInformation(new APIBusinessInformationDTO());
@@ -531,8 +549,27 @@ public class RestAPIPublisherImpl {
         return null;
     }
 
+
     /**
-     * Adding a Document to a API
+     * Adding a documentation
+     *
+     * @param apiId      - Id of the API.
+     * @param body      - document Body.
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws ApiException - Exception throws if error occurred when adding document.
+     */
+    public HttpResponse addDocument(String apiId, DocumentDTO body) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsPost(apiId, body, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(doc.getDocumentId())) {
+            response = new HttpResponse(doc.getDocumentId(), 200);
+        }
+        return response;
+    }
+
+
+    /**
+     * Adding a content to the document
      *
      * @param apiId      - Id of the API.
      * @param docId      - document Id.
@@ -540,8 +577,9 @@ public class RestAPIPublisherImpl {
      * @return HttpResponse - Response  with Document adding result.
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
-    public HttpResponse addDocument(String apiId, String docId, String docContent) throws ApiException {
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent, null);
+    public HttpResponse addContentDocument(String apiId, String docId, String docContent) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent,
+                null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
@@ -567,6 +605,41 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
+    /**
+     * This method is used to get documents
+     * Get Documents for the given limit and offset values
+     *
+     * @param apiId apiId
+     * @return Documents for the given limit and offset values
+     */
+    public DocumentListDTO getDocuments(String apiId) throws ApiException {
+        ApiResponse<DocumentListDTO> apiResponse = apiDocumentsApi.apisApiIdDocumentsGetWithHttpInfo(apiId,
+                null, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+
+    /**
+     * delete Document
+     *
+     * @param apiId - API id
+     * @param documentId - API id
+     * @return http response object
+     * @throws ApiException - Throws if API delete fails
+     */
+    public HttpResponse deleteDocument(String apiId, String documentId) throws ApiException {
+
+        ApiResponse<Void> deleteResponse  = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo
+                (apiId, documentId, null);
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully deleted the Document", 200);
+        }
+        return response;
+    }
+
 
 
     /**
@@ -701,8 +774,8 @@ public class RestAPIPublisherImpl {
         body.setContext(apiCreationRequestBean.getContext());
         body.setVersion(apiCreationRequestBean.getVersion());
         if (apiCreationRequestBean.getVisibility() != null) {
-            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiCreationRequestBean.getVisibility()));
-            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equals(apiCreationRequestBean.getVisibility())
+            body.setVisibility(APIDTO.VisibilityEnum.valueOf(apiCreationRequestBean.getVisibility().toUpperCase()));
+            if (APIDTO.VisibilityEnum.RESTRICTED.getValue().equalsIgnoreCase(apiCreationRequestBean.getVisibility())
                     && StringUtils.isNotEmpty(apiCreationRequestBean.getRoles())) {
                 List<String> roleList = new ArrayList<>(
                         Arrays.asList(apiCreationRequestBean.getRoles().split(" , ")));

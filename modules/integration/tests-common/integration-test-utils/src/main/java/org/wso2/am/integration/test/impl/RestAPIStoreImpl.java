@@ -28,6 +28,8 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
+import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
@@ -37,6 +39,8 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerate
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
@@ -60,6 +64,8 @@ public class RestAPIStoreImpl {
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
     public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
+    public CommentsApi commentsApi = new CommentsApi();
+    public RatingsApi ratingsApi = new RatingsApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -94,10 +100,22 @@ public class RestAPIStoreImpl {
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
+        commentsApi.setApiClient(apiStoreClient);
+        ratingsApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
 
+
+    public RestAPIStoreImpl(String tenantDomain, String storeURL) {
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apIsApi.setApiClient(apiStoreClient);
+        applicationsApi.setApiClient(apiStoreClient);
+        subscriptionIndividualApi.setApiClient(apiStoreClient);
+        applicationKeysApi.setApiClient(apiStoreClient);
+        this.storeURL = storeURL;
+        this.tenantDomain = tenantDomain;
+    }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,
                                           ApplicationDTO.TokenTypeEnum tokenType) {
@@ -215,6 +233,14 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
+            throws ApiException {
+        ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
+                (apiId, applicationId, apiType, groupId, null, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
+        return suscriptionResponse.getData();
+    }
+
     public HttpResponse removeSubscription(String subscriptionId) throws ApiException {
 
         ApiResponse<Void> deleteResponse = subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);
@@ -243,6 +269,15 @@ public class RestAPIStoreImpl {
 
     }
 
+    /**
+     * Regenerate consumer secret of an application
+     *
+     * @param applicationId - ID of the application
+     * @param keyType       - PRODUCTION or SANDBOX
+     * @param applicationKeyDTO - application DTO to be updated
+     * @return - APIResponse of update request
+     * @throws ApiException - throws if update keys fails.
+     */
     public ApiResponse<ApplicationKeyDTO> updateKeys(String applicationId, String keyType,
             ApplicationKeyDTO applicationKeyDTO) throws Exception{
 
@@ -262,6 +297,20 @@ public class RestAPIStoreImpl {
                                                                                      String keyType) throws Exception {
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeRegenerateSecretPostWithHttpInfo(applicationId, keyType);
+    }
+
+    /**
+     * Regenerate consumer secret of an application
+     *
+     * @param applicationId - ID of the application
+     * @param keyType       - PRODUCTION or SANDBOX
+     * @return - APIResponse of get application keys request
+     * @throws ApiException - throws if get application keys fails.
+     */
+    public ApiResponse<ApplicationKeyDTO> getApplicationKeysByKeyType(String applicationId,
+            String keyType) throws Exception {
+        return applicationKeysApi
+                .applicationsApplicationIdKeysKeyTypeGetWithHttpInfo(applicationId, keyType, null);
     }
 
     /**
@@ -398,26 +447,42 @@ public class RestAPIStoreImpl {
     /**
      * Add rating into api
      *
-     * @param apiName  - name of api
-     * @param version  - api version
-     * @param provider - provider of api
-     * @param rating   - api rating
+     * @param apiId        - api Id
+     * @param rating       - api rating
+     * @param tenantDomain - tenant domain
      * @return - http response of add rating request
-     * @throws APIManagerIntegrationTestException - throws if rating of api fails
+     * @throws ApiException - throws if rating of api fails
      */
-    public HttpResponse addRatingToAPI(String apiName, String version, String provider,
-                                       String rating) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
-//                            provider + "&rating=" + rating, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to rate API -  " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse addRating(String apiId, Integer rating, String tenantDomain) throws ApiException {
+        RatingDTO ratingDTO = new RatingDTO();
+        ratingDTO.setRating(rating);
+        Gson gson = new Gson();
+        ApiResponse<RatingDTO> apiResponse = ratingsApi
+                .apisApiIdUserRatingPutWithHttpInfo(apiId, ratingDTO, tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        HttpResponse response = null;
+        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getRatingId())) {
+            response = new HttpResponse(gson.toJson(apiResponse.getData()), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Remove rating from given API
+     *
+     * @param apiId        - api Id
+     * @param tenantDomain - tenant domain
+     * @throws ApiException - throws if remove rating fails
+     */
+    public HttpResponse removeRating(String apiId, String tenantDomain) {
+        HttpResponse response;
+        try {
+            ratingsApi.apisApiIdUserRatingDelete(apiId, tenantDomain, null);
+            response = new HttpResponse("Successfully deleted the rating", 200);
+        } catch (ApiException e) {
+            response = new HttpResponse("Failed to delete the rating", e.getCode());
+        }
+        return response;
     }
 
     /**
@@ -1054,30 +1119,66 @@ public class RestAPIStoreImpl {
 
     }
 
-
     /**
      * Add comment to given API
      *
-     * @param apiName  - name of the api
-     * @param version  - api version
-     * @param provider - provider name
-     * @param comment  - comment to  add
+     * @param apiId   - api Id
+     * @param comment - comment to  add
      * @return - http response of add comment
-     * @throws APIManagerIntegrationTestException - throws if add comment fails
+     * @throws ApiException - throws if add comment fails
      */
-    public HttpResponse addComment(String apiName, String version, String provider, String comment)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-//                            "action=addComment&name=" + apiName + "&version=" + version + "&provider=" +
-//                            provider + "&comment=" + comment), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable add a comment in to API - " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse addComment(String apiId, String comment) throws ApiException {
+        CommentDTO commentDTO = new CommentDTO();
+        commentDTO.setContent(comment);
+        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, commentDTO);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        HttpResponse response = null;
+        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getId())) {
+            response = new HttpResponse(apiResponse.getData().getId(), 201);
+        }
+        return response;
+    }
+
+    /**
+     * Remove comment in given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
+        HttpResponse response;
+        try {
+            commentsApi.deleteComment(commentId, apiId, null);
+            response = new HttpResponse("Successfully deleted the comment", 200);
+        } catch (ApiException e) {
+            response = new HttpResponse("Failed to delete the comment", e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
     }
 
     /**
@@ -1156,6 +1257,27 @@ public class RestAPIStoreImpl {
 
         String query = "tag:" + apiTag;
         APIListDTO apis = apIsApi.apisGet(null, null, null, query, null);
+        if (apis.getCount() > 0) {
+            return apis;
+        }
+        return null;
+    }
+
+    /**
+     * Get the  web page with filtered API when  click the API Tag link
+     *
+     * @param limit - number of APIs needs to be returned
+     * @param offset - offset where the APIs needs to be returned should start
+     * @param tenantDomain - tenant domain of which the APIs to be returned
+     * @param query - query that needs to be passed to the backend
+     * @return APIListDTO - The DTO which contains the list of matching APIs
+     * @throws ApiException - Exception throws when check the Authentication and
+     *                                            HTTPSClientUtils.sendGetRequest() method call
+     */
+    public APIListDTO searchPaginatedAPIs(int limit, int offset, String tenantDomain, String query)
+            throws ApiException {
+
+        APIListDTO apis = apIsApi.apisGet(limit, offset, tenantDomain, query, null);
         if (apis.getCount() > 0) {
             return apis;
         }
@@ -1340,22 +1462,6 @@ public class RestAPIStoreImpl {
         }
     }
 
-
-    public HttpResponse searchPaginateAPIs(String tenant, String start, String end,
-                                           String searchTerm)
-            throws Exception {
-//        checkAuthentication();
-//        HttpResponse response = HTTPSClientUtils.doPost(new URL(
-//                        backendURL + "/store/site/blocks/search/api-search/ajax/search.jag?")
-//                , "action=searchAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end + "&query=" + searchTerm
-//                , requestHeaders);
-//        if (response.getResponseCode() == 200) {
-//            return response;
-//        } else {
-//            throw new Exception("Get API Information failed> " + response.getData());
-//        }
-        return null;
-    }
 
     /**
      * Wait for swagger document until its updated.
