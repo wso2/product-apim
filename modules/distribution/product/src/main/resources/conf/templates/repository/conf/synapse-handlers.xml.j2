@@ -1,4 +1,4 @@
-<handlers>
+<handlers xmlns:svns="http://org.wso2.securevault/configuration">
 {% for handler_key in enabled_global_handlers %}
     <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
 {% endfor %}

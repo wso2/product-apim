@@ -1173,7 +1173,7 @@
         <apimserver.version>3.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
-	    <cipher.tool.version>1.1.5</cipher.tool.version>
+	    <cipher.tool.version>1.1.6</cipher.tool.version>
 
         <carbon.commons.version>4.7.11</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
