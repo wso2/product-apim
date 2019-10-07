@@ -101,7 +101,8 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(PROMOTE + "d", restAPIPublisher.getLifecycleStatus(apiId).getData(),
                 "lifecycle not changed to custom");
         restAPIPublisher.changeAPILifeCycleStatus(apiId, RE_PUBLISH);
-        Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).getData(),
+        Assert.assertEquals(APILifeCycleState.PUBLISHED.getState(), restAPIPublisher.getLifecycleStatus(apiId).
+                        getData(),
                 "lifecycle not changed to published");
     }
 
