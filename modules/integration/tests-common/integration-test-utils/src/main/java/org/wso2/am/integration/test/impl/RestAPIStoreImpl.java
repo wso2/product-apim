@@ -793,18 +793,12 @@ public class RestAPIStoreImpl {
      * @return - http response of remove application request
      * @throws APIManagerIntegrationTestException - throws if remove application fails
      */
-    public HttpResponse removeApplicationById(int applicationId)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/application/application-remove/ajax/application-remove.jag?" +
-//                            "action=removeApplicationById&appId=" + applicationId), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to remove application - " + applicationId
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public void removeApplicationById(String applicationId) throws ApiException {
+        if (applicationId == null) {
+            return;
+        }
+        ApiResponse<Void> response = applicationsApi.applicationsApplicationIdDeleteWithHttpInfo(applicationId, null);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
     }
 
     /**

@@ -23,23 +23,25 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.net.URLEncoder;
-import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -58,34 +60,30 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "ChangeEndPointSecurityOfAPI";
     private HashMap<String, String> requestHeadersGet;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
+    private String applicationID;
+    private String apiID;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public ChangeEndPointSecurityOfAPITestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, RemoteException {
+    public void initialize() throws Exception {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/plain");
         requestHeadersGet.put("Content-Type", "text/plain");
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+        ApplicationDTO dto = restAPIStore.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        applicationID = dto.getApplicationId();
     }
 
 
@@ -109,12 +107,20 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+        APIDTO apidto =
+                createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
+                        applicationID, TIER_UNLIMITED);
+        apiID = apidto.getId();
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
 
-        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-        requestHeadersGet.put("Authorization", "Bearer " + accessToken);
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+
+        requestHeadersGet.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
         HttpResponse httpResponseGet =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
                         requestHeadersGet);
@@ -136,26 +142,23 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
         char[] symbolicCharacter = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '{', '[',
                 '}', ']', '|', '\\', ':', ';', '"', '\'', '<', ',', '>', '.', '?', '/'};
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiID, user.getUserDomain());
+
         for (int i = 0; i < symbolicCharacter.length; i++) {
             String endpointUsername = "user";
             char[] endpointPassword = {'a', 'b', 'c', 'd', symbolicCharacter[i], 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
             byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
             String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
-            APICreationRequestBean apiCreationRequestBean =
-                    new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
-            apiCreationRequestBean.setTags(API_TAGS);
-            apiCreationRequestBean.setDescription(API_DESCRIPTION);
-            apiCreationRequestBean.setVisibility("public");
-            apiCreationRequestBean.setEndpointType("secured");
-            apiCreationRequestBean.setEpUsername(endpointUsername);
-            apiCreationRequestBean.setEpPassword(URLEncoder.encode(String.valueOf(endpointPassword), "UTF-8"));
-            //Update API with Edited information
-            HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
-            assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource " +
-                    "information fail");
-            assertEquals(updateAPIHTTPResponse.getData(), "{\"error\" : false}", "Update APi with new Resource information fail");
-            //Send GET request
 
+            APIEndpointSecurityDTO securityDTO = apidto.getEndpointSecurity();
+            securityDTO.setUsername(endpointUsername);
+            securityDTO.setPassword(String.valueOf(endpointPassword));
+            apidto.setEndpointSecurity(securityDTO);
+
+            //Update API with Edited information
+            restAPIPublisher.updateAPI(apidto);
+
+            //Send GET request
             waitForAPIDeployment();
 
             int retries = 3;
@@ -189,9 +192,15 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        super.cleanUp();
+        restAPIStore.removeApplicationById(applicationID);
+        restAPIPublisher.deleteAPIByID(apiID);
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] {
+                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+        };
     }
 
 }

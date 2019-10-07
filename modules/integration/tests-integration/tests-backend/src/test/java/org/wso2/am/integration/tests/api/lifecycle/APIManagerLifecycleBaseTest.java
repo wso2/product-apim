@@ -559,7 +559,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @throws APIManagerIntegrationTestException
      * @throws ApiException
      */
-    protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier,
+    protected APIDTO createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier,
             APICreationRequestBean apiCreationRequestBean, RestAPIPublisherImpl publisherRestClient,
             RestAPIStoreImpl storeRestClient, String applicationID, String tier)
             throws APIManagerIntegrationTestException, ApiException,
@@ -569,6 +569,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
         SubscriptionDTO httpResponseSubscribeAPI = subscribeToAPI(apidto.getId(), applicationID, tier, storeRestClient);
         log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
+        return apidto;
     }
 
     /**

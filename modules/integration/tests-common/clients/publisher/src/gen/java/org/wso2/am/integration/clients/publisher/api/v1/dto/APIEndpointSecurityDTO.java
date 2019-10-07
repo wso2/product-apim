@@ -34,9 +34,9 @@ public class APIEndpointSecurityDTO {
    */
   @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
-    BASIC("basic"),
+    BASIC("BASIC"),
     
-    DIGEST("digest");
+    DIGEST("DIGEST");
 
     private String value;
 

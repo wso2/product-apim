@@ -36,6 +36,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
@@ -439,6 +440,9 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public void deleteAPIByID(String apiId) throws ApiException {
+        if (apiId == null) {
+            return;
+        }
         ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
         Assert.assertEquals(HttpStatus.SC_OK, deleteResponse.getStatusCode());
     }
@@ -769,6 +773,13 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
+        if ("secured".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+            APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
+            dto.setUsername(apiCreationRequestBean.getEpUsername());
+            dto.setPassword(apiCreationRequestBean.getEpPassword());
+            dto.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
+            body.setEndpointSecurity(dto);
+        }
         ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
@@ -791,5 +802,18 @@ public class RestAPIPublisherImpl {
         }
         return response;
 
+    }
+
+    /**
+     * Update an API
+     *
+     * @param apidto
+     * @return
+     * @throws ApiException
+     */
+    public APIDTO updateAPI(APIDTO apidto) throws ApiException {
+        ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
     }
 }
