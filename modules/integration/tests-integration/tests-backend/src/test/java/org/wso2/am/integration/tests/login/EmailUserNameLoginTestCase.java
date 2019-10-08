@@ -24,6 +24,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -46,6 +51,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * test case to test login using email user name. test is done for publisher,
@@ -55,8 +62,8 @@ import static org.testng.Assert.assertEquals;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+//    private APIPublisherRestClient apiPublisher;
+//    private APIStoreRestClient apiStore;
     private AdminDashboardRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
@@ -76,36 +83,45 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
         configureServer(apiManagerXml);
 
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+//        apiStore = new APIStoreRestClient(storeURLHttp);
         workflowAdmin = new AdminDashboardRestClient(workflowAdminURLHTTP);
 
     }
 
     @Test(groups = {"wso2.am"}, description = "Email username login test case")
-    public void LoginWithEmailUserNameTestCase() throws Exception {
+    public void LoginWithEmailUserNameTestCase() throws APIManagerIntegrationTestException, org.wso2.am.integration.clients.store.api.ApiException {
 
         String userNameWithEmail = "emailuser@email.com";
         String password = "email123";
         String domainName = "emailuserdomain.com";
         String fullUserName = userNameWithEmail + "@" + domainName;
         boolean isSuccessful =
-                createTenantWithEmailUserName(userNameWithEmail, password,
-                        domainName, publisherContext.getContextUrls().getBackEndUrl());
+                false;
+        try {
+            isSuccessful = createTenantWithEmailUserName(userNameWithEmail, password,
+                    domainName, publisherContext.getContextUrls().getBackEndUrl());
+        } catch (XPathExpressionException | RemoteException | TenantMgtAdminServiceExceptionException e) {
+           throw new APIManagerIntegrationTestException(e.getMessage(), e);
+        }
         assertEquals(isSuccessful, true);
 
-        HttpResponse login;
 
         // check for publisher login with email user name
-        login = apiPublisher.login(fullUserName, password);
-        assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Login to Publisher with email username failed");
+        restAPIPublisher = new RestAPIPublisherImpl(fullUserName, password, domainName, "https://localhost:9943/");
+        APIListDTO apiListDTO = null;
+        try {
+            apiListDTO = restAPIPublisher.apIsApi.apisGet(null, null, domainName, null, null, null, null, domainName);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
+                    e.getMessage(), e);
+        }
         // check for store login with email user name
-        login = apiStore.login(fullUserName, password);
-        assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Login to Store with email username failed");
+        restAPIStore = new RestAPIStoreImpl(fullUserName, password, domainName,"https://localhost:9943/");
+        ApplicationListDTO responseData = restAPIStore.getAllApps();
+        assertNotNull(responseData, "Login to Store with email username failed");
         // check for Admin Portal login with email user name
-        login = workflowAdmin.login(fullUserName, password);
+        HttpResponse login = workflowAdmin.login(fullUserName, password);
         assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Login to Admin Portal Login to Publisher with email username failed");
     }

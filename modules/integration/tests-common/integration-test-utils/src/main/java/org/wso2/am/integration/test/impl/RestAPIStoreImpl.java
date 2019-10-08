@@ -31,6 +31,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
+import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -43,6 +44,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -66,6 +68,7 @@ public class RestAPIStoreImpl {
     public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
     public CommentsApi commentsApi = new CommentsApi();
     public RatingsApi ratingsApi = new RatingsApi();
+    public TagsApi tagsApi = new TagsApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -102,6 +105,7 @@ public class RestAPIStoreImpl {
         applicationKeysApi.setApiClient(apiStoreClient);
         commentsApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
+        tagsApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -113,6 +117,7 @@ public class RestAPIStoreImpl {
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
+        tagsApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -1104,19 +1109,10 @@ public class RestAPIStoreImpl {
      * @return - http response of get all api tags
      * @throws APIManagerIntegrationTestException - throws if get all tags fails
      */
-    public HttpResponse getAllTags() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"),
-//                    "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all tags. Error: " + e.getMessage(), e);
-//        }
-        return null;
-
+    public TagListDTO getAllTags() throws ApiException {
+        ApiResponse<TagListDTO> tagsResponse = tagsApi.tagsGetWithHttpInfo(25, 0, tenantDomain, "");
+        Assert.assertEquals(HttpStatus.SC_OK, tagsResponse.getStatusCode());
+        return tagsResponse.getData();
     }
 
     /**
@@ -1461,8 +1457,6 @@ public class RestAPIStoreImpl {
             throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
         }
     }
-
-
     /**
      * Wait for swagger document until its updated.
      *

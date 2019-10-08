@@ -499,6 +499,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse updateResourceOfAPI(String apiId, String api)
             throws APIManagerIntegrationTestException {
+
         return null;
     }
 

@@ -23,14 +23,24 @@ import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -66,7 +76,7 @@ import static org.testng.Assert.assertTrue;
 public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     private String publisherURLHttp;
-    private APIPublisherRestClient apiPublisher;
+//    private APIPublisherRestClient apiPublisher;
 
     private static final String API_NAME_1 = "CorsACACHeadersTestAPI_1";
     private static final String API_NAME_2 = "CorsACACHeadersTestAPI_2";
@@ -82,6 +92,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL = "*";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST = "http://localhost";
     private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
 
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
@@ -115,8 +126,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         accessToken = createPublishAndSubscribeToApi(user, API_NAME_1, API_CONTEXT_1, API_VERSION, APPLICATION_NAME_1);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT_1, API_VERSION));
-        get.addHeader("Origin", "http://localhost");
+        HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT_1, API_VERSION) + "/customers/123");
+        get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
         get.addHeader("Authorization", "Bearer " + accessToken);
 
         org.apache.http.HttpResponse response = httpclient.execute(get);
@@ -159,7 +170,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         accessToken = createPublishAndSubscribeToApi(user, API_NAME_2, API_CONTEXT_2, API_VERSION, APPLICATION_NAME_2);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION));
+        HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT_2, API_VERSION) + "/customers/123");
         get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
         get.addHeader("Authorization", "Bearer " + accessToken);
 
@@ -188,37 +199,80 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
     private String createPublishAndSubscribeToApi(User user, String apiName, String apiContext, String apiVersion,
                                                   String appName)
-            throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
-        publisherURLHttp = getPublisherURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
+            throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException, ApiException, org.wso2.am.integration.clients.store.api.ApiException, JSONException {
+//        publisherURLHttp = getPublisherURLHttp();
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+//        apiPublisher.login(user.getUserName(), user.getPassword());
 
         String providerName = user.getUserName();
-        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
-        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
-                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
-        apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName,
-                                                            endpointUrl, resourceBeanList);
-        apiCreationRequestBean.setTags(TAGS);
-        apiCreationRequestBean.setDescription(DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        String apiEndPointUrl = backEndServerUrl.getWebAppURLHttps() + API_END_POINT_POSTFIX_URL;
+//        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
+//        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
+//        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+//                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+//                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}"));
+//        apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName,
+//                                                            endpointUrl, resourceBeanList);
+//        apiCreationRequestBean.setTags(TAGS);
+//        apiCreationRequestBean.setDescription(DESCRIPTION);
+
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointUrl), true);
+        apiRequest.setTags(TAGS);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(TIER_UNLIMITED);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/customers/{id}");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
+        //Add the API using the API publisher.
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        String apiId = apiResponse.getData();
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+
+//        String publisherURLHttp = getPublisherURLHttp();
+//        String storeURLHttp = getStoreURLHttp();
+//        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+//        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+//        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, apiName, apiVersion);
-        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+//        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+//        apiIdentifier = new APIIdentifier(providerName, apiName, apiVersion);
+//        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(appName,
-                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
-        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                                       apiStoreClientUser1, appName);
-        return generateApplicationKeys(apiStoreClientUser1, appName).getAccessToken();
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationResponse =
+                restAPIStore.createApplication(appName,
+                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
+                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        ApplicationDTO.TokenTypeEnum.OAUTH);
+        String applicationId = applicationResponse.getData();
+
+        //get access token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        //Subscribe to api
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        //Create application
+//        apiStoreClientUser1.addApplication(appName,
+//                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+//        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+//                                       apiStoreClientUser1, appName);
+//        return generateApplicationKeys(apiStoreClientUser1, appName).getAccessToken();
+        return accessToken;
     }
 
 

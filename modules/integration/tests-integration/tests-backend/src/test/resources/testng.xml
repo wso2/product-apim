@@ -31,6 +31,12 @@
             <!--<class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>-->
         </classes>
     </test>
+    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+    <classes>
+        <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
+        <class name="org.wso2.am.integration.tests.header.CustomHeaderTestCase"/>
+    </classes>
+    </test>
 
     <test name="apim-integration-tests-api-application-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
@@ -61,6 +67,8 @@
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase" />
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase" />
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
+            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
         </classes>
     </test>
 
@@ -79,6 +87,11 @@
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.application.ApplicationConsumerSecretRegenerateTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-CORS-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
         </classes>
     </test>
 </suite>
