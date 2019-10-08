@@ -1,5 +1,4 @@
 [server]
-offset = 1
 hostname = "localhost"
 node_ip = "127.0.0.1"
 base_path = "https://$ref{server.hostname}:${carbon.management.port}"
