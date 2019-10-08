@@ -200,21 +200,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     private String createPublishAndSubscribeToApi(User user, String apiName, String apiContext, String apiVersion,
                                                   String appName)
             throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException, ApiException, org.wso2.am.integration.clients.store.api.ApiException, JSONException {
-//        publisherURLHttp = getPublisherURLHttp();
-//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-//        apiPublisher.login(user.getUserName(), user.getPassword());
-
         String providerName = user.getUserName();
         String apiEndPointUrl = backEndServerUrl.getWebAppURLHttps() + API_END_POINT_POSTFIX_URL;
-//        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
-//        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-//        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-//                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
-//                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}"));
-//        apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName,
-//                                                            endpointUrl, resourceBeanList);
-//        apiCreationRequestBean.setTags(TAGS);
-//        apiCreationRequestBean.setDescription(DESCRIPTION);
 
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointUrl), true);
         apiRequest.setTags(TAGS);
@@ -238,16 +225,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-//        String publisherURLHttp = getPublisherURLHttp();
-//        String storeURLHttp = getStoreURLHttp();
-//        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-//        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with admin
-//        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-//        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-//        apiIdentifier = new APIIdentifier(providerName, apiName, apiVersion);
-//        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationResponse =
                 restAPIStore.createApplication(appName,
@@ -266,12 +243,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         //Subscribe to api
         restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-        //Create application
-//        apiStoreClientUser1.addApplication(appName,
-//                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
-//        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-//                                       apiStoreClientUser1, appName);
-//        return generateApplicationKeys(apiStoreClientUser1, appName).getAccessToken();
         return accessToken;
     }
 

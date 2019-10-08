@@ -62,8 +62,6 @@ import static org.testng.Assert.assertNotNull;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
-//    private APIPublisherRestClient apiPublisher;
-//    private APIStoreRestClient apiStore;
     private AdminDashboardRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
@@ -72,8 +70,6 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
         String workflowAdminURLHTTP = getStoreURLHttp();
 
         String apiManagerXml =
@@ -82,9 +78,6 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
 
         configureServer(apiManagerXml);
-
-//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-//        apiStore = new APIStoreRestClient(storeURLHttp);
         workflowAdmin = new AdminDashboardRestClient(workflowAdminURLHTTP);
 
     }

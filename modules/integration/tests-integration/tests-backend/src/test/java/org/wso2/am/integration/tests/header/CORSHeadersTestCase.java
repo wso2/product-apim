@@ -194,13 +194,11 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "CheckCORSHeadersInPreFlightResponse")
     public void CheckCORSHeadersInResponse() throws Exception {
         HttpClient httpclient = HttpClientBuilder.create().build();
-//        HttpGet get = new HttpGet("http://localhost:10263/jaxrs_basic/services/customers/customerservice/");
         HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/customers/123");
         get.addHeader("Origin", "http://localhost");
         get.addHeader("Authorization", "Bearer " + accessToken);
 
         HttpResponse response = httpclient.execute(get);
-//      todo fix
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
@@ -240,11 +238,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         }
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-//        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-//            serverConfigurationManager.restoreToLastConfiguration();
-//        }
 
-//        super.cleanUp();
+        super.cleanUp();
     }
 
     @DataProvider
