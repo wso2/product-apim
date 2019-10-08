@@ -44,6 +44,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
@@ -297,6 +298,20 @@ public class RestAPIPublisherImpl {
         }
         return response;
 
+    }
+
+    public LifecycleStateDTO getLifecycleStatusDTO(String apiId) throws ApiException {
+        ApiResponse<LifecycleStateDTO> apiResponse =
+                this.apiLifecycleApi.apisApiIdLifecycleStateGetWithHttpInfo(apiId, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
+    }
+
+    public LifecycleHistoryDTO getLifecycleHistory(String apiId) throws ApiException {
+        ApiResponse<LifecycleHistoryDTO> apiResponse =
+                this.apiLifecycleApi.apisApiIdLifecycleHistoryGetWithHttpInfo(apiId, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
     }
 
     /**
