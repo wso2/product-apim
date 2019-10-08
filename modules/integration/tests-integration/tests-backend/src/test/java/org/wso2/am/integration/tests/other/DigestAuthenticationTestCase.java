@@ -18,42 +18,55 @@
 
 package org.wso2.am.integration.tests.other;
 
-import org.json.JSONObject;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
 /**
- * This class is used to check the functionality of an API created with Digest Authentication as
- * its authentication mechanism.
+ * This class is used to check the functionality of an API created with Digest Authentication as its authentication
+ * mechanism.
  */
 
 public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private String apiId;
+    private String applicationId;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DigestAuthenticationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN } };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath(
@@ -63,72 +76,68 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API")
     public void testDigestAuthentication() throws Exception {
-        //Login to the API Publisher
-        apiPublisher.login(user.getUserName(), user.getPassword());
 
         String apiName = "DigestAuthAPI";
         String apiVersion = "1.0.0";
         String apiContext = "digest";
         String providerName = user.getUserName();
         String endpointUrl = getGatewayURLNhttp() + "digestAuth";
+        String endpointType = "secured";
+        String applicationName = "DigestAuthAPP";
 
-        //Create API request bean object
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
-                providerName, new URL(endpointUrl));
-        apiCreationRequestBean.setEndpointType("secured");
-        apiCreationRequestBean.setEndpointAuthType("digestAuth");
-        apiCreationRequestBean.setEpUsername("DigestAuth");
-        apiCreationRequestBean.setEpPassword("digest123");
-        apiCreationRequestBean.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiCreationRequestBean.setProvider(providerName);
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setProvider(providerName);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setEndpointType(endpointType);
+        apiRequest.setEndpointSecurityAuthType("DIGEST");
+        apiRequest.setEpUsername("DigestAuth");
+        apiRequest.setEpPassword("digest123");
 
-        //Add the API to the publisher
-        apiPublisher.addAPI(apiCreationRequestBean);
+        //add api
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = serviceResponse.getData();
 
-        //Publish the API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, providerName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        //publish the api
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        //Login to the API Store
-        apiStore.login(user.getUserName(), user.getPassword());
-
-        //Add an Application in the Store.
-        apiStore.addApplication("DigestAuthAPP", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                "Test-Digest-Auth");
-
-        //Subscribe to the new application
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, providerName,
-                "DigestAuthAPP",  APIMIntegrationConstants.API_TIER.UNLIMITED);
+        //create an application
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, "Test Application",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
 
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
-        apiStore.subscribe(subscriptionRequest);
+        //Subscribe to the new application
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Generate a production token and invoke the API
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DigestAuthAPP");
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
 
-        //Get the accessToken generated.
-        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").getString("accessToken");
+        //get access token
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
-        String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Accept", "application/xml");
-        headers.put("Authorization", "Bearer " + accessToken);
+        // Create requestHeaders
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Accept", "application/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         //Invoke the API
-        HttpResponse httpResponseGet = HttpRequestUtil.doGet(apiInvocationUrl, headers);
-        //Assertion
-        assertEquals(httpResponseGet.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "The response code is not 200 OK");
+        HttpResponse apiInvokeResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttp(apiContext, apiVersion), requestHeaders);
+        assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatched");
 
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 }

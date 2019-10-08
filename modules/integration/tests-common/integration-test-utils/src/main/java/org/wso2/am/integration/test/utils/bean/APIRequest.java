@@ -80,6 +80,9 @@ public class APIRequest extends AbstractRequest {
     private String technicalOwner;
     private String technicalOwnerEmail;
     private List<String> securityScheme;
+    private String endpointSecurityAuthType;
+    private String epUsername;
+    private String epPassword;
 
     public List<String> getSecurityScheme() {
         return securityScheme;
@@ -645,4 +648,27 @@ public class APIRequest extends AbstractRequest {
         this.technicalOwnerEmail = technicalOwnerEmail;
     }
 
+    public String getEndpointSecurityAuthType() {
+        return endpointSecurityAuthType;
+    }
+
+    public void setEndpointSecurityAuthType(String endpointSecurityAuthType) {
+        this.endpointSecurityAuthType = endpointSecurityAuthType;
+    }
+
+    public String getEpUsername() {
+        return epUsername;
+    }
+
+    public void setEpUsername(String epUsername) {
+        this.epUsername = epUsername;
+    }
+
+    public String getEpPassword() {
+        return epPassword;
+    }
+
+    public void setEpPassword(String epPassword) {
+        this.epPassword = epPassword;
+    }
 }

@@ -181,6 +181,11 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
+        APIEndpointSecurityDTO securityDTO = new APIEndpointSecurityDTO();
+        securityDTO.setType(APIEndpointSecurityDTO.TypeEnum.valueOf(apiRequest.getEndpointSecurityAuthType()));
+        securityDTO.setUsername(apiRequest.getEpUsername());
+        securityDTO.setPassword(apiRequest.getEpPassword());
+        body.setEndpointSecurity(securityDTO);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
