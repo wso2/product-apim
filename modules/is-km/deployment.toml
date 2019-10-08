@@ -46,26 +46,6 @@ data_source = "jdbc/WSO2AM_DB"
 data_source = "jdbc/WSO2AM_DB"
 prompt = true
 
-[[apim.gateway.environment]]
-name = "Production and Sandbox"
-type = "hybrid"
-display_in_api_console = true
-description = "This is a hybrid gateway that handles both production and sandbox token traffic."
-show_as_token_endpoint_url = true
-service_url = "https://localhost:${mgt.transport.https.port}/services/"
-username = "admin"
-password = "admin"
-ws_endpoint = "ws://localhost:9099"
-http_endpoint = "http://localhost:${http.nio.port}"
-https_endpoint = "https://localhost:${https.nio.port}"
-
-
-[apim.cors]
-allow_origins = "*"
-allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
-allow_credentials = false
-
 [transport.https.sslHostConfig.properties]
 certificateVerification = "want"
 
@@ -98,3 +78,12 @@ type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
 name = "org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls.MutualTLSClientAuthenticator"
 order = "158"
 enable = false
+
+[oauth.extensions]
+token_generator = "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
+
+[apim.throttling]
+enable_data_publishing = false
+enable_policy_deploy = false
+enable_blacklist_condition = false
+enable_decision_connection = false

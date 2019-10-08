@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>3.0.0-alpha2</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -67,6 +67,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
                                     <version>${carbon-governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.tracing.feature.group</id>
+                                    <version>${keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -170,7 +174,6 @@
                                     <target>
                                         ${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json
                                     </target>
-                                    <mergeChildren>true</mergeChildren>
                                 </task>
                                 <task>
                                     <base>${basedir}/../distribution/product/src/main/resources/conf/infer.json</base>
