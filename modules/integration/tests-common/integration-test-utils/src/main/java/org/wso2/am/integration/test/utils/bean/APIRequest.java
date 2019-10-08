@@ -183,6 +183,61 @@ public class APIRequest extends AbstractRequest {
 
     }
 
+    public APIRequest(String apiName, String context, String version, List<String> productionEndpoints,
+                      List<String> sandboxEndpoints) throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        String productionEPs = "";
+        String sandboxEPs = "";
+        if (productionEndpoints != null) {
+            for (String productionEndpoint : productionEndpoints) {
+                String uri = "{\n" +
+                        "\"url\":\"" + productionEndpoint + "\",\n" +
+                        "\"config\":null,\n" +
+                        "\"template_not_supported\": false\n" +
+                        "},";
+                productionEPs = productionEPs + uri;
+            }
+            productionEPs = "\"production_endpoints\": [\n" +
+                    "{\n" +
+                    "\"url\": \"" + productionEndpoints.get(0) +
+                    "\"}," + productionEPs + "],";
+        }
+        if (sandboxEndpoints != null) {
+            for (String sandboxEndpoint : sandboxEndpoints) {
+                String uri = "{\n" +
+                        "\"url\":\"" + sandboxEndpoint + "\",\n" +
+                        "\"config\":null,\n" +
+                        "\"template_not_supported\": false\n" +
+                        " },";
+                sandboxEPs = sandboxEPs + uri;
+            }
+            sandboxEPs = "\"sandbox_endpoints\": [\n" +
+                    "{\n" +
+                    "\"url\": \"" + sandboxEndpoints.get(0) +
+                    "\"}," + sandboxEPs + "],";
+        }
+        try {
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(
+                    "{ \n"
+                            + productionEPs +
+                            "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\",\n" +
+                            "\"failOver\":\"False\",\n" +
+                            "\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\",\n" +
+                            "\"sessionManagement\":\"\",\n"
+                            + sandboxEPs +
+                            "\"implementation_status\":\"managed\",\n" +
+                            "\"endpoint_type\":\"load_balance\"\n" +
+                            "}"
+            );
+        } catch (JSONException | ParseException e) {
+            log.error("Error when constructing JSON", e);
+            throw new APIManagerIntegrationTestException("Error when constructing JSON", e);
+        }
+    }
+
     /**
      * This method will create API request.
      *

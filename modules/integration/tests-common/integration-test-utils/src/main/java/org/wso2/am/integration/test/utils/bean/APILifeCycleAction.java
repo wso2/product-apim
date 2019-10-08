@@ -19,7 +19,8 @@
 package org.wso2.am.integration.test.utils.bean;
 
 public enum APILifeCycleAction {
-    PUBLISH("Publish"), DEPLOY_AS_PROTOTYPE("Deploy as a Prototype"), BLOCK("Block"), DEPRECATE("Deprecate"), RETIRE("Retire");
+    PUBLISH("Publish"), DEPLOY_AS_PROTOTYPE("Deploy as a Prototype"), BLOCK("Block"), DEPRECATE("Deprecate"),
+    RETIRE("Retire"), RE_PUBLISH("Re-Publish"), PROMOTE("Promote");
     private String action;
 
     APILifeCycleAction(String state) {

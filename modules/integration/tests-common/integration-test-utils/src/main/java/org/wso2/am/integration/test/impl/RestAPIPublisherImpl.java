@@ -31,18 +31,22 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.Constants;
@@ -73,6 +77,7 @@ public class RestAPIPublisherImpl {
     public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
+    public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
 
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
@@ -113,6 +118,7 @@ public class RestAPIPublisherImpl {
         rolesApi.setApiClient(apiPublisherClient);
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
+        subscriptionsApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -439,6 +445,9 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public void deleteAPIByID(String apiId) throws ApiException {
+        if (apiId == null) {
+            return;
+        }
         ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
         Assert.assertEquals(HttpStatus.SC_OK, deleteResponse.getStatusCode());
     }
@@ -549,8 +558,27 @@ public class RestAPIPublisherImpl {
         return null;
     }
 
+
     /**
-     * Adding a Document to a API
+     * Adding a documentation
+     *
+     * @param apiId      - Id of the API.
+     * @param body      - document Body.
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws ApiException - Exception throws if error occurred when adding document.
+     */
+    public HttpResponse addDocument(String apiId, DocumentDTO body) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsPost(apiId, body, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(doc.getDocumentId())) {
+            response = new HttpResponse(doc.getDocumentId(), 200);
+        }
+        return response;
+    }
+
+
+    /**
+     * Adding a content to the document
      *
      * @param apiId      - Id of the API.
      * @param docId      - document Id.
@@ -558,8 +586,9 @@ public class RestAPIPublisherImpl {
      * @return HttpResponse - Response  with Document adding result.
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
-    public HttpResponse addDocument(String apiId, String docId, String docContent) throws ApiException {
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent, null);
+    public HttpResponse addContentDocument(String apiId, String docId, String docContent) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent,
+                null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
@@ -585,6 +614,41 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
+    /**
+     * This method is used to get documents
+     * Get Documents for the given limit and offset values
+     *
+     * @param apiId apiId
+     * @return Documents for the given limit and offset values
+     */
+    public DocumentListDTO getDocuments(String apiId) throws ApiException {
+        ApiResponse<DocumentListDTO> apiResponse = apiDocumentsApi.apisApiIdDocumentsGetWithHttpInfo(apiId,
+                null, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+
+    /**
+     * delete Document
+     *
+     * @param apiId - API id
+     * @param documentId - API id
+     * @return http response object
+     * @throws ApiException - Throws if API delete fails
+     */
+    public HttpResponse deleteDocument(String apiId, String documentId) throws ApiException {
+
+        ApiResponse<Void> deleteResponse  = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo
+                (apiId, documentId, null);
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully deleted the Document", 200);
+        }
+        return response;
+    }
+
 
 
     /**
@@ -770,6 +834,13 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
+        if ("secured".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+            APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
+            dto.setUsername(apiCreationRequestBean.getEpUsername());
+            dto.setPassword(apiCreationRequestBean.getEpPassword());
+            dto.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
+            body.setEndpointSecurity(dto);
+        }
         ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
@@ -792,5 +863,32 @@ public class RestAPIPublisherImpl {
         }
         return response;
 
+    }
+
+    /**
+     * Update an API
+     *
+     * @param apidto
+     * @return
+     * @throws ApiException
+     */
+    public APIDTO updateAPI(APIDTO apidto) throws ApiException {
+        ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    /**
+     * Get subscription of an API
+     *
+     * @param apiID
+     * @return
+     * @throws ApiException
+     */
+    public SubscriptionListDTO getSubscriptionByAPIID(String apiID) throws ApiException {
+        ApiResponse<SubscriptionListDTO> apiResponse =
+                subscriptionsApi.subscriptionsGetWithHttpInfo(apiID, 10, 0, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
     }
 }
