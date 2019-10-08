@@ -24,18 +24,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
@@ -47,7 +46,7 @@ import java.util.List;
  * This test case is used to test the API Store search API by API's TAG
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
-public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
+public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(APISearchAPIByTagTestCase.class);
     private final String API_NAME_1 = "APISearchAPIByTagAPIName_1";
     private final String API_NAME_2 = "APISearchAPIByTagAPIName_2";
@@ -68,17 +67,12 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private static final long WAIT_TIME = 45 * 1000;
-    private String publisherURLHttps;
-    private String storeURLHttp;
-    private APICreationRequestBean apiCreationRequestBean;
-    private List<APIResourceBean> resList;
+    private APIRequest apiRequest;
     private String tags;
     private String tierCollection;
     private String endpointUrl;
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
-
+    String providerName = "";
     @Factory(dataProvider = "userModeDataProvider")
     public APISearchAPIByTagTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -88,65 +82,53 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        publisherURLHttps = publisherUrls.getWebAppURLHttps();
-        storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(user.getUserName(), user.getPassword());
-
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation")
     public void testAPICreation() throws Exception {
-        //define resources
-        resList = new ArrayList<APIResourceBean>();
-        APIResourceBean addResource = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/add");
-
-        //implement API 1
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_1, API_CONTEXT_1, API_VERSION, user.getUserName(),
-                new URL(endpointUrl));
         tags = TAG_API + "," + TAG_API_1;
-        apiCreationRequestBean.setTags(tags);
-        apiCreationRequestBean.setDescription(DESCRIPTION);
-        apiCreationRequestBean.setTiersCollection(tierCollection);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_1, API_CONTEXT_1, new URL(endpointUrl));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
 
-        //add test api 1
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
-
-        //publish the api 1
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_1, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME_1, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+        //create and publish test api 1
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         //implement API 2
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_2, API_CONTEXT_2, API_VERSION, user.getUserName(),
-                new URL(endpointUrl));
         tags = TAG_API + "," + TAG_API_2;
-        apiCreationRequestBean.setTags(tags);
-        apiCreationRequestBean.setDescription(DESCRIPTION);
-        apiCreationRequestBean.setTiersCollection(tierCollection);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_2, API_CONTEXT_2, new URL(endpointUrl));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
 
-        //add test api 2
-        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+        //create and publish test api 2
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         //publish the api 2
-        updateRequest = new APILifeCycleStateRequest(API_NAME_2, user.getUserName(), APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_2, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
@@ -161,7 +143,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "API search by TAG", dependsOnMethods = "testAPICreation")
     public void testAPISearchByTag() throws Exception {
         String searchTerm;
-        HttpResponse response;
+        APIListDTO response;
         JSONObject results;
         JSONArray resultArray;
         //wait for APIs to appear in Search API
@@ -169,31 +151,30 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
 
         //search for common tags
         searchTerm = "tags:" + TAG_API;
-        response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
-        verifyResponse(response);
-        results = new JSONObject(response.getData());
-        resultArray = results.getJSONArray("result");
-        Assert.assertEquals(resultArray.length(), 2, "Search API return invalid APIs");
-        Assert.assertTrue(response.getData().contains(API_NAME_1), "API with searched tag not returned");
-        Assert.assertTrue(response.getData().contains(API_NAME_2), "API with searched tag not returned");
+        response = restAPIStore.searchPaginatedAPIs( 10,0, user.getUserDomain(), searchTerm);
+        Assert.assertEquals(response.getList().size(), 2, "Search API return invalid APIs");
+        int expectedAPIs = 0;
+        for (APIInfoDTO api : response.getList()) {
+            if(api.getName().equals(API_NAME_1) || api.getName().equals(API_NAME_2)) {
+                expectedAPIs ++;
+            }
+        }
+        Assert.assertTrue( expectedAPIs == 2 , "API with searched tag not returned");
 
         //search for one out of two API
         searchTerm = "tags:" + TAG_API_1;
-        response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
-        verifyResponse(response);
-        results = new JSONObject(response.getData());
-        resultArray = results.getJSONArray("result");
-        Assert.assertEquals(resultArray.length(), 1, "Search API return invalid APIs");
-        Assert.assertTrue(response.getData().contains(API_NAME_1), "API with searched tag not returned");
-        Assert.assertFalse(response.getData().contains(API_NAME_2), "Result contain API without the requested Tag");
-
+        response = restAPIStore.searchPaginatedAPIs(10, 0, user.getUserDomain(), searchTerm);
+        Assert.assertEquals(response.getList().size(), 1, "Search API return invalid APIs");
+        for (APIInfoDTO api : response.getList()) {
+            Assert.assertTrue(api.getName().equals(API_NAME_1), "API with searched tag not returned");
+        }
+        for (APIInfoDTO api : response.getList()) {
+            Assert.assertFalse(api.getName().equals(API_NAME_2), "Result contain API without the requested Tag");
+        }
         //search for non-exist TAG
         searchTerm = "tags:" + TAG_NOT_EXIST;
-        response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
-        verifyResponse(response);
-        results = new JSONObject(response.getData());
-        resultArray = results.getJSONArray("result");
-        Assert.assertEquals(resultArray.length(), 0, "Search API return invalid APIs");
+        response = restAPIStore.searchPaginatedAPIs(10, 0, user.getUserDomain(), searchTerm);
+        Assert.assertNull(response, "Search API return invalid APIs");
     }
 
     @Test(groups = { "wso2.am" }, description = "API search by group TAG", dependsOnMethods = "testAPISearchByTag")
@@ -211,98 +192,106 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
             serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
         }
 
-        APIResourceBean addResource = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/add");
-
         //create test api 1
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_UPPER_CASE, API_NAME_CONTEXT_UPPER_CASE,
-                API_VERSION, user.getUserName(), new URL(endpointUrl));
-        apiCreationRequestBean.setTags(TAG_GROUP_UPPER_CASE);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_CONTEXT_UPPER_CASE, API_NAME_CONTEXT_UPPER_CASE, new URL(endpointUrl));
+        apiRequest.setTags(TAG_GROUP_UPPER_CASE);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
 
         //add test api 1
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
-        //publish the api 1
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_UPPER_CASE,
-                user.getUserName(), APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_UPPER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         //create test api 2
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_LOWER_CASE, API_NAME_CONTEXT_LOWER_CASE,
-                API_VERSION, user.getUserName(), new URL(endpointUrl));
-        apiCreationRequestBean.setTags(TAG_GROUP_LOWER_CASE);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_CONTEXT_LOWER_CASE, API_NAME_CONTEXT_LOWER_CASE, new URL(endpointUrl));
+        apiRequest.setTags(TAG_GROUP_LOWER_CASE);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
 
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
         //add test api 2
-        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
-        //publish the api 2
-        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_LOWER_CASE, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_LOWER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         //create test api 3
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_WITH_SPACE, API_NAME_CONTEXT_WITH_SPACE,
-                API_VERSION, user.getUserName(), new URL(endpointUrl));
-        apiCreationRequestBean.setTags(TAG_GROUP_WITH_SPACE);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_CONTEXT_WITH_SPACE, API_NAME_CONTEXT_WITH_SPACE, new URL(endpointUrl));
+        apiRequest.setTags(TAG_GROUP_WITH_SPACE);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
 
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
         //add test api 3
-        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
-        //publish the api 3
-        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_WITH_SPACE, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITH_SPACE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         //create test api 4
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_WITHOUT_SPACE,
-                API_NAME_CONTEXT_WITHOUT_SPACE, API_VERSION, user.getUserName(), new URL(endpointUrl));
-        apiCreationRequestBean.setTags(TAG_GROUP_WITHOUT_SPACE);
-        resList.add(addResource);
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest = new APIRequest(API_NAME_CONTEXT_WITHOUT_SPACE, API_NAME_CONTEXT_WITHOUT_SPACE, new URL(endpointUrl));
+        apiRequest.setTags(TAG_GROUP_WITHOUT_SPACE);
+        apiRequest.setDescription(DESCRIPTION);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setProvider(providerName);
+        //Add api resource
+        apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
+        apiOperationsDTO1.setTarget("/add");
+        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
+        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
 
-        //add test api 4
-        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest.setOperationsDTOS(operationsDTOS);
 
-        //publish the api 4
-        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_WITHOUT_SPACE, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //create and publish test api 4
+        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITHOUT_SPACE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         watForTagsAvailableOnSearchApi(TAG_GROUP_WITHOUT_SPACE);
 
-        HttpResponse res = apiStore.getAllTags();
-        JSONObject tags = new JSONObject(res.getData());
-        JSONArray tagList = tags.getJSONArray("tags");
+        TagListDTO tagListDTO = restAPIStore.getAllTags();
+        List<TagDTO> tagList = tagListDTO.getList();
         String[] tt = { TAG_GROUP_UPPER_CASE, TAG_GROUP_LOWER_CASE, TAG_GROUP_WITH_SPACE, TAG_GROUP_WITHOUT_SPACE };
         for (String t : tt) {
             boolean found = false;
-            for (int i = 0; i < tagList.length(); i++) {
-                JSONObject tagObj = tagList.getJSONObject(i);
-                if (t.equals(tagObj.getString("name"))) {
-                    Assert.assertEquals(tagObj.getInt("count"), 1);
+            for (TagDTO tag:  tagList) {
+                if (t.equals(tag.getValue())) {
+                    Assert.assertEquals(tag.getCount().intValue(), 1);
                     found = true;
                     break;
                 }
@@ -319,15 +308,24 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     public void watForAPIsAvailableOnSearchApi() throws Exception {
         String searchTerm = "";
         long waitTime = System.currentTimeMillis() + WAIT_TIME;
-        HttpResponse response;
+        APIListDTO apiList;
         while (waitTime > System.currentTimeMillis()) {
-            response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
-            verifyResponse(response);
+            apiList = restAPIStore.searchPaginatedAPIs(10, 0, user.getUserDomain(), searchTerm);
+
             log.info("WAIT for availability of API : " + API_NAME_1 + " and " + API_NAME_2
                     + " found on Store search API");
-            if (response != null) {
-                log.info("Data: " + response.getData());
-                if (response.getData().contains(API_NAME_1) && response.getData().contains(API_NAME_2)) {
+            if (apiList != null) {
+                log.info("APIs Count: " + apiList.getCount());
+                int returnCount = 0;
+                for(APIInfoDTO apiInfo : apiList.getList()) {
+                    if(apiInfo.getName().contains(API_NAME_1)) {
+                        returnCount ++;
+                    }
+                    if(apiInfo.getName().contains(API_NAME_2)) {
+                        returnCount ++;
+                    }
+                }
+                if (returnCount == 2) {
                     log.info("API :" + API_NAME_1 + " and " + API_NAME_2 + " found");
                     break;
                 } else {
@@ -347,14 +345,13 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
      */
     public void watForTagsAvailableOnSearchApi(String tag) throws Exception {
         long waitTime = System.currentTimeMillis() + WAIT_TIME;
-        HttpResponse response;
+        TagListDTO tagsList;
         while (waitTime > System.currentTimeMillis()) {
-            response = apiStore.getAllTags();
-            verifyResponse(response);
+            tagsList = restAPIStore.getAllTags();
             log.info("WAIT for availability of tags : " + tag + " found on Store tag cloud");
-            if (response != null) {
-                log.info("Data: " + response.getData());
-                if (response.getData().contains(tag)) {
+            if (tagsList != null) {
+                log.info("Data: " + tagsList.toString());
+                if (tagsList.toString().contains(tag)) {
                     log.info("Tag :" + tag + " found");
                     break;
                 } else {

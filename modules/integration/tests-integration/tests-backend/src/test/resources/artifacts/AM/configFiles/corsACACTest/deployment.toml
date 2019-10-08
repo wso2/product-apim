@@ -47,6 +47,6 @@ https_endpoint = "https://localhost:${https.nio.port}"
 
 [apim.cors]
 allow_origins = "http://localhost"
-allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_methods = ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","Authorization"]
 allow_credentials = true
