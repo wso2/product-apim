@@ -301,14 +301,14 @@ replaceRegistryXMLTemplateFile(){
 
 replaceDeploymentConfiguration(){
     profileConfiguration=$pathToDeploymentTemplates/$1.toml
-    if [ -e $pathToDeploymentConfiguration ] && [ -e $profileConfiguration ]
+    if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ]
     then
-    	  mv $pathToDeploymentConfiguration $pathToDeploymentConfigurationBackup
-    		timeStamp
-    		echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
-    		mv $profileConfiguration $pathToDeploymentConfiguration
-    		timeStamp
-    		echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+        mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
+        cp "$profileConfiguration" "$pathToDeploymentConfiguration"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
     fi
 }
 

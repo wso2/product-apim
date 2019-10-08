@@ -73,12 +73,12 @@
   "database.apim_db.type": {
     "mysql": {
       "database.apim_db.driver": "com.mysql.jdbc.Driver",
-      "database.apim_db.url": "jdbc:mysql://$ref{database.shared_db.hostname}:$ref{database.shared_db.port}/$ref{database.shared_db.name}",
+      "database.apim_db.url": "jdbc:mysql://$ref{database.apim_db.hostname}:$ref{database.apim_db.port}/$ref{database.apim_db.name}",
       "database.apim_db.validationQuery": "SELECT 1"
     },
     "h2": {
       "database.apim_db.driver": "org.h2.Driver",
-      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT\u003dFALSE;LOCK_TIMEOUT\u003d60000",
+      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
       "database.apim_db.validationQuery": "SELECT 1"
     }
   },
