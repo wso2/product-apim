@@ -183,6 +183,50 @@ public class APIRequest extends AbstractRequest {
 
     }
 
+    /**
+     * This method will create API request.
+     *
+     * @param apiName       - Name of the API
+     * @param context       - API context
+     * @param endpointUrl   - API endpoint URL
+     * @param isCORSEnabled - CORS configurations is enabled
+     * @throws APIManagerIntegrationTestException - Throws if API request cannot be generated.
+     */
+    public APIRequest(String apiName, String context, URL endpointUrl, boolean isCORSEnabled) throws
+            APIManagerIntegrationTestException {
+
+        this.name = apiName;
+        this.context = context;
+        try {
+            String endPointString = "{\n" +
+                    "  \"production_endpoints\": {\n" +
+                    "    \"template_not_supported\": false,\n" +
+                    "    \"config\": null,\n" +
+                    "    \"url\": \"" + endpointUrl + "\"\n" +
+                    "  },\n" +
+                    "  \"sandbox_endpoints\": {\n" +
+                    "    \"url\": \"" + endpointUrl + "\",\n" +
+                    "    \"config\": null,\n" +
+                    "    \"template_not_supported\": false\n" +
+                    "  },\n" +
+                    "  \"endpoint_type\": \"http\"\n" +
+                    "}";
+
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : " + isCORSEnabled + ", " +
+                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                    "\"accessControlAllowCredentials\" : true, " +
+                    "\"accessControlAllowHeaders\" : " +
+                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+        } catch (JSONException | ParseException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException("JSON construct error", e);
+        }
+    }
+
     public APIRequest(String apiName, String context, String version, List<String> productionEndpoints,
                       List<String> sandboxEndpoints) throws APIManagerIntegrationTestException {
         this.name = apiName;
@@ -236,51 +280,6 @@ public class APIRequest extends AbstractRequest {
             log.error("Error when constructing JSON", e);
             throw new APIManagerIntegrationTestException("Error when constructing JSON", e);
         }
-    }
-
-    /**
-     * This method will create API request.
-     *
-     * @param apiName       - Name of the API
-     * @param context       - API context
-     * @param endpointUrl   - API endpoint URL
-     * @param isCORSEnabled - CORS configurations is enabled
-     * @throws APIManagerIntegrationTestException - Throws if API request cannot be generated.
-     */
-    public APIRequest(String apiName, String context, URL endpointUrl, boolean isCORSEnabled) throws
-            APIManagerIntegrationTestException {
-
-        this.name = apiName;
-        this.context = context;
-        try {
-            String endPointString = "{\n" +
-                    "  \"production_endpoints\": {\n" +
-                    "    \"template_not_supported\": false,\n" +
-                    "    \"config\": null,\n" +
-                    "    \"url\": \"" + endpointUrl + "\"\n" +
-                    "  },\n" +
-                    "  \"sandbox_endpoints\": {\n" +
-                    "    \"url\": \"" + endpointUrl + "\",\n" +
-                    "    \"config\": null,\n" +
-                    "    \"template_not_supported\": false\n" +
-                    "  },\n" +
-                    "  \"endpoint_type\": \"http\"\n" +
-                    "}";
-
-            JSONParser parser = new JSONParser();
-            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
-            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : " + isCORSEnabled + ", " +
-                    "\"accessControlAllowOrigins\" : [\"*\"], " +
-                    "\"accessControlAllowCredentials\" : true, " +
-                    "\"accessControlAllowHeaders\" : " +
-                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
-                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-        } catch (JSONException | ParseException e) {
-            log.error("JSON construct error", e);
-            throw new APIManagerIntegrationTestException("JSON construct error", e);
-        }
-
     }
 
     public APIRequest(String apiName, String context, URI productionEndpointUri, URI sandboxEndpointUri)
@@ -645,5 +644,5 @@ public class APIRequest extends AbstractRequest {
     public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
         this.technicalOwnerEmail = technicalOwnerEmail;
     }
-    
+
 }
