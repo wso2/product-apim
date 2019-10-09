@@ -39,18 +39,18 @@ Key Features
       - Mock API implementation using Javascript.
       - Support publishing SOAP, REST, JSON, and XML style services as XML.    
     
-* Create a Store of All Available APIs:    
+* Create a Developer Portal of All Available APIs:
       - Graphical experience similar to Android Marketplace or Apple App Store.
       - Browse APIs by provider, tags, or name.
       - Self-registration to developer community to subscribe to APIs.
       - Subscribe to APIs and manage subscriptions on per-application basis.
       - Subscriptions can be at different service tiers based on the expected usage levels.
-      - Role based access to API Store, which helps to manage public and private APIs.
+      - Role based access to API Developer Portal, which helps to manage public and private APIs.
       - Manage subscriptions per-developer.
       - Browse API documentation, download helpers for easy consumption.
       - Comment on and rate APIs.
       - Forum for discussing API usage issues (Available soon in a future version).
-      - Try APIs directly on the Store front.
+      - Try APIs directly on the Developer Portal front.
       - Internationalization (i18n) support.
   
 * Publishing and Governing API Use:     
@@ -113,21 +113,21 @@ Key Features
     
 * Pluggable, Extensible and Themeable:        
       - All components are highly customizable through styling, theming, and open source code.
-      - Storefront implemented with Jaggery (jaggeryjs.org) for easy of customization.
+      - Developer Portal implemented with React.
       - Pluggable to third-party analytics systems and billing systems 
       (Available soon in a future version).
       - Pluggable to existing user stores including JDBC and LDAP.
       - Components usable separately.
-      - Store front can be used to front APIs that are routed through third-party gateways 
+      - Developer Portal can be used to front APIs that are routed through third-party gateways
       such as, Intel Expressway Service Gateway.
       - Support for Single Sign On (SSO) using SAML 2.0 for easy integration with existing 
       web apps.
         
 * Easily Deployable in Enterprise Setting:        
       - Role based access control (RBAC) for managing users and their authorization levels.
-      - Store-front can be deployed in DMZ for external access with the Publisher inside the 
+      - Developer Portal can be deployed in DMZ for external access with the Publisher inside the
       firewall for private control.
-      - Different user stores for developer focused store-front and internal operations in 
+      - Different user stores for developer focused Developer Portal and internal operations in
       the publisher.
       - Integrates with enterprise identity systems including LDAP and Microsoft Active Directory.
       - Gateway can be deployed in DMZ with controlled access to WSO2 Identity Server 
@@ -174,8 +174,8 @@ Installation & Running
     * API Publisher web application is running at - https://localhost:9443/publisher
       You may sign in to the Publisher using the default administrator credentials 
       (username: admin, password: admin).
-    * API Store web application is running at - https://localhost:9443/store
-      You may sign in to the Store using the default administrator credentials 
+    * Developer Portal web application is running at - https://localhost:9443/devportal
+      You may sign in to the devportal using the default administrator credentials
       (username: admin, password: admin).
 
 Documentation

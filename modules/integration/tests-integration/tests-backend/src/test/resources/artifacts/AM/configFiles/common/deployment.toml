@@ -73,7 +73,7 @@ type = "failover"
 enable = true
 encoding = "base64" # base64,base64url
 enable_user_claims = true
-[apim.store]
+[apim.devportal]
 display_multiple_versions = true
 display_deprecated_apis = true
 
