@@ -301,14 +301,14 @@ replaceRegistryXMLTemplateFile(){
 
 replaceDeploymentConfiguration(){
     profileConfiguration=$pathToDeploymentTemplates/$1.toml
-    if [ -e $pathToDeploymentConfiguration ] && [ -e $profileConfiguration ]
+    if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ]
     then
-    	  mv $pathToDeploymentConfiguration $pathToDeploymentConfigurationBackup
-    		timeStamp
-    		echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
-    		mv $profileConfiguration $pathToDeploymentConfiguration
-    		timeStamp
-    		echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+        mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
+        cp "$profileConfiguration" "$pathToDeploymentConfiguration"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
     fi
 }
 
@@ -385,15 +385,15 @@ case $1 in
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
-	-Dprofile=api-store)
-		echo "Starting to optimize API Manager for the Developer Portal (API Store) profile"
+	-Dprofile=api-devportal)
+		echo "Starting to optimize API Manager for the Developer Portal profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableBlockConditionRetriever
-		replaceDeploymentConfiguration api-store
+		replaceDeploymentConfiguration api-devportal
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
@@ -411,7 +411,7 @@ case $1 in
 			fi
 		done
 		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'store'| sed 1d); do
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'devportal'| sed 1d); do
 			rm -r $i
 			folder=`basename "$i"`
 			timeStamp
