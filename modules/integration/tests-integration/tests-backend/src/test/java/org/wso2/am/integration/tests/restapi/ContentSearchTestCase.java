@@ -469,7 +469,7 @@ public class ContentSearchTestCase extends APIMIntegrationBaseTest {
     private String getAccessToken(String clientName, String username, String password)
             throws IOException, JSONException, AutomationFrameworkException {
         HttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.14/register");
+        HttpPost tokenPost = new HttpPost("https://localhost:9943/client-registration/v0.15/register");
         byte[] namePasswordPair = (username + ":" + password).getBytes();
         tokenPost.setHeader("Authorization", "Basic " + Base64Utils.encode(namePasswordPair));
         tokenPost.setHeader("Content-Type", "application/json");

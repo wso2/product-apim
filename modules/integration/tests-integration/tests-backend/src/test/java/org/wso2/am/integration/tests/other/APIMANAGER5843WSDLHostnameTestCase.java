@@ -29,9 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -54,7 +52,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
     private String backendEndWSDL;
     private String backendEndUrl;
     private String apiId;
-    private RestAPIPublisherImpl restAPIPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5843WSDLHostnameTestCase(TestUserMode userMode) {
@@ -69,7 +66,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
         }
         backendEndWSDL = getGatewayURLNhttp() + "services/echo?wsdl";
         backendEndUrl = getGatewayURLNhttp() + "services/echo";
-        restAPIPublisher = new RestAPIPublisherImpl();
 
     }
 

@@ -89,7 +89,7 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
-        String dcrURL = storeURL + "client-registration/v0.14/register";
+        String dcrURL = storeURL + "client-registration/v0.15/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings";
 

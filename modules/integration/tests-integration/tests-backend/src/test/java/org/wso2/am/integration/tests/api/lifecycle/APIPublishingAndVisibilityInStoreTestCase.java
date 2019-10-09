@@ -24,8 +24,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -50,15 +48,11 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String apiId;
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
 
     }
 
@@ -79,7 +73,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
 
-        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiId);
         assertEquals(getValueFromJSON(apiResponse, "error"), "false",
                 "Error in API Creation in publisher" +

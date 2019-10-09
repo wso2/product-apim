@@ -28,9 +28,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -64,8 +61,6 @@ import static org.testng.Assert.assertTrue;
 public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(NotificationTestCase.class);
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     private static final String API_NAME = "NOTIFICATION_TEST_API";
     private static final String API_CONTEXT = "NOTIFICATION_TEST_API";
     private static final String API_VERSION = "1.0.0";
@@ -93,8 +88,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
 
     }
 
