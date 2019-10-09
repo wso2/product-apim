@@ -206,7 +206,10 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test WS API gateway urls", dependsOnMethods = "testApiGatewayUrlsTest")
+    // Test is disabled due to a known issue in loading overview page with Gateway URLs of WS APIs in the old Jaggery
+    // Store. Issue is not available in the new React Dev portal, hence not required to fix the test.
+    @Test(groups = { "wso2.am" }, description = "Test WS API gateway urls", dependsOnMethods =
+            "testApiGatewayUrlsTest",  enabled = false)
     public void testApiGatewayUrlsAfterConfigChangeTest() throws Exception {
         //change the api-manager.xml for new gateway urls
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
