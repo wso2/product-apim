@@ -19,6 +19,10 @@ pathToApiManagerXML='../repository/conf/api-manager.xml'
 pathToDeploymentConfiguration='../repository/conf/deployment.toml'
 pathToAxis2XML='../repository/conf/axis2/axis2.xml'
 pathToAxis2XMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2.xml.j2'
+pathToTenantAxis2XML='../repository/conf/axis2/tenant-axis2.xml'
+pathToTenantAxis2XMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2.xml.j2'
+pathToAxis2BlockingClientXML='../repository/conf/axis2/axis2_blocking_client.xml'
+pathToAxis2BlockingClientXMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_blocking_client.xml.j2'
 pathToRegistry='../repository/conf/registry.xml'
 pathToRegistryTemplate='../repository/resources/conf/templates/repository/conf/registry.xml.j2'
 pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/inbound-endpoints/'
@@ -27,10 +31,16 @@ pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
 pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
 pathToAxis2TMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_TM.xml.j2'
+pathToAxis2KMXml='../repository/conf/axis2/axis2_KM.xml'
+pathToAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_KM.xml.j2'
+pathToTenantAxis2KMXml='../repository/conf/axis2/tenant-axis2_KM.xml'
+pathToTenantAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_KM.xml.j2'
 pathToRegistryTM='../repository/conf/registry_TM.xml'
 pathToRegistryTMTemplate='../repository/resources/conf/templates/repository/conf/registry_TM.xml.j2'
-pathToAxis2XMLBackup='../repository/conf/axis2/axis2backup.xml'
-pathToAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/axis2.backup'
+pathToAxis2XMLBackup='../repository/conf/axis2/axis2.xml.backup'
+pathToAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/axis2.xml.j2.backup'
+pathToTenantAxis2XMLBackup='../repository/conf/axis2/tenant-axis2.xml.backup'
+pathToTenantAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2.xml.j2.backup'
 pathToRegistryBackup='../repository/conf/registryBackup.xml'
 pathToRegistryTemplateBackup='../repository/resources/conf/templates/repository/conf/registry.backup'
 pathToDeploymentConfigurationBackup='../repository/conf/deployment.toml.backup'
@@ -39,7 +49,7 @@ timestamp=""
 cd `dirname "$0"`
 
 timeStamp() {
-	timestamp=`date '+%Y-%m-%d %H:%M:%S:%N' | sed 's/\(:[0-9][0-9][0-9]\)[0-9]*$/\1/' `
+	timestamp=`date '+%Y-%m-%d %H:%M:%S' | sed 's/\(:[0-9][0-9][0-9]\)[0-9]*$/\1/' `
 }
 
 disableDataPublisher(){
@@ -196,70 +206,122 @@ removeSynapseConfigs(){
 }
 
 replaceAxis2File(){
-    if [ -e $pathToAxis2XML ] && [ -e $pathToAxis2TMXml ]
+  pathToNewAxis2Xml=$1
+  if [ -e $pathToAxis2XML ] && [ -e $pathToNewAxis2Xml ]
+  then
+    mv $pathToAxis2XML $pathToAxis2XMLBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Renamed the existing $pathToAxis2XML file as axis2.xml.backup"
+		mv $pathToNewAxis2Xml $pathToAxis2XML
+		timeStamp
+		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2Xml file as axis2.xml"
+	fi
+}
+
+replaceTenantAxis2File(){
+  pathToNewAxis2Xml=$1
+  if [ -e $pathToTenantAxis2XML ] && [ -e $pathToNewAxis2Xml ]
 	then
-	    mv $pathToAxis2XML $pathToAxis2XMLBackup
+		mv $pathToTenantAxis2XML $pathToTenantAxis2XMLBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2XML file as axis2backup.xml"
-		mv $pathToAxis2TMXml $pathToAxis2XML
+		echo "[${timestamp}] INFO - Renamed the existing $pathToTenantAxis2XML file as tenant-axis2.xml.backup"
+		mv $pathToNewAxis2Xml $pathToTenantAxis2XML
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2TMXml file as axis2.xml"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2Xml file as tenant-axis2.xml"
+	fi
+}
+
+removeAxis2BlockingClientXMLFile(){
+  if [ -e $pathToAxis2BlockingClientXML ]
+	then
+		rm -r $pathToAxis2BlockingClientXML
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml file from $pathToAxis2BlockingClientXML"
+	fi
+}
+
+removeAxis2BlockingClientXMLTemplateFile(){
+  if [ -e $pathToAxis2BlockingClientXMLTemplate ]
+	then
+		rm -r $pathToAxis2BlockingClientXMLTemplate
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml.j2 file from $pathToAxis2BlockingClientXMLTemplate"
 	fi
 }
 
 replaceRegistryXMLFile(){
     if [ -e $pathToRegistry ] && [ -e $pathToRegistryTM ]
 	then
-        mv $pathToRegistry $pathToRegistryBackup
+		mv $pathToRegistry $pathToRegistryBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToRegistry file as registryBackup.xml"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistry file as registryBackup.xml"
 		mv $pathToRegistryTM $pathToRegistry
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTM file as registry.xml"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTM file as registry.xml"
 	fi
 }
 
 replaceAxis2TemplateFile(){
-    if [ -e $pathToAxis2XMLTemplate ] && [ -e $pathToAxis2TMXmlTemplate ]
+	pathToNewAxis2TemplateXml=$1
+	if [ -e $pathToAxis2XMLTemplate ] && [ -e $pathToNewAxis2TemplateXml ]
 	then
-	    mv $pathToAxis2XMLTemplate $pathToAxis2TXmlTemplateBackup
+		mv $pathToAxis2XMLTemplate $pathToAxis2TXmlTemplateBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $$pathToAxis2XMLTemplate file as axis2.backup"
-		mv $pathToAxis2TMXmlTemplate $pathToAxis2XMLTemplate
+		echo "[${timestamp}] INFO - Renamed the existing $pathToAxis2XMLTemplate file as axis2.xml.j2.backup"
+		mv $pathToNewAxis2TemplateXml $pathToAxis2XMLTemplate
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToAxis2TMXmlTemplate file as axis2.xml.j2"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2TemplateXml file as axis2.xml.j2"
+	fi
+}
+
+replaceTenantAxis2TemplateFile(){
+	pathToNewAxis2TemplateXml=$1
+	if [ -e $pathToTenantAxis2XMLTemplate ] && [ -e $pathToNewAxis2TemplateXml ]
+	then
+		mv $pathToTenantAxis2XMLTemplate $pathToTenantAxis2TXmlTemplateBackup
+		timeStamp
+		echo "[${timestamp}] INFO - Renamed the existing $pathToTenantAxis2XMLTemplate file as tenant-axis2.xml.j2.backup"
+		mv $pathToNewAxis2TemplateXml $pathToTenantAxis2XMLTemplate
+		timeStamp
+		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2TemplateXml file as tenant-axis2.xml.j2"
 	fi
 }
 
 replaceRegistryXMLTemplateFile(){
-    if [ -e $pathToRegistryTemplate ] && [ -e $pathToRegistryTMTemplate ]
+  if [ -e $pathToRegistryTemplate ] && [ -e $pathToRegistryTMTemplate ]
 	then
-        mv $pathToRegistryTemplate $pathToRegistryTemplateBackup
+	  mv $pathToRegistryTemplate $pathToRegistryTemplateBackup
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTemplate file as registry.backup"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTemplate file as registry.backup"
 		mv $pathToRegistryTMTemplate $pathToRegistryTemplate
 		timeStamp
-		echo "[${timestamp}] INFO - Rename the existing $pathToRegistryTMTemplate file as registry.xml.j2"
+		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTMTemplate file as registry.xml.j2"
 	fi
 }
 
 replaceDeploymentConfiguration(){
     profileConfiguration=$pathToDeploymentTemplates/$1.toml
-        if [ -e $pathToDeploymentConfiguration ] && [ -e $profileConfiguration ]
-    	then
-            mv $pathToDeploymentConfiguration $pathToDeploymentConfigurationBackup
-    		timeStamp
-    		echo "[${timestamp}] INFO - Rename the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
-    		mv $profileConfiguration $pathToDeploymentConfiguration
-    		timeStamp
-    		echo "[${timestamp}] INFO - Rename the existing $profileConfiguration file as deployment.toml"
-    	fi
+    if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ]
+    then
+        mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
+        cp "$profileConfiguration" "$pathToDeploymentConfiguration"
+        timeStamp
+        echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+    fi
 }
 
 #main
 case $1 in
 	-Dprofile=api-key-manager)
 		echo "Starting to optimize API Manager for the Key Manager profile"
+		replaceAxis2File $pathToAxis2KMXml
+		replaceTenantAxis2File $pathToTenantAxis2KMXml
+		removeAxis2BlockingClientXMLFile
+		removeAxis2BlockingClientXMLTemplateFile
+		replaceAxis2TemplateFile $pathToAxis2KMXmlTemplate
+		replaceTenantAxis2TemplateFile $pathToTenantAxis2KMXmlTemplate
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
@@ -271,7 +333,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint.war' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -298,11 +360,11 @@ case $1 in
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableBlockConditionRetriever
-     	replaceDeploymentConfiguration api-publisher
+		replaceDeploymentConfiguration api-publisher
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#publisher#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -323,19 +385,19 @@ case $1 in
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
-	-Dprofile=api-store)
-		echo "Starting to optimize API Manager for the Developer Portal (API Store) profile"
+	-Dprofile=api-devportal)
+		echo "Starting to optimize API Manager for the Developer Portal profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableBlockConditionRetriever
-     	replaceDeploymentConfiguration api-store
+		replaceDeploymentConfiguration api-devportal
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'api#am#store#*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -349,7 +411,7 @@ case $1 in
 			fi
 		done
 		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'store'| sed 1d); do
+		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'devportal'| sed 1d); do
 			rm -r $i
 			folder=`basename "$i"`
 			timeStamp
@@ -358,17 +420,17 @@ case $1 in
         ;;
 	-Dprofile=traffic-manager)
 		echo "Starting to optimize API Manager for the Traffic Manager profile"
-		replaceAxis2File
+		replaceAxis2File $pathToAxis2TMXml
 		replaceRegistryXMLFile
-		replaceAxis2TemplateFile
+		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
 		disableIndexingConfiguration
-     	replaceDeploymentConfiguration traffic-manager
+		replaceDeploymentConfiguration traffic-manager
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -395,7 +457,7 @@ case $1 in
 		disableIndexingConfiguration
      	replaceDeploymentConfiguration gateway-worker
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -type f -not -name 'am#sample#pizzashack#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'am#sample#pizzashack#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

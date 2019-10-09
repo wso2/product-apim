@@ -1,5 +1,5 @@
 [server]
-hostname = "tm.wso2.com"
+#hostname = "tm.wso2.com"
 node_ip = "127.0.0.1"
 server_role = "traffic-manager"
 
@@ -25,7 +25,6 @@ type =  "JKS"
 password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
-
 
 [truststore]
 file_name = "client-truststore.jks"

@@ -360,7 +360,6 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationIdWithoutCallback);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
     @DataProvider

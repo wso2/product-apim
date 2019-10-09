@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -137,7 +137,7 @@ public class SubscriptionsApi {
 
     /**
      * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
@@ -155,7 +155,7 @@ public class SubscriptionsApi {
 
     /**
      * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
@@ -174,7 +174,7 @@ public class SubscriptionsApi {
 
     /**
      * Get all subscriptions  (asynchronously)
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)

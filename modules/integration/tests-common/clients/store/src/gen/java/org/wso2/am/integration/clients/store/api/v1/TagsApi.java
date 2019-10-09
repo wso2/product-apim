@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -126,7 +126,7 @@ public class TagsApi {
 
     /**
      * Get all tags 
-     * This operation can be used to retrieve a list of tags that are already added to APIs.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
+     * This operation can be used to retrieve a list of tags that are already added to APIs. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -141,7 +141,7 @@ public class TagsApi {
 
     /**
      * Get all tags 
-     * This operation can be used to retrieve a list of tags that are already added to APIs.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
+     * This operation can be used to retrieve a list of tags that are already added to APIs. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -157,7 +157,7 @@ public class TagsApi {
 
     /**
      * Get all tags  (asynchronously)
-     * This operation can be used to retrieve a list of tags that are already added to APIs.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
+     * This operation can be used to retrieve a list of tags that are already added to APIs. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s tags, you need to provide Authorization header. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)

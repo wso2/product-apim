@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: 0.11.0
  * Contact: architecture@wso2.com
@@ -59,7 +59,7 @@ public class ThrottlingTierIndividualApi {
     /* Build call for tiersTierLevelTierNameDelete */
     private com.squareup.okhttp.Call tiersTierLevelTierNameDeleteCall(String tierName, String tierLevel, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/{tierLevel}/{tierName}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "tierName" + "\\}", apiClient.escapeString(tierName.toString()))
@@ -102,33 +102,33 @@ public class ThrottlingTierIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersTierLevelTierNameDeleteValidateBeforeCall(String tierName, String tierLevel, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierName' is set
         if (tierName == null) {
             throw new ApiException("Missing the required parameter 'tierName' when calling tiersTierLevelTierNameDelete(Async)");
         }
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersTierLevelTierNameDelete(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersTierLevelTierNameDeleteCall(tierName, tierLevel, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Delete a Tier
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -141,7 +141,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Delete a Tier
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -156,7 +156,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Delete a Tier (asynchronously)
-     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to delete an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -193,7 +193,7 @@ public class ThrottlingTierIndividualApi {
     /* Build call for tiersTierLevelTierNameGet */
     private com.squareup.okhttp.Call tiersTierLevelTierNameGetCall(String tierName, String tierLevel, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/{tierLevel}/{tierName}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "tierName" + "\\}", apiClient.escapeString(tierName.toString()))
@@ -238,33 +238,33 @@ public class ThrottlingTierIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersTierLevelTierNameGetValidateBeforeCall(String tierName, String tierLevel, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierName' is set
         if (tierName == null) {
             throw new ApiException("Missing the required parameter 'tierName' when calling tiersTierLevelTierNameGet(Async)");
         }
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersTierLevelTierNameGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersTierLevelTierNameGetCall(tierName, tierLevel, accept, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get details of a tier
-     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;. 
+     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -280,7 +280,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Get details of a tier
-     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;. 
+     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -297,7 +297,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Get details of a tier (asynchronously)
-     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;. 
+     * This operation can be used to retrieve details of a single tier by specifying the tier level and tier name. Note that the scope of the API is mandatory while retreiving the access token with the following cURL command : &#x60;curl -k -d \\\&quot;grant_type&#x3D;password&amp;username&#x3D;username&amp;password&#x3D;password&amp;scope&#x3D;apim:tier_view\\\&quot; -H \\\&quot;Authorization: Basic &lt;token&gt;\\\&quot; https://127.0.0.1:8243/token&#x60;. You will receive the access token as the response, for example &#x60;\&quot;access_token\&quot;:\&quot;8644c013-7ff1-3217-b150-d7b92cae6be7\&quot;&#x60;.
      * @param tierName Tier name  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -336,7 +336,7 @@ public class ThrottlingTierIndividualApi {
     /* Build call for tiersTierLevelTierNamePut */
     private com.squareup.okhttp.Call tiersTierLevelTierNamePutCall(String tierName, Tier body, String tierLevel, String contentType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/{tierLevel}/{tierName}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "tierName" + "\\}", apiClient.escapeString(tierName.toString()))
@@ -381,43 +381,43 @@ public class ThrottlingTierIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersTierLevelTierNamePutValidateBeforeCall(String tierName, Tier body, String tierLevel, String contentType, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierName' is set
         if (tierName == null) {
             throw new ApiException("Missing the required parameter 'tierName' when calling tiersTierLevelTierNamePut(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling tiersTierLevelTierNamePut(Async)");
         }
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersTierLevelTierNamePut(Async)");
         }
-        
+
         // verify the required parameter 'contentType' is set
         if (contentType == null) {
             throw new ApiException("Missing the required parameter 'contentType' when calling tiersTierLevelTierNamePut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersTierLevelTierNamePutCall(tierName, body, tierLevel, contentType, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update a Tier
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
@@ -434,7 +434,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update a Tier
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
@@ -452,7 +452,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update a Tier (asynchronously)
-     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to update an existing tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param tierName Tier name  (required)
      * @param body Tier object that needs to be modified  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
@@ -492,7 +492,7 @@ public class ThrottlingTierIndividualApi {
     /* Build call for tiersUpdatePermissionPost */
     private com.squareup.okhttp.Call tiersUpdatePermissionPostCall(String tierName, String tierLevel, String ifMatch, String ifUnmodifiedSince, TierPermission permissions, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = permissions;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/update-permission".replaceAll("\\{format\\}","json");
 
@@ -537,33 +537,33 @@ public class ThrottlingTierIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersUpdatePermissionPostValidateBeforeCall(String tierName, String tierLevel, String ifMatch, String ifUnmodifiedSince, TierPermission permissions, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierName' is set
         if (tierName == null) {
             throw new ApiException("Missing the required parameter 'tierName' when calling tiersUpdatePermissionPost(Async)");
         }
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersUpdatePermissionPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersUpdatePermissionPostCall(tierName, tierLevel, ifMatch, ifUnmodifiedSince, permissions, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update tier permission
-     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles. 
+     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles.
      * @param tierName Name of the tier  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -579,7 +579,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update tier permission
-     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles. 
+     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles.
      * @param tierName Name of the tier  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)
@@ -596,7 +596,7 @@ public class ThrottlingTierIndividualApi {
 
     /**
      * Update tier permission (asynchronously)
-     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles. 
+     * This operation can be used to update tier permissions which controls access for the particular tier based on the subscribers&#39; roles.
      * @param tierName Name of the tier  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag (Will be supported in future).  (optional)

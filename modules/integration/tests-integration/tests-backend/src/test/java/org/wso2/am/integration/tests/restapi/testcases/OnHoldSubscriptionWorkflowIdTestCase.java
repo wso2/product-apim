@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -40,7 +40,7 @@ import static org.testng.Assert.assertTrue;
 
 /**
  * Test case for the fix for APIMANAGER-5898 - When the status is ON_HOLD, the publisher rest API should return the
- * external workflow id in the response to GET /api/am/publisher/v0.14//subscriptions/{subscriptionId1}
+ * external workflow id in the response to GET /api/am/publisher/v0.15//subscriptions/{subscriptionId1}
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE})
 public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTest {

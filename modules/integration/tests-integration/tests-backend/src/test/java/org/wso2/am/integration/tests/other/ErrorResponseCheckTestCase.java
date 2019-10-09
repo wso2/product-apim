@@ -178,6 +178,5 @@ import static org.testng.Assert.assertEquals;
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

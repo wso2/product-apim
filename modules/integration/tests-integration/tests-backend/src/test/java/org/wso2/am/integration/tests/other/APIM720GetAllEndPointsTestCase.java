@@ -175,6 +175,5 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiID);
-        super.cleanUp();
     }
 }

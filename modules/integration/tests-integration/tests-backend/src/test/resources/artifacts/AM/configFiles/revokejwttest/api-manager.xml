@@ -228,7 +228,7 @@
             <MaxIdle>100</MaxIdle>
             <InitIdleCapacity>50</InitIdleCapacity>
         </ConnectionPool-->
-        <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a 
+        <!-- Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a
              custom KeyValidation Handler -->
         <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
     </APIKeyValidator>
@@ -359,7 +359,7 @@
     <!-- Status observers can be registered against the API Publisher to listen for
          API status update events. Each observer must implement the APIStatusObserver
          interface. Multiple observers can be engaged if necessary and in such situations
-         they will be notified in the order they are defined here. 
+         they will be notified in the order they are defined here.
          This configuration is unused from API Manager version 1.10.0 -->
     <!--StatusObservers>
         <Observer>org.wso2.carbon.apimgt.impl.observers.SimpleLoggingObserver</Observer>
@@ -388,7 +388,7 @@
              It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*) -->
         <Access-Control-Allow-Credentials>false</Access-Control-Allow-Credentials>
     </CORSConfiguration>
-    
+
     <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
          You can enable this and set preferable Logger name. -->
     <!-- VelocityLogger>VELOCITY</VelocityLogger -->
@@ -652,15 +652,15 @@
         <EnableJWTClaimConditions>false</EnableJWTClaimConditions>
         <EnableQueryParamConditions>false</EnableQueryParamConditions>
     </ThrottlingConfigurations>
-    
+
     <WorkflowConfigurations>
         <Enabled>false</Enabled>
-    	<ServerUrl>https://localhost:9445/bpmn</ServerUrl>   		
+    	<ServerUrl>https://localhost:9445/bpmn</ServerUrl>
     	<ServerUser>${admin.username}</ServerUser>
     	<ServerPassword>${admin.password}</ServerPassword>
-    	<WorkflowCallbackAPI>https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.14/workflows/update-workflow-status</WorkflowCallbackAPI>
+    	<WorkflowCallbackAPI>https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.15/workflows/update-workflow-status</WorkflowCallbackAPI>
         <TokenEndPoint>https://localhost:${https.nio.port}/token</TokenEndPoint>
-        <DCREndPoint>https://localhost:${mgt.transport.https.port}/client-registration/v0.14/register</DCREndPoint>
+        <DCREndPoint>https://localhost:${mgt.transport.https.port}/client-registration/v0.15/register</DCREndPoint>
         <DCREndPointUser>${admin.username}</DCREndPointUser>
         <DCREndPointPassword>${admin.password}</DCREndPointPassword>
     </WorkflowConfigurations>

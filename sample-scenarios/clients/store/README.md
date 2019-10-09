@@ -91,7 +91,7 @@ public class APICollectionApiExample {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v0.14*
+All URIs are relative to *https://apis.wso2.com/api/am/store/v0.15*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

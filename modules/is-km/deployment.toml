@@ -1,0 +1,88 @@
+[server]
+hostname = "localhost"
+node_ip = "127.0.0.1"
+base_path = "https://$ref{server.hostname}:${carbon.management.port}"
+serverDetails = "WSO2 IS as KM 5.9.0"
+mode = "single"
+userAgent = "WSO2 IS as KM 5.9.0"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database"
+
+[database.apim_db]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/am_db"
+username = "root"
+password = "root"
+
+
+[database.config]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/config_db"
+username = "root"
+password = "root"
+
+[database.shared_db]
+type = "mysql"
+url = "jdbc:mysql://localhost:3306/shared_db"
+username = "root"
+password = "root"
+
+
+[keystore.primary]
+name = "wso2carbon.jks"
+password = "wso2carbon"
+
+[identity]
+data_source = "jdbc/WSO2AM_DB"
+
+[authentication.consent]
+data_source = "jdbc/WSO2AM_DB"
+prompt = true
+
+[transport.https.sslHostConfig.properties]
+certificateVerification = "want"
+
+[tasks]
+client_dispatch_address = "https://$ref{server.hostname}:9448"
+server_address = "https://localhost:9443"
+
+[oauth]
+prompt_consent = "$ref{authentication.consent.prompt}"
+
+[oauth.scope_validator.xacml]
+enable = true
+
+[oauth.grant_type.uma_ticket]
+enable = true
+
+[identity_mgt.user_self_registration]
+allow_self_registration = false
+
+[default_cache_timeout]
+force_local_cache = true
+
+[event.default_listener.mutual_tls_authenticator]
+priority = ""
+enable = false
+
+[[event_listener]]
+id = "mutual_tls_authenticator"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls.MutualTLSClientAuthenticator"
+order = "158"
+enable = false
+
+[oauth.extensions]
+token_generator = "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
+
+[apim.throttling]
+enable_data_publishing = false
+enable_policy_deploy = false
+enable_blacklist_condition = false
+enable_decision_connection = false

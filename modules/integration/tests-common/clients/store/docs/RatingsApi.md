@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 Retrieve API ratings
 
-This operation can be used to retrieve the list of ratings of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve ratings of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+This operation can be used to retrieve the list of ratings of an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve ratings of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
 
 ### Example
 ```java
@@ -75,7 +75,7 @@ Name | Type | Description  | Notes
 
 Delete user API rating
 
-This operation can be used to delete logged in user API rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to delete the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+This operation can be used to delete logged in user API rating. &#x60;X-WSO2-Tenant&#x60; header can be used to delete the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
 
 ### Example
 ```java
@@ -131,7 +131,7 @@ null (empty response body)
 
 Retrieve API rating of user
 
-This operation can be used to get the user rating of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+This operation can be used to get the user rating of an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
 
 ### Example
 ```java
@@ -188,7 +188,7 @@ Name | Type | Description  | Notes
 
 Add or update logged in user&#39;s rating for an API
 
-This operation can be used to add or update an API rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to add or update the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+This operation can be used to add or update an API rating. &#x60;X-WSO2-Tenant&#x60; header can be used to add or update the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
 
 ### Example
 ```java

@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This specifies a **RESTful API** for WSO2 **API Manager** - Publisher.  Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.publisher/src/main/resources/publisher-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
  *
  * OpenAPI spec version: 0.11.0
  * Contact: architecture@wso2.com
@@ -59,7 +59,7 @@ public class ThrottlingTierCollectionApi {
     /* Build call for tiersTierLevelGet */
     private com.squareup.okhttp.Call tiersTierLevelGetCall(String tierLevel, Integer limit, Integer offset, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/{tierLevel}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "tierLevel" + "\\}", apiClient.escapeString(tierLevel.toString()));
@@ -105,28 +105,28 @@ public class ThrottlingTierCollectionApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersTierLevelGetValidateBeforeCall(String tierLevel, Integer limit, Integer offset, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersTierLevelGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersTierLevelGetCall(tierLevel, limit, offset, accept, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get all tiers
-     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -142,7 +142,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Get all tiers
-     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -159,7 +159,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Get all tiers (asynchronously)
-     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;. 
+     * This operation can be used to list the available tiers for a given tier level. Tier level should be specified as a path parameter and should be one of &#x60;api&#x60;, &#x60;application&#x60; and &#x60;resource&#x60;.
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -198,7 +198,7 @@ public class ThrottlingTierCollectionApi {
     /* Build call for tiersTierLevelPost */
     private com.squareup.okhttp.Call tiersTierLevelPostCall(Tier body, String tierLevel, String contentType, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/tiers/{tierLevel}".replaceAll("\\{format\\}","json")
         .replaceAll("\\{" + "tierLevel" + "\\}", apiClient.escapeString(tierLevel.toString()));
@@ -238,38 +238,38 @@ public class ThrottlingTierCollectionApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call tiersTierLevelPostValidateBeforeCall(Tier body, String tierLevel, String contentType, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling tiersTierLevelPost(Async)");
         }
-        
+
         // verify the required parameter 'tierLevel' is set
         if (tierLevel == null) {
             throw new ApiException("Missing the required parameter 'tierLevel' when calling tiersTierLevelPost(Async)");
         }
-        
+
         // verify the required parameter 'contentType' is set
         if (contentType == null) {
             throw new ApiException("Missing the required parameter 'contentType' when calling tiersTierLevelPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = tiersTierLevelPostCall(body, tierLevel, contentType, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Create a Tier
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -283,7 +283,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Create a Tier
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
@@ -298,7 +298,7 @@ public class ThrottlingTierCollectionApi {
 
     /**
      * Create a Tier (asynchronously)
-     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.14/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
+     * This operation can be used to create a new throttling tier. The only supported tier level is &#x60;api&#x60; tiers. &#x60;POST https://127.0.0.1:9443/api/am/publisher/v0.15/tiers/api&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling tiers modification related operations.
      * @param body Tier object that should to be added  (required)
      * @param tierLevel List API or Application or Resource type tiers.  (required)
      * @param contentType Media type of the entity in the body. Default is application/json.  (required)
