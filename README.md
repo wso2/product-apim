@@ -27,7 +27,7 @@ WSO2 API Manager consists of several loosely coupled modules.
 
 The API publisher module allows API publishers to easily define APIs and manage them
 using a strong governance model that consists of well-established concepts such as,
-versioning and lifecycles. API consumers can use the API Store module to discover
+versioning and lifecycles. API consumers can use the API Developer Portal to discover
 published, production-ready APIs and access them in a secure and reliable manner
 using unique API keys.  The built-in API Gateway module provides powerful tools to
 secure and control the load on individual APIs.
@@ -52,19 +52,19 @@ Key Features
 
     
 <details>
-<summary>Create a Store of All the Available APIs</summary>
+<summary>Create a Developer Portal of All the Available APIs</summary>
         
     - Graphical experience similar to Android Marketplace or Apple App Store.
     - Browse APIs by provider, tags, or name.
     - Self-registration to developer community to subscribe to APIs.
     - Subscribe to APIs and manage subscriptions on per-application basis.
     - Subscriptions can be at different service tiers based on the expected usage levels.
-    - Role based access to API Store, which helps to manage public and private APIs.
+    - Role based access to API Developer Portal, which helps to manage public and private APIs.
     - Manage subscriptions per-developer.
     - Browse API documentation, download helpers for easy consumption.
     - Comment on and rate APIs.
     - Forum for discussing API usage issues (Available soon in a future version).
-    - Try APIs directly on the Store front.
+    - Try APIs directly on the Developer Portal.
     - Internationalization (i18n) support. 
 </details>
     
@@ -141,11 +141,11 @@ Key Features
 <summary>Pluggable, Extensible, and Themeable</summary>  
         
     - All components are highly customizable through styling, theming, and open source code.
-    - Storefront implemented with Jaggery (jaggeryjs.org) for easy of customization.
+    - Developer Portal implemented with React.
     - Pluggable to third-party analytics systems and billing systems (Available soon in a future version).
     - Pluggable to existing user stores including JDBC and LDAP.
     - Components usable separately. 
-    - Store front can be used to front APIs that are routed through third-party gateways such as, Intel Expressway Service Gateway.
+    - Developer Portal can be used to front APIs that are routed through third-party gateways such as, Intel Expressway Service Gateway.
     - Support for Single Sign On (SSO) using SAML 2.0 for easy integration with existing web apps.
 </details>
 
@@ -153,8 +153,8 @@ Key Features
 <summary>Easily Deployable in Enterprise Settings</summary>
         
     - Role based access control (RBAC) for managing users and their authorization levels.
-    - Store-front can be deployed in DMZ for external access with the Publisher inside the firewall for private control.
-    - Different user stores for developer focused store-front and internal operations in the publisher.
+    - Developer Portal can be deployed in DMZ for external access with the Publisher inside the firewall for private control.
+    - Different user stores for developer focused Developer Portal and internal operations in the publisher.
     - Integrates with enterprise identity systems including LDAP and Microsoft Active Directory.
     - Gateway can be deployed in DMZ with controlled access to WSO2 Identity Server (for authentication/authorization) and governance database behind a firewall.
 </details>
@@ -209,8 +209,8 @@ Installation & Running
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - http://localhost:9763/publisher \
   You may sign in to the Publisher using the default administrator credentials (username: admin, password: admin).
-    * API Store web application is running at - http://localhost:9763/store \
-  You may sign in to the Store using the default administrator credentials (username: admin, password: admin).
+    * Developer Portal web application is running at - http://localhost:9763/devportal \
+  You may sign in to the Developer Portal using the default administrator credentials (username: admin, password: admin).
 
 Documentation
 ==============

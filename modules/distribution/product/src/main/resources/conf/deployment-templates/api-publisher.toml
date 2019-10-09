@@ -81,8 +81,8 @@ enable = true
 [apim.cache.publisher_roles] #check the usage and move to dev role
 enable = true
 
-[apim.store]
-url = "https://store.wso2.com:443/store"
+[apim.devportal]
+url = "https://devportal.wso2.com:443/devportal"
 
 [apim.workflow]
 enable = false

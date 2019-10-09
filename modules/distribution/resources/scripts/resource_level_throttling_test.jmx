@@ -38,13 +38,13 @@
             <stringProp name="Argument.value">/testapi1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="storeIP" elementType="Argument">
-            <stringProp name="Argument.name">storeIP</stringProp>
+          <elementProp name="devportalIP" elementType="Argument">
+            <stringProp name="Argument.name">devportalIP</stringProp>
             <stringProp name="Argument.value">localhost</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="storePort" elementType="Argument">
-            <stringProp name="Argument.name">storePort</stringProp>
+          <elementProp name="devportalPort" elementType="Argument">
+            <stringProp name="Argument.name">devportalPort</stringProp>
             <stringProp name="Argument.value">9763</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -551,8 +551,8 @@ Failure=true;
                   </elementProp>
                 </collectionProp>
               </elementProp>
-              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
-              <stringProp name="HTTPSampler.port">${storePort}</stringProp>
+              <stringProp name="HTTPSampler.domain">${devportalIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${devportalPort}</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
               <stringProp name="HTTPSampler.protocol"></stringProp>
@@ -582,7 +582,7 @@ Failure=true;
               </ResponseAssertion>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login_to_store" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login_to_devportal" enabled="true">
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                 <collectionProp name="Arguments.arguments">
                   <elementProp name="action" elementType="HTTPArgument">
@@ -608,8 +608,8 @@ Failure=true;
                   </elementProp>
                 </collectionProp>
               </elementProp>
-              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
-              <stringProp name="HTTPSampler.port">${storePort}</stringProp>
+              <stringProp name="HTTPSampler.domain">${devportalIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${devportalPort}</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
               <stringProp name="HTTPSampler.protocol"></stringProp>
@@ -654,8 +654,8 @@ Failure=true;
                   </elementProp>
                 </collectionProp>
               </elementProp>
-              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
-              <stringProp name="HTTPSampler.port">${storePort}</stringProp>
+              <stringProp name="HTTPSampler.domain">${devportalIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${devportalPort}</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
               <stringProp name="HTTPSampler.protocol"></stringProp>
@@ -741,8 +741,8 @@ vars.put(&quot;appid&quot;, appid);</stringProp>
                   </elementProp>
                 </collectionProp>
               </elementProp>
-              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
-              <stringProp name="HTTPSampler.port">${storePort}</stringProp>
+              <stringProp name="HTTPSampler.domain">${devportalIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${devportalPort}</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
               <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -833,8 +833,8 @@ vars.put(&quot;appid&quot;, appid);</stringProp>
                   </elementProp>
                 </collectionProp>
               </elementProp>
-              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
-              <stringProp name="HTTPSampler.port">${storePort}</stringProp>
+              <stringProp name="HTTPSampler.domain">${devportalIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${devportalPort}</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
               <stringProp name="HTTPSampler.protocol">http</stringProp>

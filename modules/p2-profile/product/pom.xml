@@ -447,7 +447,7 @@
                                     org.wso2.carbon.identity.carbon.auth.saml2:org.wso2.carbon.identity.authenticator.saml2.sso.feature:${carbon.identity.carbon.auth.saml2.version}
                                 </featureArtifactDef>
 
-                                <!--Asset Store Feature list -->
+                                <!--Asset Devportal Feature list -->
                                 <featureArtifactDef>
                                     org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
                                 </featureArtifactDef>
@@ -1703,7 +1703,7 @@
                     </execution>
                     <!--End of gateway worker profile-->
 
-                    <!--Start of api store profile-->
+                    <!--Start of api devportal profile-->
                     <execution>
                         <id>p2-profile-generation-for-api-devportal-profile</id>
                         <phase>package</phase>
@@ -2203,7 +2203,7 @@
                             </features>
                         </configuration>
                     </execution>
-                    <!--End of api store profile-->
+                    <!--End of api devportal profile-->
 
                     <!--Start of api publisher profile-->
                     <execution>
@@ -2612,7 +2612,7 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                <!-- Features related to Asset Store -->
+                                <!-- Features related to Asset Devportal -->
                                 <feature>
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
