@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -44,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -67,8 +69,6 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     private String providerName;
     private APIIdentifier apiIdentifier;
     private Map<String, String> requestHeaders;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
     private String newContext;
     private String applicationId = null;
@@ -88,8 +88,6 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
@@ -102,6 +100,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
+        userAccessToken = applicationKeyDTO.getToken().getAccessToken();
 
     }
 
@@ -116,17 +115,25 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb("GET");
+        apiOperationsDTO1.setTarget("/");
+        apiOperationsDTO1.setAuthType("Application & Application User");
+        apiOperationsDTO1.setThrottlingPolicy("Unlimited");
+
+        APIOperationsDTO apiOperationsDTO2 = new APIOperationsDTO();
+        apiOperationsDTO2.setVerb("GET");
+        apiOperationsDTO2.setTarget("/customers/{id}");
+        apiOperationsDTO2.setAuthType("Application & Application User");
+        apiOperationsDTO2.setThrottlingPolicy("Unlimited");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        operationsDTOS.add(apiOperationsDTO2);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
-        //get access token
-        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
-                + user.getPassword();
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
-        JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
-            consumerSecret, requestBody, tokenEndpointURL).getData());
-
-        userAccessToken = accessTokenGenerationResponse.getString("access_token");
-
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");

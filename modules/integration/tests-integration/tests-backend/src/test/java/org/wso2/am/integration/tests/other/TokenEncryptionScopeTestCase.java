@@ -31,9 +31,6 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -56,9 +53,6 @@ import java.util.ArrayList;
 public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(TokenEncryptionScopeTestCase.class);
-
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
 
     private UserManagementClient userManagementClient1 = null;
 
@@ -93,10 +87,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
         super.init();
-
-        //Initialize publisher and store.
-        restAPIPublisher = new RestAPIPublisherImpl();
-        restAPIStore = new RestAPIStoreImpl();
     }
 
     @Test(groups = "wso2.am", description = "Check if Scopes work fine with token encryption enabled.")
@@ -181,7 +171,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             // For Admin user
             // create new application and subscribing
             apiStore.login(APP_DEV_USER, APP_DEV_PWD);
-            restAPIStore = new RestAPIStoreImpl();
 
             HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                     "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,

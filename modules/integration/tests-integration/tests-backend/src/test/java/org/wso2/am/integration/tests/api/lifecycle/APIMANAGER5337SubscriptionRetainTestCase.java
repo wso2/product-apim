@@ -25,10 +25,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -38,7 +35,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.File;
 import java.net.URL;
 
-import static org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO.StatusEnum;
 
 /**
  * This class checks whether the API subscriptions are retained when an API is demote to the CREATED state of
@@ -78,7 +74,6 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
             //Add the API using the API publisher.
-            RestAPIPublisherImpl restAPIPublisher = new RestAPIPublisherImpl();
             HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
             //verifyResponse(apiResponse);
 
@@ -86,9 +81,6 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
 
             //Publish the API
             restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
-
-            //Add an Application in the Store.
-            RestAPIStoreImpl restAPIStore = new RestAPIStoreImpl();
 
             HttpResponse applicationResponse = restAPIStore.createApplication("subscriptionCheckApp1",
                     "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,

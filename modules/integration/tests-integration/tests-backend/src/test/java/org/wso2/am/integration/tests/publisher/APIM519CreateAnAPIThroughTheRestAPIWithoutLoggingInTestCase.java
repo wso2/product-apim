@@ -46,7 +46,6 @@ import static org.testng.Assert.assertTrue;
 public class APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase extends
         APIMIntegrationBaseTest {
 
-    private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
     private String apiProductionEndPointUrl;
 
@@ -88,12 +87,11 @@ public class APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase extends
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTag = "tag519-1, tag519-2, tag519-3";
 
-        RestAPIPublisherImpl publisher = new RestAPIPublisherImpl();
         APIRequest apiCreationRequestBean = new APIRequest(apiNameTest, apiContextTest,
                 new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setVersion(apiVersion);
         try {
-            HttpResponse apiCreationResponse = publisher.addAPI(apiCreationRequestBean);
+            HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
             assertFalse("API created without login in", false);
         } catch (ApiException e) {
             assertEquals(e.getCode(), Response.Status.UNAUTHORIZED.getStatusCode());

@@ -98,7 +98,7 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";
-        String dcrURL = publisherURL + "client-registration/v0.14/register";
+        String dcrURL = publisherURL + "client-registration/v0.15/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +
@@ -184,7 +184,18 @@ public class RestAPIPublisherImpl {
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
-        body.setOperations(apiRequest.getOperationsDTOS());
+        if (apiRequest.getOperationsDTOS() != null) {
+            body.setOperations(apiRequest.getOperationsDTOS());
+        } else {
+            List<APIOperationsDTO> operations = new ArrayList<>();
+            APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+            apiOperationsDTO.setVerb("GET");
+            apiOperationsDTO.setTarget("/*");
+            apiOperationsDTO.setAuthType("Application & Application User");
+            apiOperationsDTO.setThrottlingPolicy("Unlimited");
+            operations.add(apiOperationsDTO);
+            body.setOperations(operations);
+        }
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
@@ -385,7 +396,19 @@ public class RestAPIPublisherImpl {
         gatewayEnvironments.add(apiRequest.getEnvironment());
         body.setGatewayEnvironments(gatewayEnvironments);
         body.setMediationPolicies(apiRequest.getMediationPolicies());
-        body.setOperations(apiRequest.getOperationsDTOS());
+        if (apiRequest.getOperationsDTOS() != null) {
+            body.setOperations(apiRequest.getOperationsDTOS());
+        } else {
+            List<APIOperationsDTO> operations = new ArrayList<>();
+            APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+            apiOperationsDTO.setVerb("GET");
+            apiOperationsDTO.setTarget("/*");
+            apiOperationsDTO.setAuthType("Application & Application User");
+            apiOperationsDTO.setThrottlingPolicy("Unlimited");
+            operations.add(apiOperationsDTO);
+            body.setOperations(operations);
+        }
+
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));

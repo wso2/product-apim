@@ -188,7 +188,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
             File targetFile = new File(
                     carbonHome + File.separator + "repository" + File.separator + "deployment" + File.separator
                             + "server" + File.separator + "jaggeryapps" + File.separator +
-                            "store-old" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
+                            "devportal" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
             serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
         }
 
