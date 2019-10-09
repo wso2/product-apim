@@ -46,7 +46,7 @@ ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
-[apim.store]
+[apim.devportal]
 enable_application_sharing = true
 application_sharing_type = "default"
 
