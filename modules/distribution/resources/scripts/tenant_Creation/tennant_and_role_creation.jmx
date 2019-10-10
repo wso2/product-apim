@@ -91,13 +91,13 @@
             <stringProp name="Argument.value">/twitter</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="storeIP" elementType="Argument">
-            <stringProp name="Argument.name">storeIP</stringProp>
+          <elementProp name="devportalIP" elementType="Argument">
+            <stringProp name="Argument.name">devportalIP</stringProp>
             <stringProp name="Argument.value">localhost</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="storePort" elementType="Argument">
-            <stringProp name="Argument.name">storePort</stringProp>
+          <elementProp name="devportalPort" elementType="Argument">
+            <stringProp name="Argument.name">devportalPort</stringProp>
             <stringProp name="Argument.value">9763</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
