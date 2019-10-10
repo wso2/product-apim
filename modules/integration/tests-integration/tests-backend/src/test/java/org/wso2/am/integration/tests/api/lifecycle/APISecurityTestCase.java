@@ -19,22 +19,22 @@
 package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.ClientCertificateCreationBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -49,11 +49,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -61,41 +59,97 @@ import static org.testng.Assert.assertEquals;
 /**
  * This class tests the behaviour of API when there is choice of selection between oauth2 and mutual ssl in API Manager.
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
+    private final String API_NAME = "mutualsslAPI";
+    private final String API_NAME_2 = "mutualsslAPI2";
     private final String API_CONTEXT = "mutualsslAPI";
     private final String API_CONTEXT_2 = "mutualsslAPI2";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
-    private APIIdentifier apiIdentifier1;
-    private APIIdentifier apiIdentifier2;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
     private ServerConfigurationManager serverConfigurationManager;
     private String accessToken;
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
+    private String applicationId;
+    private String apiId1, apiId2;
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
-            throws APIManagerIntegrationTestException, XPathExpressionException, IOException, AutomationUtilException {
+            throws APIManagerIntegrationTestException, IOException, ApiException, org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException {
         super.init();
         startServerWithConfigChanges();
-        apiPublisherClientUser1 = new APIPublisherRestClient(getPublisherURLHttp());
-        apiStoreClientUser1 = new APIStoreRestClient(getStoreURLHttp());
-        publishAPI(API_CONTEXT, API_CONTEXT, "", "example.crt");
-        publishAPI(API_CONTEXT_2, API_CONTEXT_2, "oauth2", "abcde.crt");
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
-        apiIdentifier1 = new APIIdentifier(user.getUserName(), API_CONTEXT, API_VERSION_1_0_0);
-        apiIdentifier2 = new APIIdentifier(user.getUserName(), API_CONTEXT_2, API_VERSION_1_0_0);
+        APIRequest apiRequest1 = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+        apiRequest1.setVersion(API_VERSION_1_0_0);
+        apiRequest1.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest1.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest1.setTags(API_TAGS);
+        apiRequest1.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
 
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiStoreClientUser1
-                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-        subscribeToAPI(apiIdentifier2, APPLICATION_NAME, apiStoreClientUser1);
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb("GET");
+        apiOperationsDTO1.setTarget("/customers/{id}");
+        apiOperationsDTO1.setAuthType("Application & Application User");
+        apiOperationsDTO1.setThrottlingPolicy("Unlimited");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        apiRequest1.setOperationsDTOS(operationsDTOS);
+
+        List<String> securitySchemes = new ArrayList<>();
+        securitySchemes.add("mutualssl");
+        apiRequest1.setSecurityScheme(securitySchemes);
+
+        HttpResponse response1 = restAPIPublisher.addAPI(apiRequest1);
+        apiId1 = response1.getData();
+
+        String certOne = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "example.crt";
+        restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        APIRequest apiRequest2 = new APIRequest(API_NAME_2, API_CONTEXT_2, new URL(apiEndPointUrl));
+        apiRequest2.setVersion(API_VERSION_1_0_0);
+        apiRequest2.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest2.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest2.setTags(API_TAGS);
+        apiRequest2.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest2.setOperationsDTOS(operationsDTOS);
+
+        List<String> securitySchemes2 = new ArrayList<>();
+        securitySchemes2.add("mutualssl");
+        securitySchemes2.add("oauth2");
+        apiRequest2.setSecurityScheme(securitySchemes2);
+
+        HttpResponse response2 = restAPIPublisher.addAPI(apiRequest2);
+        apiId2 = response2.getData();
+
+        String certTwo = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "abcde.crt";
+        restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+
+        applicationId = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+
         //get access token
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
@@ -169,10 +223,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 //    }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, IOException, AutomationUtilException {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier1, apiPublisherClientUser1);
-        deleteAPI(apiIdentifier2, apiPublisherClientUser1);
+    public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId1);
+        restAPIPublisher.deleteAPI(apiId2);
+
         serverConfigurationManager.restoreToLastConfiguration(true);
     }
 
@@ -190,51 +245,5 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         + File.separator + "deployment.toml"));
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restartGracefully();
-    }
-
-    /**
-     * To get the base64 encoded certificate.
-     *
-     * @param certificateFileName Relevant file name of the certificate.
-     * @return Base64 encoded certificate.
-     */
-    private String getBase64EncodedCertificate(String certificateFileName) throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + certificateFileName);
-        StringWriter writer = new StringWriter();
-        IOUtils.copy(fileInputStream, writer, StandardCharsets.UTF_8.toString());
-        return new String(Base64.encodeBase64(writer.toString().getBytes()));
-    }
-
-    /**
-     * To publish an API.
-     *
-     * @param apiName         Name of the API.
-     * @param apiContext      API Context.
-     * @param oauth2          To indicate whether oauth2 security enabled.
-     * @param certificateName Name of the certificate.
-     * @throws IOException                        IO Exception.
-     * @throws APIManagerIntegrationTestException API Manager Inegration Test Exception.
-     */
-    private void publishAPI(String apiName, String apiContext, String oauth2, String certificateName)
-            throws IOException, APIManagerIntegrationTestException {
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-        String apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        String providerName = user.getUserName();
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext,
-                API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
-        apiCreationRequestBean.setMutualSSLChecked("mutualssl");
-        apiCreationRequestBean.setOauth2Checked(oauth2);
-
-        APIIdentifier apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
-        apiPublisherClientUser1.addAPI(apiCreationRequestBean);
-        String certificate = getBase64EncodedCertificate(certificateName);
-        ClientCertificateCreationBean clientCertificateCreationBean = new ClientCertificateCreationBean(apiName,
-                providerName, API_VERSION_1_0_0, certificate, "Unlimited", apiName);
-        apiPublisherClientUser1.uploadCertificate(clientCertificateCreationBean);
-        apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
     }
 }

@@ -27,12 +27,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -75,10 +83,16 @@ public class APIMIntegrationBaseTest {
     private static final long WAIT_TIME = 45 * 1000;
     protected APIPublisherRestClient apiPublisher;
     protected APIStoreRestClient apiStore;
+    protected RestAPIPublisherImpl restAPIPublisher;
+    protected RestAPIStoreImpl restAPIStore;
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
+    protected String publisherURLHttps;
+    protected String keyManagerHTTPSURL;
+    protected String gatewayHTTPSURL;
     protected String storeURLHttp;
+    protected String storeURLHttps;
     protected String keymanagerSessionCookie;
     protected String keymanagerSuperTenantSessionCookie;
     protected final int inboundWebSocketPort = 9099;
@@ -147,9 +161,22 @@ public class APIMIntegrationBaseTest {
 
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            publisherURLHttps = publisherUrls.getWebAppURLHttps();
+            keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
+            gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+
             storeURLHttp = storeUrls.getWebAppURLHttp();
+            storeURLHttps = storeUrls.getWebAppURLHttps();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new APIStoreRestClient(storeURLHttp);
+            restAPIPublisher = new RestAPIPublisherImpl(
+                    publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getContextUser().getPassword(),
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+            restAPIStore =
+                    new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                            storeContext.getContextTenant().getContextUser().getPassword(),
+                            storeContext.getContextTenant().getDomain(), storeURLHttps);
 
             try {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
@@ -421,57 +448,28 @@ public class APIMIntegrationBaseTest {
      * Cleaning up the API manager by removing all APIs and applications other than default application
      *
      * @throws APIManagerIntegrationTestException - occurred when calling the apis
-     * @throws org.json.JSONException             - occurred when reading the json
      */
     protected void cleanUp() throws Exception {
 
-        APIStoreRestClient apiStore = new APIStoreRestClient(getStoreURLHttp());
-        apiStore.login(user.getUserName(), user.getPassword());
-        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
-        publisherRestClient.login(user.getUserName(), user.getPassword());
-        HttpResponse subscriptionDataResponse = apiStore.getAllSubscriptions();
-        verifyResponse(subscriptionDataResponse);
-        JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
-
-        if (!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
-            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
-            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
-
-            //Remove API Subscriptions
-            for (int i = 0; i < jsonApplicationsArray.length(); i++) {
-                JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
-                int id = appObject.getInt(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ID);
-                JSONArray subscribedAPIJSONArray = appObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
-                for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
-                    JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
-                    verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
-                            , subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION),
-                                                                  subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
+        ApplicationListDTO applicationListDTO = restAPIStore.getAllApps();
+        for (ApplicationInfoDTO applicationInfoDTO: applicationListDTO.getList()) {
+            SubscriptionListDTO subsDTO = restAPIStore
+                    .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
+            if (subsDTO != null) {
+                for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
+                    restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
                 }
             }
-        }
-
-        //delete all application other than default application
-        String applicationData = apiStore.getAllApplications().getData();
-        JSONObject jsonApplicationData = new JSONObject(applicationData);
-        JSONArray applicationArray = jsonApplicationData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
-        for (int i = 0; i < applicationArray.length(); i++) {
-            JSONObject jsonApplication = applicationArray.getJSONObject(i);
-            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals(APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME)) {
-                verifyResponse(apiStore.removeApplication(jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)));
+            if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
+                restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
             }
         }
 
-        String apiData = apiStore.getAPI().getData();
-        JSONObject jsonAPIData = new JSONObject(apiData);
-        JSONArray jsonAPIArray = jsonAPIData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APIS);
-
-        //delete all APIs
-        for (int i = 0; i < jsonAPIArray.length(); i++) {
-            JSONObject api = jsonAPIArray.getJSONObject(i);
-//            verifyResponse(publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName()));
-            publisherRestClient.deleteAPI(api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
-                    , api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION), user.getUserName());
+        APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+        if (apiListDTO != null) {
+            for (APIInfoDTO apiInfoDTO: apiListDTO.getList()) {
+                restAPIPublisher.deleteAPI(apiInfoDTO.getId());
+            }
         }
     }
 
@@ -649,5 +647,17 @@ public class APIMIntegrationBaseTest {
             }
         }
         return null;
+    }
+
+    protected RestAPIPublisherImpl getRestAPIPublisherForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+    }
+
+    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
+        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
     }
 }

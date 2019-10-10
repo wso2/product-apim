@@ -23,21 +23,22 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,14 +53,9 @@ import static org.testng.Assert.assertEquals;
  * url. Ex: http://localhost:8280/twitter
  * </p>
  */
-public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
-
-    public static final String DEFAULT_VERSION_APP = "DefaultVersionAPP" + (int )(Math.random() * 100 + 1);
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-    private String gatewaySessionCookie;
-    private String provider;
-
+public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
+    private String applicationID;
+    private String apiId;
     @Factory(dataProvider = "userModeDataProvider")
     public DefaultVersionAPITestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -77,26 +73,17 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
-        apiStore = new APIStoreRestClient(getStoreURLHttp());
-        provider = user.getUserName();
-
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
         }
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API")
     public void testDefaultVersionAPI() throws Exception {
-
-        //Login to the API Publisher
-        apiPublisher.login(user.getUserName(),
-                           user.getPassword());
 
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
@@ -105,67 +92,58 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
         //Create the api creation request object
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
+        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
         apiRequest.setDefault_version("default_version");
-        apiRequest.setDefault_version_checked("default_version");
+        apiRequest.setDefault_version_checked("true");
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setProvider(provider);
-
-        //Add the API using the API publisher.
-        HttpResponse response = apiPublisher.addAPI(apiRequest);
-
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, user.getUserName(),
-                                             APILifeCycleState.PUBLISHED);
-        //Publish the API
-        response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-
-        //Login to the API Store
-        apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        response = apiStore
-                .addApplication("DefaultVersionAPP", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-        verifyResponse(response);
+        HttpResponse applicationResponse = restAPIStore
+                .createApplication("DefaultVersionAPP", "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
 
-        //Subscribe the API to the DefaultApplication
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, provider,
-                "DefaultVersionAPP", APIMIntegrationConstants.API_TIER.UNLIMITED);
-        response = apiStore.subscribe(subscriptionRequest);
+        applicationID = applicationResponse.getData();
+
+        //Create api and subscribe the API to the DefaultApplication
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Generate production token and invoke with that
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultVersionAPP");
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
-        //Get the accessToken which was generated.
-        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").getString("accessToken");
-
-        String  apiInvocationUrl = getAPIInvocationURLHttp(apiContext);
-
+        String apiInvocationUrl = getAPIInvocationURLHttp(apiContext);
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         //Going to access the API without the version in the request url.
-        HttpResponse directResponse = HttpRequestUtil.doGet(endpointUrl, new HashMap<String, String>());
+        HttpResponse directResponse = HttpRequestUtil.doGet(endpointUrl, new HashMap<>());
 
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + accessToken);
 
         //Invoke the API
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiInvocationUrl, headers);
 
         //Check if accessing the back-end directly and accessing it via the API yield the same responses.
         assertEquals(httpResponse.getData(), directResponse.getData(),
-                     "Default version API test failed while " + "invoking the API.");
+                "Default version API test failed while " + "invoking the API.");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
+            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+        }
+        restAPIStore.deleteApplication(applicationID);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 

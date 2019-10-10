@@ -18,25 +18,28 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.lang.StringUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
+import javax.ws.rs.core.Response;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -58,62 +61,56 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
     private final String APPLICATION_NAME = "AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
-    private APIIdentifier apiIdentifierAPI1Version1;
-    private APIIdentifier apiIdentifierAPI1Version2;
     private String providerName;
-    private APICreationRequestBean apiCreationRequestBean;
+    private String applicationId;
+    private String apiId;
+    private String newApiId;
+    private APIRequest apiRequest;
     private Map<String, String> requestHeaders;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
+    private ArrayList<String> grantTypes;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws Exception {
         super.init();
-        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() +  API_END_POINT_POSTFIX_URL;
+        grantTypes = new ArrayList<>();
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName
-                        , new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiIdentifierAPI1Version1 =
-                new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifierAPI1Version2 =
-                new APIIdentifier(providerName, API_NAME, API_VERSION_2_0_0);
-        String publisherURLHttp = getPublisherURLHttps();
-        String storeURLHttp = getStoreURLHttps();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
 
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiStoreClientUser1
-                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(providerName);
+        apiRequest.setTags(API_TAGS);
+        apiRequest.setDescription(API_DESCRIPTION);
+
+        //Create and publish API version 1.0.0
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
+
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.")
     public void testSubscriptionOfOldAPI()
-            throws APIManagerIntegrationTestException, IOException, XPathExpressionException {
-        //Create and publish API version 1.0.0
-        createAndPublishAPI(apiIdentifierAPI1Version1, apiCreationRequestBean, apiPublisherClientUser1, false);
+            throws APIManagerIntegrationTestException {
         // Subscribe old api version (1.0.0)
+        waitForAPIDeploymentSync(apiRequest.getProvider(),
+                apiRequest.getName(),
+                apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
 
-        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),
-                                 apiCreationRequestBean.getName(),
-                                 apiCreationRequestBean.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
-
-        HttpResponse oldVersionSubscribeResponse =
-                subscribeToAPI(apiIdentifierAPI1Version1, APPLICATION_NAME, apiStoreClientUser1);
+        HttpResponse oldVersionSubscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
-                        getAPIIdentifierString(apiIdentifierAPI1Version1));
-        assertEquals(getValueFromJSON(oldVersionSubscribeResponse, "error"), "false",
-                "Error in subscribe of old API version" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + oldVersionSubscribeResponse.getData());
+                        getAPIIdentifierStringFromAPIRequest(apiRequest));
+        assertTrue(StringUtils.isNotEmpty(oldVersionSubscribeResponse.getData()),
+                "Error in subscribe of old API version" + getAPIIdentifierStringFromAPIRequest(apiRequest));
     }
 
 
@@ -121,33 +118,41 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
             dependsOnMethods = "testSubscriptionOfOldAPI")
     public void testPublishCopiedAPIWithOutReSubscriptionRequired() throws Exception {
         //Copy  API
-        copyAPI(apiIdentifierAPI1Version1, API_VERSION_2_0_0, apiPublisherClientUser1);
+        //Create a new Version
+        apiRequest.setVersion(API_VERSION_2_0_0);
+        HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_2_0_0, apiId, null);
+        assertEquals(newVersionResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response Code Mismatch");
+        newApiId = newVersionResponse.getData();
         //Publish  version 2.0.0 without re-subscription required
-        HttpResponse publishAPIResponse =
-                apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version2, false);
+        HttpResponse publishAPIResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(newApiId, APILifeCycleAction.PUBLISH.getAction(), null);
+
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version2));
-        assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
-                "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
-                        "Response Data:" + publishAPIResponse.getData());
+                "API publish Response code is invalid " + getAPIIdentifierStringFromAPIRequest(apiRequest));
+        assertTrue(APILifeCycleState.PUBLISHED.getState().equals(publishAPIResponse.getData()),
+                "API status Change is invalid when retire an API :" + API_NAME + " with API ID ("
+                        + apiId + ")" + " Response Code:" + publishAPIResponse.getResponseCode());
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version before the new version" +
-            " is subscribed." ,dependsOnMethods = "testPublishCopiedAPIWithOutReSubscriptionRequired")
+            " is subscribed.", dependsOnMethods = "testPublishCopiedAPIWithOutReSubscriptionRequired")
     public void testInvokeNewAPIWithoutSubscribeTheNewVersion() throws Exception {
         //Invoke  old version
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
         //get access token
-        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");
-         requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp( API_CONTEXT ,API_VERSION_2_0_0) +
-                                      API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_2_0_0) +
+                        API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke new api before subscribe the new version when re-subscription" +
                         " is not required.");
@@ -158,9 +163,14 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
-        deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);
+        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
+            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+        }
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(newApiId);
+
         super.cleanUp();
     }
 }

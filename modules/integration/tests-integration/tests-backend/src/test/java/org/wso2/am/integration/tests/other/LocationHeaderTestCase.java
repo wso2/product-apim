@@ -31,6 +31,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -44,21 +50,20 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+
+import static org.testng.Assert.assertNotNull;
 
 public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(LocationHeaderTestCase.class);
-
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private String applicationId;
+    private String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
@@ -68,11 +73,6 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = "wso2.am", description = "Check whether the Location header is correct")
     public void testAPIWithLocationHeader() throws Exception {
-
-        //Login to the API Publisher
-        HttpResponse response;
-        response = apiPublisher.login(user.getUserName(), user.getPassword());
-        verifyResponse(response);
 
         String apiName = "LocationHeaderAPI";
         String apiVersion = "1.0.0";
@@ -87,38 +87,36 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Add the API using the API publisher.
-        response = apiPublisher.addAPI(apiRequest);
-        verifyResponse(response);
+        APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
+        apiId = createdAPI.getId();
 
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                                                   user.getUserName(), APILifeCycleState.PUBLISHED);
-        //Publish the API
-        response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(response);
+        WorkflowResponseDTO lifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(
+                createdAPI.getId(), Constants.PUBLISHED);
+        Assert.assertNotNull(lifecycleChangeResponse.getLifecycleState());
+        Assert.assertEquals(lifecycleChangeResponse.getLifecycleState().getState(),
+                APILifeCycleState.PUBLISHED.getState(),
+                "Lifecycle State was not changed to " + APILifeCycleState.PUBLISHED.getState());
 
-        //Login to the API Store
-        response = apiStore.login(user.getUserName(), user.getPassword());
-        verifyResponse(response);
 
-        //Add an Application in the Store.
-        response = apiStore.addApplication("LocHeaderAPP", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-        verifyResponse(response);
+        HttpResponse appCreateResponse = restAPIStore.createApplication("LocHeaderAPP", "",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = appCreateResponse.getData();
 
-        //Subscribe the API to the DefaultApplication
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                                                                          user.getUserName(), "LocHeaderAPP",
+        //Subscribe the API to the LocHeaderAPP
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(createdAPI.getId(), applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
-        response = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(response);
 
-        //Generate production token and invoke with that
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("LocHeaderAPP");
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject responseJson = new JSONObject(responseString);
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, "36000", "",
+                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
+        assertNotNull(applicationKeyDTO.getToken(), "Generated Keys doesn't include a token");
         //Get the accessToken which was generated.
-        String accessToken = responseJson.getJSONObject("data").getJSONObject("key").getString("accessToken");
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        assertNotNull(accessToken, "Production access token is Empty");
 
         //Going to access the API with the version in the request url.
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
@@ -143,6 +141,8 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 }

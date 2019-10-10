@@ -1,6 +1,6 @@
 /*
  *
- *   Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -22,33 +22,36 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(AdvancedWebAppDeploymentConfig.class);
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
     private WebAppAdminClient webAppAdminClient;
-    private APIIdentifier apiIdentifier;
+    private String apiId;
+    private String applicationID;
 
     @BeforeTest(alwaysRun = true)
-    public void deployWebApps() throws Exception {
+    public void deployWebApps(ITestContext ctx) throws Exception {
         super.init();
         String fileFormat = ".war";
         String webApp = "jaxrs_basic";
@@ -77,45 +80,60 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                 .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
         log.info("Web App Deployed");
 
-        initialize();
+        initialize(ctx);
     }
 
     @AfterTest(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        super.cleanUp();
+        restAPIStore.deleteApplication(applicationID);
+        restAPIPublisher.deleteAPI(apiId);
     }
 
-    private void initialize() throws Exception {
+    private void initialize(ITestContext ctx) throws Exception {
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-
-        createAPIs();
+        createAPIs(ctx);
     }
 
-    private void createAPIs() throws Exception {
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME,
-                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+    private void createAPIs(ITestContext ctx) throws Exception {
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationID = applicationResponse.getData();
         //Create publish and subscribe a API
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT,
-                API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                apiStoreClientUser1, APPLICATION_NAME);
+        APIRequest apiRequest;
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTags(API_TAGS);
+        apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+
+        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
+        apiOperationsDTO1.setVerb("GET");
+        apiOperationsDTO1.setTarget("/");
+        apiOperationsDTO1.setAuthType("Application & Application User");
+        apiOperationsDTO1.setThrottlingPolicy("Unlimited");
+
+        APIOperationsDTO apiOperationsDTO2 = new APIOperationsDTO();
+        apiOperationsDTO2.setVerb("GET");
+        apiOperationsDTO2.setTarget("/customers/{id}");
+        apiOperationsDTO2.setAuthType("Application & Application User");
+        apiOperationsDTO2.setThrottlingPolicy("Unlimited");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO1);
+        operationsDTOS.add(apiOperationsDTO2);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        ctx.setAttribute("apiId", apiId);
+        ctx.setAttribute("applicationID", applicationID);
     }
 
 }
