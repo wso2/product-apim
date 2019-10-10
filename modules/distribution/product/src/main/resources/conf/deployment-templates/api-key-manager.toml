@@ -65,5 +65,5 @@ encoding = "base64" # base64,base64url
 claim_dialect = "http://wso2.org/claims"
 header = "X-JWT-Assertion"
 signing_algorithm = "SHA256withRSA"
-enable_user_claims = true
-claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+#enable_user_claims = true
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
