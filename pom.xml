@@ -1147,6 +1147,11 @@
                 <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
                 <version>${identity.outbound.auth.oidc.version`}</version>
             </dependency>
+            <dependency>
+                <groupId>io.swagger.parser.v3</groupId>
+                <artifactId>swagger-parser</artifactId>
+                <version>${swagger-parser-version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1333,6 +1338,7 @@
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.3.2</identity.outbound.auth.oidc.version>
+        <swagger-parser-version>2.0.14</swagger-parser-version>
     </properties>
 
 </project>
