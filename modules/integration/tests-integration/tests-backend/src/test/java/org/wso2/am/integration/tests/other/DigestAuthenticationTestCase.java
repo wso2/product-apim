@@ -113,7 +113,7 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         ArrayList grantTypes = new ArrayList();
-        grantTypes.add("client_credentials");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         //get access token
         ApplicationKeyDTO applicationKeyDTO = restAPIStore
