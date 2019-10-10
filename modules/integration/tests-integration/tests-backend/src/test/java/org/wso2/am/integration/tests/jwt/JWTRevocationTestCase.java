@@ -26,31 +26,19 @@ import org.junit.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -63,10 +51,18 @@ import javax.jms.TopicSession;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.File;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(JWTRevocationTestCase.class);
@@ -85,15 +81,12 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
     private TopicConnection topicConnection;
     private TopicSession topicConsumerSession;
     private MessageConsumer consumer;
+    private String apiId;
+    private String applicationId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         log.info("JWTRevocationTestCase  Initiated");
-        APIPublisherRestClient apiPublisher;
-        String publisherURLHttp;
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-
-        ServerConfigurationManager serverConfigurationManager;
         super.init();
 
         userName = keyManagerContext.getContextTenant().getTenantAdmin().getUserName();
@@ -107,32 +100,28 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         System.setProperty("javax.net.ssl.trustStore", TRUSTSTORE_FILE_PATH_CLIENT);
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
 
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-
-
         //Create an API and Publish it in the store
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher.login(userName, password);
         APIRequest apiRequest = new APIRequest("test", "test", new URL("http://localhost:6789"));
         apiRequest.setVisibility("public");
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest("test", userName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        apiId = response.getData();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
 
         //Create an Application with TokenType as JWT to retrieve consumer key and consumer secret
-        apiStore.login(userName, password);
-        apiStore.addApplicationWithTokenType("JWTTokenTestAPI-Application",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test", "JWT");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("test", userName);
-        apiStore.subscribe(subscriptionRequest);
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("JWTTokenTestAPI-Application");
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
-        consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret").toString();
+        HttpResponse applicationResponse = restAPIStore.createApplication("JWTTokenTestAPI-Application",
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+
+        applicationId = applicationResponse.getData();
+
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
 
         try {
             //create a subscriber to jwRevocation topic in the JMS broker
@@ -147,7 +136,8 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     /**
      * Method to Create a JMS Subscriber
-     * @throws JMSException Error thrown while creating JMS connection
+     *
+     * @throws JMSException    Error thrown while creating JMS connection
      * @throws NamingException Error thrown while creating Initial Context or when look up context
      */
     private void createJMSConnection() throws JMSException, NamingException {
@@ -173,7 +163,7 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         topicConnection.start();
     }
 
-    @Test(groups = { "wso2.am" }, description = "JWT revocation test")
+    @Test(groups = {"wso2.am"}, description = "JWT revocation test")
     public void revokeRequestTestCase() throws Exception {
         log.info("revokeRequestTestCase  Initiated");
         //Retrieve a JWT
@@ -207,7 +197,7 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         log.info("revokeRequestTestCase  Finished");
     }
 
-    @Test(groups = { "wso2.am" }, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
+    @Test(groups = {"wso2.am"}, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
     public void checkETCDForRevokedJTITestCase() throws Exception {
         log.info("checkETCDForRevokedJTITTestCase  Initiated");
         String etcdEndpointURLs = "https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
@@ -215,7 +205,7 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         Map<String, String> authenticationRequestHeaders = new HashMap<>();
         authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String retrievedETCDJTIKey = "";
-        String input ="";
+        String input = "";
         try {
             HTTPSClientUtils.doPost(etcdEndpointURL, input, authenticationRequestHeaders);
             JSONObject etcdResponse = new JSONObject(
@@ -239,12 +229,12 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
         } catch (JSONException e) {
             Assert.fail("Should not throw any exceptions" + e);
         }
-        jti= "2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
+        jti = "2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
         assertEquals(retrievedETCDJTIKey, jti);
         log.info("checkETCDForRevokedJTITTestCase  Finished");
     }
 
-    @Test(groups = { "wso2.am" }, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
+    @Test(groups = {"wso2.am"}, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
     public void checkJMSTopicForRevokedJTITestCase() throws Exception {
         log.info("checkJMSTopicForRevokedJTITTestCase  Initiated");
         //Checking the message content of the received JMS message
@@ -260,6 +250,7 @@ public class JWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
-        super.cleanUp();
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
     }
 }

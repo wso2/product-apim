@@ -18,27 +18,22 @@
 
 package org.wso2.am.integration.tests.publisher;
 
-import org.json.JSONObject;
-
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMIntegrationBaseTest {
     private final String apiNameTest = "APIM18PublisherTest";
-    private APIPublisherRestClient apiPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5834APICreationWithInvalidInputsTestCase(TestUserMode userMode) {
@@ -56,25 +51,15 @@ public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMInte
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test API creation with invalid context")
-    public void testAPICreationWithInvalidContext() throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Test API creation with invalid context", expectedExceptions = {ApiException.class})
+    public void testAPICreationWithInvalidContext()
+            throws MalformedURLException, APIManagerIntegrationTestException, ApiException {
         String backendEndPoint = getBackendEndServiceEndPointHttp("jaxrs_basic/services/customers/customerservice");
         APIRequest apiRequest = new APIRequest(apiNameTest, "/", new URL(backendEndPoint));
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        JSONObject apiResponse = new JSONObject(serviceResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), "API creation should get an error when creating an API with / context.");
-        assertEquals(apiResponse.get("message"), " Context cannot end with '/' character" , "API creation should get an error when creating an API with / context.");
+        restAPIPublisher.addAPI(apiRequest);
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroyAPIs() throws Exception {
-        super.cleanUp();
-    }
 }

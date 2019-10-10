@@ -19,6 +19,7 @@
 package org.wso2.am.integration.tests.application;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
@@ -26,19 +27,22 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,11 +51,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import static org.testng.Assert.*;
+
 /**
  * This test case is used to test authorization_code and implicitly token generation
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
+public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(GrantTypeTokenGenerateTestCase.class);
     private final String API_NAME = "GrantTypeTokenGenerateAPIName";
     private final String API_CONTEXT = "GrantTypeTokenGenerateContext";
@@ -65,20 +71,19 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     private final String LOCATION_HEADER = "Location";
     private final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
     private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.UNLIMITED;
-    private String publisherURLHttps;
-    private String storeURLHttp;
-    private APICreationRequestBean apiCreationRequestBean;
-    private List<APIResourceBean> resList;
     private String endpointUrl;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private String consumerKey, consumerSecret;
     private String authorizeURL;
     private String tokenURL;
     private String identityLoginURL;
+    private String apiId;
+    private String applicationId;
+    private String applicationIdWithoutCallback;
     private List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
     private Map<String, String> headers = new HashMap<String, String>();
+    private ArrayList<String> grantTypes = new ArrayList<>();
+    private APIRequest apiRequest;
 
     @Factory(dataProvider = "userModeDataProvider")
     public GrantTypeTokenGenerateTestCase(TestUserMode userMode) {
@@ -88,71 +93,67 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        publisherURLHttps = publisherUrls.getWebAppURLHttp();
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(user.getUserName(), user.getPassword());
         authorizeURL = gatewayUrlsWrk.getWebAppURLNhttps() + "/authorize";
         tokenURL = gatewayUrlsWrk.getWebAppURLNhttps() + "/token";
         identityLoginURL = getKeyManagerURLHttps() + "/oauth2/authorize";
-    }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation")
-    public void testAPICreation() throws Exception {
+        //create Application
+        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                "Test Application", APIThrottlingTier.UNLIMITED.getState(),
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+
+        applicationId = applicationResponse.getData();
+
         String providerName = user.getUserName();
 
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
-                new URL(endpointUrl));
-        apiCreationRequestBean.setTags(TAGS);
-        apiCreationRequestBean.setDescription(DESCRIPTION);
-        apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
+        List<APIOperationsDTO> apiOperationsDTOS = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb(RESTAPITestConstants.GET_METHOD);
+        apiOperationsDTO
+                .setAuthType(APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType());
+        apiOperationsDTO.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN);
+        apiOperationsDTO.setTarget("/add");
+        apiOperationsDTOS.add(apiOperationsDTO);
 
-        //define resources
-        resList = new ArrayList<APIResourceBean>();
-        APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/add");
-        resList.add(res1);
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
 
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(providerName);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setOperationsDTOS(apiOperationsDTOS);
+        apiRequest.setTiersCollection(TIER_COLLECTION);
+        apiRequest.setTags(TAGS);
+        apiRequest.setDescription(DESCRIPTION);
 
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.SAML2);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.NTLM);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.JWT);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.IMPLICIT);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test Application Creation", dependsOnMethods = "testAPICreation")
+    @Test(groups = { "wso2.am" }, description = "Test Application Creation")
     public void testApplicationCreation() throws Exception {
+        //generate keys for the subscription
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, "3600", CALLBACK_URL, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
 
-        //add a application
-        HttpResponse serviceResponse = apiStore
-                .addApplication(APP_NAME, APIThrottlingTier.UNLIMITED.getState(), CALLBACK_URL, "this-is-test");
-        verifyResponse(serviceResponse);
+        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
 
-        //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
 
-        //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-        generateAppKeyRequest.setCallbackUrl(CALLBACK_URL);
-        serviceResponse = apiStore.generateApplicationKey(generateAppKeyRequest);
-        verifyResponse(serviceResponse);
-        JSONObject response = new JSONObject(serviceResponse.getData());
-        consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
-        consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret").toString();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
         Assert.assertNotNull(consumerKey, "Consumer Key not found");
         Assert.assertNotNull(consumerSecret, "Consumer Secret not found ");
     }
@@ -284,26 +285,35 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Test Application Creation without callback URL",
             dependsOnMethods = "testImplicit")
     public void testApplicationCreationWithoutCallBackURL() throws Exception {
-        //add a application
-        HttpResponse serviceResponse = apiStore
-                .addApplication(CALLBACK_URL_UPDATE_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "",
-                        "this-is-test");
-        verifyResponse(serviceResponse);
+        //create Application
+        HttpResponse applicationResponse = restAPIStore.createApplication(CALLBACK_URL_UPDATE_APP_NAME,
+                "Test Application", APIThrottlingTier.UNLIMITED.getState(),
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
-        //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(CALLBACK_URL_UPDATE_APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
+        applicationIdWithoutCallback = applicationResponse.getData();
+
+        //subscribing to the application
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId, applicationIdWithoutCallback,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of old API version request not successful " +
+                        getAPIIdentifierStringFromAPIRequest(apiRequest));
+        assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
+                "Error in subscribe of old API version" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+
 
         //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(CALLBACK_URL_UPDATE_APP_NAME);
-        serviceResponse = apiStore.generateApplicationKey(generateAppKeyRequest);
-        verifyResponse(serviceResponse);
-        JSONObject response = new JSONObject(serviceResponse.getData());
-        consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
-        consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret").toString();
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationIdWithoutCallback, "3600", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+
+        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
+
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
         Assert.assertNotNull(consumerKey, "Consumer Key not found");
         Assert.assertNotNull(consumerSecret, "Consumer Secret not found ");
     }
@@ -326,16 +336,18 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",
             dependsOnMethods = "testAuthRequestWithoutCallbackURL")
     public void testApplicationUpdateAndTestKeyGeneration() throws Exception {
-        String keyType = "PRODUCTION";
-        String authorizedDomains = "ALL";
-        String retryAfterFailure = String.valueOf(false);
-        String jsonParams = "{\"grant_types\":\"urn:ietf:params:oauth:grant-type:saml2-bearer iwa:ntlm implicit "
-                + "refresh_token client_credentials authorization_code password\"}";
 
-        HttpResponse response = apiStore
-                .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME, keyType, authorizedDomains, retryAfterFailure,
-                        jsonParams, CALLBACK_URL);
-        verifyResponse(response);
+        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
+        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
+        applicationKeyDTO.setCallbackUrl(CALLBACK_URL);
+        applicationKeyDTO.setSupportedGrantTypes(grantTypes);
+
+        ApiResponse<ApplicationKeyDTO> updateResponse = restAPIStore
+                .updateKeys(applicationIdWithoutCallback, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.toString(),
+                        applicationKeyDTO);
+        assertEquals(updateResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when adding an application");
+
 
         //Test the Authorization Code key generation with updates values
         testAuthCode();
@@ -345,10 +357,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(APP_NAME);
-        apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME);
-        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-        super.cleanUp();
+        restAPIStore.deleteApplication(applicationId);
+        restAPIStore.deleteApplication(applicationIdWithoutCallback);
+        restAPIPublisher.deleteAPI(apiId);
     }
 
     @DataProvider

@@ -100,6 +100,17 @@ public class APIMIntegrationConstants {
 
     }
 
+    public static class GRANT_TYPE {
+        public static final String PASSWORD = "password";
+        public static final String CLIENT_CREDENTIAL = "client_credentials";
+        public static final String AUTHORIZATION_CODE = "authorization_code";
+        public static final String REFRESH_CODE = "refresh_token";
+        public static final String SAML2 = "urn:ietf:params:oauth:grant-type:saml2-bearer";
+        public static final String NTLM = "iwa:ntlm";
+        public static final String IMPLICIT = "implicit";
+        public static final String JWT = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+    }
+
     public static class RESOURCE_TIER {
         public static final String UNLIMITED = "Unlimited";
         public static final String TENK_PER_MIN = "10KPerMin";

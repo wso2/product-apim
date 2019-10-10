@@ -396,7 +396,7 @@ public class APIStoreRestClient {
         version = request.getParameter("version");
         provider = request.getParameter("provider");
         comment = request.getParameter("comment");
-        /home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/comment/comment-add/ajax/comment-add.jag
+        /home/sanjeewa/carbon/turing/components/apimgt/api-devportal-web/1.2.0/src/site/blocks/comment/comment-add/ajax/comment-add.jag
      */
     public HttpResponse addComment(String name, String version, String provider, String comment)
             throws Exception {
@@ -431,7 +431,7 @@ public class APIStoreRestClient {
 
     public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
             throws Exception {
-        ///home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
+        ///home/sanjeewa/carbon/turing/components/apimgt/api-devportal-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store-old/site/blocks/api/recently-added/ajax/list.jag?action=getRecentlyAddedAPIs"+
         "&tenant="+tenant+"&limit="+limit)

@@ -18,17 +18,25 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -38,11 +46,11 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import javax.ws.rs.core.Response;
 
 /**
  * Base test class for all API Manager lifecycle test cases. This class contents the all the
@@ -99,6 +107,19 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     }
 
     /**
+     * Return a String with combining the value of API Name,API Version and API Provider Name as key:value format
+     *
+     * @param apiRequest - Instance of APIRequest object  that include the  API Name,API Version and API Provider
+     *                   Name to create the String
+     * @return String - with API Name,API Version and API Provider Name as key:value format
+     */
+    protected String getAPIIdentifierStringFromAPIRequest(APIRequest apiRequest) {
+        return " API Name:" + apiRequest.getName() + " API Version:" + apiRequest.getVersion() +
+                " API Provider Name :" + apiRequest.getProvider() + " ";
+
+    }
+
+    /**
      * Subscribe  a API
      *
      * @param apiIdentifier   - Instance of APIIdentifier object  that include the  API Name,
@@ -120,6 +141,26 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         return storeRestClient.subscribeToAPI(subscriptionRequest);
     }
 
+    protected SubscriptionDTO subscribeToAPI(String apiID, String applicationID, String tier,
+            RestAPIStoreImpl storeRestClient)
+            throws org.wso2.am.integration.clients.store.api.ApiException {
+        return storeRestClient.subscribeToAPI(apiID, applicationID, tier);
+    }
+
+    /**
+     * Subscribe  a API
+     *
+     * @param apiId           - UUID of the API
+     * @param applicationId   - UUID of the application
+     * @param storeRestClient - Instance of APIPublisherRestClient
+     * @return HttpResponse - Response of the API subscribe action
+     * @throws APIManagerIntegrationTestException - Exception throws by the  method call of subscribe() in
+     *                                            APIStoreRestClient.java
+     */
+    protected HttpResponse subscribeToAPIUsingRest(String apiId, String applicationId, String tier,
+           RestAPIStoreImpl storeRestClient) throws APIManagerIntegrationTestException {
+        return storeRestClient.createSubscription(apiId, applicationId, tier);
+    }
 
     /**
      * Generate the access token
@@ -166,16 +207,26 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected void deleteAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
 
-            HttpResponse deleteHTTPResponse =
-                    publisherRestClient.deleteAPI(apiIdentifier.getApiName(), apiIdentifier.getVersion(),
-                            apiIdentifier.getProviderName());
-            if (!(deleteHTTPResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    getValueFromJSON(deleteHTTPResponse, "error").equals("false"))) {
-                throw new APIManagerIntegrationTestException("Error in API Deletion." +
-                        getAPIIdentifierString(apiIdentifier) + " API Context :" + deleteHTTPResponse +
-                        "Response Code:" + deleteHTTPResponse.getResponseCode() +
-                        " Response Data :" + deleteHTTPResponse.getData());
-            }
+        HttpResponse deleteHTTPResponse =
+                publisherRestClient.deleteAPI(apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                        apiIdentifier.getProviderName());
+        if (!(deleteHTTPResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
+                getValueFromJSON(deleteHTTPResponse, "error").equals("false"))) {
+            throw new APIManagerIntegrationTestException("Error in API Deletion." +
+                    getAPIIdentifierString(apiIdentifier) + " API Context :" + deleteHTTPResponse +
+                    "Response Code:" + deleteHTTPResponse.getResponseCode() +
+                    " Response Data :" + deleteHTTPResponse.getData());
+        }
+    }
+
+    /**
+     *
+     * @param apiID
+     * @param publisherRestClient
+     * @throws ApiException
+     */
+    protected void deleteAPI(String apiID, RestAPIPublisherImpl publisherRestClient) throws ApiException {
+        publisherRestClient.deleteAPIByID(apiID);
     }
 
     /**
@@ -252,9 +303,47 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                       boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
         APILifeCycleStateRequest publishUpdateRequest =
                 new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
-                        APILifeCycleState.PUBLISHED);
+                        APILifeCycleState.PUBLISHED_JAG);
         publishUpdateRequest.setVersion(apiIdentifier.getVersion());
         return publisherRestClient.changeAPILifeCycleStatusToPublish(apiIdentifier, isRequireReSubscription);
+
+    }
+
+    /**
+     * @param apiID
+     * @param publisherRestClient
+     * @param isRequireReSubscription
+     * @return
+     * @throws APIManagerIntegrationTestException
+     */
+    protected HttpResponse publishAPI(String apiID, RestAPIPublisherImpl publisherRestClient,
+            boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
+        try {
+            return publisherRestClient.changeAPILifeCycleStatusToPublish(apiID, isRequireReSubscription);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Error occurred while publishing API", e);
+        }
+    }
+
+    /**
+     * Publish an API using REST.
+     *
+     * @param apiId                   - UUID of the API,
+     * @param publisherRestClient     - Instance of APIPublisherRestClient
+     * @param isRequireReSubscription - If publish with re-subscription required option true else false.
+     * @return HttpResponse - Response of the API Publishing activity
+     * @throws APIManagerIntegrationTestException -  Exception throws by the method call of
+     *                                            changeAPILifeCycleStatusToPublish() in APIPublisherRestClient.java.
+     */
+    protected HttpResponse publishAPIUsingRest(String apiId, RestAPIPublisherImpl publisherRestClient,
+                                               boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
+        String lifecycleChecklist = null;
+        if (isRequireReSubscription) {
+            lifecycleChecklist = "Requires re-subscription when publish the API:true";
+        }
+        return publisherRestClient
+                .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), lifecycleChecklist);
+
 
     }
 
@@ -279,7 +368,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED))) {
+                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED_JAG,
+                            APILifeCycleState.PUBLISHED_JAG))) {
                 throw new APIManagerIntegrationTestException("Error in API Publishing" +
                         getAPIIdentifierString(apiIdentifier) + "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());
@@ -293,21 +383,91 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         }
     }
 
+    /**
+     *
+     * @param apiCreationRequestBean
+     * @param publisherRestClient
+     * @param isRequireReSubscription
+     * @throws APIManagerIntegrationTestException
+     * @throws ApiException
+     */
+    public APIDTO createAndPublishAPI(APICreationRequestBean apiCreationRequestBean,
+            RestAPIPublisherImpl publisherRestClient, boolean isRequireReSubscription)
+            throws APIManagerIntegrationTestException, ApiException {
+        //Create the API
+        APIDTO apidto = publisherRestClient.addAPI(apiCreationRequestBean);
+        if (apidto != null) {
+            log.info("API Created :" + apiCreationRequestBean.getName());
+            //Publish the API
+            HttpResponse publishAPIResponse = publishAPI(apidto.getId(), publisherRestClient, isRequireReSubscription);
+            if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK)) {
+                throw new APIManagerIntegrationTestException(
+                        "Error in API Publishing" + apiCreationRequestBean.getName() + "Response Code:"
+                                + publishAPIResponse.getResponseCode() + " Response Data :" + publishAPIResponse
+                                .getData());
+            }
+            log.info("API Published :" + apiCreationRequestBean.getName());
+            return apidto;
+        } else {
+            throw new APIManagerIntegrationTestException("Error in API Creation." + apiCreationRequestBean.getName());
+        }
+    }
+
+    /**
+     * Create and publish a API.
+     *
+     * @param apiRequest              - Instance of APIRequest
+     * @param publisherRestClient     - Instance of RestAPIPublisherImpl
+     * @param isRequireReSubscription - If publish with re-subscription required option true else false.
+     * @throws APIManagerIntegrationTestException - Exception throws by API create and publish activities.
+     */
+    public String createAndPublishAPIUsingRest(APIRequest apiRequest,
+                                               RestAPIPublisherImpl publisherRestClient,
+                                               boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
+        //Create the API
+        HttpResponse createAPIResponse = publisherRestClient.addAPI(apiRequest);
+        if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_CREATED && !StringUtils.isEmpty(createAPIResponse.getData())) {
+            log.info("API Created :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+            //Publish the API
+            HttpResponse publishAPIResponse = publishAPIUsingRest(createAPIResponse.getData(), publisherRestClient, isRequireReSubscription);
+            if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
+                    APILifeCycleState.PUBLISHED.getState().equals(publishAPIResponse.getData()))) {
+                throw new APIManagerIntegrationTestException("Error in API Publishing" +
+                        getAPIIdentifierStringFromAPIRequest(apiRequest) + "Response Code:" + publishAPIResponse.getResponseCode() +
+                        " Response Data :" + publishAPIResponse.getData());
+            }
+            log.info("API Published :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+            return createAPIResponse.getData();
+        } else {
+            throw new APIManagerIntegrationTestException("Error in API Creation." +
+                    getAPIIdentifierStringFromAPIRequest(apiRequest) +
+                    "Response Code:" + createAPIResponse.getResponseCode() +
+                    " Response Data :" + createAPIResponse.getData());
+        }
+    }
 
     /**
      * Create and publish a API with re-subscription not required.
      *
-     * @param apiIdentifier          - Instance of APIIdentifier object  that include the  API Name,
-     *                               API Version and API Provider
      * @param apiCreationRequestBean - Instance of APICreationRequestBean with all needed API information
      * @param publisherRestClient    - Instance of APIPublisherRestClient
      * @throws APIManagerIntegrationTestException - Exception throws by API create  and publish activities.
      */
-    protected void createAndPublishAPIWithoutRequireReSubscription(APIIdentifier apiIdentifier,
-                                                                   APICreationRequestBean apiCreationRequestBean,
-                                                                   APIPublisherRestClient publisherRestClient)
-            throws APIManagerIntegrationTestException {
-        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
+    protected void createAndPublishAPIWithoutRequireReSubscription(APICreationRequestBean apiCreationRequestBean,
+            RestAPIPublisherImpl publisherRestClient) throws APIManagerIntegrationTestException, ApiException {
+        createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
+    }
+
+    /**
+     * Create and publish a API with re-subscription not required.
+     *
+     * @param apiRequest          - Instance of APIRequest
+     * @param publisherRestClient - Instance of RestAPIPublisherImpl
+     * @throws APIManagerIntegrationTestException - Exception throws by API create  and publish activities.
+     */
+    protected String createAndPublishAPIWithoutRequireReSubscriptionUsingRest(APIRequest apiRequest,
+                                                                              RestAPIPublisherImpl publisherRestClient) throws APIManagerIntegrationTestException, ApiException {
+        return createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
     }
 
 
@@ -334,25 +494,32 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         }
     }
 
+    /**
+     * @param apiID
+     * @param newAPIVersion
+     * @param publisherRestClient
+     * @throws APIManagerIntegrationTestException
+     * @throws ApiException
+     */
+    protected APIDTO copyAPI(String apiID, String newAPIVersion, RestAPIPublisherImpl publisherRestClient)
+            throws ApiException {
+        //Copy API to version  to newVersion
+        APIDTO apidto = publisherRestClient.copyAPIWithReturnDTO(newAPIVersion, apiID, false);
+        return apidto;
+    }
 
     /**
      * Copy and publish the copied API.
      *
-     * @param apiIdentifier           - Instance of APIIdentifier object  that include the  API Name,
-     *                                API Version and API Provider
      * @param newAPIVersion           - New API version need to create
      * @param publisherRestClient     - Instance of APIPublisherRestClient
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
      * @throws APIManagerIntegrationTestException -Exception throws by copyAPI() and publishAPI() method calls
      */
-    protected void copyAndPublishCopiedAPI(APIIdentifier apiIdentifier, String newAPIVersion, APIPublisherRestClient
-            publisherRestClient, boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
-
-        copyAPI(apiIdentifier, newAPIVersion, publisherRestClient);
-        APIIdentifier copiedAPIIdentifier =
-                new APIIdentifier(apiIdentifier.getProviderName(), apiIdentifier.getApiName(), newAPIVersion);
-        publishAPI(copiedAPIIdentifier, publisherRestClient, isRequireReSubscription);
-
+    protected void copyAndPublishCopiedAPI(String apiID, String newAPIVersion, RestAPIPublisherImpl publisherRestClient,
+            boolean isRequireReSubscription) throws APIManagerIntegrationTestException, ApiException {
+        APIDTO apidto = copyAPI(apiID, newAPIVersion, publisherRestClient);
+        publishAPI(apidto.getId(), publisherRestClient, isRequireReSubscription);
     }
 
     /**
@@ -372,7 +539,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
-                                     APIMIntegrationConstants.IS_API_EXISTS);
+                APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(httpResponseSubscribeAPI, "error").equals("false"))) {
@@ -382,6 +549,55 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     " Response Data :" + httpResponseSubscribeAPI.getData());
         }
         log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
+    }
+
+    /**
+     * @param apiIdentifier
+     * @param apiCreationRequestBean
+     * @param publisherRestClient
+     * @param storeRestClient
+     * @throws APIManagerIntegrationTestException
+     * @throws ApiException
+     */
+    protected APIDTO createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier,
+            APICreationRequestBean apiCreationRequestBean, RestAPIPublisherImpl publisherRestClient,
+            RestAPIStoreImpl storeRestClient, String applicationID, String tier)
+            throws APIManagerIntegrationTestException, ApiException,
+            org.wso2.am.integration.clients.store.api.ApiException {
+        APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        SubscriptionDTO httpResponseSubscribeAPI = subscribeToAPI(apidto.getId(), applicationID, tier, storeRestClient);
+        log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
+        return apidto;
+    }
+
+    /**
+     * Create publish and subscribe a API using REST API.
+     *
+     * @param apiRequest          - Instance of APIRequest with all needed API information
+     * @param publisherRestClient -  Instance of APIPublisherRestClient
+     * @param storeRestClient     - Instance of APIStoreRestClient
+     * @param applicationId       - UUID of the Application that the API need to subscribe.
+     * @param tier                - Tier that needs to be subscribed.
+     * @throws APIManagerIntegrationTestException - Exception throws by API create publish and subscribe a API activities.
+     */
+    protected String createPublishAndSubscribeToAPIUsingRest(APIRequest apiRequest,
+                                                             RestAPIPublisherImpl publisherRestClient, RestAPIStoreImpl storeRestClient, String applicationId,
+                                                             String tier)
+            throws APIManagerIntegrationTestException, ApiException {
+        String apiId = createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
+        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        HttpResponse httpResponseSubscribeAPI = subscribeToAPIUsingRest(apiId, applicationId, tier, storeRestClient);
+        if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
+                !StringUtils.isEmpty(httpResponseSubscribeAPI.getData()))) {
+            throw new APIManagerIntegrationTestException("Error in API Subscribe." +
+                    getAPIIdentifierStringFromAPIRequest(apiRequest) +
+                    "Response Code:" + httpResponseSubscribeAPI.getResponseCode());
+        }
+        log.info("API Subscribed :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+        return apiId;
     }
 
     /**
@@ -412,6 +628,31 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                             ". Error:" + e.getMessage());
                 }
             }
+        }
+    }
+
+    /**
+     * Delete a API from API Publisher.
+     *
+     * @param apiIdentifier       - Instance of APIIdentifier object that include the API Name, API Version and
+     *                            API Provider.
+     * @param publisherRestClient - Instance of RestAPIPublisherImpl.
+     * @throws APIManagerIntegrationTestException - Exception throws by the method call of deleteApi() in
+     *                                            APIPublisherRestClient.java.
+     */
+    protected void deleteAPI(String apiID, APIIdentifier apiIdentifier, RestAPIPublisherImpl publisherRestClient)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            HttpResponse deleteHTTPResponse = publisherRestClient.deleteAPI(apiID);
+            if (!(deleteHTTPResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK)) {
+                throw new APIManagerIntegrationTestException("Error in API Deletion." +
+                        getAPIIdentifierString(apiIdentifier) + " API Context :" + deleteHTTPResponse +
+                        "Response Code:" + deleteHTTPResponse.getResponseCode() +
+                        " Response Data :" + deleteHTTPResponse.getData());
+            }
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Error when deleting API with ID: " + apiID, e);
         }
     }
 }

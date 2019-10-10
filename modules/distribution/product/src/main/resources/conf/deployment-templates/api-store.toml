@@ -1,7 +1,7 @@
 [server]
 #hostname = "devportal.wso2.com"
 node_ip = "127.0.0.1"
-server_role="api-store"
+server_role="api-devportal"
 
 [user_store]
 type = "database"
