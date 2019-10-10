@@ -43,7 +43,7 @@ rem ----- Process the input commands (two args only)----------------------------
 if ""%1""==""-Dprofile"" (
 	if ""%2""==""api-key-manager"" 	goto keyManager
 	if ""%2""==""api-publisher"" 	goto publisher
-	if ""%2""==""api-store"" 		goto store
+	if ""%2""==""api-devportal"" 	goto devportal
 	if ""%2""==""traffic-manager"" 	goto trafficManager
 	if ""%2""==""gateway-worker"" 	goto gatewayWorker
 )
@@ -115,8 +115,8 @@ for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "publisher admin
 )
 goto finishOptimization
 
-:store
-echo Starting to optimize API Manager for the Developer Portal (API Store) profile
+:devportal
+echo Starting to optimize API Manager for the Developer Portal profile
 call :disableDataPublisher
 call :disableJMSConnectionDetails
 call :disableBlockConditionRetriever
@@ -141,7 +141,7 @@ for /f %%i in ('dir %pathToWebapps% /A:-D /b ^| findstr /v "api#am#store#v.*war"
 	endlocal
 )
 rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "store"') do (
+for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "devportal"') do (
 	rmdir /s /q %pathToJaggeryapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
