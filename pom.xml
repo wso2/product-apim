@@ -1147,11 +1147,6 @@
                 <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
                 <version>${identity.outbound.auth.oidc.version`}</version>
             </dependency>
-            <dependency>
-                <groupId>io.swagger.parser.v3</groupId>
-                <artifactId>swagger-parser</artifactId>
-                <version>${swagger-parser-version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1162,7 +1157,7 @@
         <carbon.analytics.common.version>5.2.12</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.222-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.222</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1338,7 +1333,6 @@
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.3.2</identity.outbound.auth.oidc.version>
-        <swagger-parser-version>2.0.14</swagger-parser-version>
     </properties>
 
 </project>
