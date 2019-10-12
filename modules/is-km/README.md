@@ -32,7 +32,7 @@
                          orderId="{{listener.order}}"
                          enable="true">
                          
-   Element after the change 
+   Element after the change -
                         
   <EventListener id="{{listener.id}}"
                          type="{{listener.type}}"
