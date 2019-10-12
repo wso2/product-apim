@@ -15,19 +15,32 @@
 
 - Put the name of the extracted folder as `<is_folder_name>` under `<properties>` in product-apim/modules/is-km/pom.xml.
 
-- Open `${is_folder_name}/repository/conf/identity/identity.xml`
-
-- Uncomment `<IdentityOAuthTokenGenerator>` under `<OAuth>` section and save the file.
-
-- Open `${is_folder_name}/repository/conf/user-mgt.xml`
-
-- Uncomment `<UserStoreManager class="org.wso2.carbon.user.core.jdbc.JDBCUserStoreManager">` section in user-mgt.xml.
-
-- Comment `<UserStoreManager class="org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager">` section in user-mgt.xml.
-
 - Goto product-apim/modules/is-km and run the following command.
-`mvn clean install`
+`mvn clean install -Dmaven.repo.local=path/to/new/local/m2`
+
+- It's required to change a element in identity.xml.j2 located in 
+  {IS-KM-HOME}/repository/resources/conf/templates/repository/conf/identity/. 
+  This is not required when that element is configurable.
+  
+  Change the following element as follow.
+  
+  Existing element -
+  
+  <EventListener id="{{listener.id}}"
+                         type="{{listener.type}}"
+                         name="{{listener.name}}"
+                         orderId="{{listener.order}}"
+                         enable="true">
+                         
+   Element after the change 
+                        
+  <EventListener id="{{listener.id}}"
+                         type="{{listener.type}}"
+                         name="{{listener.name}}"
+                         orderId="{{listener.order}}"
+                         enable="{{listener.enable}}">                       
+
 
 - After that, folder pointed in `<is_folder_name>` will be the IS as Key Manager.
 
-- Rename the folder accordingly (Eg - wso2is-km-5.6.0), then zip it.
+- Rename the folder accordingly (Eg - wso2is-km-5.9.0), then zip it.

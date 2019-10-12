@@ -15,23 +15,23 @@ create_admin_account = true
 type = "database"
 
 [database.apim_db]
-type = "mysql"
-url = "jdbc:mysql://localhost:3306/am_db"
-username = "root"
-password = "root"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE"
+username = "wso2carbon"
+password = "wso2carbon"
 
 
 [database.config]
-type = "mysql"
-url = "jdbc:mysql://localhost:3306/config_db"
-username = "root"
-password = "root"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE"
+username = "wso2carbon"
+password = "wso2carbon"
 
 [database.shared_db]
-type = "mysql"
-url = "jdbc:mysql://localhost:3306/shared_db"
-username = "root"
-password = "root"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE"
+username = "wso2carbon"
+password = "wso2carbon"
 
 
 [keystore.primary]
