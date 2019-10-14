@@ -8,7 +8,7 @@
 | :------------ |:-------------
 | master | [![Build Status](https://wso2.org/jenkins/job/products/job/product-apim/badge/icon)](https://wso2.org/jenkins/view/products/job/products/job/product-apim/) |
 
-[<img src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-logo.svg" width="120">](https://stackoverflow.com/tags/wso2-am/)
+[<img src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-logo.svg" width="120">](https://stackoverflow.com/tags/wso2-am/)&nbsp; &nbsp; &nbsp; &nbsp;[<img src="https://a.slack-edge.com/4a5c4/marketing/img/icons/icon_slack.svg" width="120">](https://join.slack.com/t/wso2-apim/shared_invite/enQtNzEzMzk5Njc5MzM0LTgwODI3NmQ1MjI0ZDQyMGNmZGI4ZjdkZmI1ZWZmMjNkY2E0NmY3ZmExYjkxYThjNzNkOTU2NWJmYzM4YzZiOWU?src=sidebar)
 
 ---
 
