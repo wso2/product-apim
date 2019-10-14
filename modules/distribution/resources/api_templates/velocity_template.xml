@@ -165,6 +165,15 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #else
 #set( $filterRegex = "PRODUCTION" )
 #end
+## integrated aws lambda here...
+#if($endpoint_config.get("endpoint_type") == 'awslambda')
+<class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaClassMediator">
+    <property name="accessKey" value="$!endpoint_config.get("amznAccessKey")"/>
+    <property name="secretKey" value="$!endpoint_config.get("amznSecretKey")"/>
+    <property name="resourceName" value="$!resource.getAmznResourceName()"/>
+</class>
+<loopback />
+#else
 #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
@@ -206,6 +215,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #end
     </else>
 </filter>
+#end
 #end
 </inSequence>
 <outSequence>
