@@ -193,12 +193,8 @@
                         <configuration>
                             <target>
                                 <!-- download file -->
-                                <get src="https://product-dist.wso2.com/downloads/in-place/release/update.zip"
-                                     dest="${project.build.directory}/update.zip"
-                                     verbose="false"
-                                     usetimestamp="true"/>
-                                <unzip src="${project.build.directory}/update.zip"
-                                       dest="${project.build.directory}" />
+                                <get src="https://product-dist.wso2.com/downloads/in-place/release/update.zip" dest="${project.build.directory}/update.zip" verbose="false" usetimestamp="true" />
+                                <unzip src="${project.build.directory}/update.zip" dest="${project.build.directory}" />
                             </target>
                         </configuration>
                     </execution>

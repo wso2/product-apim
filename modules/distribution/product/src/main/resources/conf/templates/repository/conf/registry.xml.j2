@@ -301,10 +301,10 @@
     <!-- NOTE: You can edit the options under "StaticConfiguration" only before the
      startup. -->
     <staticConfiguration>
-        <versioningProperties>true</versioningProperties>
-        <versioningComments>true</versioningComments>
-        <versioningTags>true</versioningTags>
-        <versioningRatings>true</versioningRatings>
+        <versioningProperties>{{static_configuration.versioning_properties.enable}}</versioningProperties>
+        <versioningComments>{{static_configuration.versioning_comments.enable}}</versioningComments>
+        <versioningTags>{{static_configuration.versioning_tags.enable}}</versioningTags>
+        <versioningRatings>{{static_configuration.versioning_ratings.enable}}</versioningRatings>
         <!-- Location you want to add service and default location will be /services/ -->
         <servicePath>/trunk/services/</servicePath>
     </staticConfiguration>
