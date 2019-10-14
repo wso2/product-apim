@@ -17,21 +17,23 @@
 */
 package org.wso2.am.integration.tests.token;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -42,21 +44,21 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
     private static String backEndEndpointUrl;
-    private String apiId;
-    private String tokenTestApiAppId;
+
     private static final String APPLICATION_NAME = "RefreshTokenTestAPI-Application";
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -96,6 +98,13 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                                       APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
+
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Test Refresh token functionality")
@@ -106,6 +115,11 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         String tags = "sample, token, media";
         String description = "This is test API create by API manager integration test";
         String apiVersion = "1.0.0";
+
+        //Login to publisher
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Create API.
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(backEndEndpointUrl));
         apiRequest.setTags(tags);
@@ -113,61 +127,62 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(apiVersion);
         apiRequest.setSandbox(backEndEndpointUrl);
         apiRequest.setProvider(user.getUserName());
-        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiPublisher.addAPI(apiRequest);
+
         //Publish API.
-        apiId = serviceResponse.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-        String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
-        // Add application
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("TokenTestAPI-Application",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test",
-                "OAUTH");
-        tokenTestApiAppId = applicationDTO.getApplicationId();
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationDTO.getApplicationId(),
-                APIMIntegrationConstants.API_TIER.GOLD);
-        assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals(APIMIntegrationConstants.API_TIER.GOLD));
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(apiName, user.getUserName(), APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        //Login to Store.
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
+
+        //Add Application.
+        apiStore.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
+
+        //Subscribe Application to API.
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, storeContext.getContextTenant()
+                .getContextUser()
+                .getUserName());
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        subscriptionRequest.setApplicationName(APPLICATION_NAME);
+        apiStore.subscribe(subscriptionRequest);
 
         //Get Consumer Key and Consumer Secret//Generate production token and invoke with that
-        ArrayList<String> grantTypes = new ArrayList<>();
-        //get access token
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO productionApplicationKeyDTO = restAPIStore.generateKeys(tokenTestApiAppId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator(APPLICATION_NAME);
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
 
-        String consumerKey = productionApplicationKeyDTO.getConsumerKey();
-        String consumerSecret = productionApplicationKeyDTO.getConsumerSecret();
-        //Obtain user access token
-        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
-                "&scope=PRODUCTION";
+        // get Consumer Key and Consumer Secret
+        String consumerKey =
+                response.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        String consumerSecret =
+                response.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+
         URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
 
-        HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
-        //get an access token for the first time
-        String firstAccessToken = firstAccessTokenGenerationResponse.getString("access_token");
+        //Get an Access Token from the user who is logged into the API Store. See APIMANAGER-3152.
+        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
-        HttpResponse secondResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject secondAccessTokenGenerationResponse = new JSONObject(secondResponse.getData());
-        //get an access token for the second time (using the same consumerKey, consumerSecret)
-        String secondAccessToken = secondAccessTokenGenerationResponse.getString("access_token");
-        String secondrefreshToken = secondAccessTokenGenerationResponse.getString("refresh_token");
-        //compare the two tokens, those should be equal
-        assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
+                                               tokenEndpointURL).getData());
 
-        //get an access token for the third time (using refresh grant type)
-        String requestBodyForRefreshGrant = "grant_type=refresh_token&refresh_token=" + secondrefreshToken;
-        HttpResponse thirdResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
-                requestBodyForRefreshGrant, tokenEndpointURL);
-        JSONObject thirdAccessTokenGenerationResponse = new JSONObject(thirdResponse.getData());
-        String thirdAccessToken = thirdAccessTokenGenerationResponse.getString("access_token");
-        //compare the two tokens, those should not be equal
-        assertNotEquals(firstAccessToken, thirdAccessToken, "Both tokens can not be the same");
-        JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
-                consumerSecret, requestBody, tokenEndpointURL).getData());
+        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
+
+        assertFalse(StringUtils.isEmpty(subsRefreshToken),
+                    "Refresh token of access token generated by subscriber is empty");
+
+        //Obtain user access token
+        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
+
+        JSONObject accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                                               tokenEndpointURL).getData());
 
         // get Access Token and Refresh Token
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
@@ -198,8 +213,10 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         //Get a new access token using refresh token
         String getAccessTokenFromRefreshTokenRequestBody =
                 "grant_type=refresh_token&refresh_token=" + refreshToken;
-        accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
-                getAccessTokenFromRefreshTokenRequestBody, tokenEndpointURL).getData());
+        accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                                               getAccessTokenFromRefreshTokenRequestBody,
+                                               tokenEndpointURL).getData());
         userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
@@ -210,13 +227,15 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         assertEquals(httpResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(httpResponse.getData().contains("John"), "Response data mismatched");
-        assertTrue(httpResponse.getData().contains("<name"), "Response data mismatched");
-        assertTrue(httpResponse.getData().contains("<Customer>"), "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<name"),
+                   "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<Customer>"),
+                   "Response data mismatched");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(tokenTestApiAppId);
-        restAPIPublisher.deleteAPI(apiId);
+        apiStore.removeApplication(APPLICATION_NAME);
+        super.cleanUp();
     }
 }

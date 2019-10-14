@@ -31,15 +31,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -47,14 +45,10 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Test CORS functionality
@@ -62,29 +56,30 @@ import static org.testng.Assert.assertTrue;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL })
 public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
+    private String publisherURLHttp;
+    private APIPublisherRestClient apiPublisher;
+
     private static final String API_NAME = "CorsHeadersTestAPI";
     private static final String APPLICATION_NAME = "CorsHeadersApp";
     private static final String API_CONTEXT = "corsHeadersTestAPI";
     private static final String API_VERSION = "1.0.0";
     private static final String TAGS = "cors, test";
     private static final String DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
 
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE = "*";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
-    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "DELETE,POST,PUT,PATCH,GET";
+    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "GET";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE
-            = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,Authorization";
+            = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction";
     private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
 
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
+    private APICreationRequestBean apiCreationRequestBean;
+    private APIIdentifier apiIdentifier;
     private String accessToken;
-    private String applicationId;
-    private String apiId;
-    private ArrayList<String> grantTypes;
-    private Map<String, String> requestHeaders;
-    private String apiEndPointUrl;
 
     Log log = LogFactory.getLog(CORSHeadersTestCase.class);
 
@@ -99,60 +94,49 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
                                                   + File.separator + "dummy_api.xml", gatewayContextMgt,
                                                   gatewaySessionCookie);
         }
-        apiEndPointUrl = backEndServerUrl.getWebAppURLHttps() + API_END_POINT_POSTFIX_URL;
+        publisherURLHttp = getPublisherURLHttp();
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
+
         String providerName = user.getUserName();
-        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl), true);
-        apiRequest.setTags(TAGS);
-        apiRequest.setDescription(DESCRIPTION);
-        apiRequest.setTiersCollection(TIER_UNLIMITED);
-        apiRequest.setProvider(providerName);
-        //Add api resource
-        APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
-        apiOperationsDTO1.setVerb(APIMIntegrationConstants.HTTP_VERB_GET);
-        apiOperationsDTO1.setTarget("/customers/{id}");
-        apiOperationsDTO1.setAuthType(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER);
-        apiOperationsDTO1.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED);
-
-        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
-        operationsDTOS.add(apiOperationsDTO1);
-        apiRequest.setOperationsDTOS(operationsDTOS);
-
+        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
+        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
+                                                            endpointUrl, resourceBeanList);
+        apiCreationRequestBean.setTags(TAGS);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        //Login to API Publisher with admin
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION);
+        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationResponse =
-                restAPIStore.createApplication(APPLICATION_NAME,
-                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
-                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicationId = applicationResponse.getData();
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
 
-        //get access token
-        grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
-
-        // Create requestHeaders
-        requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
-
-        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
-
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                                       apiStoreClientUser1, APPLICATION_NAME);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = {"wso2.am"}, description = "Checking CORS headers in pre-flight response")
     public void CheckCORSHeadersInPreFlightResponse() throws Exception {
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpUriRequest option = new HttpOptions(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/customers/123");
+        HttpUriRequest option = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         option.addHeader("Origin", "http://localhost");
         option.addHeader("Access-Control-Request-Method", "GET");
         HttpResponse response = httpclient.execute(option);
 
-       assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
 
@@ -168,8 +152,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-        assertTrue(ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE.contains(header.getValue()),
-                header.getValue() + " header value mismatch.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE,
+                     ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
@@ -185,11 +169,12 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "CheckCORSHeadersInPreFlightResponse")
     public void CheckCORSHeadersInResponse() throws Exception {
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/customers/123");
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         get.addHeader("Origin", "http://localhost");
         get.addHeader("Authorization", "Bearer " + accessToken);
 
         HttpResponse response = httpclient.execute(get);
+
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
@@ -206,7 +191,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-             assertTrue(ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE.contains(header.getValue()),
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
@@ -223,13 +208,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
-        for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
-            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
-        }
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
-
         super.cleanUp();
     }
 

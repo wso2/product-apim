@@ -1,54 +1,46 @@
 package org.wso2.am.integration.tests.application;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.axis2.client.Options;
+import org.apache.axis2.client.ServiceClient;
+import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.ApiResponse;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
-import javax.ws.rs.core.Response;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Test whether changing call back url of an application of a certain user, update the call back url value of another
  * user's similarly named application in the database table IDN_OAUTH_CONSUMER_APPS
  * This is related to the public jira https://wso2.org/jira/browse/CAPIMGT-12
  */
-public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBaseTest {
-
-    private static final Log log = LogFactory.getLog(CAPIMGT12CallBackURLOverwriteTestCase.class);
+public class CAPIMGT12CallBackURLOverwriteTestCase extends APIMIntegrationBaseTest {
+    private APIStoreRestClient apiStore;
+    private String publisherURLHttp;
+    private String storeURLHttp;
+    String consumerKeyUser1App;
+    String consumerKeyUser2App;
     private static final String TEST_USER_1 = "TestUser1001";
     private static final String TEST_USER_2 = "TestUser2002";
     private static final String TEST_USER_1_PASSWORD = "12345";
     private static final String TEST_USER_2_PASSWORD = "12345";
-    private static final String TEST_APPLICATION = "TestApplication";
+    private static final String USER_1_TEST_APPLICATION = "TestApplication";
+    private static final String USER_2_TEST_APPLICATION = "TestApplication";
     private static final String USER_1_TEST_APP_INITIAL_CBU = "www.user1-app-initial-callback-url.com";
     private static final String USER_2_TEST_APP_INITIAL_CBU = "www.user2-app-initial-callback-url.com";
     private static final String USER_2_TEST_APP_UPDATED_CBU = "www.user2-app-updated-callback-url.com";
-
-    private ArrayList<String> grantTypes = new ArrayList<>();
-    private RestAPIStoreImpl user1ApiStore;
-    private RestAPIStoreImpl user2ApiStore;
-    private String user1ApplicationId;
-    private String user2ApplicationId;
+    private static final Log log = LogFactory.getLog(CAPIMGT12CallBackURLOverwriteTestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
@@ -66,51 +58,37 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
             Assert.fail(e.getMessage());
         }
 
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        user1ApiStore = new RestAPIStoreImpl(TEST_USER_1, TEST_USER_1_PASSWORD,
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
-        user2ApiStore = new RestAPIStoreImpl(TEST_USER_2, TEST_USER_2_PASSWORD,
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
-
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Application call back url update and overwriting test case")
+    @Test(groups = { "wso2.am" }, description = "Application call back url update and overwriting test case")
     public void callBackUrlUpdateTestCase() throws Exception {
         addAppsAndGenerateKeys();
         //update the USER_2_TEST_APPLICATION's call back url
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.SAML2);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.NTLM);
+        String jsonParams = "{\"grant_types\":\"urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm\"}";
+        apiStore.updateClientApplication(USER_2_TEST_APPLICATION, "PRODUCTION", "ALL", String.valueOf(false),
+                jsonParams, USER_2_TEST_APP_UPDATED_CBU);
 
-        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
-        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
-        applicationKeyDTO.setCallbackUrl(USER_2_TEST_APP_UPDATED_CBU);
-        applicationKeyDTO.setSupportedGrantTypes(grantTypes);
+        //query WSO2AM_DB-table IDN_OAUTH_CONSUMER_APPS to check both user's both app's call back urls
+        OAuthAdminServiceStub oAuthAdminServiceStub = new OAuthAdminServiceStub(
+                getKeyManagerURLHttps() + "services/OAuthAdminService");
+        ServiceClient client = oAuthAdminServiceStub._getServiceClient();
+        Options client_options = client.getOptions();
+        HttpTransportProperties.Authenticator authenticator = new HttpTransportProperties.Authenticator();
+        authenticator.setUsername("admin");
+        authenticator.setPassword("admin");
+        authenticator.setPreemptiveAuthentication(true);
+        client_options.setProperty(org.apache.axis2.transport.http.HTTPConstants.AUTHENTICATE, authenticator);
+        client.setOptions(client_options);
 
-        ApiResponse<ApplicationKeyDTO> updateResponse = user2ApiStore
-                .updateKeys(user2ApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.toString(), applicationKeyDTO);
-        assertEquals(updateResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when adding an application");
-
-        ApiResponse<ApplicationKeyDTO> getKeysForUser1Response = user1ApiStore
-                .getApplicationKeysByKeyType(user1ApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
-        Assert.assertEquals(getKeysForUser1Response.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Error when re-generating consumer secret for application: " + user1ApplicationId);
-        Assert.assertNotNull(getKeysForUser1Response.getData().getConsumerKey(),
-                "Error in generating keys for application: " + TEST_APPLICATION);
-
-        ApiResponse<ApplicationKeyDTO> getKeysForUser2Response = user2ApiStore
-                .getApplicationKeysByKeyType(user2ApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
-        Assert.assertEquals(getKeysForUser2Response.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Error when re-generating consumer secret for application: " + user2ApplicationId);
-        Assert.assertNotNull(getKeysForUser2Response.getData().getConsumerKey(),
-                "Error in generating keys for application: " + TEST_APPLICATION);
-
-        String finalCallbackUrlUser1App = getKeysForUser1Response.getData().getCallbackUrl();
-        String finalCallbackUrlUser2App = getKeysForUser2Response.getData().getCallbackUrl();
+        String finalCallbackUrlUser1App = oAuthAdminServiceStub.getOAuthApplicationData(consumerKeyUser1App)
+                .getCallbackUrl();
+        String finalCallbackUrlUser2App = oAuthAdminServiceStub.getOAuthApplicationData(consumerKeyUser2App)
+                .getCallbackUrl();
         Assert.assertEquals(finalCallbackUrlUser1App, USER_1_TEST_APP_INITIAL_CBU,
                 "Call back URL of the first user's application has been overwritten due to the update of the call"
                         + " back URL of second user's application.");
@@ -128,40 +106,29 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
     public void addAppsAndGenerateKeys() throws Exception {
         //TEST_USER_1
         //Subscribe to API with a new application
-        HttpResponse applicationResponse = user1ApiStore
-                .createApplication(TEST_APPLICATION, "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
-        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
-
-        user1ApplicationId = applicationResponse.getData();
+        apiStore.login(TEST_USER_1, TEST_USER_1_PASSWORD);
+        apiStore.addApplication(USER_1_TEST_APPLICATION, "Unlimited", "", "This-is-sample-application");
         //Generate production key
-        //generate keys for the subscription
-        ApplicationKeyDTO applicationKeyDTO = user1ApiStore
-                .generateKeys(user1ApplicationId, "3600", USER_1_TEST_APP_INITIAL_CBU,
-                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
+        APPKeyRequestGenerator generateAppKeyRequest1 = new APPKeyRequestGenerator(USER_1_TEST_APPLICATION);
+        generateAppKeyRequest1.setCallbackUrl(USER_1_TEST_APP_INITIAL_CBU);
+        String responseString1 = apiStore.generateApplicationKey(generateAppKeyRequest1).getData();
+        JSONObject jsonObject1 = new JSONObject(responseString1);
+        consumerKeyUser1App = ((JSONObject) ((JSONObject) jsonObject1.get("data")).get("key")).getString("consumerKey");
 
         //TEST_USER_2
         //Subscribe to API with a new application
-
-        applicationResponse = user2ApiStore
-                .createApplication(TEST_APPLICATION, "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
-        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
-
-        user2ApplicationId = applicationResponse.getData();
-
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(TEST_USER_2, TEST_USER_2_PASSWORD);
+        apiStore.addApplication(USER_2_TEST_APPLICATION, "Unlimited", "", "This-is-sample-application");
         //Generate production key
-        applicationKeyDTO = user2ApiStore.generateKeys(user2ApplicationId, "3600", USER_2_TEST_APP_INITIAL_CBU,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
+        APPKeyRequestGenerator generateAppKeyRequest2 = new APPKeyRequestGenerator(USER_2_TEST_APPLICATION);
+        generateAppKeyRequest2.setCallbackUrl(USER_2_TEST_APP_INITIAL_CBU);
+        String responseString2 = apiStore.generateApplicationKey(generateAppKeyRequest2).getData();
+        JSONObject jsonObject2 = new JSONObject(responseString2);
+        consumerKeyUser2App = ((JSONObject) ((JSONObject) jsonObject2.get("data")).get("key")).getString("consumerKey");
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        user1ApiStore.deleteApplication(user1ApplicationId);
-        user2ApiStore.deleteApplication(user2ApplicationId);
-        userManagementClient.deleteUser(TEST_USER_1);
-        userManagementClient.deleteUser(TEST_USER_2);
+    @AfterClass(alwaysRun = true) public void destroy() throws Exception {
+        super.cleanUp();
     }
 }

@@ -26,14 +26,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 /**
  * APIM2-634:Get all the throttling tiers from the publisher REST api
@@ -42,6 +39,7 @@ import static org.testng.Assert.assertNotNull;
 public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         extends APIMIntegrationBaseTest {
 
+    private APIPublisherRestClient apiPublisher;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
@@ -60,53 +58,65 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Get all the throttling tiers from the publisher " +
             "rest API ")
     public void testGetAllTheThrottlingTiers() throws Exception {
         //Get All the tiers
-        ThrottlingPolicyListDTO throttlingPolicyListDTO = restAPIPublisher.getTiers(
-                ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.getValue());
-        assertNotNull(throttlingPolicyListDTO, "There are no API level policies available");
-
-
-        //Validate the Tier Bronze
-        ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(0);
-        assertEquals(tierBronze.getDescription(), "Allows 1000 requests per minute",
-                "Invalid description of the tier Bronze");
-        assertEquals(tierBronze.getDisplayName(), "Bronze",
-                "Invalid display name of the tier Bronze");
-        assertEquals(tierBronze.getName(), "Bronze",
-                "Invalid name of the tier Bronze");
-
-        //Validate the Tier Gold
-        ThrottlingPolicyDTO tierGold = throttlingPolicyListDTO.getList().get(1);
-        assertEquals(tierGold.getDescription(), "Allows 5000 requests per minute",
-                "Invalid description of the tier Gold");
-        assertEquals(tierGold.getDisplayName(), "Gold",
-                "Invalid display name of the tier Gold");
-        assertEquals(tierGold.getName(), "Gold",
-                "Invalid name of the tier Gold");
-
-        //Validate the Tier Silver
-        ThrottlingPolicyDTO tierSilver = throttlingPolicyListDTO.getList().get(2);
-        assertEquals(tierSilver.getDescription(), "Allows 2000 requests per minute",
-                "Invalid description of the tier Silver");
-        assertEquals(tierSilver.getDisplayName(), "Silver",
-                "Invalid display name of the tier Silver");
-        assertEquals(tierSilver.getName(), "Silver",
-                "Invalid name of the tier Silver");
+        JSONObject tiersResponse = new JSONObject(apiPublisher.getTiers().getData());
+        JSONArray tierArrayList = tiersResponse.getJSONArray("tiers");
 
         //Validate the Tier Unlimited
-        ThrottlingPolicyDTO tierUnlimited = throttlingPolicyListDTO.getList().get(3);
-        assertEquals(tierUnlimited.getDescription(), "Allows unlimited requests",
+        JSONObject tierUnlimited = (JSONObject) tierArrayList.get(0);
+        assertEquals(tierUnlimited.getString("tierDescription"), "Allows unlimited requests",
                 "Invalid description of the tier Unlimited");
-        assertEquals(tierUnlimited.getDisplayName(), "Unlimited",
+        assertEquals(tierUnlimited.getString("tierDisplayName"), "Unlimited",
                 "Invalid display name of the tier Unlimited");
-        assertEquals(tierUnlimited.getName(), "Unlimited",
+        assertEquals(tierUnlimited.getString("tierName"), "Unlimited",
                 "Invalid name of the tier Unlimited");
+        assertEquals(tierUnlimited.getString("defaultTier"), "true",
+                "Invalid value for the default tier");
 
+        //Validate the Tier Gold
+        JSONObject tierGold = (JSONObject) tierArrayList.get(1);
+        assertEquals(tierGold.getString("tierDescription"), "Allows 5000 requests per minute",
+                "Invalid description of the tier Gold");
+        assertEquals(tierGold.getString("tierDisplayName"), "Gold",
+                "Invalid display name of the tier Gold");
+        assertEquals(tierGold.getString("tierName"), "Gold",
+                "Invalid name of the tier Gold");
+        assertEquals(tierGold.getString("defaultTier"), "false",
+                "Invalid value for the default tier");
+
+        //Validate the Tier Silver
+        JSONObject tierSilver = (JSONObject) tierArrayList.get(2);
+        assertEquals(tierSilver.getString("tierDescription"), "Allows 2000 requests per minute",
+                "Invalid description of the tier Silver");
+        assertEquals(tierSilver.getString("tierDisplayName"), "Silver",
+                "Invalid display name of the tier Silver");
+        assertEquals(tierSilver.getString("tierName"), "Silver",
+                "Invalid name of the tier Silver");
+        assertEquals(tierSilver.getString("defaultTier"), "false",
+                "Invalid value for the default tier");
+
+        //Validate the Tier Silver
+        JSONObject tierBronze = (JSONObject) tierArrayList.get(3);
+        assertEquals(tierBronze.getString("tierDescription"), "Allows 1000 requests per minute",
+                "Invalid description of the tier Bronze");
+        assertEquals(tierBronze.getString("tierDisplayName"), "Bronze",
+                "Invalid display name of the tier Bronze");
+        assertEquals(tierBronze.getString("tierName"), "Bronze",
+                "Invalid name of the tier Bronze");
+        assertEquals(tierBronze.getString("defaultTier"), "false",
+                "Invalid value for the default tier");
 
     }
 

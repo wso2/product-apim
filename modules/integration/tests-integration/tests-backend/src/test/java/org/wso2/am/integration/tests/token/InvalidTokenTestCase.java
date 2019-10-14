@@ -26,11 +26,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.testng.annotations.*;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -47,7 +45,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -60,8 +57,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
 
     private String provider;
-
-    private String id;
 
     private static final String API_NAME = "InvalidTokenAPI";
 
@@ -89,8 +84,11 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of API access with invalid token")
-    public void testAPIAccessWithInvalidToken()
-            throws XPathExpressionException, APIManagerIntegrationTestException, ApiException {
+    public void testAPIAccessWithInvalidToken() throws XPathExpressionException, APIManagerIntegrationTestException {
+
+        //Login to the API Publisher
+        apiPublisher.login(user.getUserName(),
+                user.getPassword());
 
         // Adding API
         String apiContext = "invalidtokenapi";
@@ -110,11 +108,13 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTier("Unlimited");
         apiRequest.setProvider(provider);
 
-        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        assertNotNull("API Creation failed", response.getData());
-        id = response.getData();
+        apiPublisher.addAPI(apiRequest);
+
         //publishing API
-        restAPIPublisher.changeAPILifeCycleStatus(id, APILifeCycleAction.PUBLISH.getAction(), null);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(API_NAME, user.getUserName(),
+                        APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -156,7 +156,9 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIPublisher.deleteAPI(id);
+        if (apiPublisher != null) {
+            apiPublisher.deleteAPI(API_NAME, API_VERSION, provider);
+        }
         super.cleanUp();
     }
 }
