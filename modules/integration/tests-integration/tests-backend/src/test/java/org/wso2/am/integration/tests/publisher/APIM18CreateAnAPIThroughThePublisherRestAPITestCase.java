@@ -26,19 +26,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -51,9 +46,9 @@ import static org.testng.Assert.assertTrue;
 public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMIntegrationBaseTest {
     private final String apiNameTest = "APIM18PublisherTest";
     private final String apiVersion = "1.0.0";
+    private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
     private String apiProductionEndPointUrl;
-    private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM18CreateAnAPIThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -77,6 +72,9 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
                 apiProductionEndpointPostfixUrl;
@@ -90,41 +88,29 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         String apiContextTest = "apim18PublisherTestAPI";
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTag = "tag18-1, tag18-2, tag18-3";
-        
-        APIRequest apiCreationRequestBean;
-        apiCreationRequestBean = new APIRequest(apiNameTest, apiContextTest, new URL(apiProductionEndPointUrl));
 
-        apiCreationRequestBean.setVersion(apiVersion);
-        apiCreationRequestBean.setDescription(apiDescription);
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiNameTest, apiContextTest, apiVersion, apiProviderName,
+                        new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
-        apiCreationRequestBean.setTier("Gold");
+        apiCreationRequestBean.setDefaultVersion("default_version");
+        apiCreationRequestBean.setDefaultVersionChecked("default_version");
+        apiCreationRequestBean.setBizOwner("api18b");
+        apiCreationRequestBean.setBizOwnerMail("api18b@ee.com");
+        apiCreationRequestBean.setTechOwner("api18t");
+        apiCreationRequestBean.setTechOwnerMail("api18t@ww.com");
 
-        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-        apiOperationsDTO.setVerb("GET");
-        apiOperationsDTO.setTarget("/customers/{id}");
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
 
-        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
-        operationsDTOS.add(apiOperationsDTO);
-        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
-        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
-        apiCreationRequestBean.setDefault_version_checked("true");;
-
-        apiCreationRequestBean.setBusinessOwner("api18b");
-        apiCreationRequestBean.setBusinessOwnerEmail("api18b@ee.com");
-        apiCreationRequestBean.setTechnicalOwner("api18t");
-        apiCreationRequestBean.setTechnicalOwnerEmail("api18t@ww.com");
-
-        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
-        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = apiCreationResponse.getData();
-
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
-
+        assertFalse(apiResponse.getBoolean("error"), apiNameTest + "is not created as expected");
 
         //Check the availability of an API in Publisher
-        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        HttpResponse response = apiPublisher.getApi(apiNameTest, apiProviderName, apiVersion);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
         assertTrue(response.getData().contains(apiNameTest), "Invalid API Name");
@@ -138,21 +124,31 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
     public void testRemoveAnAPIThroughThePublisherRest() throws Exception {
 
         //Remove an API and validate the Response
-        HttpResponse removeApiResponse = restAPIPublisher.deleteAPI(apiId);
+        HttpResponse removeApiResponse = apiPublisher.deleteAPI
+                (apiNameTest, apiVersion, apiProviderName);
+        JSONObject jsonObjectRemoveApi = new JSONObject(removeApiResponse.getData());
         assertEquals(removeApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when removing an API");
+        assertFalse(jsonObjectRemoveApi.getBoolean("error"),
+                "Error when removing the " + apiNameTest);
 
         //Check the availability of an API  after removing
-        
-        HttpResponse response = restAPIPublisher.getAPI(apiId);
-        assertEquals(response.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
-                "Status code mismatch");
+        HttpResponse response = apiPublisher.getApi(apiNameTest, apiProviderName, apiVersion);
+        JSONObject jsonObjectGettingApi = new JSONObject(response.getData());
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when getting an API");
+        assertTrue(jsonObjectGettingApi.getBoolean("error"),
+                "Publisher Rest API allow to get deleted API ");
+        assertEquals(jsonObjectGettingApi.getString("message"), " Cannot find the requested API- "
+                + apiNameTest + "-" + apiVersion, "Invalid error " +
+                "message populated when trying to get deleted API through the publisher");
 
     }
 
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
+        apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProviderName);
         super.cleanUp();
     }
 

@@ -39,8 +39,6 @@ import org.wso2.am.admin.clients.service.mgt.ServiceAdminClient;
 import org.wso2.am.admin.clients.tasks.TaskAdminClient;
 import org.wso2.am.admin.clients.template.EndpointTemplateAdminServiceClient;
 import org.wso2.am.admin.clients.template.SequenceTemplateAdminServiceClient;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -73,7 +71,6 @@ import java.security.Signature;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -1711,41 +1708,6 @@ public class APIMTestCaseUtils {
     }
 
     /**
-     * @param apiListDTO
-     * @return
-     * @throws APIManagerIntegrationTestException
-     */
-    public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(APIListDTO apiListDTO) {
-        if (apiListDTO == null) {
-            return Collections.emptyList();
-        }
-        List<APIIdentifier> apiIdentifierList = new ArrayList<>();
-        for (APIInfoDTO apiInfoDTO : apiListDTO.getList()) {
-            apiIdentifierList
-                    .add(new APIIdentifier(apiInfoDTO.getProvider(), apiInfoDTO.getName(), apiInfoDTO.getVersion()));
-        }
-        return apiIdentifierList;
-    }
-
-    /**
-     * @param apiListDTO
-     * @return
-     * @throws APIManagerIntegrationTestException
-     */
-    public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(
-            org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO apiListDTO) {
-        if (apiListDTO == null) {
-            return Collections.emptyList();
-        }
-        List<APIIdentifier> apiIdentifierList = new ArrayList<>();
-        for (org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO apiInfoDTO : apiListDTO.getList()) {
-            apiIdentifierList
-                    .add(new APIIdentifier(apiInfoDTO.getProvider(), apiInfoDTO.getName(), apiInfoDTO.getVersion()));
-        }
-        return apiIdentifierList;
-    }
-
-    /**
      * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
      *
      * @param apiIdentifierToCheck - API identifier to verify
@@ -1812,50 +1774,5 @@ public class APIMTestCaseUtils {
             buf.append(hexDigits[aByte & 0x0f]);
         }
         return buf.toString();
-    }
-
-    /**
-     * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
-     *
-     * @param apiIdentifier - API DTO to verify
-     * @param apiListDTO    - API Info DTO list
-     * @return - Status of API availability
-     */
-    public static boolean isAPIAvailable(APIIdentifier apiIdentifier, APIListDTO apiListDTO) {
-        boolean isFound = false;
-        if (apiListDTO != null) {
-            for (APIInfoDTO api : apiListDTO.getList()) {
-                if (apiIdentifier.getName().equals(api.getName()) &&
-                        apiIdentifier.getVersion().equals(api.getVersion()) &&
-                        apiIdentifier.getProviderName().equals(api.getProvider())) {
-                    isFound = true;
-                    break;
-                }
-            }
-        }
-        return isFound;
-    }
-
-    /**
-     * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
-     *
-     * @param apiIdentifier - API DTO to verify
-     * @param apiListDTO    - API Info DTO list
-     * @return - Status of API availability
-     */
-    public static boolean isAPIAvailableInStore(APIIdentifier apiIdentifier,
-                            org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO apiListDTO) {
-        boolean isFound = false;
-        if (apiListDTO != null) {
-            for (org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO api : apiListDTO.getList()) {
-                if (apiIdentifier.getName().equals(api.getName()) &&
-                        apiIdentifier.getVersion().equals(api.getVersion()) &&
-                        apiIdentifier.getProviderName().equals(api.getProvider())) {
-                    isFound = true;
-                    break;
-                }
-            }
-        }
-        return isFound;
     }
 }

@@ -24,17 +24,17 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 
 import java.io.File;
 import java.net.URL;
-
 
 /**
  * This class checks whether the API subscriptions are retained when an API is demote to the CREATED state of
@@ -44,21 +44,30 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
 
     private static final Log log = LogFactory.getLog(APIMANAGER5337SubscriptionRetainTestCase.class);
 
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
         String gatewaySessionCookie = createSession(gatewayContextMgt);
+        //Initialize publisher and store.
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
                 + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
-
     @Test(groups = "wso2.am", description = "testing error responses")
     public void testAPIErrorResponse() throws Exception {
 
         //Login to the API Publisher
-        HttpResponse response;
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse response;
+        response = apiPublisher.login(user.getUserName(), user.getPassword());
+        verifyResponse(response);
+
         String apiName = "SubscriptionCheckAPI";
         String apiVersion = "1.0.0";
         String apiContext = "subscriptionCheck";
@@ -74,36 +83,45 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
             //Add the API using the API publisher.
-            HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-            //verifyResponse(apiResponse);
+            response = apiPublisher.addAPI(apiRequest);
+            verifyResponse(response);
 
-            String apiId = apiResponse.getData();
-
+            APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(apiName,
+                    user.getUserName(), APILifeCycleState.PUBLISHED);
             //Publish the API
-            restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+            response = apiPublisher.changeAPILifeCycleStatus(updateRequest1);
+            verifyResponse(response);
 
-            HttpResponse applicationResponse = restAPIStore.createApplication("subscriptionCheckApp1",
-                    "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                    ApplicationDTO.TokenTypeEnum.OAUTH);
-            //verifyResponse(applicationResponse);
+            //Login to the API Store
+            response = apiStore.login(user.getUserName(), user.getPassword());
+            verifyResponse(response);
 
-            String applicationID = applicationResponse.getData();
+            //Add an Application in the Store.
+            response = apiStore.addApplication("subscriptionCheckApp1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+            verifyResponse(response);
 
             //Subscribe the API to the Application
-            response = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
-            //verifyResponse(response);
+            SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
+                    user.getUserName(), "subscriptionCheckApp1",
+                    APIMIntegrationConstants.API_TIER.UNLIMITED);
+            response = apiStore.subscribe(subscriptionRequest);
+            verifyResponse(response);
 
             //Demote the API to the Created State
-            restAPIPublisher.changeAPILifeCycleStatus(apiId, "Demote to Created", null);
+            APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(apiName,
+                    user.getUserName(), APILifeCycleState.CREATED);
+            response = apiPublisher.changeAPILifeCycleStatus(updateRequest2);
+            verifyResponse(response);
 
             Thread.sleep(1000);
 
-//            //Check For subscriptions
-            SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
-//            verifyResponse(response);
+            //Check For subscriptions
+            response = apiStore.getAllSubscriptionsOfApplication("subscriptionCheckApp1");
+            verifyResponse(response);
 
+            String subscriptions = response.getData();
+            JSONObject subscriptionJson = new JSONObject(subscriptions);
 
-            JSONObject subscriptionJson = new JSONObject(subsDTO);
             Assert.assertEquals(subscriptionJson.toString().contains("SubscriptionCheckAPI"), true,
                     "Subscription of the SubscriptionCheckAPI has been removed.");
 

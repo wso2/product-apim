@@ -1,84 +1,87 @@
 /*
- *Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- *WSO2 Inc. licenses this file to you under the Apache License,
- *Version 2.0 (the "License"); you may not use this file except
- *in compliance with the License.
- *You may obtain a copy of the License at
- *
- *http://www.apache.org/licenses/LICENSE-2.0
- *
- *Unless required by applicable law or agreed to in writing,
- *software distributed under the License is distributed on an
- *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.  See the License for the
- *specific language governing permissions and limitations
- *under the License.
- */
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+*WSO2 Inc. licenses this file to you under the Apache License,
+*Version 2.0 (the "License"); you may not use this file except
+*in compliance with the License.
+*You may obtain a copy of the License at
+*
+*http://www.apache.org/licenses/LICENSE-2.0
+*
+*Unless required by applicable law or agreed to in writing,
+*software distributed under the License is distributed on an
+*"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+*KIND, either express or implied.  See the License for the
+*specific language governing permissions and limitations
+*under the License.
+*/
 
 package org.wso2.am.integration.tests.other;
 
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.json.JSONObject;
+import org.testng.annotations.*;
+import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.UserManagementUtils;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import javax.mail.Message;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.utils.ServerConstants;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import javax.mail.Message;
 
 
 /**
  * This test case will test Whether a notification email is sent to existing subscribers when a new api is created
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(NotificationTestCase.class);
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
     private static final String API_NAME = "NOTIFICATION_TEST_API";
     private static final String API_CONTEXT = "NOTIFICATION_TEST_API";
     private static final String API_VERSION = "1.0.0";
     private static final String NEW_API_VERSION = "2.0.0";
     private static final String APP_NAME = "NOTIFICATION_TEST_APP";
-    private final String STORE_USERNAME = "api_store";
-    private final String STORE_PASSWORD = "admin";
+    private final String STORE_USERNAME ="api_store";
+    private final String STORE_PASSWORD ="admin";
 
     private static final String EMAIL_USERNAME = "APIM";
     private static final String EMAIL_PASSWORD = "APIM+123";
     private static final String USER_EMAIL_ADDRESS = "apim@gmail.com";
-    private static final int SMTP_TEST_PORT = 3025;
-    private static final String serviceEndpoint = "https://localhost:9943/services/";
+    private static final int SMTP_TEST_PORT =3025;
 
+    private String gatewaySessionCookie;
     private GreenMail greenMail;
-    private String apiId;
-    private String applicationId;
-    private String subscriptionId;
+    private String storeURLHttp;
 
     @Factory(dataProvider = "userModeDataProvider")
     public NotificationTestCase(TestUserMode userMode) {
@@ -88,6 +91,11 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        String publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        gatewaySessionCookie = createSession(gatewayContextMgt);
 
     }
 
@@ -106,44 +114,46 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
-        APIRequest apiRequest;
-        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(url));
-        apiRequest.setProvider(user.getUserName());
+        apiPublisher.login(user.getUserName(), user.getPassword());
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(url));
         apiRequest.setDescription(description);
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-
-        //Add the API using the API publisher.
-        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = apiResponse.getData();
-
+        apiRequest.setProvider(user.getUserName());
+        apiPublisher.addAPI(apiRequest);
         //publishing API
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
+                                                                APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
+        // add a new store user
+        AutomationContext storeContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_STORE_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
+        HttpResponse storeSignUpResponse = signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
+        log.info("Sign Up User: " + STORE_USERNAME);
+        JSONObject signUpJsonObject = new JSONObject(storeSignUpResponse.getData());
+        assertFalse(signUpJsonObject.getBoolean("error"), "Error in user sign up Response");
+
+        //login with new user
+        HttpResponse loginResponse = apiStore.login(STORE_USERNAME, STORE_PASSWORD);
+        JSONObject loginJsonObject = new JSONObject(loginResponse.getData());
+        assertFalse(loginJsonObject.getBoolean("error"), "Error in Login Request: User Name : " + STORE_USERNAME);
 
         // create new application and subscribing
-        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
-                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+        apiStore.login(STORE_USERNAME, STORE_PASSWORD);
+        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
 
-        applicationId = applicationResponse.getData();
-
-        //Subscribe the API to the Application
-        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-
-        subscriptionId = responseStore.getData();
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
+        subscriptionRequest.setApplicationName(APP_NAME);
+        apiStore.subscribe(subscriptionRequest);
 
         //Create a new Version
-        HttpResponse newVersionResponse = restAPIPublisher.copyAPI(NEW_API_VERSION, apiId, null);
-        assertEquals(newVersionResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response Code Mismatch");
-
-        String newApiId = newVersionResponse.getData();
+        HttpResponse newVersionResponse=apiPublisher.copyAPI(user.getUserName(), API_NAME, API_VERSION,
+                                            NEW_API_VERSION, "");
+        assertEquals(newVersionResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatch");
 
         //Publisher new version
-        HttpResponse newVersionPublishResponse = restAPIPublisher
-                .changeAPILifeCycleStatus(newApiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        APIIdentifier apiIdentifier = new APIIdentifier(user.getUserName(), API_NAME, NEW_API_VERSION);
+        HttpResponse newVersionPublishResponse = apiPublisher.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
         assertEquals(newVersionPublishResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code Mismatch");
 
@@ -151,10 +161,10 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         greenMail.waitForIncomingEmail(50000, 1);
         Message[] messages = greenMail.getReceivedMessages();
 
-        if (messages.length > 0) {
-            assertTrue(true, "Email received BY Greenmail server");
-        } else {
-            assertTrue(false, "Email NOT received BY Greenmail server");
+        if(messages.length >0){
+            assertTrue(true,"Email received BY Greenmail server");
+        }else{
+            assertTrue(false,"Email NOT received BY Greenmail server");
         }
     }
 
@@ -192,12 +202,12 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     /**
      * API Store sign up
-     *
      * @param userName - store user name
      * @param password -store password
-     * @param email    - user's email
+     * @param email - user's email
      * @return
      * @throws APIManagerIntegrationTestException
+     *
      */
     public HttpResponse signUp(String userName, String password, String email) throws
             APIManagerIntegrationTestException {
@@ -215,9 +225,17 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.removeSubscription(subscriptionId);
-        restAPIStore.removeApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
+
+        if (apiStore != null) {
+            apiStore.removeApplication(APP_NAME);
+        }
+
+        if (apiPublisher != null) {
+            apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        }
+        greenMail.stop();
+
+        super.cleanUp();
     }
 
     @DataProvider

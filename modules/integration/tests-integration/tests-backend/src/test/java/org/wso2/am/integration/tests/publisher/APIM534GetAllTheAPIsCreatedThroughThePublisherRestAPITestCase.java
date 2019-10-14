@@ -29,15 +29,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
@@ -45,8 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -65,12 +59,11 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
     private static final String apiNameTest2 = "APIM534PublisherTest2";
     private static final String apiNameTest3 = "APIM534PublisherTest3";
     private static final String apiVersion = "1.0.0";
+    private APIPublisherRestClient apiPublisher;
     private static String apiProviderName;
     private static String apiTest1EndPointUrl;
     private static String apiTest2EndPointUrl;
     private static String apiTest3EndPointUrl;
-    private static String id;
-    List<String> idList = new ArrayList<String>();
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -109,6 +102,10 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+
         apiTest1EndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiTest1EndpointPostfixUrl;
         apiTest2EndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiTest2EndpointPostfixUrl;
         apiTest3EndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiTest3EndpointPostfixUrl;
@@ -122,27 +119,24 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
             (String apiName, String context, String version, String provider,
              URL endpointUrl) throws Exception {
 
+        //Create an API check the response
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiName, context, version, provider, endpointUrl);
 
-        APIRequest apiRequest = new APIRequest(apiName, context, endpointUrl);
-        apiRequest.setVersion(version);
-        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiRequest);//(apiCreationRequestBean);
-        id = apiCreationResponse.getData(); 
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
-        assertNotNull(id, "APIs are not created as expected");
-        idList.add(id);
-        
-        HttpResponse resp = restAPIPublisher.getAPI(id);
-        assertEquals(resp.getResponseCode(), Response.Status.OK.getStatusCode(), "API does not exist");
+        assertFalse(apiResponse.getBoolean("error"), "APIs are not created as expected");
+
         //Create a API list with newly added APIs
         List<String> apiList = Arrays.asList(apiNameTest1, apiNameTest2, apiNameTest3);
         log.info("My API List :" + apiList);
 
         //Check the availability of API in Publisher
-        Thread.sleep(5000);
-        APIListDTO response = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(provider));
-        JSONObject jsonObject = new JSONObject(response);
-        JSONArray jsonArray = jsonObject.getJSONArray("list");
+        HttpResponse response = apiPublisher.getAllAPIs();
+        JSONObject jsonObject = new JSONObject(response.getData());
+        JSONArray jsonArray = jsonObject.getJSONArray("apis");
         List<String> allApiList = new ArrayList<String>();
 
 
@@ -159,19 +153,21 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
     public void testCheckIfAnAPIExistsThroughThePublisherRestAPI() throws Exception {
 
         //Trying to Create an API with an existing API Name
-        APIRequest apiRequest = new APIRequest(apiNameTest1, "apim534PublisherTest1API", new URL(apiTest1EndPointUrl));
-        apiRequest.setVersion(apiVersion);
-        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        //response is null if addAPI fails with same api name
-        assertNull("Added same api again", response);
-
+        HttpResponse existingApiResponse = apiPublisher.checkValidAPIName(apiNameTest1);
+        JSONObject existApiObject = new JSONObject(existingApiResponse.getData());
+        assertEquals(existingApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when trying to create API with existing name ");
+        assertFalse(existApiObject.getBoolean("error"),
+                "Allow to create API with an existing API name");
+        assertTrue(existApiObject.getBoolean("exist"),
+                "Allow to create API with an existing API name");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        for (String id : idList) {
-            restAPIPublisher.deleteAPI(id);
-        }
+        apiPublisher.deleteAPI(apiNameTest1, apiVersion, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest2, apiVersion, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest3, apiVersion, apiProviderName);
         super.cleanUp();
     }
 

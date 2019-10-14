@@ -23,13 +23,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -44,17 +43,16 @@ import static org.wso2.am.integration.tests.restapi.RESTAPITestConstants.AUTHORI
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
-
     private ServerConfigurationManager serverConfigurationManager;
     private final String CUSTOM_AUTHORIZATION_HEADER = "Test-Custom-Header";
     private final String API1_NAME = "CustomAuthHeaderTestAPI1";
     private final String API1_CONTEXT = "customAuthHeaderTest1";
     private final String API1_VERSION = "1.0.0";
+    String apiProviderName;
     private final String APPLICATION1_NAME = "CustomHeaderTest-Application";
     private final String API_END_POINT_METHOD = "customers/123";
 
@@ -62,18 +60,14 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
     private final String API2_CONTEXT = "customAuthHeaderTest2";
     private final String API2_VERSION = "1.0.0";
     private String accessToken;
-    private String applicationId;
-    private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public CustomHeaderTestCase(TestUserMode userMode) {
-
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
         };
@@ -81,43 +75,39 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfiguration(new File(
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "customHeaderTest"
                         + File.separator + "deployment.toml"));
-        //Create application
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationResponse =
-                restAPIStore.createApplication(APPLICATION_NAME,
-                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
-                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicationId = applicationResponse.getData();
-
+        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
+        apiStore = new APIStoreRestClient(getStoreURLHttp());
+        apiPublisher.login(user.getUserName(), user.getPassword());
+        apiStore.login(user.getUserName(), user.getPassword());
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
+        // Create application
+        apiStore.addApplication(APPLICATION1_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "this-is-test");
         //get access token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        accessToken = generateApplicationKeys(apiStore, APPLICATION1_NAME).getAccessToken();
     }
 
     @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for all APIs in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
     public void testSystemWideCustomAuthHeader() throws Exception {
-
         APIIdentifier apiIdentifier1 = new APIIdentifier(user.getUserName(), API1_NAME, API1_VERSION);
 
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
         APIRequest apiRequest = new APIRequest(API1_NAME, API1_CONTEXT, new URL(url), new URL(url));
         apiRequest.setVersion(API1_VERSION);
         apiRequest.setProvider(user.getUserName());
-        apiRequest.setTiersCollection(TIER_UNLIMITED);
-        String invocationUrl = getAPIInvocationURLHttps(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
-        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(API1_NAME, apiProviderName, APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        String invocationUrl = getAPIInvocationURLHttp(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
+
         waitForAPIDeploymentSync(user.getUserName(), API1_NAME, API1_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        subscribeToAPI(apiIdentifier1, APPLICATION1_NAME, apiStore);
 
         // Test whether a request made with a valid token using the relevant custom auth header should yield the proper
         // response from the back-end, assuming the application has a valid subscription to the API. (Test ID: 3.1.1.5)
@@ -140,12 +130,9 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
-        for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
-            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
-        }
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
+        apiPublisher.deleteAPI(API1_NAME, API1_VERSION, apiProviderName);
+        apiStore.removeApplication(APPLICATION1_NAME);
+        super.cleanUp();
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();
         }
