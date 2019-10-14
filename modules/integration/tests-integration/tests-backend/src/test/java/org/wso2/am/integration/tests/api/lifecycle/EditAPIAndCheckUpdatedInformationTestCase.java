@@ -20,16 +20,15 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIBean;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -37,7 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -55,77 +53,76 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
-    private APIRequest apiRequest;
     private APIIdentifier apiIdentifier;
-    private String apiId;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APICreationRequestBean apiCreationRequestBean;
 
-    @Factory(dataProvider = "userModeDataProvider")
-    public EditAPIAndCheckUpdatedInformationTestCase(TestUserMode userMode) {
-        this.userMode = userMode;
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][] {
-                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[]{TestUserMode.TENANT_ADMIN}
-        };
-    }
 
     @BeforeClass(alwaysRun = true)
-    public void initialize()
-            throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
-        super.init(userMode);
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+                                    MalformedURLException {
+        super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
-        apiRequest.setVersion(API_VERSION_1_0_0);
-        apiRequest.setTags(API_TAGS);
-        apiRequest.setDescription(API_DESCRIPTION);
-        apiRequest.setProvider(providerName);
+        apiCreationRequestBean =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                                           new URL(apiEndPointUrl));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Edit the API Information")
-    public void testEditAPIInformation() throws APIManagerIntegrationTestException, ApiException {
-        //add api
-        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = serviceResponse.getData();
 
-        //publish the api
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
-
-        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
-
+    @Test(groups = {"wso2.am"}, description = "Edit the API Information")
+    public void testEditAPIInformation()
+            throws APIManagerIntegrationTestException, XPathExpressionException {
+        //Create and publish API version 1.0.0
+        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
         //Edit the api
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
         String apiNewTags = API_TAGS + ", " + NEW_API_TAG;
-        apiRequest.setTags(apiNewTags);
-        apiRequest.setDescription(NEW_API_DESCRIPTION);
-
+        apiCreationRequestBean.setTags(apiNewTags);
+        apiCreationRequestBean.setDescription(NEW_API_DESCRIPTION);
         //Update API with Edited information
-        HttpResponse updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
+        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
 
-        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
 
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Update API Response Code is invalid. " + getAPIIdentifierString(apiIdentifier));
-        assertNotNull(updateAPIHTTPResponse.getData(),
-                "Error in API Update in " + getAPIIdentifierString(apiIdentifier));
+                     "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
+                     "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
+                     "Response Data:" + updateAPIHTTPResponse.getData());
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test whether the updated information available in the publisher ",
-            dependsOnMethods = "testEditAPIInformation")
-    public void testUpdatedAPIInformationFromAPIPublisher() throws APIManagerIntegrationTestException, ApiException {
-        HttpResponse httpResponse = restAPIPublisher.getAPI(apiId);
-        assertEquals(getValueFromJSON(httpResponse, "description"), NEW_API_DESCRIPTION,
-                "Updated Description is not available");
-        assertTrue(httpResponse.getData().contains(NEW_API_TAG), "Newly added Tag is not available");
+    @Test(groups = {"wso2.am"}, description = "Test whether the updated information available in the publisher ",
+          dependsOnMethods = "testEditAPIInformation")
+    public void testUpdatedAPIInformationFromAPIPublisher()
+            throws APIManagerIntegrationTestException {
+        APIBean apiBeanAfterUpdate =
+                APIMTestCaseUtils.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
+                        API_NAME, providerName, API_VERSION_1_0_0));
+        assertEquals(apiBeanAfterUpdate.getDescription(), NEW_API_DESCRIPTION, "Updated Description is not available");
+        assertTrue(apiBeanAfterUpdate.getTags().contains(NEW_API_TAG), "Newly added Tag is not available");
+
     }
+
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
-        restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
 
     }
 

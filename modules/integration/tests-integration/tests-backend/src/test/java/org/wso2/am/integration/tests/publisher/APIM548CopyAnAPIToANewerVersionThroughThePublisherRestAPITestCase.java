@@ -27,14 +27,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
@@ -58,8 +55,6 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
     private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
     private String apiProductionEndPointUrl;
-    private String apiId;
-    private String copyAPIId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -84,6 +79,8 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
                 apiProductionEndpointPostfixUrl;
@@ -99,77 +96,47 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
         String apiDescription = "This is Test API Created by API Manager Integration Test";
         String apiTag = "tag548-1, tag548-2, tag548-3";
         String defaultVersion = "default_version";
-        
+
         //Create an API
-        APIRequest apiCreationRequestBean = new APIRequest(apiNameTest, apiContextTest,
-                new URL(apiProductionEndPointUrl));
-        apiCreationRequestBean.setVersion(apiOldVersion);
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiNameTest, apiContextTest,
+                        apiOldVersion, apiProviderName,
+                        new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
-        apiCreationRequestBean.setDefault_version("default_version");
-        apiCreationRequestBean.setDefault_version_checked("default_version");
-        apiCreationRequestBean.setBusinessOwner("api548b");
-        apiCreationRequestBean.setBusinessOwnerEmail("api548b@ee.com");
-        apiCreationRequestBean.setTechnicalOwner("api548t");
-        apiCreationRequestBean.setTechnicalOwnerEmail("api548t@ww.com");
+        apiCreationRequestBean.setDefaultVersion("default_version");
+        apiCreationRequestBean.setDefaultVersionChecked("default_version");
+        apiCreationRequestBean.setBizOwner("api548b");
+        apiCreationRequestBean.setBizOwnerMail("api548b@ee.com");
+        apiCreationRequestBean.setTechOwner("api548t");
+        apiCreationRequestBean.setTechOwnerMail("api548t@ww.com");
 
-        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean );
-        apiId = apiCreationResponse.getData();
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
-
+        assertFalse(apiResponse.getBoolean("error"), apiNameTest + "is not created as expected");
 
         //Check availability of the API in publisher
-        JSONObject jsonObject = null;
-        boolean available = false;
-        int maxRetry = 10;
-        int currentTry = 0;
-        do {
-            Thread.sleep(2000);
-            APIListDTO apiResponsePublisher = restAPIPublisher
-                    .getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName));           
-            if (apiResponsePublisher != null) {
-                jsonObject = new JSONObject(apiResponsePublisher);
-                available = true;
-                break;
-            }
-            
-            currentTry++;
-        } while (currentTry <= maxRetry);
-
-        assertTrue(available, "API not available");
-        assertTrue(jsonObject.getString("list").contains(apiNameTest),
+        HttpResponse apiResponsePublisher = apiPublisher.getAllAPIs();
+        JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
+        assertFalse(jsonObject.getBoolean("error"), apiNameTest + " is not visible in publisher");
+        assertTrue(jsonObject.getString("apis").contains(apiNameTest),
                 apiNameTest + " is not visible in publisher");
-        assertTrue(jsonObject.getString("list").contains(apiOldVersion),
+        assertTrue(jsonObject.getString("apis").contains(apiOldVersion),
                 "Version of the " + apiNameTest + "is not a valid version");
 
         //Create a new copy of the API and validate the result
-        HttpResponse copyResponse = restAPIPublisher.copyAPI(apiNewVersion, apiId, true);
-        copyAPIId = copyResponse.getData();
-        assertEquals(copyResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when copying the API");
-
+        JSONObject jsonObjectCopy = new JSONObject(apiPublisher.copyAPI
+                (apiProviderName, apiNameTest, apiOldVersion, apiNewVersion, defaultVersion).getData());
+        assertFalse(jsonObjectCopy.getBoolean("error"), " New copy of the " + apiNameTest +
+                " is not created as expected");
 
         //Check if the New Version of the API is available in Publisher
- 
-        JSONObject allApiObject = null;
-        available = false;
-        maxRetry = 10;
-        currentTry = 0;
-        do {
-            Thread.sleep(2000);
-            APIListDTO allApiResponse = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName)); 
-            if (allApiResponse != null) {
-                allApiObject = new JSONObject(allApiResponse);
-                available = true;
-                break;
-            }
-            currentTry++;
-        } while (currentTry <= maxRetry);
-        
-        assertTrue(available, "API not available");
-        JSONArray jsonArray = allApiObject.getJSONArray("list");
+        HttpResponse allApiResponse = apiPublisher.getAllAPIs();
+        JSONObject allApiObject = new JSONObject(allApiResponse.getData());
+        JSONArray jsonArray = allApiObject.getJSONArray("apis");
         List<String> allApiList = new ArrayList<String>();
 
 
@@ -186,8 +153,8 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        restAPIPublisher.deleteAPI(apiId);
-        restAPIPublisher.deleteAPI(copyAPIId);
+        apiPublisher.deleteAPI(apiNameTest, apiOldVersion, apiProviderName);
+        apiPublisher.deleteAPI(apiNameTest, apiNewVersion, apiProviderName);
         super.cleanUp();
     }
 

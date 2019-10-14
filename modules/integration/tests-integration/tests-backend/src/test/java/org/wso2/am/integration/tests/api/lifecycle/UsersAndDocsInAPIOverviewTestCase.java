@@ -18,26 +18,22 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApplicationInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Subscribe the API by more users and add documentations to API. In API overview it should show the correct
@@ -55,18 +51,11 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
-    private String apiID;
-    private String app1ID;
-    private String app2ID;
     private APIIdentifier apiIdentifier;
-    private RestAPIStoreImpl apiStoreClientUser1;
-    private RestAPIStoreImpl apiStoreClientUser2;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
+    private APIStoreRestClient apiStoreClientUser2;
     private APICreationRequestBean apiCreationRequestBean;
-
-    @Factory(dataProvider = "userModeDataProvider")
-    public UsersAndDocsInAPIOverviewTestCase(TestUserMode userMode) {
-        this.userMode = userMode;
-    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
@@ -77,90 +66,144 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
                 new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiStoreClientUser1 = getRestAPIStoreForUser(user.getUserName(), user.getPassword(), user.getUserDomain());
-        apiStoreClientUser2 =
-                getRestAPIStoreForUser(publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
-                        publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                        publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserDomain());
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
+
+        apiStoreClientUser2.login(
+                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
+                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
+
     @Test(groups = {"wso2.am"}, description = "test the user count in API overview is correct")
-    public void testNumberOfUsersInAPIOverview() throws Exception {
+    public void testNumberOfUsersInAPIOverview() throws APIManagerIntegrationTestException {
         String applicationDescription = "";
         String applicationCallBackUrl = "";
-        ApplicationDTO app1 = apiStoreClientUser1.addApplication(APPLICATION_NAME,
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, applicationCallBackUrl,
                 applicationDescription);
-        ApplicationDTO app2 = apiStoreClientUser2.addApplication(APPLICATION_NAME,
+        apiStoreClientUser2.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, applicationCallBackUrl,
                 applicationDescription);
-        app1ID = app1.getApplicationId();
-        app2ID = app2.getApplicationId();
         //Create publish and subscribe a API by user 1
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
-        APIDTO apidto = createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher,
-                apiStoreClientUser1, app1.getApplicationId(), TIER_GOLD);
-        apiID = apidto.getId();
-        SubscriptionListDTO subscriptionListDTO = restAPIPublisher.getSubscriptionByAPIID(apidto.getId());
-        Assert.assertEquals(subscriptionListDTO.getCount().intValue(), 1);
+        createPublishAndSubscribeToAPI(
+                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+        HttpResponse publisherOverviewPageResponse1 =
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
+        assertEquals(publisherOverviewPageResponse1.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when retrieving the Publisher Overview page");
+        assertTrue(getUserStringInOverview(publisherOverviewPageResponse1.getData()).contains("1 User")
+                , "User count is not equal to 1 , when only one user subscription is available");
         // subscribe 2nd user
-        apiStoreClientUser2.subscribeToAPI(apiID, app2.getApplicationId(), TIER_GOLD);
-        SubscriptionListDTO subscriptionListDTO1 = restAPIPublisher.getSubscriptionByAPIID(apidto.getId());
-        Assert.assertEquals(subscriptionListDTO1.getCount().intValue(), 2);
-
-        for (SubscriptionDTO dto : subscriptionListDTO1.getList()) {
-            ApplicationInfoDTO infoDTO = dto.getApplicationInfo();
-            if (infoDTO.getApplicationId().equalsIgnoreCase(app1.getApplicationId())) {
-                Assert.assertEquals(infoDTO.getSubscriber(), user.getUserName());
-            }
-            if (infoDTO.getApplicationId().equalsIgnoreCase(app2.getApplicationId())) {
-                Assert.assertEquals(infoDTO.getSubscriber(),
-                        publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName());
-            }
-        }
+        subscribeToAPI(this.apiIdentifier, APPLICATION_NAME, apiStoreClientUser2);
+        HttpResponse publisherOverviewPageResponse2 =
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
+        assertEquals(publisherOverviewPageResponse2.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
+        assertTrue(getUserStringInOverview(publisherOverviewPageResponse2.getData()).contains("2 Users")
+                , "User count is not equal to 2 , when only one user subscription is available");
     }
+
+
+    @Test(groups = {"wso2.am"}, description = "test user information in API overview Users tab is correct",
+            dependsOnMethods = "testNumberOfUsersInAPIOverview")
+    public void testUsersInformationInUserTabInAPIOverview() throws APIManagerIntegrationTestException {
+        HttpResponse publisherOverviewPageResponse =
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
+        assertEquals(publisherOverviewPageResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when retrieving the Publisher Overview page");
+        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
+        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
+
+    }
+
 
     @Test(groups = {"wso2.am"}, description = "test user information in API overview Docs tab is correct",
-            dependsOnMethods = "testNumberOfUsersInAPIOverview")
-    public void testDocInformationInDocsTabInAPIOverview() throws Exception {
+            dependsOnMethods = "testUsersInformationInUserTabInAPIOverview")
+    public void testDocInformationInDocsTabInAPIOverview() throws APIManagerIntegrationTestException {
         // Add 2 documents
-        DocumentDTO documentDTO1 = new DocumentDTO();
-        documentDTO1.setName("Doc1");
-        documentDTO1.setType(DocumentDTO.TypeEnum.HOWTO);
-        documentDTO1.setSourceType(DocumentDTO.SourceTypeEnum.INLINE);
-        documentDTO1.setSummary("test doc 1");
-        documentDTO1.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
-
-        DocumentDTO documentDTO2 = new DocumentDTO();
-        documentDTO2.setName("Doc2");
-        documentDTO2.setType(DocumentDTO.TypeEnum.HOWTO);
-        documentDTO2.setSourceType(DocumentDTO.SourceTypeEnum.INLINE);
-        documentDTO2.setSummary("test doc 2");
-        documentDTO2.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
-
-        restAPIPublisher.addDocument(apiID, documentDTO1);
-        restAPIPublisher.addDocument(apiID, documentDTO2);
-
-        DocumentListDTO documentListDTO = restAPIPublisher.getDocuments(apiID);
-        Assert.assertEquals(documentListDTO.getCount().intValue(), 2);
+        AddDocumentRequestBean addDocumentRequestBean1 = new AddDocumentRequestBean();
+        addDocumentRequestBean1.setApiName(API_NAME);
+        addDocumentRequestBean1.setApiVersion(API_VERSION_1_0_0);
+        addDocumentRequestBean1.setApiProvider(providerName);
+        addDocumentRequestBean1.setDocName("Doc1");
+        addDocumentRequestBean1.setDocType("how to");
+        addDocumentRequestBean1.setDocSourceType("inline");
+        addDocumentRequestBean1.setDocSummary("test doc 1");
+        addDocumentRequestBean1.setDocLocation("");
+        addDocumentRequestBean1.setDocUrl("");
+        AddDocumentRequestBean addDocumentRequestBean2 = new AddDocumentRequestBean();
+        addDocumentRequestBean2.setApiName(API_NAME);
+        addDocumentRequestBean2.setApiVersion(API_VERSION_1_0_0);
+        addDocumentRequestBean2.setApiProvider(providerName);
+        addDocumentRequestBean2.setDocName("Doc2");
+        addDocumentRequestBean2.setDocType("how to");
+        addDocumentRequestBean2.setDocSourceType("inline");
+        addDocumentRequestBean2.setDocSummary("test doc 2");
+        addDocumentRequestBean2.setDocLocation("");
+        addDocumentRequestBean2.setDocUrl("");
+        apiPublisherClientUser1.addDocument(addDocumentRequestBean1);
+        apiPublisherClientUser1.addDocument(addDocumentRequestBean2);
+        HttpResponse publisherOverviewPageResponse =
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
+        assertEquals(publisherOverviewPageResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when retrieving the Publisher Overview page");
+        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API_NAME + "-" +
+                addDocumentRequestBean1.getDocName() + "\""), " Doc Name:" + addDocumentRequestBean1.getDocName()
+                + " is not available in API overview Page");
+        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API_NAME + "-" +
+                addDocumentRequestBean2.getDocName() + "\""), " Doc Name:" + addDocumentRequestBean2.getDocName() +
+                " is not available in API overview Page");
     }
+
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
-        if (apiStoreClientUser1 != null) {
-            apiStoreClientUser1.removeApplicationById(app1ID);
-        }
-        if (apiStoreClientUser2 != null) {
-            apiStoreClientUser2.removeApplicationById(app2ID);
-        }
-        restAPIPublisher.deleteAPIByID(apiID);
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        apiStoreClientUser2.removeApplication(APPLICATION_NAME);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
     }
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+    /**
+     * Check the User availability under active subscription in Users Tab.
+     *
+     * @param responsePageOfUsersTabData - response that contain the Users Tab page.
+     * @param userName                   - User name that need to find availability
+     * @return boolean - true if user is available else false.
+     */
+    private boolean isUserAvailableInActiveSubscriptionInUserTab(String responsePageOfUsersTabData, String userName) {
+        String temp1 =
+                responsePageOfUsersTabData.substring(responsePageOfUsersTabData.indexOf("Manage Subscriptions<"));
+        String temp2 =
+                temp1.substring(temp1.indexOf("Manage Subscriptions<"), temp1.indexOf("Usage by Current Subscribers"));
+        return temp2.contains(userName);
     }
+
+
+    /**
+     * Get the User count  String in API Overview page.
+     *
+     * @param responseData - response that contain the API Overview Tab.
+     * @return String -  Return the user count string Ex : "2 Users"
+     */
+    private String getUserStringInOverview(String responseData) {
+        String temp1 =
+                responseData.substring(responseData.indexOf("<span class=\"userCount\">"));
+        String temp2 =
+                temp1.substring(temp1.indexOf("<span class=\"userCount\">"), temp1.indexOf("</span>"));
+        return temp2.replaceAll("<span class=\"userCount\">", "").trim();
+
+    }
+
 }

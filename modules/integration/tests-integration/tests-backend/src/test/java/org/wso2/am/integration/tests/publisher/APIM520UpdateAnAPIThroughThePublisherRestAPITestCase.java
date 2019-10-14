@@ -28,7 +28,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -51,7 +50,6 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
     private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
     private String apiProductionEndPointUrl;
-    private String id;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM520UpdateAnAPIThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -74,6 +72,12 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
                 "customerservice/customers/123";
 
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+
         apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
                 apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
@@ -88,28 +92,30 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         String apiTag = "tag520-1, tag520-2, tag520-3";
 
         //Create an API
-
-        APIRequest apiCreationRequestBean = new APIRequest(apiNameTest, apiContextTest,
-                new URL(apiProductionEndPointUrl));
-        apiCreationRequestBean.setVersion(apiVersion);
-        apiCreationRequestBean.setProvider(apiProviderName);
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiNameTest, apiContextTest, apiVersion, apiProviderName,
+                        new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
-        apiCreationRequestBean.setDefault_version("default_version");
-        apiCreationRequestBean.setDefault_version_checked("default_version");
-        apiCreationRequestBean.setBusinessOwner("api520b");
-        apiCreationRequestBean.setBusinessOwnerEmail("api520b@ee.com");
-        apiCreationRequestBean.setTechnicalOwner("api520t");
-        apiCreationRequestBean.setTechnicalOwnerEmail("api520t@ww.com");
-        
-        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        id = apiCreationResponse.getData();
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        apiCreationRequestBean.setDefaultVersion("default_version");
+        apiCreationRequestBean.setDefaultVersionChecked("default_version");
+        apiCreationRequestBean.setBizOwner("api520b");
+        apiCreationRequestBean.setBizOwnerMail("api520b@ee.com");
+        apiCreationRequestBean.setTechOwner("api520t");
+        apiCreationRequestBean.setTechOwnerMail("api520t@ww.com");
+
+        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
+        assertFalse(apiResponse.getBoolean("error"), apiNameTest + "is not created as expected");
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(id);
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI
+                (apiNameTest, apiProviderName, apiVersion);
+        JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
+        assertFalse(jsonObject.getBoolean("error"), apiNameTest + " is not visible in publisher");
         assertTrue(apiResponsePublisher.getData().contains(apiNameTest),
                 apiNameTest + " is not visible in publisher");
 
@@ -117,14 +123,14 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         apiCreationRequestBean.setDescription("Description Changed");
         apiCreationRequestBean.setTiersCollection("Unlimited,Gold,Bronze");
 
-        HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiCreationRequestBean, id);
-        assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
+        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
+        assertTrue(apiUpdateResponse.getData().contains("\"error\" : false"),
+                apiNameTest + " is not updated properly");
         waitForAPIDeployment();
 
         //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(id);
-
+        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
+                (apiNameTest, apiProviderName, apiVersion);
         assertTrue(apiUpdateResponsePublisher.getData().contains(apiNameTest),
                 apiNameTest + " is not updated");
         assertTrue(apiUpdateResponsePublisher.getData().contains("Description Changed"),
@@ -140,7 +146,7 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        restAPIPublisher.deleteAPI(id);
+        apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProviderName);
         super.cleanUp();
     }
 

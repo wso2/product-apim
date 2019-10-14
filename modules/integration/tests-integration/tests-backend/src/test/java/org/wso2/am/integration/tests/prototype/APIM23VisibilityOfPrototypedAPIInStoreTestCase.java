@@ -21,26 +21,26 @@
 //TODO change as prototype
 package org.wso2.am.integration.tests.prototype;
 
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIDesignBean;
+import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -52,11 +52,12 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
 
     private final String apiName = "APIM23PrototypedAPI";
     private final String apiVersion = "1.0.0";
-    private RestAPIPublisherImpl restAPIPublisher;
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+    private APIIdentifier apiIdentifierPublisher;
     private String apiProvider;
     private String apiEndPointUrl;
-    private String apiID;
-    private APIIdentifier apiIdentifier;
+
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws APIManagerIntegrationTestException,
@@ -66,17 +67,20 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
         String apiPrototypeEndpointPostfixUrl = "pizzashack-api-1.0.0/api/";
         apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiPrototypeEndpointPostfixUrl;
 
-        restAPIPublisher = new RestAPIPublisherImpl(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(),publisherURLHttps);
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
 
-        restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeURLHttps);
+
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 
-        apiIdentifier = new APIIdentifier(apiProvider, apiName, apiVersion);
+        apiIdentifierPublisher = new APIIdentifier(apiProvider, apiName, apiVersion);
+
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API & deployed as a prototype and check " +
@@ -87,41 +91,55 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
         String apiTags = "pizza, order, pizza-menu";
         String apiDescription = "Pizza API:Allows to manage pizza orders " +
                 "(create, update, retrieve orders)";
+        String superUser = "carbon.super";
 
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointUrl));
-        apiRequest.setVersion(apiVersion);
-        apiRequest.setDescription(apiDescription);
-        apiRequest.setTags(apiTags);
-        apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        APIDesignBean apiDesignBean = new APIDesignBean(apiName, apiContext, apiVersion,
+                apiDescription, apiTags);
 
-        HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
-        assertEquals(addAPIResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+        HttpResponse apiDesignResponse = apiPublisher.designAPI(apiDesignBean);
+        assertEquals(apiDesignResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Invalid Response Code");
-        apiID = addAPIResponse.getData();
+        assertTrue(apiDesignResponse.getData().contains("\"error\" : false"),
+                apiName + "is not created as expected");
+
+        APIImplementationBean apiImplementationBean = new APIImplementationBean(apiName,
+                apiVersion, apiProvider, new URL(apiEndPointUrl));
+        apiImplementationBean.setSwagger(apiDesignBean.getSwagger());
+
+        HttpResponse apiImplementationResponse = apiPublisher.implement(apiImplementationBean);
+        assertEquals(apiImplementationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Invalid Response Code");
+        assertTrue(apiImplementationResponse.getData().contains("\"error\" : false"),
+                apiName + "is not created as expected");
 
         //Deployed API as a Prototyped API & check the status
-        WorkflowResponseDTO lcChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiID,
-                APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
-
-        assertTrue(lcChangeResponse.getLifecycleState().getState().equals("Prototyped"),
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, apiProvider,
+                APILifeCycleState.PROTOTYPED);
+        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        assertTrue(creationResponse.getData().contains("PROTOTYPED"),
                 apiName + "  status not updated as Prototyped");
-        Thread.sleep(15000);
+
         //Check whether Prototype API is available in publisher
-        APIListDTO getAllAPIsResponse = restAPIPublisher.getAllAPIs();
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllAPIsResponse),
-                "Implemented" + apiName + " Api is not visible in API Publisher.");
+        List<APIIdentifier> implementedAPIList = APIMTestCaseUtils.
+                getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
+        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierPublisher, implementedAPIList),
+                "Implemented" + apiName + " Api is visible in API Publisher.");
+
         Thread.sleep(15000);
 
         //Check whether Prototype API is available under the Prototyped API
-        org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO prototypedAPIs = restAPIStore
-                .getPrototypedAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, prototypedAPIs),
+        HttpResponse apiResponse = apiStore.getPrototypedAPI(superUser);
+        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Invalid Response Code");
+        assertTrue(apiResponse.getData().contains(apiName),
                 apiName + " is not visible as Prototyped API");
     }
 
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        restAPIPublisher.deleteAPI(apiID);
+        apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
         super.cleanUp();
     }
+
 }

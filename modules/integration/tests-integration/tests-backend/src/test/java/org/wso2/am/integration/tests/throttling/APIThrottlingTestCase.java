@@ -127,7 +127,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = { "throttling" }, description = "API Throttling Test", enabled = true)
     public void testAPIThrottling_1() throws Exception {
 
-        publishAndInvokeAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);
+        publishAndInvokeAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);        
     }
     
 	private void publishAndInvokeAPI(String apiName, String apiVersion, String apiContext, String description, String endpointURL,
@@ -137,7 +137,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 		APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 		apiPublisher.login(user.getUserName(), user.getPassword());
-
+		
 		APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName,
 				apiContext, apiVersion, user.getUserName(), new URL(backendURL));
         apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.SILVER);
