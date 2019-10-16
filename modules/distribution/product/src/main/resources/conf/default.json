@@ -176,7 +176,5 @@
   "monitoring.jmx.rmi_hostname": "localhost",
   "recaptcha.enabled": false,
   "recaptcha.api_url": "https://www.google.com/recaptcha/api.js",
-  "recaptcha.verify_url": "https://www.google.com/recaptcha/api/siteverify",
-  "recaptcha.site_key": "6LeL8iATAAAAABEWUx1LwFAiSCT06fY7Kfra5WcT",
-  "recaptcha.secret_key": "6LeL8iATAAAAAJUgXu_ZgEm_dOC3AT4gmWRstil4"
+  "recaptcha.verify_url": "https://www.google.com/recaptcha/api/siteverify"
 }
