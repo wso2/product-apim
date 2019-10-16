@@ -262,11 +262,6 @@
         </parameter>
     </transportReceiver>-->
 
-    <transportReceiver name="mailto" class="org.apache.axis2.transport.mail.MailTransportListener">
-        <!-- configure any optional POP3/IMAP properties
-        check com.sun.mail.pop3 and com.sun.mail.imap package documentation for more details-->
-    </transportReceiver>
-
 	<!--Uncomment if you want to have TCP transport support-->
     <!--transportReceiver name="tcp"
                        class="org.apache.axis2.transport.tcp.TCPServer">
