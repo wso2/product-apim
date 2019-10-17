@@ -50,6 +50,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 enable = true
 encoding = "base64" # base64,base64url
 enable_user_claims = true
+claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.cors]
 allow_origins = "*"

@@ -283,6 +283,7 @@
                                         <include name="accountrecoveryendpoint.war" />
                                     </fileset>
                                 </unzip>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint/WEB-INF/web.xml" token="&lt;param-value&gt;true&lt;/param-value&gt;" value="&lt;param-value&gt;false&lt;/param-value&gt;" />
                                 <delete file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint.war" />
                             </tasks>
                         </configuration>
@@ -807,6 +808,9 @@
                                         <param>
                                             ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.default.json
                                         </param>
+                                        <param>
+                                            ${basedir}/../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.default.json
+                                        </param>
                                     </include>
                                     <target>
                                         ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
@@ -837,6 +841,9 @@
                                         </param>
                                         <param>
                                             ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.validator.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.validator.json
                                         </param>
                                     </include>
                                     <target>

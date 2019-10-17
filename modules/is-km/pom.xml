@@ -40,7 +40,6 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
-                <version>1.5.4</version>
                 <executions>
                     <execution>
                         <id>feature-install</id>
