@@ -123,6 +123,7 @@
   },
   "synapse_properties.'synapse.sal.endpoints.sesssion.timeout.default'": "600000",
   "synapse_properties.'synapse.global_timeout_interval'": "120000",
+  "synapse_properties.'synapse.rest.CORSConfig.Access-Control-Allow-Headers'": "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,Authorization",
   "synapse_properties.'statistics.clean.enable'": "false",
   "synapse_properties.'synapse.observers'": "org.wso2.carbon.mediation.dependency.mgt.DependencyTracker",
   "synapse_properties.'synapse.temp_data.chunk.size'": "3072",

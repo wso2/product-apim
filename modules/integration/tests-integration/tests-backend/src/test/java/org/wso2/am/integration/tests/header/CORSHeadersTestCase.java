@@ -211,10 +211,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
-        /* TODO Uncomment once the issue is fixed, possibly in wso2-synapse
-        // Github issue reported :https://github.com/wso2/product-apim/issues/5551
         assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
-                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");*/
+                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
 
         assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
