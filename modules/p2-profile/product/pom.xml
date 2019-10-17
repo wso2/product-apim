@@ -106,6 +106,12 @@
                                     org.wso2.carbon.identity.event.handler.accountlock:org.wso2.carbon.identity.handler.event.account.lock.feature:${carbon.identity.event.handler.account.lock.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.identity.event.handler.notification:org.wso2.carbon.event.handler.notification.server.feature:${carbon.identity.event.handler.notification.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.event.handler.notification:org.wso2.carbon.email.mgt.feature:${carbon.identity.event.handler.notification.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -788,6 +794,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.captcha.server.feature.group</id>
                                     <version>${carbon.identity.governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.handler.notification.server.feature.group</id>
+                                    <version>${carbon.identity.event.handler.notification.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.email.mgt.feature.group</id>
+                                    <version>${carbon.identity.event.handler.notification.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.server.feature.group</id>
@@ -1779,6 +1793,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.captcha.server.feature.group</id>
                                     <version>${carbon.identity.governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.handler.notification.server.feature.group</id>
+                                    <version>${carbon.identity.event.handler.notification.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.email.mgt.feature.group</id>
+                                    <version>${carbon.identity.event.handler.notification.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.server.feature.group</id>

@@ -164,6 +164,7 @@
   "authentication.consent.prompt": false,
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
+  "identity_mgt.password_reset_email.enable_password_reset_email": true,
   "oauth.prompt_consent": true,
   "transport.binary.receiver.sslEnabledProtocols": [
     "TLSv1",
@@ -173,5 +174,8 @@
   "monitoring.jmx.rmi_registry_port": "9999",
   "monitoring.jmx.rmi_server_port": "11111",
   "monitoring.jmx.rmi_server_start": true,
-  "monitoring.jmx.rmi_hostname": "localhost"
+  "monitoring.jmx.rmi_hostname": "localhost",
+  "recaptcha.enabled": false,
+  "recaptcha.api_url": "https://www.google.com/recaptcha/api.js",
+  "recaptcha.verify_url": "https://www.google.com/recaptcha/api/siteverify"
 }
