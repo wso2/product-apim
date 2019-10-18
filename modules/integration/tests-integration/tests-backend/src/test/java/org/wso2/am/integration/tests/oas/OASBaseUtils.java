@@ -44,23 +44,12 @@ public class OASBaseUtils {
             Assert.assertFalse(extensions.containsKey("x-throttling-tier"));
         }
 
-        String context;
-        String[] arr = apidto.getProvider().split("@");
-        if ((arr) != null && arr.length > 1) {
-            String tenant = apidto.getProvider().split("@")[1];
-            if (apidto.getContext().startsWith("/t/" + tenant)) {
-                context = apidto.getContext() + "/" + apidto.getVersion();
-            } else {
-                context = "/t/" + tenant + apidto.getContext() + "/" + apidto.getVersion();
-            }
-        } else {
-            context = apidto.getContext() + "/" + apidto.getVersion();
-        }
+        String context = apidto.getContext() + "/" + apidto.getVersion();
         Assert.assertEquals(context, extensions.get("x-wso2-basePath"));
         Assert.assertTrue(extensions.containsKey("x-wso2-cors"));
         Assert.assertTrue(extensions.containsKey("x-wso2-production-endpoints"));
         Assert.assertTrue(extensions.containsKey("x-wso2-sandbox-endpoints"));
-//        Assert.assertTrue(extensions.containsKey("x-wso2-transports"));
+        Assert.assertTrue(extensions.containsKey("x-wso2-transports"));
     }
 
     public static Map<String, Map<String, APIOperationsDTO>> getMapFromDTO(APIDTO apidto) {
