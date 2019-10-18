@@ -179,19 +179,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "API search by group TAG", dependsOnMethods = "testAPISearchByTag")
     public void testAPISearchByTagGroup() throws Exception {
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            String carbonHome = System.getProperty("carbon.home");
-            File srcFile = new File(
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "tag" + File.separator
-                            + "site.json");
-            File targetFile = new File(
-                    carbonHome + File.separator + "repository" + File.separator + "deployment" + File.separator
-                            + "server" + File.separator + "jaggeryapps" + File.separator +
-                            "devportal" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
-            serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
-        }
-
         //create test api 1
         apiRequest = new APIRequest(API_NAME_CONTEXT_UPPER_CASE, API_NAME_CONTEXT_UPPER_CASE, new URL(endpointUrl));
         apiRequest.setTags(TAG_GROUP_UPPER_CASE);
