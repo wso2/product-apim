@@ -499,6 +499,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/includes/</exclude>
             </excludes>
         </fileSet>
 
@@ -506,7 +507,7 @@
             <directory>
                 src/main/extensions
             </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/authenticationendpoint/extensions
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/authenticationendpoint/includes
             </outputDirectory>
             <includes>
                 <include>title.jsp</include>
@@ -542,6 +543,7 @@
             <excludes>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
+                <exclude>accountrecoveryendpoint/includes/</exclude>
             </excludes>
         </fileSet>
 
@@ -549,7 +551,7 @@
             <directory>
                 src/main/extensions
             </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/accountrecoveryendpoint/extensions
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/accountrecoveryendpoint/includes
             </outputDirectory>
             <includes>
                 <include>title.jsp</include>
