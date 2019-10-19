@@ -124,12 +124,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
             ApiResponse<org.wso2.am.integration.clients.store.api.v1.dto.APIDTO> apiResponse =
                     anonymousRestAPIStore.apIsApi.apisApiIdGetWithHttpInfo(apidto.getId(), user.getUserDomain(), null);
         } catch (ApiException e) {
-            //todo fix: https://github.com/wso2/product-apim/issues/6255
-            if("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-                Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
-            } else {
-                Assert.assertEquals(HttpStatus.SC_FORBIDDEN, e.getCode());
-            }
+            Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
     }
 
@@ -150,12 +145,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         try {
             ApiResponse<?> apiResponse = apiStore.apIsApi.apisApiIdGetWithHttpInfo(apiID, user.getUserDomain(), null);
         } catch (ApiException e) {
-            //todo fix: https://github.com/wso2/product-apim/issues/6255
-            if("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-                Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
-            } else {
-                Assert.assertEquals(HttpStatus.SC_FORBIDDEN, e.getCode());
-            }
+            Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
     }
 
