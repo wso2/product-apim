@@ -248,6 +248,10 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
     #end
 </handler>
 #end
+## check and set enable schema validation
+#if($enableSchemaValidation)
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.SchemaValidator"/>
+#end
 </handlers>
         #end
         #end
