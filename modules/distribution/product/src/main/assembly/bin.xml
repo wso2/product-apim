@@ -1097,7 +1097,8 @@
             <destName>thrift-authentication.xml</destName>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/email/email-admin-config.xml</source>
+            <source>src/main/conf/email-admin-config.xml
+            </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/email</outputDirectory>
             <destName>email-admin-config.xml</destName>
         </file>
