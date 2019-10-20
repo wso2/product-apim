@@ -9,10 +9,10 @@
 					<datamodel>
 
 						<data name="checkItems">
-							<item name="Deprecate old versions after publish the API"
+							<item name="Deprecate old versions after publishing the API"
 								forEvent="">
 							</item>
-							<item name="Requires re-subscription when publish the API"
+							<item name="Requires re-subscription when publishing the API"
 								forEvent="">
 							</item>
 						</data>
@@ -34,10 +34,10 @@
 				<state id="Prototyped">
 					<datamodel>
 						<data name="checkItems">
-							<item name="Deprecate old versions after publish the API"
+							<item name="Deprecate old versions after publishing the API"
 								forEvent="">
 							</item>
-							<item name="Requires re-subscription when publish the API"
+							<item name="Requires re-subscription when publishing the API"
 								forEvent="">
 							</item>
 						</data>
