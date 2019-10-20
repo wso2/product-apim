@@ -127,12 +127,14 @@ under the License.
                                 </SHARED_DATABASE_URL>
                                 <SHARED_DATABASE_USERNAME>wso2carbon</SHARED_DATABASE_USERNAME>
                                 <SHARED_DATABASE_PASSWORD>wso2carbon</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
                                 <API_MANAGER_DATABASE_DRIVER>org.h2.Driver</API_MANAGER_DATABASE_DRIVER>
                                 <API_MANAGER_DATABASE_URL>
                                     jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE
                                 </API_MANAGER_DATABASE_URL>
                                 <API_MANAGER_DATABASE_USERNAME>wso2carbon</API_MANAGER_DATABASE_USERNAME>
                                 <API_MANAGER_DATABASE_PASSWORD>wso2carbon</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
                             </environmentVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>

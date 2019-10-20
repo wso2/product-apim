@@ -16,12 +16,14 @@ driver = "$env{API_MANAGER_DATABASE_DRIVER}"
 url = "$env{API_MANAGER_DATABASE_URL}"
 username = "$env{API_MANAGER_DATABASE_USERNAME}"
 password = "$env{API_MANAGER_DATABASE_PASSWORD}"
+validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
 
 [database.shared_db]
 driver = "$env{SHARED_DATABASE_DRIVER}"
 url = "$env{SHARED_DATABASE_URL}"
 username = "$env{SHARED_DATABASE_USERNAME}"
 password = "$env{SHARED_DATABASE_PASSWORD}"
+validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
 
 [keystore.tls]
 file_name =  "wso2carbon.jks"
