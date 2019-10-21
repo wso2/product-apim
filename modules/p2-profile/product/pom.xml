@@ -1668,6 +1668,10 @@
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.tracing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 				                <feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
@@ -3058,6 +3062,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.tracing.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 				                <feature>
