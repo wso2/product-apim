@@ -23,7 +23,7 @@
   "oauth.grant_type.saml_bearer.enable": true,
   "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler",
   "oauth.grant_type.iwa_ntlm.enable": true,
-  "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler",
+  "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
   "oauth.grant_type.jwt_bearer.enable": true,
   "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.carbon.identity.oauth2.grant.jwt.JWTBearerGrantHandler",
   "oauth.grant_type.jwt_bearer.grant_validator": "org.wso2.carbon.identity.oauth2.grant.jwt.JWTGrantValidator",

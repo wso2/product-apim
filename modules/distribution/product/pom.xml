@@ -416,6 +416,19 @@
                     </goals>
                     </execution>
                     <execution>
+                        <id>modify-identity-j2</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace
+                                        file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;GrantTypeName&gt;iwa:ntlm&lt;/GrantTypeName&gt;" value="&lt;GrantTypeName&gt;iwa:ntlm&lt;/GrantTypeName&gt;&lt;GrantTypeValidatorImplClass&gt;{{oauth.grant_type.iwa_ntlm.grant_validator}}&lt;/GrantTypeValidatorImplClass&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>move-rest-api-util-jar</id>
                         <phase>prepare-package</phase>
                         <configuration>
