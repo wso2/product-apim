@@ -35,7 +35,6 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 import java.net.URL;
@@ -71,7 +70,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
     private String tags;
     private String tierCollection;
     private String endpointUrl;
-    private ServerConfigurationManager serverConfigurationManager;
     String providerName = "";
     @Factory(dataProvider = "userModeDataProvider")
     public APISearchAPIByTagTestCase(TestUserMode userMode) {
@@ -134,9 +132,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
-        }
         super.cleanUp();
     }
 
@@ -144,8 +139,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
     public void testAPISearchByTag() throws Exception {
         String searchTerm;
         APIListDTO response;
-        JSONObject results;
-        JSONArray resultArray;
         //wait for APIs to appear in Search API
         watForAPIsAvailableOnSearchApi();
 
@@ -179,19 +172,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "API search by group TAG", dependsOnMethods = "testAPISearchByTag")
     public void testAPISearchByTagGroup() throws Exception {
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            String carbonHome = System.getProperty("carbon.home");
-            File srcFile = new File(
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "tag" + File.separator
-                            + "site.json");
-            File targetFile = new File(
-                    carbonHome + File.separator + "repository" + File.separator + "deployment" + File.separator
-                            + "server" + File.separator + "jaggeryapps" + File.separator +
-                            "devportal" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
-            serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
-        }
-
         //create test api 1
         apiRequest = new APIRequest(API_NAME_CONTEXT_UPPER_CASE, API_NAME_CONTEXT_UPPER_CASE, new URL(endpointUrl));
         apiRequest.setTags(TAG_GROUP_UPPER_CASE);

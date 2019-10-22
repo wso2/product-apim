@@ -128,7 +128,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
                 "Response Code Mismatch");
         newApiId = newVersionResponse.getData();
         //Publish  version 2.0.0 without re-subscription required
-        String lifecycleChecklist = "Requires re-subscription when publish the API:true";
+        String lifecycleChecklist = "Requires re-subscription when publishing the API:true";
         HttpResponse publishAPIResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(newApiId, APILifeCycleAction.PUBLISH.getAction(), lifecycleChecklist);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,

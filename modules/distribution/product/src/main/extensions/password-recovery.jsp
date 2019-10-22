@@ -164,9 +164,6 @@
                             <%
                                 }
                             %>
-                            <%
-                                if (isEmailNotificationEnabled) {
-                            %>
                             <div class="form-group">
                                 <input type="radio" name="recoveryOption" value="EMAIL" checked/>
                                 <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.mail")%>
@@ -175,15 +172,6 @@
                                 <input type="radio" name="recoveryOption" value="SECURITY_QUESTIONS"/>
                                 <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.question")%>
                             </div>
-                            <%
-                            } else {
-                            %>
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
-                                <input type="hidden" name="recoveryOption" value="SECURITY_QUESTIONS"/>
-                            </div>
-                            <%
-                                }
-                            %>
 
                             <%
                                 String callback = request.getParameter("callback");
