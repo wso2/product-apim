@@ -36,6 +36,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.net.URL;
 
@@ -113,10 +114,11 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         for (SubscriptionDTO dto : subscriptionListDTO1.getList()) {
             ApplicationInfoDTO infoDTO = dto.getApplicationInfo();
             if (infoDTO.getApplicationId().equalsIgnoreCase(app1.getApplicationId())) {
-                Assert.assertEquals(infoDTO.getSubscriber(), user.getUserName());
+                Assert.assertEquals(MultitenantUtils.getTenantAwareUsername(infoDTO.getSubscriber()),
+                        user.getUserName());
             }
             if (infoDTO.getApplicationId().equalsIgnoreCase(app2.getApplicationId())) {
-                Assert.assertEquals(infoDTO.getSubscriber(),
+                Assert.assertEquals(MultitenantUtils.getTenantAwareUsername(infoDTO.getSubscriber()),
                         publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName());
             }
         }
