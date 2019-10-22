@@ -53,7 +53,7 @@
     <target type="property" property="MessageBody"/>
 </enrich>
 
-<call>
+<call blocking="true">
     <endpoint key="$ep_key"/>
 </call>
 
