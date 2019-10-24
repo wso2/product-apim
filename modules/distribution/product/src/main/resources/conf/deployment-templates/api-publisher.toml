@@ -47,6 +47,8 @@ description= "This is a hybrid gateway that handles both production and sandbox 
 service_url= "https://gw.mgt.wso2.com:443/services/"
 username= "${admin.username}"
 password= "${admin.password}"
+http_endpoint = "http://api.gw.wso2.com:8280/"
+https_endpoint = "https://api.gw.wso2.com:8243/"
 
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
