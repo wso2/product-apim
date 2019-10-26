@@ -24,7 +24,7 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>target/wso2  carbon-core-${carbon.kernel.version}</directory>
+            <directory>target/wso2carbon-core-${carbon.kernel.version}</directory>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
