@@ -289,7 +289,7 @@
             <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml" profiles ="default,api-devportal,api-publisher"/>
     	    <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.WSDLIndexer" mediaTypeRegEx="application/api-wsdl" profiles ="default,api-devportal,api-publisher"/>
     	    {% for custom_indexer in custom_indexers %}
-    	        <indexer class="{{custom_indexer.class}}" mediaTypeRegEx="{{custom_indexer.media_type_regex}}" profiles ="{{custom_indexer.profiles}}"/>
+    	        <indexer class="{{custom_indexer.class}}" mediaTypeRegEx="{{custom_indexer.media_type_regex}}" profiles ="default,api-devportal,api-publisher"/>
     	    {% endfor %}
         </indexers>
         <exclusions>
