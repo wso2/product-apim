@@ -67,3 +67,13 @@ header = "X-JWT-Assertion"
 signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[apim.throttling]
+# Required for JWT revocation
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm1.local:9611"]
+traffic_manager_auth_urls=["ssl://tm1.local:9711"]
+
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm2.local:9611"]
+traffic_manager_auth_urls=["ssl://tm2.local:9711"]

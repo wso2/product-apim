@@ -23,36 +23,45 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v2.6.0 - 15th September 2018</title>
+    <title>WSO2 API Manager v3.0.0 - 25th October 2019</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Manager 2.6.0 Released!</h1>
+<h1>WSO2 API Manager 3.0.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 2.6.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 3.0.0 of
     the Open Source API Manager.
 </p>
 
 <p>
-    WSO2 API Manager is a platform for creating, managing, consuming and monitoring APIs. It employs proven SOA best practices to solve a wide range of API management challenges such as API provisioning, API governance, API security and API monitoring. It combines some of the most powerful and mature components of the WSO2's state-of-the-art Carbon platform to deliver a smooth and end-to-end API management experience while catering to both API publisher and API consumer requirements.
+    The WSO2 API Manager is a fully open source full lifecycle API Management product that can be deployed on-prem, <br/>
+    available on SaaS, deployed on a private cloud or deployed in a hybrid model. It is comprised of the following <br/>
+    components that provides all of its functionality.
 </p>
 
-<p>
-    WSO2 API Manager is comprised of several modules.
-</p>
 <ul>
-    <li><b>API Provider:</b> Define new APIs and manage them</li>
-    <li><b>API Store:</b> Browse published APIs and subscribe to them</li>
-    <li><b>API Gateway:</b> The underlying API runtime based on WSO2 ESB</li>
-    <li><b>API Key Manager:</b> Performs Key Generation and Key Validation functionalities</li>
-    <li><b>API Traffic Manager:</b> Performs Rate Limiting of API Requests</li>
+    <li><b>API Designer and Publisher:</b> Allows API creators to design, implement and document APIs and <br/>
+    allows API product managers to manage the lifecycle of APIs and create API products by using one or more APIs.</li><br/>
+    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/> 
+    subscribe, test and consume APIs through their applications.</li><br/>
+    <li><b>API Gateway:</b> Allows access to APIs/services by routing application traffic to the relevant endpoints. <br/>
+    The API Gateway is the component that enforces security, rate-limiting and transformations on API requests while <br/>
+    feeding valuable information of these requests to API Analytics.</li><br/>
+    <li><b>Key Manager:</b> The security token service of the API Manager which is responsible for  handling everything <br/>
+    related to authentication and authorization of API requests. It supports a wide variety of security protocols such <br/>
+    as OAuth2.0/OIDC, Basic Auth, API Key, SAML based single-sign-on.</li><br/>
+    <li><b>Traffic Manager:</b> Controls the traffic flow of the API gateway. This is used to apply request quotas on APIs <br/>
+    for monetization, access control or security related matters. In addition to configuring the available policies, users <br/>
+    can deploy their own policies on the traffic manager which will control the rate of traffic on the API gateways.</li><br/>
+    <li><b>API Analytics:</b> Monitors all traffic that’s routed through the API gateways to analyse usage patterns, <br/>
+    SLA violations, consumer behaviours, to provide business insights and so on.</li>
 </ul>
 
 <p>
-    For more information on WSO2 API Manager please visit <a href="http://wso2.com/products/api-manager">
-    http://wso2.com/products/api-manager</a>. Also take a look at the online product
-    <a href="https://docs.wso2.com/display/AM220/WSO2+API+Manager+Documentation">documentation</a>.
+    For more information on WSO2 API Manager please visit <a href="https://wso2.com/api-management/">
+    https://wso2.com/api-management/</a>. Also take a look at the online product
+    <a href="https://apim.docs.wso2.com/">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
@@ -63,24 +72,20 @@
     <li>Launch a web browser and navigate to <a href="https://localhost:9443/publisher">https://localhost:9443/publisher</a>
         to access the API provider webapp
     </li>
-    <li>Navigate to <a href="https://localhost:9443/store">https://localhost:9443/store</a> to access the API store</li>
+    <li>Navigate to <a href="https://localhost:9443/devportal">https://localhost:9443/devportal</a> to access the Developer Portal</li>
     <li>Navigate to <a href="https://localhost:9443/admin">https://localhost:9443/admin</a> to access Admin Portal</li>
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>Bug Fixes And Improvements in 2.6.0</h2>
+    <h2>Bug Fixes And Improvements in 3.0.0</h2>
     <ul>
-        <li><a href='https://wso2.org/jira/issues/?filter=14532'>JIRA</a>
-        </li>
-        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">product-apim</a>), (<a href="https://github.com/wso2/carbon-apimgt/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">carbon-apimgt</a>), (<a href="https://github.com/wso2/analytics-apim/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2017-02-06+-label%3A3.0.0+">analytics-apim</a>)
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?utf8=%E2%9C%93&amp;q=is%3Aissue+is%3Aclosed+closed%3A%3E2018-09-16">product-apim</a>)
         </li>
     </ul>
 
     <h2>Known Issues</h2>
     <ul>
-        <li><a href="https://wso2.org/jira/issues/?filter=14533">JIRA</a>
-        </li>
-        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aopen+is%3Aissue+label%3A2.6.0">product-apim</a>), (<a href="https://github.com/wso2/carbon-apimgt/issues?q=is%3Aopen+is%3Aissue+label%3A%22APIM+2.6.0%22">carbon-apimgt</a>), (<a href="https://github.com/wso2/analytics-apim/issues?q=is%3Aopen+is%3Aissue">analytics-apim</a>)
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aopen+is%3Aissue+label%3A3.0.0">product-apim</a>)
         </li>
     </ul>
 
