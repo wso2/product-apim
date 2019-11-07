@@ -130,10 +130,12 @@ public class SdKsApi {
      * This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Store, for a requested development language. 
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
+     * @return byte[]
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public void apisApiIdSdksLanguageGet(String apiId, String language) throws ApiException {
-        apisApiIdSdksLanguageGetWithHttpInfo(apiId, language);
+    public byte[] apisApiIdSdksLanguageGet(String apiId, String language) throws ApiException {
+        ApiResponse<byte[]> resp = apisApiIdSdksLanguageGetWithHttpInfo(apiId, language);
+        return resp.getData();
     }
 
     /**
@@ -141,12 +143,13 @@ public class SdKsApi {
      * This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Store, for a requested development language. 
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;byte[]&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<Void> apisApiIdSdksLanguageGetWithHttpInfo(String apiId, String language) throws ApiException {
+    public ApiResponse<byte[]> apisApiIdSdksLanguageGetWithHttpInfo(String apiId, String language) throws ApiException {
         com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, null, null);
-        return apiClient.execute(call);
+        Type localVarReturnType = new TypeToken<byte[]>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
     }
 
     /**
@@ -158,7 +161,7 @@ public class SdKsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetAsync(String apiId, String language, final ApiCallback<Void> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetAsync(String apiId, String language, final ApiCallback<byte[]> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -180,7 +183,8 @@ public class SdKsApi {
         }
 
         com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
+        Type localVarReturnType = new TypeToken<byte[]>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**

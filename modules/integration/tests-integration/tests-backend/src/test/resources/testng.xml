@@ -192,7 +192,7 @@
             <!--class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.StoreChangePasswordTestCase"/>-->
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>

@@ -335,7 +335,7 @@ paths:
     #-----------------------------------------------------
     get:
       produces:
-        - application/zip
+        - application/octed-stream
       security:
         - OAuth2Security:
             - apim:subscribe
@@ -368,6 +368,9 @@ paths:
           description: |
             OK.
             SDK generated successfully.
+          schema:
+            type: string
+            format: byte
         400:
           description: |
             Bad Request.
