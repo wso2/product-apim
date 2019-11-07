@@ -16,8 +16,7 @@
         <parameter name="ws.use.port.offset">true</parameter>
         <parameter name="wss.ssl.key.store.file">repository/resources/security/wso2carbon.jks</parameter>
         <parameter name="wss.ssl.key.store.pass">wso2carbon</parameter>
-        <parameter name="wss.ssl.trust.store.file">repository/resources/security/client-truststore.jks</parameter>
-        <parameter name="wss.ssl.trust.store.pass">wso2carbon</parameter>
         <parameter name="wss.ssl.cert.pass">wso2carbon</parameter>
+        <parameter name="wss.ssl.protocols">TLSv1.1,TLSv1.2</parameter>
     </parameters>
 </inboundEndpoint>
