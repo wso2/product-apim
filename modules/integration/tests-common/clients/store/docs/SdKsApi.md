@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="apisApiIdSdksLanguageGet"></a>
 # **apisApiIdSdksLanguageGet**
-> apisApiIdSdksLanguageGet(apiId, language)
+> byte[] apisApiIdSdksLanguageGet(apiId, language)
 
 Generate a SDK for an API 
 
@@ -35,7 +35,8 @@ SdKsApi apiInstance = new SdKsApi();
 String apiId = "apiId_example"; // String | ID of the specific API for which the SDK is required. 
 String language = "language_example"; // String | Programming language of the SDK that is required. 
 try {
-    apiInstance.apisApiIdSdksLanguageGet(apiId, language);
+    byte[] result = apiInstance.apisApiIdSdksLanguageGet(apiId, language);
+    System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SdKsApi#apisApiIdSdksLanguageGet");
     e.printStackTrace();
@@ -51,7 +52,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**byte[]**
 
 ### Authorization
 
