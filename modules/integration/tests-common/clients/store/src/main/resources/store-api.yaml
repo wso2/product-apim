@@ -335,7 +335,7 @@ paths:
     #-----------------------------------------------------
     get:
       produces:
-        - application/octed-stream
+        - application/zip
       security:
         - OAuth2Security:
             - apim:subscribe
