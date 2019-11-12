@@ -220,6 +220,5 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         }
         tenantManagementServiceClient.deleteTenant(firstTenantDomain);
         tenantManagementServiceClient.deleteTenant(secondTenantDomain);
-        super.cleanUp();
     }
 }
