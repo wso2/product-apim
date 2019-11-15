@@ -7,11 +7,9 @@
       "apim.throttling.enable_blacklist_condition": true,
       "indexing.enable": false,
       "system.parameter.profile": "gateway-worker",
-      "enabled_global_handlers": [
-          "external_call_logger"
-        ],
-       "synapse_handlers.external_call_logger.name": "externalCallLogger",
-       "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
+      "enabled_global_handlers": ["external_call_logger"],
+      "synapse_handlers.external_call_logger.name": "externalCallLogger",
+      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
     },
     "api-key-manager": {
       "apim.throttling.enable_policy_deploy": false,
@@ -76,9 +74,29 @@
       "database.apim_db.url": "jdbc:mysql://$ref{database.apim_db.hostname}:$ref{database.apim_db.port}/$ref{database.apim_db.name}",
       "database.apim_db.validationQuery": "SELECT 1"
     },
+    "oracle": {
+      "database.apim_db.driver": "oracle.jdbc.OracleDriver",
+      "database.apim_db.url": "jdbc:oracle:thin:@$ref{database.apim_db.hostname}:$ref{database.apim_db.port}/$ref{database.apim_db.sid}",
+      "database.apim_db.validationQuery": "SELECT 1 FROM DUAL"
+    },
+    "mssql": {
+      "database.apim_db.driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+      "database.apim_db.url": "jdbc:sqlserver://$ref{database.apim_db.hostname}:$ref{database.apim_db.port};databaseName\u003d$ref{database.apim_db.name};SendStringParametersAsUnicode\u003dfalse",
+      "database.apim_db.validationQuery": "SELECT 1"
+    },
+    "db2": {
+      "database.apim_db.driver": "com.ibm.db2.jcc.DB2Driver",
+      "database.apim_db.url": "jdbc:db2://$ref{database.apim_db.hostname}:$ref{database.apim_db.port}/$ref{database.apim_db.name}",
+      "database.apim_db.validationQuery": "SELECT 1 FROM sysibm.sysdummy1"
+    },
+    "postgre": {
+      "database.apim_db.driver": "org.postgresql.Driver",
+      "database.apim_db.url": "jdbc:postgresql://$ref{database.apim_db.hostname}:$ref{database.apim_db.port}/$ref{database.apim_db.name}",
+      "database.apim_db.validationQuery": "SELECT 1; COMMIT"
+    },
     "h2": {
       "database.apim_db.driver": "org.h2.Driver",
-      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
+      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT\u003dFALSE;LOCK_TIMEOUT\u003d60000",
       "database.apim_db.validationQuery": "SELECT 1"
     }
   },
