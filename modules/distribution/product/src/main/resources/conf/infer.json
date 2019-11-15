@@ -83,7 +83,7 @@
     },
     "mssql": {
       "database.apim_db.driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-      "database.apim_db.url": "jdbc:sqlserver://$ref{database.apim_db.hostname}:$ref{database.apim_db.port};databaseName\u003d$ref{database.apim_db.name};SendStringParametersAsUnicode\u003dfalse",
+      "database.apim_db.url": "jdbc:sqlserver://$ref{database.apim_db.hostname}:$ref{database.apim_db.port};databaseName=$ref{database.apim_db.name};SendStringParametersAsUnicode=false",
       "database.apim_db.validationQuery": "SELECT 1"
     },
     "db2": {
@@ -98,7 +98,7 @@
     },
     "h2": {
       "database.apim_db.driver": "org.h2.Driver",
-      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT\u003dFALSE;LOCK_TIMEOUT\u003d60000",
+      "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
       "database.apim_db.validationQuery": "SELECT 1"
     }
   },
