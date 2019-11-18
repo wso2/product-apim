@@ -85,7 +85,7 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         apiStoreClientAllowedUser = new RestAPIStoreImpl(ALLOWED_USER, ALLOWED_USER_PASS,
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
         //get a rest api client for anonymous user
-        anonymousRestAPIImpl = super.getRestAPIStoreForAnonymousUser(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+        anonymousRestAPIImpl = getRestAPIStoreForAnonymousUser(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and publish two apis with public and role based visibility")
