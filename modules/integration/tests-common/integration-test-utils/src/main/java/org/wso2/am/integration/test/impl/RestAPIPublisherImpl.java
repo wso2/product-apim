@@ -28,6 +28,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
@@ -40,6 +41,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
@@ -74,6 +76,7 @@ import java.util.List;
 public class RestAPIPublisherImpl {
 
     public ApIsApi apIsApi = new ApIsApi();
+    private ApiProductsApi apiProductsApi = new ApiProductsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
@@ -116,6 +119,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
         apIsApi.setApiClient(apiPublisherClient);
+        apiProductsApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
         apiLifecycleApi.setApiClient(apiPublisherClient);
@@ -955,5 +959,13 @@ public class RestAPIPublisherImpl {
                 subscriptionsApi.subscriptionsGetWithHttpInfo(apiID, 10, 0, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
+    }
+
+    public ApiResponse<APIProductDTO> addApiProduct(APIProductDTO apiProductDTO) throws ApiException {
+        return apiProductsApi.apiProductsPostWithHttpInfo(apiProductDTO);
+    }
+
+    public ApiResponse<Void> deleteApiProduct(String apiProductId) throws ApiException {
+        return apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
     }
 }
