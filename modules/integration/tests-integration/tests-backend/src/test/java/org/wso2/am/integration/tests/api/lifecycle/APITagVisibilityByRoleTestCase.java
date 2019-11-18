@@ -20,218 +20,137 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Test class is used to test the API tags visibility for anonymous and authorised users when API role based visibility
  * is used.
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
-public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
+public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
     private final Log log = LogFactory.getLog(APITagVisibilityByRoleTestCase.class);
-    private APIStoreRestClient apiStore;
-    private String storeURLHttp;
-    private String publisherURLHttp;
-    private APIPublisherRestClient apiPublisher;
-    private URL tagListUrl;
-    private UserManagementClient userManagementClient1;
-    private APIRequest apiRequestPublic, apiRequestRestricted;
+    private String NAME_PUBLIC_API = "APITagVisibilityByRoleTestCasePublicAPI";
+    private String CONTEXT_PUBLIC_API = "APITagVisibilityByRoleTestCaseContextPublicAPI";
+    private String NAME_RESTRICTED_API = "APITagVisibilityByRoleTestCaseRestrictedAPI";
+    private String CONTEXT_RESTRICTED_API = "APITagVisibilityByRoleTestCaseContextRestrictedAPI";
+    private String TAGS_PUBLIC_API = "APITagVisibilityPublicTag";
+    private String TAGS_RESTRICTED_API = "APITagVisibilityRestrictedTag";
+    private String DESCRIPTION = "This is test API create by APIM APITagVisibilityByRoleTestCase";
+    private String API_VERSION_1_0_0 = "1.0.0";
+    private String ALLOWED_USER = "APITagVisibilityByRoleUser";
+    private String ALLOWED_USER_PASS = "password@123";
+    private final String USER_KEY_USER2 = "userKey2";
+    private String ROLE = "APITagVisibilityRole1";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String[] PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
+    private UserManagementClient userManagementClient;
     private String endpointUrl;
-
-    private String apiNamePublic = "APITagVisibilityByRoleTestCaseAPIName1";
-    private String APIContextPublic = "APITagVisibilityByRoleTestCaseContext1";
-    private String apiNameRestricted = "APITagVisibilityByRoleTestCaseAPIName2";
-    private String APIContextRestricted = "APITagVisibilityByRoleTestCaseContext2";
-    private String tagsPublic = "APITagVisibilityPublicTag";
-    private String tagsRestricted = "APITagVisibilityRestrictedTag";
-    private String description = "This is test API create by APIM APITagVisibilityByRoleTestCase";
-    private String APIVersion = "1.0.0";
-    private String allowedUser = "APITagVisibilityByRoleUser";
-    private char[] allowedUserPass = "password@123".toCharArray();
-    private String role = "APITagVisibilityRole1";
-    private String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
-    private Map<String, String> requestHeaders = new HashMap<String, String>();
-    private static final long WAIT_TIME = 45 * 1000;
-
-    @Factory(dataProvider = "userModeDataProvider")
-    public APITagVisibilityByRoleTestCase(TestUserMode userMode) {
-        this.userMode = userMode;
-    }
+    private String providerName;
+    private RestAPIPublisherImpl apiPublisherClientCarbonSuperUser1;
+    private String publicApiId;
+    private String restrictedApiId;
+    private RestAPIStoreImpl apiStoreClientAllowedUser;
+    private RestAPIStoreImpl anonymousRestAPIImpl;
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
+    public void initialize() throws Exception {
+        super.init();
+        endpointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         storeURLHttp = getStoreURLHttp();
-        endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
+        //Login to API Publisher and Store with CarbonSuper normal user1
+        providerName = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
+        User publisherUser1 = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2);
+        apiPublisherClientCarbonSuperUser1 = new RestAPIPublisherImpl(publisherUser1.getUserNameWithoutDomain(),
+                publisherUser1.getPassword(), publisherUser1.getUserDomain(), publisherURLHttps);
 
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-
-        //adding new role and user
-        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                         createSession(keyManagerContext));
-        userManagementClient1.addRole(role, null, permissions);
-        userManagementClient1.addUser(allowedUser, String.valueOf(allowedUserPass), new String[] {role }, null);
-        tagListUrl = new URL(getStoreURLHttp() + "store-old/site/blocks/tag/tag-cloud/ajax/list.jag");
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                        createSession(keyManagerContext));
+        //add a role for which API tags should be visible
+        userManagementClient.addRole(ROLE, null, PERMISSIONS);
+        // add new user with the above role
+        userManagementClient.addUser(ALLOWED_USER, ALLOWED_USER_PASS, new String[] {ROLE}, null);
+        apiStoreClientAllowedUser = new RestAPIStoreImpl(ALLOWED_USER, ALLOWED_USER_PASS,
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
+        //get a rest api client for anonymous user
+        anonymousRestAPIImpl = getRestAPIStoreForAnonymousUser(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and publish two apis with public and role based visibility")
     public void testAPICreationWithVisibility() throws Exception {
-        String providerName = user.getUserName();
+        //Create request for API with public visibility.
+        APICreationRequestBean apiCreationReqBeanPublicAPI = new APICreationRequestBean(
+                NAME_PUBLIC_API, CONTEXT_PUBLIC_API , API_VERSION_1_0_0, providerName, new URL(endpointUrl));
+        apiCreationReqBeanPublicAPI.setTags(TAGS_PUBLIC_API);
+        apiCreationReqBeanPublicAPI.setDescription(DESCRIPTION);
+        apiCreationReqBeanPublicAPI.setVersion(API_VERSION_1_0_0);
+        apiCreationReqBeanPublicAPI.setProvider(providerName);
+        //add and publish public API
+        APIDTO apiDtoPublicAPI = apiPublisherClientCarbonSuperUser1.addAPI(apiCreationReqBeanPublicAPI);
+        publicApiId = apiDtoPublicAPI.getId();
+        publishAPI(publicApiId, apiPublisherClientCarbonSuperUser1, false);
+        waitForAPIDeployment();
 
-        //API request for public visible API
-        apiRequestPublic = new APIRequest(apiNamePublic, APIContextPublic, new URL(endpointUrl));
-        apiRequestPublic.setTags(tagsPublic);
-        apiRequestPublic.setDescription(description);
-        apiRequestPublic.setVersion(APIVersion);
-        apiRequestPublic.setProvider(providerName);
-
-        //API request for role base visible API
-        apiRequestRestricted = new APIRequest(apiNameRestricted, APIContextRestricted, new URL(endpointUrl));
-        apiRequestRestricted.setTags(tagsRestricted);
-        apiRequestRestricted.setDescription(description);
-        apiRequestRestricted.setVersion(APIVersion);
-        apiRequestRestricted.setProvider(providerName);
-        apiRequestRestricted.setVisibility("restricted");
-        apiRequestRestricted.setRoles(role);
-
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequestPublic);
-        verifyResponse(serviceResponse);
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNamePublic, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
-
-        //add test api
-        serviceResponse = apiPublisher.addAPI(apiRequestRestricted);
-        verifyResponse(serviceResponse);
-        //publish the api
-        updateRequest = new APILifeCycleStateRequest(apiNameRestricted, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //create request for Restricted API
+        APICreationRequestBean apiCreationRequestBeanRestrictedAPI = new APICreationRequestBean(
+                NAME_RESTRICTED_API, CONTEXT_RESTRICTED_API, API_VERSION_1_0_0, providerName, new URL(endpointUrl));
+        apiCreationRequestBeanRestrictedAPI.setTags(TAGS_RESTRICTED_API);
+        apiCreationRequestBeanRestrictedAPI.setDescription(DESCRIPTION);
+        apiCreationRequestBeanRestrictedAPI.setVisibility(APIDTO.VisibilityEnum.RESTRICTED.getValue());
+        apiCreationRequestBeanRestrictedAPI.setRoles(ROLE);
+        //add and publish Restricted API
+        APIDTO apiDtoRestrictedAPI = apiPublisherClientCarbonSuperUser1.addAPI(apiCreationRequestBeanRestrictedAPI);
+        restrictedApiId = apiDtoRestrictedAPI.getId();
+        publishAPI(restrictedApiId, apiPublisherClientCarbonSuperUser1, false);
+        waitForAPIDeployment();
     }
 
     @Test(groups = { "wso2.am" }, description = "Test the API tag visibility as a anonymous user",
             dependsOnMethods = "testAPICreationWithVisibility")
     public void testAPITagVisibilityAnonymousUser() throws Exception {
-        requestHeaders.clear();
-
-        String tenant = user.getUserDomain();
-        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-        urlParameters.add(new BasicNameValuePair("action", "getAllTags"));
-        urlParameters.add(new BasicNameValuePair("tenant", tenant));
-        HttpEntity content = new UrlEncodedFormEntity(urlParameters);
-        String contentString = EntityUtils.toString(content);
-
-        watForTagsAvailableOnSearchApi(tagsRestricted);
-        HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        List<TagDTO> tagDto = anonymousRestAPIImpl.getAllTags().getList();
+        List<String> tagList = new ArrayList<>();
+        tagDto.forEach((tempDto) -> {
+            tagList.add(tempDto.getValue());
+        });
+        Assert.assertTrue(tagList.contains(TAGS_PUBLIC_API),
                 "Public visibility tag is not available for anonymous user");
-        Assert.assertFalse(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertFalse(tagList.contains(TAGS_RESTRICTED_API),
                 "Restricted visibility tag is available for anonymous user");
     }
 
     @Test(groups = { "wso2.am" }, description = "Test the API tag visibility as a authorised user",
             dependsOnMethods = "testAPITagVisibilityAnonymousUser")
     public void testAPITagVisibilityAuthorisedUser() throws Exception {
-
-        String tenant = user.getUserDomain();
-        String currentUser = allowedUser;
-        if ("wso2.com".equals(tenant)) {
-            currentUser = currentUser + '@' + tenant;
-        }
-        HttpResponse response = apiStore.login(currentUser, String.valueOf(allowedUserPass));
-        String cookie = response.getHeaders().get("Set-Cookie");
-        requestHeaders.put("Cookie", cookie);
-
-        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-        urlParameters.add(new BasicNameValuePair("action", "getAllTags"));
-        urlParameters.add(new BasicNameValuePair("tenant", tenant));
-        HttpEntity content = new UrlEncodedFormEntity(urlParameters);
-        String contentString = EntityUtils.toString(content);
-
-        Thread.sleep(5000l);
-        HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        List<TagDTO> tagDto = apiStoreClientAllowedUser.getAllTags().getList();
+        List<String> tagList = new ArrayList<>();
+        tagDto.forEach((tempDto) -> {
+            tagList.add(tempDto.getValue());
+        });
+        Assert.assertTrue(tagList.contains(TAGS_PUBLIC_API),
                 "Public visibility tag is not available for authorised user");
-        Assert.assertTrue(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertTrue(tagList.contains(TAGS_RESTRICTED_API),
                 "Restricted visibility tag is not available for authorised user");
-
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(apiNamePublic, APIVersion, user.getUserName());
-        apiPublisher.deleteAPI(apiNameRestricted, APIVersion, user.getUserName());
-        userManagementClient1.deleteRole(role);
-        userManagementClient1.deleteUser(allowedUser);
+        restAPIPublisher.deleteAPIByID(publicApiId);
+        restAPIPublisher.deleteAPIByID(restrictedApiId);
+        userManagementClient.deleteRole(ROLE);
+        userManagementClient.deleteUser(ALLOWED_USER);
     }
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
-    }
-
-    /**
-     * Used to wait until published apis tags are appear in the Store tag cloud API
-     *
-     * @throws Exception if tag cloud api throws any exceptions
-     */
-    public void watForTagsAvailableOnSearchApi(String tag) throws Exception {
-        long waitTime = System.currentTimeMillis() + WAIT_TIME;
-        HttpResponse response;
-        while (waitTime > System.currentTimeMillis()) {
-            List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-            urlParameters.add(new BasicNameValuePair("action", "getAllTags"));
-            urlParameters.add(new BasicNameValuePair("tenant", user.getUserDomain()));
-            HttpEntity content = new UrlEncodedFormEntity(urlParameters);
-            String contentString = EntityUtils.toString(content);
-            Map<String, String> requestHeaders = new HashMap<String, String>();
-            response = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-            verifyResponse(response);
-            log.info("WAIT for availability of tags : " + tag + " found on Store tag cloud");
-            if (response != null) {
-                log.info("Data: " + response.getData());
-                if (response.getData().contains(tag)) {
-                    log.info("Tag :" + tag + " found");
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-        }
-    }
 }
