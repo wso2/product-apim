@@ -29,6 +29,8 @@ import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
@@ -49,6 +51,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     private WebAppAdminClient webAppAdminClient;
     private String apiId;
     private String applicationID;
+    private String accessToken;
 
     @BeforeTest(alwaysRun = true)
     public void deployWebApps(ITestContext ctx) throws Exception {
@@ -132,6 +135,20 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        //get the  access token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationID, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        ctx.setAttribute("accessToken", accessToken);
+        System.setProperty(APPLICATION_NAME + "-accessToken", accessToken);
+
         ctx.setAttribute("apiId", apiId);
         ctx.setAttribute("applicationID", applicationID);
     }
