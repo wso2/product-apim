@@ -19,6 +19,7 @@
 package org.wso2.am.integration.tests.other;
 
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -32,26 +33,29 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -68,18 +72,20 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
 /**
  * This test case is used to test the API Manager Import Export tool
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class APIImportExportTestCase extends APIMIntegrationBaseTest {
+public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(APIImportExportTestCase.class);
     private final String API_NAME = "APIImportExportTestCaseAPIName";
     private final String NEW_API_NAME = "NewAPIImportExportTestCaseAPIName";
@@ -93,9 +99,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final String VISIBILITY_ROLE = "visibilityRole";
     private final String NOT_ALLOWED_ROLE = "denyRole";
     private final String ADMIN_ROLE = "admin";
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String[] PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
     private final char[] ALLOWED_USER_PASS = "pass@123".toCharArray();
-    private final char[] DENIED_USER_PASS = "pass@123".toCharArray();
     private final char[] PUBLISHER_USER_PASS = "pass@123".toCharArray();
     private final String SCOPE_NAME = "ImportExportScope";
     private final String TAG1 = "import";
@@ -105,11 +111,10 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "APIImportExportTestCaseApp";
     private final String NEW_APP_NAME = "newAPIImportExportTestCaseApp";
+    private RestAPIStoreImpl allowedStoreUser;
     private String allowedUser = "allowedUser";
-    private String deniedUser = "deniedUser";
     private String publisherUser = "importExportPublisher";
     private String publisherURLHttps;
-    private String storeURLHttp;
     private File zipTempDir, apiZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
     private String importUrl;
     private String exportUrl;
@@ -119,8 +124,13 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private String tierCollection;
     private String endpointUrl;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private String apiId;
+    private String newApiId;
+    private String applicationId;
+    private String newApplicationId;
+    private String preservePublisherApiId;
+    private String notPreservePublisherApiId;
+    private ArrayList<String> grantTypes;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -130,12 +140,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
+        grantTypes = new ArrayList<>();
         publisherURLHttps = publisherUrls.getWebAppURLHttps();
-        storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
-        apiPublisher.login(user.getUserName(), user.getPassword());
 
         //concat tags
         tags = TAG1 + "," + TAG2 + "," + TAG3;
@@ -153,31 +160,33 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         userManagementClient.addRole(NOT_ALLOWED_ROLE, null, PERMISSIONS);
         userManagementClient.addRole(VISIBILITY_ROLE, null, PERMISSIONS);
 
-        userManagementClient
-                .addUser(allowedUser, String.valueOf(ALLOWED_USER_PASS), new String[] { ALLOWED_ROLE, VISIBILITY_ROLE },
-                        null);
-        userManagementClient.addUser(deniedUser, String.valueOf(DENIED_USER_PASS),
-                new String[] { NOT_ALLOWED_ROLE, VISIBILITY_ROLE }, null);
+        userManagementClient.addUser(allowedUser, String.valueOf(ALLOWED_USER_PASS),
+                new String[] { INTERNAL_ROLE_SUBSCRIBER, VISIBILITY_ROLE }, null);
+
         userManagementClient
                 .addUser(publisherUser, String.valueOf(PUBLISHER_USER_PASS), new String[] { ADMIN_ROLE }, null);
 
+        allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+
+
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();
-            deniedUser = deniedUser + "@" + keyManagerContext.getContextTenant().getDomain();
             publisherUser = publisherUser + "@" + keyManagerContext.getContextTenant().getDomain();
         }
 
+        createAndPublishAPI();
+
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation")
-    public void testAPICreation() throws Exception {
+    private void createAndPublishAPI() throws Exception {
         String providerName = user.getUserName();
 
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
                 new URL(exportUrl));
         apiCreationRequestBean.setTags(tags);
         apiCreationRequestBean.setDescription(DESCRIPTION);
-        apiCreationRequestBean.setTiersCollection(tierCollection);
+        apiCreationRequestBean.setSubPolicyCollection(tierCollection);
 
         //define resources
         resList = new ArrayList<APIResourceBean>();
@@ -212,17 +221,12 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         apiCreationRequestBean.setResourceBeanList(resList);
 
         //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+        apiId = apiDto.getId();
 
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Exported Sample API", dependsOnMethods = "testAPICreation")
+    @Test(groups = { "wso2.am" }, description = "Exported Sample API")
     public void testAPIExport() throws Exception {
 
         //construct export API url
@@ -241,79 +245,72 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
     public void testAPIImport() throws Exception {
         //delete exported API before import
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(apiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
         //upload the exported zip
         importAPI(importUrl, apiZip, user.getUserName(), user.getPassword().toCharArray());
+        waitForAPIDeployment();
     }
 
     @Test(groups = {
             "wso2.am" }, description = "Checking status of the imported API", dependsOnMethods = "testAPIImport")
     public void testAPIState() throws Exception {
         //get the imported API information
-        HttpResponse response = apiPublisher.getAPI(API_NAME, user.getUserName(), API_VERSION);
-        verifyResponse(response);
-        JSONObject responseObj = new JSONObject(response.getData());
-        JSONObject apiObj = responseObj.getJSONObject("api");
+        APIDTO apiObj = getAPI(API_NAME, API_VERSION, user.getUserName(), apiId);
+        apiId = apiObj.getId();
 
-        String state = apiObj.getString("status");
-        Assert.assertEquals(state, APILifeCycleState.PUBLISHED.getState(), "Imported API not in Published state");
-        Assert.assertEquals(API_NAME, apiObj.getString("name"), "Imported API Name is incorrect");
-        Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
-        Assert.assertEquals(DESCRIPTION, apiObj.getString("description"), "Imported API description is incorrect");
-        Assert.assertTrue(tags.contains(TAG1), "Imported API not contain tag: " + TAG1);
-        Assert.assertTrue(tags.contains(TAG2), "Imported API not contain tag: " + TAG2);
-        Assert.assertTrue(tags.contains(TAG3), "Imported API not contain tag: " + TAG3);
+        String state = apiObj.getLifeCycleStatus();
+        assertEquals(state, APILifeCycleState.PUBLISHED.getState().toUpperCase(),
+                "Imported API not in Published state");
+        assertEquals(API_NAME, apiObj.getName(), "Imported API Name is incorrect");
+        assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
+        assertEquals(DESCRIPTION, apiObj.getDescription(), "Imported API description is incorrect");
+        List<String> tagList = apiObj.getTags();
+        Assert.assertTrue(tagList.contains(TAG1), "Imported API not contain tag: " + TAG1);
+        Assert.assertTrue(tagList.contains(TAG2), "Imported API not contain tag: " + TAG2);
+        Assert.assertTrue(tagList.contains(TAG3), "Imported API not contain tag: " + TAG3);
         Assert.assertTrue(
-                apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.GOLD),
+                apiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.GOLD),
                 "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.GOLD);
         Assert.assertTrue(
-                apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.BRONZE),
+                apiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.BRONZE),
                 "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.BRONZE);
         Assert.assertTrue(
-                apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.SILVER),
+                apiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.SILVER),
                 "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.SILVER);
         Assert.assertTrue(
-                apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.UNLIMITED),
+                apiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.UNLIMITED),
                 "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.UNLIMITED);
-        Assert.assertEquals("checked", apiObj.getString("transport_http"),
+        Assert.assertTrue(apiObj.getTransport().contains(Constants.PROTOCOL_HTTP),
                 "Imported API HTTP transport status is incorrect");
-        Assert.assertEquals("checked", apiObj.getString("transport_https"),
-                "Imported API HTTPS transport status is incorrect");
-        Assert.assertEquals("Disabled", apiObj.getString("responseCache"),
+        Assert.assertTrue(apiObj.getTransport().contains(Constants.PROTOCOL_HTTPS),
+                "Imported API HTTP transport status is incorrect");
+        Assert.assertFalse(apiObj.isResponseCachingEnabled(),
                 "Imported API response Cache status is incorrect");
-        Assert.assertEquals("public", apiObj.getString("visibility"), "Imported API visibility is incorrect");
-        Assert.assertEquals("false", apiObj.getString("isDefaultVersion"),
+        assertEquals(APIDTO.VisibilityEnum.PUBLIC, apiObj.getVisibility(), "Imported API visibility is incorrect");
+        Assert.assertFalse(apiObj.isIsDefaultVersion(),
                 "Imported API Default Version status is incorrect");
 
-        JSONArray resourcesList = new JSONArray(apiObj.getString("resources"));
+        List<APIOperationsDTO> apiOperationsDTOList = apiObj.getOperations();
 
-        Assert.assertEquals(resList.size(), resourcesList.length(), "Imported API not in Created state");
+        assertEquals(resList.size(), apiOperationsDTOList.size(), "Imported API not in Created state");
         String method = null, authType = null, tier = null, urlPattern = null;
         APIResourceBean res;
         for (int i = 0; i < resList.size(); i++) {
             res = resList.get(i);
-
-            for (int j = 0; j < resourcesList.length(); j++) {
-                JSONObject verb = resourcesList.getJSONObject(j).getJSONObject("http_verbs");
-                Iterator it = verb.keys();
-                if (it.hasNext()) {
-                    method = (String) it.next();
-                    if (StringUtils.equals(res.getResourceMethod(), method)) {
-                        JSONObject resProp = verb.getJSONObject(method);
-                        authType = resProp.getString("auth_type");
-                        tier = resProp.getString("throttling_tier");
-                        urlPattern = resourcesList.getJSONObject(j).getString("url_pattern");
-                        break;
-                    }
+            for (APIOperationsDTO apiOperationsDTO: apiOperationsDTOList) {
+                method = apiOperationsDTO.getVerb();
+                if (StringUtils.equals(res.getResourceMethod(), method)) {
+                    authType = apiOperationsDTO.getAuthType();
+                    tier = apiOperationsDTO.getThrottlingPolicy();
+                    urlPattern = apiOperationsDTO.getTarget();
+                    break;
                 }
             }
-            Assert.assertEquals(res.getResourceMethod(), method, "Imported API Resource method is incorrect");
-            // disable due to name format issue
-//            Assert.assertEquals(res.getResourceMethodAuthType(), authType,
-//                    "Imported API Resource Auth Type is incorrect");
-            Assert.assertEquals(res.getResourceMethodThrottlingTier(), tier, "Imported API Resource Tier is incorrect");
-            Assert.assertEquals(res.getUriTemplate(), urlPattern, "Imported API Resource URL template is incorrect");
+            assertEquals(res.getResourceMethod(), method, "Imported API Resource method is incorrect");
+            //Need to uncomment this after fixing product-apim/issues/6859
+            //Assert.assertEquals(res.getResourceMethodThrottlingTier(), tier, "Imported API Resource Tier is incorrect");
+            assertEquals(res.getUriTemplate(), urlPattern, "Imported API Resource URL template is incorrect");
         }
     }
 
@@ -339,53 +336,51 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 .replaceAll("\\$apiVersion", API_VERSION);
 
         apiCreationRequestBean.setSwagger(swagger);
-        apiCreationRequestBean.setVisibility("restricted");
+        apiCreationRequestBean.setVisibility(APIDTO.VisibilityEnum.RESTRICTED.getValue());
         apiCreationRequestBean.setRoles(VISIBILITY_ROLE);
 
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
-
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NEW_API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //add test api and publish
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+        newApiId = apiDto.getId();
 
     }
 
     @Test(groups = { "wso2.am" }, description = "Invoke the API before export", dependsOnMethods = "testNewAPICreation")
     public void testNewAPIInvoke() throws Exception {
 
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(allowedUser, String.valueOf(ALLOWED_USER_PASS));
-        //add a application
-        HttpResponse serviceResponse = apiStore
-                .addApplication(APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
-        verifyResponse(serviceResponse);
+        //add an application
+        HttpResponse applicationResponse = allowedStoreUser.createApplication(APP_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
+
 
         String provider = user.getUserName();
 
         //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(NEW_API_NAME, provider);
-        subscriptionRequest.setApplicationName(APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(newApiId, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, allowedStoreUser);
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of old API version request not successful " +
+                        " API Name:" + NEW_API_NAME + " API Version:" + API_VERSION +
+                        " API Provider Name :" + provider);
+
 
         //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-        generateAppKeyRequest.setTokenScope(SCOPE_NAME);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        Assert.assertNotNull("Access Token not found " + responseString, accessToken);
+        //get access token
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = allowedStoreUser.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull("Access Token not found ", accessToken);
 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
-        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
+        HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
     }
 
     @Test(groups = {
@@ -404,79 +399,72 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
     public void testNewAPIImport() throws Exception {
         //remove existing application and api
-        HttpResponse serviceResponse = apiStore.removeApplication(APP_NAME);
-        verifyResponse(serviceResponse);
-        serviceResponse = apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        allowedStoreUser.removeApplicationById(applicationId);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(newApiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
         //deploy exported API
         importAPI(importUrl, newApiZip, user.getUserName(), user.getPassword().toCharArray());
+        waitForAPIDeployment();
     }
 
     @Test(groups = {
             "wso2.am" }, description = "Checking newly imported API status", dependsOnMethods = "testNewAPIImport")
     public void testNewAPIState() throws Exception {
-        //get the API information
-        HttpResponse response = apiPublisher.getAPI(NEW_API_NAME, user.getUserName(), API_VERSION);
-        verifyResponse(response);
-        JSONObject responseObj = new JSONObject(response.getData());
-        JSONObject apiObj = responseObj.getJSONObject("api");
+        //get the imported API information
+        APIDTO apiObj = getAPI(NEW_API_NAME, API_VERSION, user.getUserName(), newApiId);
+        newApiId = apiObj.getId();
 
-        String state = apiObj.getString("status");
-        Assert.assertEquals(state, APILifeCycleState.PUBLISHED.getState(), "Imported API not in Published state");
-        Assert.assertEquals(NEW_API_NAME, apiObj.getString("name"), "Imported API name is incorrect");
-        Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
-        Assert.assertEquals("restricted", apiObj.getString("visibility"), "Imported API Visibility is incorrect");
-        String endpointConfig = apiObj.getString("endpointConfig");
-        Assert.assertEquals(endpointUrl,
-                new JSONObject(endpointConfig).getJSONObject("production_endpoints").getString("url"),
+        String state = apiObj.getLifeCycleStatus();
+        assertEquals(state, APILifeCycleState.PUBLISHED.getState().toUpperCase(),
+                "Imported API not in Published state");
+        assertEquals(NEW_API_NAME, apiObj.getName(), "Imported API Name is incorrect");
+        assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
+
+        assertEquals(APIDTO.VisibilityEnum.RESTRICTED, apiObj.getVisibility(), "Imported API Visibility is incorrect");
+        String endpointConfig = apiObj.getEndpointConfig().toString();
+        Assert.assertTrue(endpointConfig.contains(endpointUrl),
                 "Imported API Endpoint url is incorrect");
 
     }
 
     @Test(groups = { "wso2.am" }, description = "Invoke the newly imported API", dependsOnMethods = "testNewAPIState")
     public void testNewAPIInvokeAfterImport() throws Exception {
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NEW_API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        HttpResponse serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(deniedUser, String.valueOf(DENIED_USER_PASS));
-        //add a application
-        serviceResponse = apiStore
-                .addApplication(NEW_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
-        verifyResponse(serviceResponse);
+        //add an application
+        HttpResponse applicationResponse = allowedStoreUser.createApplication(NEW_APP_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        newApplicationId = applicationResponse.getData();
 
         String provider = user.getUserName();
         //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(NEW_API_NAME, provider);
-        subscriptionRequest.setApplicationName(NEW_APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(newApiId, newApplicationId,
+                APIMIntegrationConstants.API_TIER.GOLD, allowedStoreUser);
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of old API version request not successful " +
+                        " API Name:" + NEW_API_NAME + " API Version:" + API_VERSION +
+                        " API Provider Name :" + provider);
 
         //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(NEW_APP_NAME);
-        generateAppKeyRequest.setTokenScope(SCOPE_NAME);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        Assert.assertNotNull("Access Token not found " + responseString, accessToken);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = allowedStoreUser.generateKeys(newApplicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull("Access Token not found ", accessToken);
 
         //invoke the API
         requestHeaders.clear();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
-        Assert.assertEquals(HttpStatus.SC_FORBIDDEN, serviceResponse.getResponseCode(),
+        HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(),
                 "Imported API not in Created state");
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation", dependsOnMethods = "testNewAPIInvokeAfterImport")
     public void testPreserveProviderTrueAPICreation() throws Exception {
         String providerName = user.getUserName();
-
         apiCreationRequestBean = new APICreationRequestBean(PRESERVE_PUBLISHER_API_NAME, PRESERVE_PUBLISHER_API_CONTEXT,
                 API_VERSION, providerName, new URL(exportUrl));
         apiCreationRequestBean.setTags(tags);
@@ -489,15 +477,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
-
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(PRESERVE_PUBLISHER_API_NAME,
-                user.getUserName(), APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //add test api and publish
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+        preservePublisherApiId = apiDto.getId();
     }
 
     @Test(groups = {
@@ -512,9 +494,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportAPI(exportRequest, preservePublisherApiZip);
-        HttpResponse serviceResponse = apiPublisher
-                .deleteAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
     }
 
     @Test(groups = {
@@ -523,29 +504,27 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         //import the exported zip on same publisher
         importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, user.getUserName(),
                 user.getPassword().toCharArray());
-
+        waitForAPIDeployment();
         //get the imported file information
-        HttpResponse response = apiPublisher.getAPI(PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
-        verifyResponse(response);
-        JSONObject responseObj = new JSONObject(response.getData());
-        JSONObject apiObj = responseObj.getJSONObject("api");
-        String provider = apiObj.getString("provider");
-        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
+
+        APIDTO apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(), preservePublisherApiId);
+        preservePublisherApiId = apiObj.getId();
+
+        String provider = apiObj.getProvider();
+        assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
 
         //delete the existing API to import it again
-        HttpResponse serviceResponse = apiPublisher
-                .deleteAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 
         //import the exported zip on different publisher
         importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, publisherUser, PUBLISHER_USER_PASS);
+        waitForAPIDeployment();
         //get the imported file information
-        response = apiPublisher.getAPI(PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
-        verifyResponse(response);
-        responseObj = new JSONObject(response.getData());
-        apiObj = responseObj.getJSONObject("api");
-        provider = apiObj.getString("provider");
-        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
+        apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(), preservePublisherApiId);
+        preservePublisherApiId = apiObj.getId();
+        provider = apiObj.getProvider();
+        assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation",
@@ -565,15 +544,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/post");
         resList.add(resource);
         apiCreationRequestBean.setResourceBeanList(resList);
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
-
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NOT_PRESERVE_PUBLISHER_API_NAME,
-                user.getUserName(), APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        //add test api and publish
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+        notPreservePublisherApiId = apiDto.getId();
     }
 
     @Test(groups = { "wso2.am" }, description = "Exported Sample API",
@@ -588,9 +561,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportAPI(exportRequest, notPreservePublisherApiZip);
-        HttpResponse serviceResponse = apiPublisher
-                .deleteAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API",
@@ -599,36 +571,36 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         //import the exported zip on same publisher
         importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, user.getUserName(),
                 user.getPassword().toCharArray());
+        waitForAPIDeployment();
         //get the imported file information
-        HttpResponse response = apiPublisher.getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
-        verifyResponse(response);
-        JSONObject responseObj = new JSONObject(response.getData());
-        JSONObject apiObj = responseObj.getJSONObject("api");
-        String provider = apiObj.getString("provider");
-        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
+        APIDTO apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(),
+                notPreservePublisherApiId);
+        notPreservePublisherApiId = apiObj.getId();
+        String provider = apiObj.getProvider();
+        assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
 
-        //delete the existing API to import it again
-        HttpResponse serviceResponse = apiPublisher
-                .deleteAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 
         //import the exported zip on different publisher
         importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, publisherUser,
                 PUBLISHER_USER_PASS);
+        waitForAPIDeployment();
         //get the imported file information
-        response = apiPublisher.getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, publisherUser, API_VERSION);
-        verifyResponse(response);
-        responseObj = new JSONObject(response.getData());
-        apiObj = responseObj.getJSONObject("api");
-        provider = apiObj.getString("provider");
-        Assert.assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
+        apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, publisherUser, notPreservePublisherApiId);
+        notPreservePublisherApiId = apiObj.getId();
+        provider = apiObj.getProvider();
+        assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(NEW_APP_NAME);
-        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-        apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
+        allowedStoreUser.deleteApplication(applicationId);
+        allowedStoreUser.deleteApplication(newApplicationId);
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(newApiId);
+        restAPIPublisher.deleteAPI(preservePublisherApiId);
+        restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         boolean deleteStatus;
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
@@ -687,7 +659,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
             }
         }
 
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
         Assert.assertTrue(fileName.exists(), "File save was not successful");
     }
 
@@ -731,7 +703,25 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         while ((temp = read.readLine()) != null) {
             response.append(temp);
         }
-        Assert.assertEquals(status, HttpStatus.SC_OK, "Response code is not as expected : " + response);
+        assertEquals(status, HttpStatus.SC_OK, "Response code is not as expected : " + response);
+    }
+
+    private APIDTO getAPI(String apiName, String apiVersion, String provider, String apiId)
+            throws APIManagerIntegrationTestException, ApiException {
+        //get the imported file information
+        APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+        assertNotNull(apiListDTO, "No APIs found in API Publisher");
+        for (APIInfoDTO apiInfoDTO : apiListDTO.getList()) {
+            if (apiName.equals(apiInfoDTO.getName()) && apiVersion.equals(apiInfoDTO.getVersion()) && provider
+                    .equals(apiInfoDTO.getProvider())) {
+                apiId = apiInfoDTO.getId();
+            }
+        }
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API get failed");
+        Gson g = new Gson();
+        APIDTO apiObj = g.fromJson(response.getData(), APIDTO.class);
+        return apiObj;
     }
 
 }
