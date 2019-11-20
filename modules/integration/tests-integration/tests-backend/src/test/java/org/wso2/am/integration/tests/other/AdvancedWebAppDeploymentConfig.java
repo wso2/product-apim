@@ -145,7 +145,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                 .generateKeys(applicationID, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                         grantTypes);
 
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
         ctx.setAttribute("accessToken", accessToken);
         System.setProperty(APPLICATION_NAME + "-accessToken", accessToken);
 
