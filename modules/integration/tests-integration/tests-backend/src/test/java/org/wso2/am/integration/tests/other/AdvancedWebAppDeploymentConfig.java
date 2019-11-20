@@ -66,21 +66,37 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
         String sessionId = createSession(gatewayContextWrk);
         webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
                 getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        webAppAdminClient.uploadWarFile(path + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+        if (!WebAppDeploymentUtil
+                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp)) {
+            webAppAdminClient.uploadWarFile(sourcePath);
 
-        WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
-                APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+            WebAppDeploymentUtil
+                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
+        }
+
+        if (!WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
+                APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME)) {
+            webAppAdminClient.uploadWarFile(path + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+
+            WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
+                    APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        }
+
+
         //Deploying the Mock ETCD Server
         String webAppName = "etcdmock";
         sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
                 + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
                 + webAppName + ".war";
-        webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
+
+        if (!WebAppDeploymentUtil
+                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName)) {
+            webAppAdminClient.uploadWarFile(sourcePath);
+
+            WebAppDeploymentUtil
+                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
+        }
+
         log.info("Web App Deployed");
 
         initialize(ctx);
