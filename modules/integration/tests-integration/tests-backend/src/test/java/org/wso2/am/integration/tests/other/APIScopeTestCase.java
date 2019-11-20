@@ -23,11 +23,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -37,23 +39,23 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class APIScopeTestCase extends APIMIntegrationBaseTest {
+public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIScopeTestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private UserManagementClient userManagementClient1 = null;
     private static final String API_NAME = "APIScopeTestAPI";
     private static final String API_VERSION = "1.0.0";
     private static final String APP_NAME = "NewApplication";
     private static final String USER_JOHN = "john";
     private static final String SUBSCRIBER_ROLE = "subscriber";
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String API_VERSION_WITH_SCOPE = "1.0.0";
     private final String API_VERSION_WITH_SCOPE_COPY = "2.0.0";
     private final String API_NAME_WITH_SCOPE = "APIScopeTestWithScopeName";
@@ -61,6 +63,11 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     private final String SCOPE_NAME = "APIScopeUpdateCopyScope";
     private final String ALLOWED_ROLE = "admin";
     private String gatewaySessionCookie;
+    private String apiId;
+    private String apiIdWithScope;
+    private String copyApiId;
+    private String applicationId;
+    private ArrayList<String> grantTypes;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIScopeTestCase(TestUserMode userMode) {
@@ -70,17 +77,12 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
+        grantTypes = new ArrayList<>();
         gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath(
-                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
+        loadSynapseConfigurationFromClasspath(
+                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                        + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
@@ -88,10 +90,6 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getContextUser().getUserName(),
                 keyManagerContext.getContextTenant().getContextUser().getPassword());
-        // adding new role subscriber
-        userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[] {},
-                new String[] { "/permission/admin/login", "/permission/admin/manage/api/subscribe" });
-
         // crating user john
         String userJohn;
         String gatewayUrl;
@@ -103,7 +101,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                     gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
             userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
         }
-        userManagementClient1.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
+        userManagementClient1.addUser(USER_JOHN, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_JOHN);
 
         // Adding API
         String apiContext = "testScopeAPI";
@@ -111,55 +109,63 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
-        apiPublisher.login(user.getUserName(), user.getPassword());
         APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(API_VERSION);
         apiRequest.setProvider(user.getUserName());
-        apiPublisher.addAPI(apiRequest);
 
-        //publishing API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
-        String modifiedResource = "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+        String modifiedResource = "{\"paths\":{ \"/test\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
                                   "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"}," +
                                   "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
-                                  "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
+                                  "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,Internal/subscriber\"}]}}}";
 
 
-        apiPublisher.updateResourceOfAPI(user.getUserName(), API_NAME, API_VERSION, modifiedResource);
+        restAPIPublisher.updateSwagger(apiId, modifiedResource);
 
         waitForAPIDeployment();
 
         // For Admin user
         // create new application and subscribing
-        apiStore.login(user.getUserName(), user.getPassword());
-        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
+        //add an application
+        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
 
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(APP_NAME);
-        apiStore.subscribe(subscriptionRequest);
+        String provider = user.getUserName();
+        //subscribe to the api
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
+                APIMIntegrationConstants.API_TIER.GOLD, restAPIStore);
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of old API version request not successful " +
+                        " API Name:" + API_NAME + " API Version:" + API_VERSION +
+                        " API Provider Name :" + provider);
 
         //Generate production token and invoke with that
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
+        //get access token
+        ArrayList<String> scopes = new ArrayList<>();
+        scopes.add("admin_scope");
+        scopes.add("user_scope");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
 
         // get Consumer Key and Consumer Secret
-        String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
-        String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+        String consumerKey = applicationKeyDTO.getConsumerKey();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
 
         URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         String accessToken;
@@ -174,7 +180,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                 "&password=" + user.getPassword() +
                 "&scope=admin_scope user_scope";
 
-        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                   requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
@@ -196,9 +202,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         //Obtaining user access token for john
         requestBody = "grant_type=password&username=" + userJohn + "&password=john123&scope=admin_scope user_scope";
-        accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                                                      requestBody, tokenEndpointURL)
-                                                               .getData());
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
@@ -246,21 +252,16 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                 + "\"title\": \"" + API_NAME_WITH_SCOPE + "\"," + "\"" + API_VERSION + "\": \"1.0.0\"" + "}" + "}";
         apiCreationRequestBean.setSwagger(swagger);
 
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        //add test api and publish
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+        apiIdWithScope = apiDto.getId();
 
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_WITH_SCOPE, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        restAPIPublisher.updateSwagger(apiIdWithScope, swagger);
 
         //copy published api
-        HttpResponse newVersionResponse = apiPublisher
-                .copyAPI(user.getUserName(), API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE, API_VERSION_WITH_SCOPE_COPY,
-                        "");
+        HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_WITH_SCOPE_COPY, apiIdWithScope, null);
         assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
+        copyApiId = newVersionResponse.getData();
     }
 
     @Test(groups = { "wso2.am" }, description = "Testing Update api with scopes assigned",
@@ -268,32 +269,26 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     public void testUpdateApiWithScopes() throws Exception {
         String tierCollection = APIMIntegrationConstants.API_TIER.GOLD;
         String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME_WITH_SCOPE,
-                API_CONTEXT_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName(), new URL(endpointUrl));
-        apiCreationRequestBean.setTiersCollection(tierCollection);
-        apiCreationRequestBean.setDescription("test api description");
 
-        HttpResponse updateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(updateResponse);
+        APIRequest apiRequest = new APIRequest(API_NAME_WITH_SCOPE, API_CONTEXT_WITH_SCOPE, new URL(endpointUrl));
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVersion(API_VERSION_WITH_SCOPE);
+        apiRequest.setDescription("test api description");
+
+        HttpResponse updateResponse = restAPIPublisher.updateAPI(apiRequest, apiIdWithScope);
+        assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        if (apiStore != null) {
-            apiStore.removeApplication(APP_NAME);
-            apiStore.removeApplication(API_NAME_WITH_SCOPE);
-        }
-
-        if (apiPublisher != null) {
-            apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
-            apiPublisher.deleteAPI(API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName());
-            apiPublisher.deleteAPI(API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE_COPY, user.getUserName());
-        }
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(apiIdWithScope);
+        restAPIPublisher.deleteAPI(copyApiId);
 
         if (userManagementClient1 != null) {
             userManagementClient1.deleteUser(USER_JOHN);
-            userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
         super.cleanUp();
     }
