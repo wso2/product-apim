@@ -27,9 +27,16 @@
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
+        </classes>
+    </test>
+
+    <!--Separate group is introduced due to change of backend endpoints-->
+    <test name="apim-integration-tests-api-change-endpoint" preserve-order="true" parallel="none" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
         </classes>
     </test>
 

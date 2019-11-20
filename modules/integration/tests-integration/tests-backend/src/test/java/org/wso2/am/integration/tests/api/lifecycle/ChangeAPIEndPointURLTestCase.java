@@ -33,7 +33,6 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
-    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
+    @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
     public void testAPIInvocationBeforeChangeTheEndPointURL(ITestContext ctx) throws Exception {
         //get access token
         String accessToken = (String) ctx.getAttribute("accessToken");
@@ -87,7 +86,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test changing of the API end point URL",
+    @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL(ITestContext ctx) throws ApiException, ParseException {
 
@@ -124,7 +123,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
             "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         HttpResponse oldVersionInvokeResponse =
