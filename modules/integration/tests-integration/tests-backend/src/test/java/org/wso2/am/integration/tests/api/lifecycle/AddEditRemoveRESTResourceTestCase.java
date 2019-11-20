@@ -84,18 +84,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
     @Test(groups = {"webapp"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource(ITestContext ctx) throws Exception {
-        //get the  access token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys((String) ctx.getAttribute("applicationID"), "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
-                        grantTypes);
-
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        ctx.setAttribute("accessToken", accessToken);
-        System.setProperty(APPLICATION_NAME + "-accessToken", accessToken);
+        String accessToken = (String) ctx.getAttribute("accessToken");
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
