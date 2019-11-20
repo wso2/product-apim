@@ -129,7 +129,8 @@
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>-->
             <!--Un comment following test case when carbon.analytics.common.version updated to 5.1.5-->
             <!--<class name="org.wso2.am.integration.tests.other.CANALYTCOM8PeriodicDataEndpointExceptionTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
+            <!--https://github.com/wso2/product-apim/issues/6885-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
