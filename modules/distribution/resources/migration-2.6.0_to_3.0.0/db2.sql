@@ -82,3 +82,20 @@ CREATE TABLE AM_API_PRODUCT_MAPPING (
   PRIMARY KEY(API_PRODUCT_MAPPING_ID)
 )
 /
+
+-- Start of Data Migration Scripts --
+-- DB2 doesn't have an inbuilt function to generate a UUID. --
+-- Make sure you have registered the jar file which does the logic as guided in the doc. --
+
+CREATE OR REPLACE FUNCTION RANDOMUUID()
+  RETURNS VARCHAR(36)
+  LANGUAGE JAVA
+  PARAMETER STYLE JAVA
+  NOT DETERMINISTIC NO EXTERNAL ACTION NO SQL
+  EXTERNAL NAME 'UUIDUDFJAR:UUIDUDF.randomUUID' ;
+/
+
+UPDATE AM_API_RATINGS SET RATING_ID=(RANDOMUUID())
+/
+UPDATE AM_API_COMMENTS SET COMMENT_ID=(RANDOMUUID())
+/
