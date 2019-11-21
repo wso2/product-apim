@@ -73,13 +73,6 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Load the back-end dummy API
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                    + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API")

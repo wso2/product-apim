@@ -129,8 +129,8 @@
         </out>
     </sequence>
     <api xmlns="http://ws.apache.org/ns/synapse"
-         name="Response_API"
-         context="/response">
+         name="Response_Error_API"
+         context="/response_error">
         <resource methods="GET" url-mapping="/*">
             <inSequence>
                 <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
@@ -142,7 +142,7 @@
                     </format>
                 </payloadFactory>
                 <property name="RESPONSE" value="true" scope="default" type="STRING"/>
-                <property name="HTTP_SC" value="201" scope="axis2"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
                 <header name="To" action="remove"/>
                 <send/>
             </inSequence>

@@ -54,8 +54,8 @@ import static org.testng.Assert.assertEquals;
 /**
  * Test to check some security issues in Error responses
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL }) public class ErrorResponseCheckTestCase
-        extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
+public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(ErrorResponseCheckTestCase.class);
 
@@ -90,7 +90,7 @@ import static org.testng.Assert.assertEquals;
         String apiName = "ErrorResponseSecAPI";
         String apiVersion = "1.0.0";
         String apiContext = "sec";
-        String endpointUrl = getGatewayURLNhttp() + "response";
+        String endpointUrl = getGatewayURLNhttp() + "response_error";
         String applicationName = "SecApp";
         String providerName = user.getUserName();
 
@@ -136,7 +136,7 @@ import static org.testng.Assert.assertEquals;
             //Going to access the API with the version in the request url.
             HttpResponse apiInvokeResponse = HttpRequestUtil
                     .doGet(getAPIInvocationURLHttp(apiContext, apiVersion), requestHeaders);
-            assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+            assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response Code Mismatched");
 
 

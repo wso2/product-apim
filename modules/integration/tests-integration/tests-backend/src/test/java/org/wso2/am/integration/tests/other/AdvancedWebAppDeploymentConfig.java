@@ -36,6 +36,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
@@ -52,6 +53,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     private String apiId;
     private String applicationID;
     private String accessToken;
+    private String gatewaySessionCookie;
 
     @BeforeTest(alwaysRun = true)
     public void deployWebApps(ITestContext ctx) throws Exception {
@@ -82,7 +84,6 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
                     APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
         }
 
-
         //Deploying the Mock ETCD Server
         String webAppName = "etcdmock";
         sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
@@ -98,6 +99,14 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
         }
 
         log.info("Web App Deployed");
+
+        //Deploying the dummy API
+        gatewaySessionCookie = createSession(gatewayContextMgt);
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        }
 
         initialize(ctx);
     }
