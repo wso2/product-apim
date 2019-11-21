@@ -30,31 +30,25 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.header.util.SimpleSocketServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static org.testng.Assert.assertEquals;
-
 /**
  * Test to check the custom status message response is not dropped in the response for 400
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
-public class APIMANAGER5326CustomStatusMsgTestCase extends APIMIntegrationBaseTest {
+public class APIMANAGER5326CustomStatusMsgTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMANAGER5326CustomStatusMsgTestCase.class);
     public static final int PORT = 1989;
@@ -83,35 +77,19 @@ public class APIMANAGER5326CustomStatusMsgTestCase extends APIMIntegrationBaseTe
         String appName = "testApplication";
 
         try {
-            //Create the api creation request object
-            APIRequest apiRequest;
-            apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
-
-            apiRequest.setVersion(apiVersion);
-            apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-            apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-
-            //Add the API using the API publisher.
-            HttpResponse createResponse = restAPIPublisher.addAPI(apiRequest);
-            assertEquals(createResponse.getResponseCode(), 201, "Error in API Creation");
-            apiId = createResponse.getData();
-
-            //Publish the API
-            HttpResponse changeLCStatusResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
-                    APILifeCycleAction.PUBLISH.getAction(), null);
-            assertEquals(changeLCStatusResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Error when publishing the API: " + apiName);
-
             //Add an Application in the Store
             ApplicationDTO applicationDTO = restAPIStore.addApplication(appName,
                     APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
             appId = applicationDTO.getApplicationId();
 
-            //Subscribe the API to the Application
-            SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
+            //Create the api creation request object
+            APIRequest apiRequest;
+            apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
+            apiRequest.setVersion(apiVersion);
+            apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+            apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+            apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, appId,
                     APIMIntegrationConstants.API_TIER.UNLIMITED);
-            Assert.assertEquals(true,
-                    subscriptionDTO.getThrottlingPolicy().equals(APIMIntegrationConstants.API_TIER.UNLIMITED));
 
             //Generate production access token
             ArrayList<String> grantTypes = new ArrayList<>();
