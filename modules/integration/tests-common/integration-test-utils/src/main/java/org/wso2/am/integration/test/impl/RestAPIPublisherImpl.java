@@ -169,6 +169,19 @@ public class RestAPIPublisherImpl {
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
+
+        if (apiRequest.getAccessControl() != null) {
+            body.setAccessControl(APIDTO.AccessControlEnum.valueOf(apiRequest.getAccessControl().toUpperCase()));
+            if (APIDTO.AccessControlEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getAccessControl())
+                    && StringUtils.isNotEmpty(apiRequest.getAccessControlRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getAccessControlRoles().split(" , ")));
+                body.setAccessControlRoles(roleList);
+            }
+        } else {
+            body.setAccessControl(APIDTO.AccessControlEnum.NONE);
+        }
+
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
@@ -380,6 +393,19 @@ public class RestAPIPublisherImpl {
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
+
+        if (apiRequest.getAccessControl() != null) {
+            body.setAccessControl(APIDTO.AccessControlEnum.valueOf(apiRequest.getAccessControl().toUpperCase()));
+            if (APIDTO.AccessControlEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getAccessControl())
+                    && StringUtils.isNotEmpty(apiRequest.getAccessControlRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getAccessControlRoles().split(" , ")));
+                body.setAccessControlRoles(roleList);
+            }
+        } else {
+            body.setAccessControl(APIDTO.AccessControlEnum.NONE);
+        }
+
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
