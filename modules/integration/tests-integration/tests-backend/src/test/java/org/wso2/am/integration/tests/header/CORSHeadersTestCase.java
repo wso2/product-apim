@@ -91,14 +91,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        //Load the back-end dummy API
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt,
-                                                  gatewaySessionCookie);
-        }
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttps() + API_END_POINT_POSTFIX_URL;
         String providerName = user.getUserName();
         APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl), true);

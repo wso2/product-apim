@@ -19,7 +19,6 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -35,26 +34,21 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-
-import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Test to check the Http 201 response when location header is a relative URL
@@ -82,7 +76,7 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         String apiName = "RelativeUrlLocationHeaderAPI";
         String apiVersion = "1.0.0";
         String apiContext = "relative";
-        String endpointUrl = getAPIInvocationURLHttp("response") + "/1.0.0";
+        String endpointUrl = getAPIInvocationURLHttp("response_loc") + "/1.0.0";
 
         String appName = "RelativeLocHeaderAPP";
 
@@ -139,9 +133,9 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
 
         org.apache.http.HttpResponse httpResponse = httpclient.execute(get);
 
-
-        assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
-        assertEquals(httpResponse.getFirstHeader("Location").getValue(), "/abc/domain",
+        assertEquals(httpResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatched");
+        assertTrue(httpResponse.getFirstHeader("Location").getValue().contains("/abc/domain"),
                 "Location Header not received.");
     }
 

@@ -62,7 +62,6 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     private final String API_CONTEXT_WITH_SCOPE = "APIScopeTestWithScopeContext";
     private final String SCOPE_NAME = "APIScopeUpdateCopyScope";
     private final String ALLOWED_ROLE = "admin";
-    private String gatewaySessionCookie;
     private String apiId;
     private String apiIdWithScope;
     private String copyApiId;
@@ -78,11 +77,6 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         grantTypes = new ArrayList<>();
-        gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
@@ -109,6 +103,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
+        log.info("Backend URL: " + url);
         APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -122,7 +117,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
-        String modifiedResource = "{\"paths\":{ \"/test\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+        String modifiedResource = "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +

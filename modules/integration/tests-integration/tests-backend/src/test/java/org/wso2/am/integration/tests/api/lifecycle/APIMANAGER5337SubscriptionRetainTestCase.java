@@ -47,17 +47,11 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "testing error responses")
     public void testAPIErrorResponse() throws Exception {
 
-        //Login to the API Publisher
         HttpResponse response;
         String apiName = "SubscriptionCheckAPI";
         String apiVersion = "1.0.0";
