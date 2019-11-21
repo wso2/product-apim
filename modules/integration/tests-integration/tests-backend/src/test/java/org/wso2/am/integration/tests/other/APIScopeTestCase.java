@@ -103,7 +103,6 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
-        log.info("Backend URL: " + url);
         APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
