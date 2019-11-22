@@ -84,11 +84,9 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Add the API using the API publisher.
-        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = apiResponse.getData();
-
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        //Create, Publish and Subscribe
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
@@ -122,11 +120,6 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.BLOCK.getAction(), null);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
-
-        APIDTO apiDto = restAPIStore.getAPI(apiId);
-
-        assertTrue(StringUtils.isEmpty(apiDto.getId()),
-                "Api is not visible in API Store. API ID" + apiId);
     }
 
 
