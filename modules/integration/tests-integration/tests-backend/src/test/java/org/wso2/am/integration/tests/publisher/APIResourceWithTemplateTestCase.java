@@ -19,19 +19,19 @@
 package org.wso2.am.integration.tests.publisher;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 import java.net.URL;
@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 
@@ -56,10 +58,9 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
-    private APIPublisherRestClient apiPublisherClientUser1;
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
-    private APIIdentifier apiIdentifier;
+    private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIResourceWithTemplateTestCase(TestUserMode userMode) {
@@ -79,12 +80,6 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         super.init(userMode);
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-
-        String publisherURLHttp = getPublisherURLHttps();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-
-        // Login to API Publisher with admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -98,48 +93,50 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
     @Test(groups = { "wso2.am" }, description = "Test API with resouce containing url template for default api")
     public void testAPIwithResourceTemplateForDefaultAPI() throws Exception {
         apiCreationRequestBean = new APICreationRequestBean(API_NAME_DEFAULT, API_CONTEXT_DEFAULT, API_VERSION_1_0_0,
-                providerName, new URL(apiEndPointUrl));
+                        providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDefaultVersionChecked("default_version");
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
 
-        APIResourceBean res = new APIResourceBean("GET", "Application & Application User", "Unlimited",
-                "/resource/{param}");
+        APIResourceBean res = new APIResourceBean("GET", "Application & Application " +
+                "User", "Unlimited", "/resource/{param}");
         resourceBeanList.add(res);
         apiCreationRequestBean.setResourceBeanList(resourceBeanList);
+        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
+        apiCreationRequestBean.setDefaultVersion("default_version");
+        APIDTO apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = apiCreationResponse.getId();
 
-        HttpResponse createAPIResponse = apiPublisherClientUser1.addAPI(apiCreationRequestBean);
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                API_NAME_DEFAULT + " API creation is failed");
 
-        assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API APIResourceWithTemplateDef creation failed");
-
-        // publish the api
-        apiIdentifier = new APIIdentifier(providerName, API_NAME_DEFAULT, API_VERSION_1_0_0);
-        HttpResponse publishAPIResponse = publishAPI(apiIdentifier, apiPublisherClientUser1, false);
+        HttpResponse publishAPIResponse = publishAPI(apiCreationResponse.getId(), restAPIPublisher, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API APIResourceWithTemplateDef publish failed");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test API with resouce containing url template")
+    @Test(groups = { "wso2.am" }, description = "Test API with resource containing url template")
     public void testAPIwithResourceTemplateForAPI() throws Exception {
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                 new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-
-        APIResourceBean res = new APIResourceBean("GET", "Application & Application User", "Unlimited",
-                "/resource/{param}");
+        APIResourceBean res = new APIResourceBean("GET", "Application & Application User",
+                "Unlimited", "/resource/{param}");
         resourceBeanList.add(res);
         apiCreationRequestBean.setResourceBeanList(resourceBeanList);
 
-        HttpResponse createAPIResponse = apiPublisherClientUser1.addAPI(apiCreationRequestBean);
+        APIDTO createAPIResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = createAPIResponse.getId();
 
-        assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API APIResourceWithTemplateDef creation failed");
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                API_NAME_DEFAULT + " API creation is failed");
 
         // publish the api
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        HttpResponse publishAPIResponse = publishAPI(apiIdentifier, apiPublisherClientUser1, false);
+        HttpResponse publishAPIResponse = publishAPI(apiId, restAPIPublisher,
+                false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API APIResourceWithTemplateDef publish failed");
     }
@@ -149,12 +146,7 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         //according to the Test api - APIResourceWithTemplateTestCaseAPI.xml
         String uriTemplate = "/S2222-0496%2815%2927436-0";
         String context = "customcontextendpoint";
-
-        APIStoreRestClient apiStore = new APIStoreRestClient(getStoreURLHttp());
-        apiStore.login(user.getUserName(), user.getPassword());
         String endpointUrl = getGatewayURLNhttp() + context + "/sub{uri.var.urlcontext}";
-        APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(TEMPLATE_API_NAME,
                 TEMPLATE_API_CONTEXT, API_VERSION_1_0_0, user.getUserName(), new URL(endpointUrl));
@@ -163,59 +155,69 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         //define resources
         ArrayList<APIResourceBean> resList = new ArrayList<APIResourceBean>();
         APIResourceBean res = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "{urlcontext}");
+                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
+                // "/" should be append to url template in rest api level if it is not there.
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/{urlcontext}");
         resList.add(res);
         apiCreationRequestBean.setResourceBeanList(resList);
 
         //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        APIDTO createAPIResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = createAPIResponse.getId();
 
         //add a application
-        serviceResponse = apiStore
+        ApplicationDTO createApplication = restAPIStore
                 .addApplication(TEMPLATE_APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
                         "this-is-test");
-        verifyResponse(serviceResponse);
+        String appId = createApplication.getApplicationId();
 
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(TEMPLATE_API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        // publish api
+        HttpResponse publishAPIResponse = publishAPI(apiId, restAPIPublisher, false);
+        assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "API " + TEMPLATE_API_NAME + " publish failed");
 
         waitForAPIDeploymentSync(user.getUserName(), TEMPLATE_API_NAME, API_VERSION_1_0_0,
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+                APIMIntegrationConstants.IS_API_EXISTS);
 
-        //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEMPLATE_API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(TEMPLATE_APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
+        // subscribe to api
+        restAPIStore.subscribeToAPI(apiId, appId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(TEMPLATE_APP_NAME);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        Assert.assertNotNull("Access Token not found " + responseString, accessToken);
+        // generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
+        // Invoke api
         String invokeURL = getAPIInvocationURLHttp(TEMPLATE_API_CONTEXT, API_VERSION_1_0_0) + uriTemplate;
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
+        HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         //update test api with endpoint for legacy-encoding
         URL endpoint = new URL(endpointUrl);
-        JSONObject encodeEndpointUrl = new JSONObject(
-                "{\"production_endpoints\":{\"url\":\"" + "legacy-encoding:" + endpoint
-                        + "\",\"config\":null},\"endpoint_type\":\"" + endpoint.getProtocol() + "\"}");
-        apiCreationRequestBean.setEndpoint(encodeEndpointUrl);
+        JSONParser parser = new JSONParser();
+        String endPointString = "{\n" +
+                "  \"production_endpoints\": {\n" +
+                "    \"template_not_supported\": false,\n" +
+                "    \"config\": null,\n" +
+                "    \"url\": \"" + endpointUrl + "\"\n" +
+                "  \"legacy-encoding\": \"" + endpoint + "\"\n" +
+                "  },\n" +
+                "  \"sandbox_endpoints\": {\n" +
+                "    \"url\": \"" + endpointUrl + "\",\n" +
+                "    \"config\": null,\n" +
+                "    \"template_not_supported\": false\n" +
+                "  \"legacy-encoding\": \"" + endpoint + "\"\n" +
+                "  },\n" +
+                "  \"endpoint_type\": \"http\"\n" +
+                "}";
 
-        serviceResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        Object jsonObject = parser.parse(endPointString);
+        createAPIResponse.setEndpointConfig(jsonObject);
+        restAPIPublisher.updateAPI(createAPIResponse);
         waitForAPIDeployment();
         //expected to hit backend "S2222-0496(15)27436-0" of decoded context "S2222-0496%2815%2927436-0"
         serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
@@ -226,5 +228,4 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
     public void cleanUpArtifacts() throws Exception {
         super.cleanUp();
     }
-
 }
