@@ -17,22 +17,17 @@
 package org.wso2.am.integration.tests.other;
 
 import junit.framework.Assert;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
@@ -41,6 +36,7 @@ import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.rmi.RemoteException;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -49,13 +45,12 @@ import static org.testng.Assert.assertTrue;
  *
  * @see <a href="https://wso2.org/jira/browse/APIMANAGER-4373">APIMANAGER-4373</a>
  */
-public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseTest {
+public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleBaseTest {
     private final String USER_PASSWORD = "123123";
-    private final String PERMISSION_LOGIN = "/permission/admin/login";
-    private final String PERMISSION_API_SUBSCRIBE = "/permission/admin/manage/api/subscribe";
     private final String FIRST_USER = "APIMANAGER4373_user";
     private final String FIRST_ROLE = "APIMANAGER4373_role1";
     private final String SECOND_ROLE = "APIMANAGER4373_role2";
+    private final String INTERNAL_SUBSCRIBER = "Internal/subscriber";
     private final String APP_NAME = "APIMANAGER4373";
     private final String BROKEN_API = "brokenAPI";
     private final String HEALTHY_API = "healthyAPI";
@@ -66,10 +61,12 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
     private String contextUsername = "admin";
     private String contextUserPassword = "admin";
     private UserManagementClient userManagementClient1;
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStoreRestClient;
+    private RestAPIStoreImpl apiStoreSubUser;
     private String publisherURLHttp;
     private String storeURLHttp;
+    private String brokenApiId;
+    private String healthyApiId;
+    private String appId;
 
     @BeforeClass
     public void init() {
@@ -77,18 +74,21 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
             super.init();
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             storeURLHttp = storeUrls.getWebAppURLHttp();
-            apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-            apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
             contextUsername = keyManagerContext.getContextTenant().getContextUser().getUserName();
             contextUserPassword = keyManagerContext.getContextTenant().getContextUser().getPassword();
             userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                                              contextUsername, contextUserPassword);
 
             userManagementClient1
-                    .addRole(FIRST_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
+                    .addRole(FIRST_ROLE, new String[] {}, new String[] {});
             userManagementClient1
-                    .addRole(SECOND_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
-            userManagementClient1.addUser(FIRST_USER, USER_PASSWORD, new String[] {FIRST_ROLE }, FIRST_USER);
+                    .addRole(SECOND_ROLE, new String[] {}, new String[] {});
+            userManagementClient1
+                    .addUser(FIRST_USER, USER_PASSWORD, new String[] { INTERNAL_SUBSCRIBER, FIRST_ROLE }, FIRST_USER);
+
+            apiStoreSubUser = new RestAPIStoreImpl(FIRST_USER, USER_PASSWORD,
+                    keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+
         } catch (APIManagerIntegrationTestException e) {
             assertTrue(false, "Error occurred while initializing testcase: " + e.getCause());
         } catch (RemoteException e) {
@@ -103,73 +103,78 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
     @Test(groups = "wso2.am", description = "Test effect of changing the role of subscribed API")
     public void testAPIRoleChangeEffectInStore() throws Exception {
         // create two apis
-        apiPublisher.login(contextUsername, contextUserPassword);
         APIRequest brokenApiRequest = new APIRequest(BROKEN_API, BROKEN_API, new URL(EP_URL));
         brokenApiRequest.setVersion(API_VERSION);
         brokenApiRequest.setProvider(contextUsername);
         brokenApiRequest.setVisibility(RESTRICTED);
         brokenApiRequest.setRoles(FIRST_ROLE);
-        apiPublisher.addAPI(brokenApiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(BROKEN_API, contextUsername,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        brokenApiId = createAndPublishAPIUsingRest(brokenApiRequest, restAPIPublisher, false);
 
         APIRequest healthyApiRequest = new APIRequest(HEALTHY_API, HEALTHY_API, new URL(EP_URL));
         healthyApiRequest.setVersion(API_VERSION);
         healthyApiRequest.setProvider(contextUsername);
         healthyApiRequest.setVisibility(RESTRICTED);
         healthyApiRequest.setRoles(FIRST_ROLE);
-        apiPublisher.addAPI(healthyApiRequest);
-        updateRequest = new APILifeCycleStateRequest(HEALTHY_API, contextUsername, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        healthyApiId = createAndPublishAPIUsingRest(healthyApiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(contextUsername, HEALTHY_API, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         // subscribe both apis
-        apiStoreRestClient.login(FIRST_USER, USER_PASSWORD);
 
-        apiStoreRestClient.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(BROKEN_API, contextUsername);
-        subscriptionRequest.setApplicationName(APP_NAME);
-        apiStoreRestClient.subscribe(subscriptionRequest);
-        subscriptionRequest = new SubscriptionRequest(HEALTHY_API, contextUsername);
-        subscriptionRequest.setApplicationName(APP_NAME);
-        apiStoreRestClient.subscribe(subscriptionRequest);
+        //add an application
+        HttpResponse applicationResponse = apiStoreSubUser.createApplication(APP_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        appId = applicationResponse.getData();
+
+        //subscribe to healthy api
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(brokenApiId, appId,
+                APIMIntegrationConstants.API_TIER.GOLD, apiStoreSubUser);
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of API request not successful " +
+                        " API Name:" + BROKEN_API + " API Version:" + API_VERSION +
+                        " API Provider Name :" + contextUsername);
+
+        //subscribe to healthy api
+        subscribeResponse = subscribeToAPIUsingRest(healthyApiId, appId,
+                APIMIntegrationConstants.API_TIER.GOLD, apiStoreSubUser);
+        assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of API request not successful " +
+                        " API Name:" + HEALTHY_API + " API Version:" + API_VERSION +
+                        " API Provider Name :" + contextUsername);
 
         brokenApiRequest.setRoles(SECOND_ROLE);
         brokenApiRequest.setTags(TAG_UPDATED);
-        Thread.sleep(1000);
-        apiPublisher.updateAPI(brokenApiRequest);
+        restAPIPublisher.updateAPI(brokenApiRequest, brokenApiId);
         waitForAPIDeployment();
-
-        HttpResponse response = new HttpResponse("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        SubscriptionListDTO subscriptionListDTO = null;
         try {
-            response = apiStoreRestClient.getAllSubscriptions();
+            subscriptionListDTO = apiStoreSubUser.getAllSubscriptionsOfApplication(appId);
+            assertTrue(subscriptionListDTO.getList().toString().contains(HEALTHY_API), "Subscription retrieval failed when one API is broken");
         } catch (Exception e) {
             // Expectation of this test case is to test whether permitted apis are returned to the store.
             // therefore exception thrown from the registry for unauthorized api is not handled here.
         }
-        LogFactory.getLog(APIMANAGER4373BrokenAPIInStoreTestCase.class).error(response.getData());
-        assertTrue(response.getData().contains(HEALTHY_API), "Subscription retrieval failed when one API is broken: "
-        + response.getData());
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        userManagementClient1.updateRolesOfUser(FIRST_USER, new String[] {FIRST_ROLE, SECOND_ROLE});
-        if (apiStoreRestClient != null) {
-            apiStoreRestClient.removeAPISubscriptionByName(BROKEN_API, API_VERSION, contextUsername, APP_NAME);
-            apiStoreRestClient.removeAPISubscriptionByName(HEALTHY_API, API_VERSION, contextUsername, APP_NAME);
+        userManagementClient1
+                .updateRolesOfUser(FIRST_USER, new String[] { INTERNAL_SUBSCRIBER, FIRST_ROLE, SECOND_ROLE });
+
+        SubscriptionListDTO subsDTO = apiStoreSubUser.getAllSubscriptionsOfApplication(appId);
+        for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
+            apiStoreSubUser.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        if (apiPublisher != null) {
-            apiPublisher.deleteAPI(BROKEN_API, API_VERSION, contextUsername);
-            apiPublisher.deleteAPI(HEALTHY_API, API_VERSION, contextUsername);
-        }
+
+        apiStoreSubUser.deleteApplication(appId);
+        restAPIPublisher.deleteAPI(brokenApiId);
+        restAPIPublisher.deleteAPI(healthyApiId);
+
         if (userManagementClient1 != null) {
             userManagementClient1.deleteUser(FIRST_USER);
             userManagementClient1.deleteRole(FIRST_ROLE);
             userManagementClient1.deleteRole(SECOND_ROLE);
         }
-        super.cleanUp();
     }
 }
