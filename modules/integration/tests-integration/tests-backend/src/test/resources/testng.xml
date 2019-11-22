@@ -154,8 +154,7 @@
 
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>-->
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIMANAGER5834APICreationWithInvalidInputsTestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
@@ -192,8 +191,8 @@
             <!--<class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
