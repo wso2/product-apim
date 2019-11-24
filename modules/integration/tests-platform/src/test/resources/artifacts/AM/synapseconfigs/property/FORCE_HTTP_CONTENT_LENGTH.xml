@@ -77,10 +77,6 @@
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>
         <send/>
     </sequence>
-    <sequence name="_auth_failure_handler_">
-        <property name="error_message_type" value="application/xml"/>
-        <sequence key="_build_"/>
-    </sequence>
     <sequence name="_throttle_out_handler_">
         <sequence key="_build_"/>
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>

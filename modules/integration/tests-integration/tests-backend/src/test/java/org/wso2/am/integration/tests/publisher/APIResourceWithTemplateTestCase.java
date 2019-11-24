@@ -83,10 +83,6 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath(
-                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest" +
-                            File.separator + "APIResourceWithTemplateTestCaseAPI.xml", gatewayContextMgt,
-                    gatewaySessionCookie);
         }
     }
 

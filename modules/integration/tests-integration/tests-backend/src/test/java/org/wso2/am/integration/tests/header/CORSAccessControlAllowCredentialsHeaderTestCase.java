@@ -89,14 +89,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            //Load the back-end dummy API
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt,
-                                                  gatewaySessionCookie);
-        }
+        //Load the back-end dummy API
 
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
     }

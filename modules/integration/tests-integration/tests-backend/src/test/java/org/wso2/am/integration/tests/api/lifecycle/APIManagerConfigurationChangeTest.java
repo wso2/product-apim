@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
@@ -53,7 +54,6 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                                                   APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
 
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
-        String publisherSessionId = createSession(publisherContext);
 
         webAppAdminClient = new WebAppAdminClient(
                 gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
@@ -68,35 +68,92 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+                gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
-    }
+        String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
+                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
+                + APIMIntegrationConstants.ETCD_WEB_APP_NAME + ".war";
+        webAppAdminClient.uploadWarFile(sourcePath);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                gatewayMgtSessionId, APIMIntegrationConstants.ETCD_WEB_APP_NAME);
+        log.info("Web App Deployed");
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "sequence" + File.separator +
+                            "xml_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy-api-multiResourceSameVerb.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                    + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                            + "synapseconfigs" + File.separator + "rest" + File.separator + "jwt_backend.xml",
+                    gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api_APIMANAGER-4464.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_digest_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "error" + File.separator + "handle"
+                    + File.separator + "error-handling-test-synapse.xml", gatewayContextWrk, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "git2231_head_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
+                            File.separator + "rest" + File.separator + "dummy_api_APIMANAGER-4312.xml",
+                    gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_patch_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                            + "synapseconfigs" + File.separator + "rest" + File.separator + "api_throttle_backend.xml",
+                    gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
+                    "synapseconfigs" + File.separator + "throttling" + File.separator +
+                    "dummy-stockquote.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest" +
+                            File.separator + "APIResourceWithTemplateTestCaseAPI.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "scriptmediator"
+                    + File.separator + "script_mediator_api.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
 
-    @AfterTest(alwaysRun = true)
-    public void unDeployWebApps() throws Exception {
-        //TODO remove webAPPS
-        List<String> webAppList = new ArrayList<String>();
-        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
-        webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
+        }
     }
 }

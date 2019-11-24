@@ -71,10 +71,6 @@ import static org.testng.Assert.assertTrue;
         apiEndPointUrl = getGatewayURLNhttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         //Load the back-end dummy API
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy-api-multiResourceSameVerb.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke all resources and verbs that are valid")

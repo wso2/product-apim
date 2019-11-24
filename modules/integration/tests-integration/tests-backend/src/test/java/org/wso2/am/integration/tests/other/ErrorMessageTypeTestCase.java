@@ -43,7 +43,6 @@ public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
     private static final Log log = LogFactory.getLog(ErrorMessageTypeTestCase.class);
-    String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -51,14 +50,10 @@ public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
           This test will check API Manager will return auth failures in JSON format
          */
         super.init();
-        gatewaySessionCookie = createSession(gatewayContextWrk);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         String destinationPath = computeDestinationPathForDataSource("axis2.xml");
         String sourcePath = computeAxis2SourceResourcePath("axis2.xml");
         copyAxis2ConfigFile(sourcePath, destinationPath);
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "error" + File.separator + "handle"
-                + File.separator + "error-handling-test-synapse.xml", gatewayContextWrk, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Error Message format test other")

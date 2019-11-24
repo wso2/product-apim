@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><definitions xmlns="http://ws.apache.org/ns/synapse">
-    <sequence name="fault">
-        <log level="full">
-            <property name="MESSAGE" value="Executing default &quot;fault&quot; sequence"/>
-            <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
-            <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
-        </log>
-        <drop/>
-    </sequence>
-    <sequence name="main">
-        <log/>
-        <drop/>
-    </sequence>
     <api name="admin-AT-wso2.com--stockquote" context="/t/wso2.com/stockquote">
         <resource methods="GET POST" uri-template="/test">
             <inSequence>

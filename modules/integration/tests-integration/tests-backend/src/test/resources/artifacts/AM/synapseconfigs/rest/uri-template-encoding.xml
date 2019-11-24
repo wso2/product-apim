@@ -1,36 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://ws.apache.org/ns/synapse">
-    <registry provider="org.wso2.carbon.mediation.registry.WSO2Registry">
-        <parameter name="cachableDuration">15000</parameter>
-    </registry>
-    <sequence name="fault">
-        <log category="INFO" level="full" separator=",">
-            <property name="MESSAGE" value="Executing default 'fault' sequence"/>
-            <property expression="get-property('ERROR_CODE')" name="ERROR_CODE"/>
-            <property expression="get-property('ERROR_MESSAGE')" name="ERROR_MESSAGE"/>
-        </log>
-        <drop/>
-    </sequence>
-    <sequence name="main">
-        <in>
-            <log category="INFO" level="full" separator=","/>
-            <filter regex="http://localhost:9000.*" source="get-property('To')">
-                <then>
-                    <send/>
-                </then>
-                <else/>
-            </filter>
-        </in>
-        <out>
-            <send/>
-        </out>
-        <description>The main sequence for the message mediation</description>
-    </sequence>
     <sequence name="port_calculate">
-        <script language="js">
-            var port = parseInt(8280 + parseInt(java.lang.System.getProperty("portOffset")));
-            mc.setProperty("uri.var.port",port.toString());
-        </script>
+    <script language="js">
+        var port = parseInt(8280 + parseInt(java.lang.System.getProperty("portOffset")));
+        mc.setProperty("uri.var.port",port.toString());
+    </script>
     </sequence>
     <api context="/services/client/" name="ClientApi">
         <resource methods="GET" uri-template="/urlEncoded?queryParam={+value}">
