@@ -72,15 +72,15 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init(userMode);
         gatewaySessionCookie = createSession(gatewayContextMgt);
-        String apiMngrSynapseConfigPath;
-        if (userMode == TestUserMode.SUPER_TENANT_ADMIN) {
-            apiMngrSynapseConfigPath = "/artifacts/AM/synapseconfigs/rest/dummy_api_APIMANAGER-4312.xml";
-        } else {
-            apiMngrSynapseConfigPath = "/artifacts/AM/synapseconfigs/rest/dummy_api_APIMANAGER-4312_tenant.xml";
+        if (userMode != TestUserMode.SUPER_TENANT_ADMIN) {
+            String apiMngrSynapseConfigPath =
+                    "artifacts" + File.separator+ "AM" + File.separator + "synapseconfigs" +
+                            File.separator + "rest" + File.separator + "dummy_api_APIMANAGER-4312_tenant.xml";
+            loadSynapseConfigurationFromClasspath(apiMngrSynapseConfigPath, gatewayContextMgt, gatewaySessionCookie);
         }
-        loadSynapseConfigurationFromClasspath(apiMngrSynapseConfigPath, gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = { "noRestart" },

@@ -76,15 +76,11 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy_api_APIMANAGER-4464.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am",
@@ -97,7 +93,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
         String apiName = "Test_API" + userMode;
         String apiVersion = "1.0.0";
         String apiContext = "/somecontext" + userMode;
-        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
+        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response204";
 
         //Create the api creation request object
         APIRequest apiRequest = null;

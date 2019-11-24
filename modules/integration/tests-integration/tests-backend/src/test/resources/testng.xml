@@ -120,7 +120,6 @@
             <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
-            <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->

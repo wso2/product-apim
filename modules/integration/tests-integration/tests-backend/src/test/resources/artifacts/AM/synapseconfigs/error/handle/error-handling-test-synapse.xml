@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><definitions xmlns="http://ws.apache.org/ns/synapse">
-    <sequence name="fault">
-        <log level="full">
-            <property name="MESSAGE" value="Executing default &quot;fault&quot; sequence"/>
-            <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
-            <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
-        </log>
-        <drop/>
-    </sequence>
-    <sequence name="main">
-        <log/>
-        <drop/>
-    </sequence>
     <api name="stockquote" context="/stockquote">
         <resource methods="GET POST" uri-template="/test">
             <inSequence>
@@ -49,8 +37,4 @@
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>
     </api>
-    <sequence name="_auth_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
-        <property name="error_message_type" value="application/json"/>
-        <sequence key="_build_"/>
-    </sequence>
 </definitions>

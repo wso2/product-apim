@@ -58,56 +58,6 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     @BeforeTest(alwaysRun = true)
     public void deployWebApps(ITestContext ctx) throws Exception {
         super.init();
-        String fileFormat = ".war";
-        String webApp = "jaxrs_basic";
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        if (!WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp)) {
-            webAppAdminClient.uploadWarFile(sourcePath);
-
-            WebAppDeploymentUtil
-                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        }
-
-        if (!WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
-                APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME)) {
-            webAppAdminClient.uploadWarFile(path + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
-
-            WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
-                    APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
-        }
-
-        //Deploying the Mock ETCD Server
-        String webAppName = "etcdmock";
-        sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
-                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
-                + webAppName + ".war";
-
-        if (!WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName)) {
-            webAppAdminClient.uploadWarFile(sourcePath);
-
-            WebAppDeploymentUtil
-                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
-        }
-
-        log.info("Web App Deployed");
-
-        //Deploying the dummy API
-        gatewaySessionCookie = createSession(gatewayContextMgt);
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath(
-                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
-
         initialize(ctx);
     }
 

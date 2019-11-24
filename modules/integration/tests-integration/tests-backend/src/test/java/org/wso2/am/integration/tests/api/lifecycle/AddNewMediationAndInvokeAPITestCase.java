@@ -91,9 +91,6 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         apiStoreClientUser1.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
 
-        String sessionId = createSession(gatewayContextMgt);
-        deployArrService(gatewayContextMgt, sessionId);
-
 
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
@@ -158,14 +155,6 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-
-    }
-
-    public void deployArrService(AutomationContext gatewayContextMgt, String gatewaySessionCookie) throws Exception {
-
-        String filePath = "artifacts" + File.separator + "AM" + File.separator + "sequence" + File.separator +
-                "xml_api.xml";
-            loadSynapseConfigurationFromClasspath(filePath, gatewayContextMgt, gatewaySessionCookie);
 
     }
 
