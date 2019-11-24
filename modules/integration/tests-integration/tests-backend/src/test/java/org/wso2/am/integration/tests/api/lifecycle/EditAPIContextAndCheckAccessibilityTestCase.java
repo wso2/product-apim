@@ -90,9 +90,10 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
 
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
-                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "", "");
-        applicationId = applicationDTO.getApplicationId();
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId = applicationResponse.getData();
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
