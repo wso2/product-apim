@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -75,9 +76,6 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
         assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiId);
-        assertEquals(getValueFromJSON(apiResponse, "error"), "false",
-                "Error in API Creation in publisher" +
-                        "Response Data:" + apiResponse.getData());
 
 
         //Verify the API in API Publisher
@@ -89,11 +87,17 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
     @Test(groups = {"wso2.am"}, description = "Check the visibility of API in Store before the API publish. " +
             "it should not be available in store.", dependsOnMethods = "testAvailabilityOfAPIInPublisher")
-    public void testVisibilityOfAPIInStoreBeforePublishing() throws org.wso2.am.integration.clients.store.api.ApiException {
+    public void testVisibilityOfAPIInStoreBeforePublishing() throws Exception {
 
-        APIDTO apiDto = restAPIStore.getAPI(apiId);
-        assertFalse(StringUtils.isNotEmpty(apiDto.getId()),
-                "Api is visible in API Store before publish. API ID" + apiId);
+        try {
+            APIDTO apiDto = restAPIStore.getAPI(apiId);
+            assertFalse(StringUtils.isNotEmpty(apiDto.getId()),
+                    "Api is visible in API Store before publish. API ID" + apiId);
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN,
+                    "Api is visible in API Store before publish. API ID" + apiId);
+        }
+
     }
 
 

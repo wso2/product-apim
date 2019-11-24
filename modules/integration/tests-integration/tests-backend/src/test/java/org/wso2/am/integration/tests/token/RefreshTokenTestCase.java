@@ -119,7 +119,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
         // Add application
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("TokenTestAPI-Application",
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test",
                 "OAUTH");
         tokenTestApiAppId = applicationDTO.getApplicationId();
