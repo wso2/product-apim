@@ -19,68 +19,64 @@
 
 package org.wso2.am.integration.tests.rest;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 /**
- * Test class is used to test the stack trace exposure of Doc API when the 
+ * Test class is used to test the stack trace exposure of Doc API when the
  * parameters are tampered.
  */
-public class DocAPIParameterTamperingTest extends APIMIntegrationBaseTest{
+public class DocAPIParameterTamperingTest extends APIMIntegrationBaseTest {
+
     private Map<String, String> requestHeaders = new HashMap<String, String>();
-    
+    private static final Log log = LogFactory.getLog(DocAPIParameterTamperingTest.class);
+
     @Factory(dataProvider = "userModeDataProvider")
     public DocAPIParameterTamperingTest(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
-    
+
     @DataProvider
     public static Object[][] userModeDataProvider() {
+
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
         };
     }
-    
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-    }
-    
-    @Test(groups = { "wso2.am" }, description = "Test whether the response expose the stack trace")
-    public void testParameterTampaeredResponseOfDocAPI() throws Exception {
-        String requestURL = publisherURLHttp + "publisher-old/site/blocks/documentation/ajax/docs.jag?action="
-                + "getInlineContent&apiName=%3Balert%281%29%27%22%3C%3E&version=1.0.0&docName=asd";
-        HttpResponse response = apiPublisher.login(user.getUserName(), user.getPassword());
-        
-        String cookie = response.getHeaders().get("Set-Cookie");
-        requestHeaders.put("Cookie", cookie);
-        
-        HttpResponse serviceResponse = HttpRequestUtil.doGet(requestURL, requestHeaders);
-        JSONObject jsonObject = new JSONObject(serviceResponse.getData());
-        System.out.println(serviceResponse.getData());
-        assertFalse(serviceResponse.getData().contains("Exception"), "Stack trace is exposed in the error");
-        assertEquals(jsonObject.get("error"), true, "Error message is not properly returned");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test whether the response expose the stack trace")
+    public void testParameterTampaeredResponseOfDocAPI() {
+
+        boolean expectedExceptionOccured = false;
+        try {
+            restAPIPublisher.getDocumentContent(";alert(1)",
+                    "daf732d3-bda2-46da-b381-2c39d901ea61");
+            Assert.fail("ApiException Exception expected to be thrown");
+        } catch (ApiException e) {
+            log.error(e);
+            if (e.getCode() == 404) {
+                expectedExceptionOccured = true;
+            }
+        }
+        Assert.assertTrue("Expected ApiException to be thrown with a response code 404. But it was not thrown " +
+                "as that.", expectedExceptionOccured);
+    }
 }
