@@ -35,6 +35,12 @@ public class EnvironmentEndpointsDTO {
   @SerializedName("https")
   private String https = null;
 
+  @SerializedName("ws")
+  private String ws = null;
+
+  @SerializedName("wss")
+  private String wss = null;
+
   public EnvironmentEndpointsDTO http(String http) {
     this.http = http;
     return this;
@@ -71,6 +77,42 @@ public class EnvironmentEndpointsDTO {
     this.https = https;
   }
 
+  public EnvironmentEndpointsDTO ws(String ws) {
+    this.ws = ws;
+    return this;
+  }
+
+   /**
+   * WS environment URL
+   * @return ws
+  **/
+  @ApiModelProperty(example = "http://localhost:9099", value = "WS environment URL")
+  public String getWs() {
+    return ws;
+  }
+
+  public void setWs(String ws) {
+    this.ws = ws;
+  }
+
+  public EnvironmentEndpointsDTO wss(String wss) {
+    this.wss = wss;
+    return this;
+  }
+
+   /**
+   * WSS environment URL
+   * @return wss
+  **/
+  @ApiModelProperty(example = "https://localhost:8099", value = "WSS environment URL")
+  public String getWss() {
+    return wss;
+  }
+
+  public void setWss(String wss) {
+    this.wss = wss;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -82,12 +124,14 @@ public class EnvironmentEndpointsDTO {
     }
     EnvironmentEndpointsDTO environmentEndpoints = (EnvironmentEndpointsDTO) o;
     return Objects.equals(this.http, environmentEndpoints.http) &&
-        Objects.equals(this.https, environmentEndpoints.https);
+        Objects.equals(this.https, environmentEndpoints.https) &&
+        Objects.equals(this.ws, environmentEndpoints.ws) &&
+        Objects.equals(this.wss, environmentEndpoints.wss);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(http, https);
+    return Objects.hash(http, https, ws, wss);
   }
 
 
@@ -98,6 +142,8 @@ public class EnvironmentEndpointsDTO {
     
     sb.append("    http: ").append(toIndentedString(http)).append("\n");
     sb.append("    https: ").append(toIndentedString(https)).append("\n");
+    sb.append("    ws: ").append(toIndentedString(ws)).append("\n");
+    sb.append("    wss: ").append(toIndentedString(wss)).append("\n");
     sb.append("}");
     return sb.toString();
   }

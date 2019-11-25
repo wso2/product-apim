@@ -102,7 +102,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher = new RestAPIPublisherImpl(fullUserName, password, domainName, "https://localhost:9943/");
         APIListDTO apiListDTO = null;
         try {
-            apiListDTO = restAPIPublisher.apIsApi.apisGet(null, null, domainName, null, null, null, null, domainName);
+            apiListDTO = restAPIPublisher.apIsApi.apisGet(null, null, domainName, null, null, null, null);
         } catch (ApiException e) {
             throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
                     e.getMessage(), e);

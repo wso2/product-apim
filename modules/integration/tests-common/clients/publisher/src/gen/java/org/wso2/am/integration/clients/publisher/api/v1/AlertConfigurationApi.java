@@ -71,9 +71,9 @@ public class AlertConfigurationApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/alerts/{alert-type}/configurations/{configuration-id}"
-            .replaceAll("\\{" + "alert-type" + "\\}", apiClient.escapeString(alertType.toString()))
-            .replaceAll("\\{" + "configuration-id" + "\\}", apiClient.escapeString(configurationId.toString()));
+        String localVarPath = "/alerts/{alertType}/configurations/{configurationId}"
+            .replaceAll("\\{" + "alertType" + "\\}", apiClient.escapeString(alertType.toString()))
+            .replaceAll("\\{" + "configurationId" + "\\}", apiClient.escapeString(configurationId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -212,9 +212,9 @@ public class AlertConfigurationApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/alerts/{alert-type}/configurations/{configuration-id}"
-            .replaceAll("\\{" + "alert-type" + "\\}", apiClient.escapeString(alertType.toString()))
-            .replaceAll("\\{" + "configuration-id" + "\\}", apiClient.escapeString(configurationId.toString()));
+        String localVarPath = "/alerts/{alertType}/configurations/{configurationId}"
+            .replaceAll("\\{" + "alertType" + "\\}", apiClient.escapeString(alertType.toString()))
+            .replaceAll("\\{" + "configurationId" + "\\}", apiClient.escapeString(configurationId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -340,8 +340,8 @@ public class AlertConfigurationApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/alerts/{alert-type}/configurations"
-            .replaceAll("\\{" + "alert-type" + "\\}", apiClient.escapeString(alertType.toString()));
+        String localVarPath = "/alerts/{alertType}/configurations"
+            .replaceAll("\\{" + "alertType" + "\\}", apiClient.escapeString(alertType.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
