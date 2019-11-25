@@ -40,6 +40,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
@@ -55,11 +56,13 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -581,13 +584,18 @@ public class RestAPIPublisherImpl {
      * Check whether the Endpoint is valid
      *
      * @param endpointUrl url of the endpoint
-     * @param type        type of Endpoint
+     * @param apiId id of the api which the endpoint to be validated
      * @return HttpResponse -  Response of the getAPI request
      * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
-    public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
-                                           String apiVersion) throws APIManagerIntegrationTestException {
-        return null;
+    public HttpResponse checkValidEndpoint(String endpointUrl, String apiId) throws APIManagerIntegrationTestException, ApiException {
+
+        ApiEndpointValidationResponseDTO validationResponseDTO = validationApi.validateEndpoint(endpointUrl, endpointUrl);
+        HttpResponse response = null;
+        if (validationResponseDTO.getStatusCode() == 200) {
+            response = new HttpResponse(validationResponseDTO.getStatusMessage(), 200);
+        }
+        return response;
     }
 
 
@@ -722,22 +730,15 @@ public class RestAPIPublisherImpl {
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HTTPSClientUtils.doGet() method call
      */
-    public APIListDTO getAllAPIs(String tenantDomain) throws APIManagerIntegrationTestException, ApiException {
-
-        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null, tenantDomain);
-        if (apis.getCount() > 0) {
-            return apis;
-        }
-        return null;
-    }
-
     public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
-        APIListDTO apis = apIsApi.apisGet(null, null, this.tenantDomain, null, null, null, null, this.tenantDomain);
+
+        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null);
         if (apis.getCount() > 0) {
             return apis;
         }
         return null;
     }
+
 
     /**
      * This method is used to upload endpoint certificates
@@ -749,7 +750,7 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAPIs(int offset, int limit) throws ApiException {
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null,
-                null, false, null, this.tenantDomain);
+                null, false, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -816,7 +817,7 @@ public class RestAPIPublisherImpl {
     }
 
     public String updateSwagger(String apiId, String definition) throws ApiException {
-        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null);
+        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -915,7 +916,6 @@ public class RestAPIPublisherImpl {
      *
      * @param certificate certificate
      * @param alias       alis
-     * @param endpoint    endpoint.
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */

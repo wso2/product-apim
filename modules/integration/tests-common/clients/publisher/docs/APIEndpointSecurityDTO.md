@@ -13,8 +13,8 @@ Name | Type | Description | Notes
 ## Enum: TypeEnum
 Name | Value
 ---- | -----
-BASIC | &quot;BASIC&quot;
-DIGEST | &quot;DIGEST&quot;
+BASIC | &quot;basic&quot;
+DIGEST | &quot;digest&quot;
 
 
 

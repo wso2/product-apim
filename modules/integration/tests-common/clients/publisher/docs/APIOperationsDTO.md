@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **authType** | **String** |  |  [optional]
 **throttlingPolicy** | **String** |  |  [optional]
 **scopes** | **List&lt;String&gt;** |  |  [optional]
+**usedProductIds** | **List&lt;String&gt;** |  |  [optional]
 
 
 

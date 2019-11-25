@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductOutdatedStatusDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
@@ -319,6 +320,141 @@ public class ApiProductsApi {
         return call;
     }
     /**
+     * Build call for apiProductsApiProductIdIsOutdatedGet
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call apiProductsApiProductIdIsOutdatedGetCall(String apiProductId, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api-products/{apiProductId}/is-outdated"
+            .replaceAll("\\{" + "apiProductId" + "\\}", apiClient.escapeString(apiProductId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (accept != null)
+        localVarHeaderParams.put("Accept", apiClient.parameterToString(accept));
+        if (ifNoneMatch != null)
+        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'apiProductId' is set
+        if (apiProductId == null) {
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdIsOutdatedGet(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = apiProductsApiProductIdIsOutdatedGetCall(apiProductId, accept, ifNoneMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Get if API Product is outdated
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return APIProductOutdatedStatusDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public APIProductOutdatedStatusDTO apiProductsApiProductIdIsOutdatedGet(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIProductOutdatedStatusDTO> resp = apiProductsApiProductIdIsOutdatedGetWithHttpInfo(apiProductId, accept, ifNoneMatch);
+        return resp.getData();
+    }
+
+    /**
+     * Get if API Product is outdated
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;APIProductOutdatedStatusDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<APIProductOutdatedStatusDTO> apiProductsApiProductIdIsOutdatedGetWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, null, null);
+        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Get if API Product is outdated (asynchronously)
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call apiProductsApiProductIdIsOutdatedGetAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<APIProductOutdatedStatusDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
      * Build call for apiProductsApiProductIdPut
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param body API object that needs to be added  (required)
@@ -584,142 +720,6 @@ public class ApiProductsApi {
         }
 
         com.squareup.okhttp.Call call = apiProductsApiProductIdSwaggerGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
-        return call;
-    }
-    /**
-     * Build call for apiProductsApiProductIdSwaggerPut
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apiDefinition Swagger definition of the API product (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public com.squareup.okhttp.Call apiProductsApiProductIdSwaggerPutCall(String apiProductId, String apiDefinition, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/swagger"
-            .replaceAll("\\{" + "apiProductId" + "\\}", apiClient.escapeString(apiProductId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (apiDefinition != null)
-        localVarFormParams.put("apiDefinition", apiDefinition);
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
-        }
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call apiProductsApiProductIdSwaggerPutValidateBeforeCall(String apiProductId, String apiDefinition, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        // verify the required parameter 'apiProductId' is set
-        if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdSwaggerPut(Async)");
-        }
-        
-        // verify the required parameter 'apiDefinition' is set
-        if (apiDefinition == null) {
-            throw new ApiException("Missing the required parameter 'apiDefinition' when calling apiProductsApiProductIdSwaggerPut(Async)");
-        }
-        
-
-        com.squareup.okhttp.Call call = apiProductsApiProductIdSwaggerPutCall(apiProductId, apiDefinition, ifMatch, progressListener, progressRequestListener);
-        return call;
-
-    }
-
-    /**
-     * upload swagger definition
-     * This operation can be used to create/update the swagger definition of an existing API Product. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apiDefinition Swagger definition of the API product (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public void apiProductsApiProductIdSwaggerPut(String apiProductId, String apiDefinition, String ifMatch) throws ApiException {
-        apiProductsApiProductIdSwaggerPutWithHttpInfo(apiProductId, apiDefinition, ifMatch);
-    }
-
-    /**
-     * upload swagger definition
-     * This operation can be used to create/update the swagger definition of an existing API Product. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apiDefinition Swagger definition of the API product (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<Void> apiProductsApiProductIdSwaggerPutWithHttpInfo(String apiProductId, String apiDefinition, String ifMatch) throws ApiException {
-        com.squareup.okhttp.Call call = apiProductsApiProductIdSwaggerPutValidateBeforeCall(apiProductId, apiDefinition, ifMatch, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * upload swagger definition (asynchronously)
-     * This operation can be used to create/update the swagger definition of an existing API Product. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apiDefinition Swagger definition of the API product (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     */
-    public com.squareup.okhttp.Call apiProductsApiProductIdSwaggerPutAsync(String apiProductId, String apiDefinition, String ifMatch, final ApiCallback<Void> callback) throws ApiException {
-
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = apiProductsApiProductIdSwaggerPutValidateBeforeCall(apiProductId, apiDefinition, ifMatch, progressListener, progressRequestListener);
         apiClient.executeAsync(call, callback);
         return call;
     }

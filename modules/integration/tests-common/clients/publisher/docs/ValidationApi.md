@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apisValidateGraphqlSchemaPost**](ValidationApi.md#apisValidateGraphqlSchemaPost) | **POST** /apis/validate-graphql-schema | Validate GraphQL API definition and retrieve a summary
 [**validateAPI**](ValidationApi.md#validateAPI) | **POST** /apis/validate | Check given API attibute name is already exist.
+[**validateEndpoint**](ValidationApi.md#validateEndpoint) | **POST** /apis/validate-endpoint | Check whether given endpoint url is valid
 [**validateOpenAPIDefinition**](ValidationApi.md#validateOpenAPIDefinition) | **POST** /apis/validate-openapi | Validate an OpenAPI Definition
 [**validateWSDLDefinition**](ValidationApi.md#validateWSDLDefinition) | **POST** /apis/validate-wsdl | Validate a WSDL Definition
 
@@ -107,6 +108,61 @@ Name | Type | Description  | Notes
 ### Return type
 
 null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="validateEndpoint"></a>
+# **validateEndpoint**
+> ApiEndpointValidationResponseDTO validateEndpoint(endpointUrl, apiId)
+
+Check whether given endpoint url is valid
+
+Using this operation, it is possible check whether the given API endpoint url is a valid url 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ValidationApi apiInstance = new ValidationApi();
+String endpointUrl = "endpointUrl_example"; // String | API endpoint url
+String apiId = "apiId_example"; // String | 
+try {
+    ApiEndpointValidationResponseDTO result = apiInstance.validateEndpoint(endpointUrl, apiId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ValidationApi#validateEndpoint");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **endpointUrl** | **String**| API endpoint url |
+ **apiId** | **String**|  | [optional]
+
+### Return type
+
+[**ApiEndpointValidationResponseDTO**](ApiEndpointValidationResponseDTO.md)
 
 ### Authorization
 

@@ -866,14 +866,16 @@ public class ApIsApi {
     /**
      * Build call for apisApiIdSwaggerPut
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param apiDefinition Swagger definition of the API (required)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSwaggerPutCall(String apiId, String apiDefinition, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSwaggerPutCall(String apiId, String apiDefinition, String url, File file, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -890,6 +892,10 @@ public class ApIsApi {
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (apiDefinition != null)
         localVarFormParams.put("apiDefinition", apiDefinition);
+        if (url != null)
+        localVarFormParams.put("url", url);
+        if (file != null)
+        localVarFormParams.put("file", file);
 
         final String[] localVarAccepts = {
             "application/json"
@@ -920,20 +926,15 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call apisApiIdSwaggerPutValidateBeforeCall(String apiId, String apiDefinition, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apisApiIdSwaggerPutValidateBeforeCall(String apiId, String apiDefinition, String url, File file, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSwaggerPut(Async)");
         }
         
-        // verify the required parameter 'apiDefinition' is set
-        if (apiDefinition == null) {
-            throw new ApiException("Missing the required parameter 'apiDefinition' when calling apisApiIdSwaggerPut(Async)");
-        }
-        
 
-        com.squareup.okhttp.Call call = apisApiIdSwaggerPutCall(apiId, apiDefinition, ifMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisApiIdSwaggerPutCall(apiId, apiDefinition, url, file, ifMatch, progressListener, progressRequestListener);
         return call;
 
     }
@@ -942,13 +943,15 @@ public class ApIsApi {
      * Update swagger definition
      * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param apiDefinition Swagger definition of the API (required)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public String apisApiIdSwaggerPut(String apiId, String apiDefinition, String ifMatch) throws ApiException {
-        ApiResponse<String> resp = apisApiIdSwaggerPutWithHttpInfo(apiId, apiDefinition, ifMatch);
+    public String apisApiIdSwaggerPut(String apiId, String apiDefinition, String url, File file, String ifMatch) throws ApiException {
+        ApiResponse<String> resp = apisApiIdSwaggerPutWithHttpInfo(apiId, apiDefinition, url, file, ifMatch);
         return resp.getData();
     }
 
@@ -956,13 +959,15 @@ public class ApIsApi {
      * Update swagger definition
      * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param apiDefinition Swagger definition of the API (required)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<String> apisApiIdSwaggerPutWithHttpInfo(String apiId, String apiDefinition, String ifMatch) throws ApiException {
-        com.squareup.okhttp.Call call = apisApiIdSwaggerPutValidateBeforeCall(apiId, apiDefinition, ifMatch, null, null);
+    public ApiResponse<String> apisApiIdSwaggerPutWithHttpInfo(String apiId, String apiDefinition, String url, File file, String ifMatch) throws ApiException {
+        com.squareup.okhttp.Call call = apisApiIdSwaggerPutValidateBeforeCall(apiId, apiDefinition, url, file, ifMatch, null, null);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -971,13 +976,15 @@ public class ApIsApi {
      * Update swagger definition (asynchronously)
      * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param apiDefinition Swagger definition of the API (required)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSwaggerPutAsync(String apiId, String apiDefinition, String ifMatch, final ApiCallback<String> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSwaggerPutAsync(String apiId, String apiDefinition, String url, File file, String ifMatch, final ApiCallback<String> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -998,7 +1005,7 @@ public class ApIsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = apisApiIdSwaggerPutValidateBeforeCall(apiId, apiDefinition, ifMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisApiIdSwaggerPutValidateBeforeCall(apiId, apiDefinition, url, file, ifMatch, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -1278,13 +1285,12 @@ public class ApIsApi {
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
-     * @param tenantDomain Tenant domain, whose APIs should be retrieved. If not specified, the logged in user&#39;s tenant domain will be considered for this.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call apisGetCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apisGetCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -1300,8 +1306,6 @@ public class ApIsApi {
         localVarQueryParams.addAll(apiClient.parameterToPair("query", query));
         if (expand != null)
         localVarQueryParams.addAll(apiClient.parameterToPair("expand", expand));
-        if (tenantDomain != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("tenantDomain", tenantDomain));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (xWSO2Tenant != null)
@@ -1342,10 +1346,10 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call apisGetValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apisGetValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = apisGetCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisGetCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, progressListener, progressRequestListener);
         return call;
 
     }
@@ -1360,12 +1364,11 @@ public class ApIsApi {
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
-     * @param tenantDomain Tenant domain, whose APIs should be retrieved. If not specified, the logged in user&#39;s tenant domain will be considered for this.  (optional)
      * @return APIListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public APIListDTO apisGet(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, String tenantDomain) throws ApiException {
-        ApiResponse<APIListDTO> resp = apisGetWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain);
+    public APIListDTO apisGet(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        ApiResponse<APIListDTO> resp = apisGetWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
         return resp.getData();
     }
 
@@ -1379,12 +1382,11 @@ public class ApIsApi {
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
-     * @param tenantDomain Tenant domain, whose APIs should be retrieved. If not specified, the logged in user&#39;s tenant domain will be considered for this.  (optional)
      * @return ApiResponse&lt;APIListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<APIListDTO> apisGetWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain, null, null);
+    public ApiResponse<APIListDTO> apisGetWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        com.squareup.okhttp.Call call = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, null, null);
         Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -1399,12 +1401,11 @@ public class ApIsApi {
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
-     * @param tenantDomain Tenant domain, whose APIs should be retrieved. If not specified, the logged in user&#39;s tenant domain will be considered for this.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisGetAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, String tenantDomain, final ApiCallback<APIListDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisGetAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback<APIListDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -1425,7 +1426,7 @@ public class ApIsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
