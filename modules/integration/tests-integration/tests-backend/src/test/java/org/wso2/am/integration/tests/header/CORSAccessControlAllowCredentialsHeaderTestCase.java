@@ -25,7 +25,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONException;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
@@ -41,6 +43,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -64,18 +67,14 @@ import static org.testng.Assert.assertTrue;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME_1 = "CorsACACHeadersTestAPI_1";
     private static final String API_NAME_2 = "CorsACACHeadersTestAPI_2";
-    private static final String APPLICATION_NAME_1 = "CorsACACApp_1";
     private static final String APPLICATION_NAME_2 = "CorsACACApp_2";
-    private static final String API_CONTEXT_1 = "corsACACHeadersTestAPI_1";
     private static final String API_CONTEXT_2 = "corsACACHeadersTestAPI_2";
     private static final String API_VERSION = "1.0.0";
     private static final String TAGS = "ACAC, cors, test";
     private static final String DESCRIPTION = "This is test API create by API manager integration test";
 
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
-    private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL = "*";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST = "http://localhost";
     private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
@@ -85,70 +84,28 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
     Log log = LogFactory.getLog(CORSAccessControlAllowCredentialsHeaderTestCase.class);
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeTest(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init(userMode);
-
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            //Load the back-end dummy API
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt,
-                                                  gatewaySessionCookie);
-        }
-
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Checking Access-Control-Allow-Credentials header in response " +
-                                              "when Access-Control-Allow-Origin is '*'")
-    public void CheckAccessControlAllowCredentialsHeadersWithAnyOrigin() throws Exception {
-
-        accessToken = createPublishAndSubscribeToApi(user, API_NAME_1, API_CONTEXT_1, API_VERSION, APPLICATION_NAME_1);
-
-        HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT_1, API_VERSION) + "/customers/123");
-        get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
-        get.addHeader("Authorization", "Bearer " + accessToken);
-
-        org.apache.http.HttpResponse response = httpclient.execute(get);
-        List<Integer> responseCodes = new ArrayList<Integer>();
-        responseCodes.add(HTTP_RESPONSE_CODE_OK);
-        responseCodes.add(HTTP_RESPONSE_CODE_CREATED);
-        assertTrue(responseCodes.contains(response.getStatusLine().getStatusCode()), "Response code mismatch.");
-
-        Header[] responseHeaders = response.getAllHeaders();
-
-        log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithAnyOrigin");
-        for (Header header : responseHeaders) {
-            log.info(header.getName() + " : " + header.getValue());
-        }
-
-        Header header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
-        assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
-        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL,
-                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
-
-        assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
-                   ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
-                   "but it should not be.");
+        serverConfigurationManager.applyConfiguration(new File(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
+                        + File.separator + "deployment.toml"));
 
     }
 
+    @BeforeClass(alwaysRun = true)
+    public void initialize() throws Exception {
+        super.init(userMode);
+    }
+
     @Test(groups = {"wso2.am"}, description = "Checking Access-Control-Allow-Credentials header in response " +
-            "when Access-Control-Allow-Origin is 'http://localhost'",
-            dependsOnMethods = "CheckAccessControlAllowCredentialsHeadersWithAnyOrigin")
+            "when Access-Control-Allow-Origin is 'http://localhost'")
     public void CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin() throws Exception {
         //Enable CORS Access Control Allow Credentials with Origin 'http://localhost'
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator
-                    + "corsACACTest" + File.separator + "deployment.toml"));
-            serverConfigurationManager.restartGracefully();
-            super.init();
-        }
-
         accessToken = createPublishAndSubscribeToApi(user, API_NAME_2, API_CONTEXT_2, API_VERSION, APPLICATION_NAME_2);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
@@ -229,13 +186,17 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator
-                    + "corsACACTest" + File.separator + "original" + File.separator + "deployment.toml"));
-            serverConfigurationManager.restartGracefully();
-        }
         super.cleanUp();
+    }
+
+    @AfterTest(alwaysRun = true)
+    public void restore() throws Exception {
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
+                        + File.separator + "original" + File.separator + "deployment.toml"));
     }
 
     @DataProvider

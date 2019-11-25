@@ -293,9 +293,6 @@
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>
         <send/>
     </sequence>
-    <sequence name="_auth_failure_handler_">
-        <property name="error_message_type" value="application/xml"/>
-    </sequence>
     <sequence name="_throttle_out_handler_">
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>
         <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtThrottleUsageHandler"/>

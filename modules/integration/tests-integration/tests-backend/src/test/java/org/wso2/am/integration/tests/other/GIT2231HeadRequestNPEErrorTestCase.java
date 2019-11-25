@@ -49,11 +49,7 @@ public class GIT2231HeadRequestNPEErrorTestCase extends APIMIntegrationBaseTest 
     public void setEnvironment() throws Exception {
         super.init(userMode);
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-        if (userMode == TestUserMode.SUPER_TENANT_ADMIN) {
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                    + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "git2231_head_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        } else {
+        if (userMode != TestUserMode.SUPER_TENANT_ADMIN) {
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
                     + File.separator + "git2231_head_api_tenant.xml", gatewayContextMgt, gatewaySessionCookie);

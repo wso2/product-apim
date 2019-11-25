@@ -111,9 +111,6 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
             subscriberUserWithTenantDomain = subscriberUser;
             //Load the back-end API
             String gatewaySessionCookie = createSession(gatewayContextMgt);
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                + "synapseconfigs" + File.separator + "rest" + File.separator + "api_throttle_backend.xml",
-                gatewayContextMgt, gatewaySessionCookie);
             waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                     APIMIntegrationConstants.IS_API_EXISTS);
 

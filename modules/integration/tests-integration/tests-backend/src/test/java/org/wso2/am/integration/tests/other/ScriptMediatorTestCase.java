@@ -45,12 +45,6 @@ public class ScriptMediatorTestCase extends APIMIntegrationBaseTest {
 
         super.init();
 
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-
-        //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "scriptmediator"
-                + File.separator + "script_mediator_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check whether the script mediator works when a null object is returned " +
