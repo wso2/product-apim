@@ -456,7 +456,7 @@ public class APIMIntegrationBaseTest {
             SubscriptionListDTO subsDTO = restAPIStore
                     .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
             if (subsDTO != null) {
-                for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
+                for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
                     restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
                 }
             }
