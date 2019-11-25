@@ -126,7 +126,7 @@
             <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
-            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <!--Un comment following test case when carbon.analytics.common.version updated to 5.1.5-->
             <!--<class name="org.wso2.am.integration.tests.other.CANALYTCOM8PeriodicDataEndpointExceptionTestCase"/>-->
             <!--https://github.com/wso2/product-apim/issues/6885-->
