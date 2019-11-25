@@ -108,3 +108,6 @@ enable_authentication = true
 
 [apim.token.revocation.persistent_notifier]
 hostname = "https://localhost:9943/etcdmock/v2/keys/jti/"
+
+[transport.passthru_https.listener]
+ssl_profile_interval = 6000
