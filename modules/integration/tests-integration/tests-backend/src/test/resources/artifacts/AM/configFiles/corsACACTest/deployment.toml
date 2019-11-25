@@ -53,3 +53,6 @@ allow_origins = "http://localhost"
 allow_methods = ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","Authorization"]
 allow_credentials = true
+
+[transport]
+passthru_https.listener.ssl_profile_interval = 6000
