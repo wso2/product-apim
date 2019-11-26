@@ -313,7 +313,7 @@ public class RestAPIPublisherImpl {
      * @param apiId API id that need to be prototyped.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public void prototypeAPI(String apiId) throws ApiException {
+    public void deployPrototypeAPI(String apiId) throws ApiException {
         apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPLOY_AS_PROTOTYPE, apiId, null, null);
     }
 

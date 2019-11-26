@@ -281,7 +281,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         //add test api
         APIDTO apidto = restAPIPublisher.addAPI(apiCreationRequestBean);
         String apiId = apidto.getId();
-        restAPIPublisher.prototypeAPI(apiId);
+        restAPIPublisher.deployPrototypeAPI(apiId);
         String invokeURL = getAPIInvocationURLHttp(PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION);
         Map<String, String> requestHeaders = new HashMap<String, String>();
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse serviceResponse = HTTPSClientUtils.doGet(
