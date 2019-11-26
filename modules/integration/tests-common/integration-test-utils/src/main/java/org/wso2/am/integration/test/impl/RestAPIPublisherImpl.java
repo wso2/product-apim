@@ -218,6 +218,7 @@ public class RestAPIPublisherImpl {
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
+        body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));

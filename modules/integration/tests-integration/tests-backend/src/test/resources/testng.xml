@@ -224,12 +224,12 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
         </classes>
     </test>
-    <!--<test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
-    </test>-->
+    </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
