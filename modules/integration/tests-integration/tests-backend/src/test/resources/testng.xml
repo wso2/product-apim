@@ -40,12 +40,6 @@
         </classes>
     </test>
 
-    <!--<test name="apim-integration-tests-api-application-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.APIApplicationLifeCycleTestCase"/>
-        </classes>
-    </test>-->
-
     <!--<test name="apim-ui-tests" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.ui.APIMANAGERUIIntegrationTestRunner"/>
