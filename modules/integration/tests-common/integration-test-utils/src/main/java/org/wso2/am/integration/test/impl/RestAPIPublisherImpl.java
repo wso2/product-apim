@@ -899,7 +899,8 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
-        if ("secured".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
+                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
             APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
             dto.setUsername(apiCreationRequestBean.getEpUsername());
             dto.setPassword(apiCreationRequestBean.getEpPassword());
