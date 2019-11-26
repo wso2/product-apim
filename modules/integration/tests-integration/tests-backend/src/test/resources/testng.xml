@@ -240,7 +240,7 @@
             <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
             <!-- Temporarily disabling intermittently failing test-->
             <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
-           <!-- <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>
             <class name="org.wso2.am.integration.tests.other.GIT2231HeadRequestNPEErrorTestCase"/>
