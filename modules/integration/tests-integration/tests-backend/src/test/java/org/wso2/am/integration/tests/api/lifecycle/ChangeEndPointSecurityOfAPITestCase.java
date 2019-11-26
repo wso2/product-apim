@@ -100,7 +100,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiCreationRequestBean.setEndpointType("secured");
+        apiCreationRequestBean.setEndpointType(APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
         apiCreationRequestBean.setEpUsername(endpointUsername);
         apiCreationRequestBean.setEpPassword(String.valueOf(endpointPassword));
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
