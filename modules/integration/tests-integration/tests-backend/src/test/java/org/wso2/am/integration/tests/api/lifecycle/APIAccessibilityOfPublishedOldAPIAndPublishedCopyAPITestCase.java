@@ -241,7 +241,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.removeApplication(APPLICATION_NAME);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
 
