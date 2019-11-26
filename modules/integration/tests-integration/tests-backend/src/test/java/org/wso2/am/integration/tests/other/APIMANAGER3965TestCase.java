@@ -17,6 +17,7 @@
 */
 package org.wso2.am.integration.tests.other;
 
+import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpOptions;
@@ -28,6 +29,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -35,12 +38,15 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 
@@ -48,12 +54,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
-public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+public class APIMANAGER3965TestCase extends APIManagerLifecycleBaseTest {
     private String apiName = "APIMANAGER3965";
     private String apiContext = "apimanager3965";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
+    private String apiId;
     APIRequest apiRequest;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -64,14 +69,6 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
         String backendEndPoint = getBackendEndServiceEndPointHttp("jaxrs_basic/services/customers/customerservice");
         apiRequest = new APIRequest(apiName, apiContext,
                                     new URL(backendEndPoint));
@@ -80,11 +77,8 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Sample API creation")
     public void testAPICreationWithOutCorsConfiguration() throws Exception {
         apiRequest.setProvider(user.getUserName());
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, user.getUserName(),
-                                             APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        //Create and publish API version 1.0.0
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
@@ -101,10 +95,10 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched when api invocation");
         assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
-        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction",
+        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,Authorization",
                      "Access Control allow Headers values get mismatched in option Call");
         assertTrue(accessControlAllowMethods.contains("GET")
-                   && accessControlAllowMethods.contains("POST")
+                   && !accessControlAllowMethods.contains("POST")
                    && !accessControlAllowMethods.contains("DELETE")
                    && !accessControlAllowMethods.contains("PUT")
                    && !accessControlAllowMethods.contains("PATCH"),
@@ -124,9 +118,33 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
                                                       "\"Content-Type\", \"SOAPAction\"], " +
                                                       "\"accessControlAllowMethods\" : [\"POST\", " +
                                                       "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-        apiRequest.setCorsConfiguration(corsConfiguration);
-        apiRequest.setProvider(user.getUserName());
-        apiPublisher.updateAPI(apiRequest);
+        APIDTO apiDto = restAPIPublisher.getAPIByID(apiId, user.getUserDomain());
+
+        List<String> accessControlAllowOrigins = new ArrayList<>();
+        accessControlAllowOrigins.add("https://localhost:9443");
+        accessControlAllowOrigins.add("http://localhost:8080");
+
+        List<String> accessControlAllowHeadersList = new ArrayList<>();
+        accessControlAllowHeadersList.add("Access-Control-Allow-Origin");
+        accessControlAllowHeadersList.add("authorization");
+        accessControlAllowHeadersList.add("Content-Type");
+        accessControlAllowHeadersList.add("SOAPAction");
+
+        List<String> accessControlAllowMethodsList = new ArrayList<>();
+        accessControlAllowMethodsList.add("PATCH");
+        accessControlAllowMethodsList.add("GET");
+        accessControlAllowMethodsList.add("DELETE");
+        accessControlAllowMethodsList.add("OPTIONS");
+        accessControlAllowMethodsList.add("PUT");
+
+        APICorsConfigurationDTO apiCorsConfigurationDTO = apiDto.getCorsConfiguration();
+        apiCorsConfigurationDTO.setCorsConfigurationEnabled(true);
+        apiCorsConfigurationDTO.setAccessControlAllowOrigins(accessControlAllowOrigins);
+        apiCorsConfigurationDTO.setAccessControlAllowCredentials(true);
+        apiCorsConfigurationDTO.setAccessControlAllowHeaders(accessControlAllowHeadersList);
+        apiCorsConfigurationDTO.setAccessControlAllowMethods(accessControlAllowMethodsList);
+        apiDto.setCorsConfiguration(apiCorsConfigurationDTO);
+        restAPIPublisher.updateAPI(apiDto);
         waitForAPIDeployment();
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
@@ -147,7 +165,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(accessControlAllowOrigin, "http://localhost:8080",
                      "Access Control allow origin values get mismatched in option " +
                      "Call");
-        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction",
+        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction,Authorization",
                      "Access Control allow Headers values get mismatched in option Call");
         assertTrue(accessControlAllowMethods.contains("GET")
                    && !accessControlAllowMethods.contains("POST")
@@ -161,7 +179,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
     }
 
     @DataProvider

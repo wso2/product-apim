@@ -21,6 +21,7 @@ package org.wso2.am.framework.extensions;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIMTestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -30,6 +31,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.extensions.ExtensionConstants;
 import org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension;
 import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.FileManager;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
@@ -40,6 +42,8 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
     private static final Log log = LogFactory.getLog(CarbonServerExtension.class);
     private TestServerManager serverManager;
     private String executionEnvironment;
+    private static final String CUSTOM_AUTH_HANDLER_JAR = "CustomAPIAuthenticationHandler-1.0.0.jar";
+    protected static final String CARBON_HOME = FrameworkPathUtil.getCarbonHome();
 
     @Override
     public void initiate() {
@@ -80,6 +84,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
     }
 
     private void configureProduct() {
+
         getParameters().put("-DosgiConsole", APIMTestConstants.OSGI_CONSOLE_TELNET_PORT);
         serverManager = new TestServerManager(getAutomationContext(), null, getParameters()) {
 
