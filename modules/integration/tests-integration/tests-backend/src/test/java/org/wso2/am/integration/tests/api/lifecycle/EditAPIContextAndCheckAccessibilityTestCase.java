@@ -92,16 +92,8 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        consumerKey = applicationKeyDTO.getConsumerKey();
-        consumerSecret = applicationKeyDTO.getConsumerSecret();
-        userAccessToken = applicationKeyDTO.getToken().getAccessToken();
 
     }
 
@@ -135,6 +127,16 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+        userAccessToken = applicationKeyDTO.getToken().getAccessToken();
+
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");

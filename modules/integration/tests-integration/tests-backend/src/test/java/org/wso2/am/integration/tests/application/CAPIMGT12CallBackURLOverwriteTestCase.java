@@ -130,7 +130,7 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
         //Subscribe to API with a new application
         HttpResponse applicationResponse = user1ApiStore
                 .createApplication(TEST_APPLICATION, "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
+                        ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         user1ApplicationId = applicationResponse.getData();
@@ -146,7 +146,7 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
 
         applicationResponse = user2ApiStore
                 .createApplication(TEST_APPLICATION, "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
+                        ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         user2ApplicationId = applicationResponse.getData();
