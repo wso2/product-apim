@@ -36,6 +36,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
@@ -52,53 +53,11 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     private String apiId;
     private String applicationID;
     private String accessToken;
+    private String gatewaySessionCookie;
 
     @BeforeTest(alwaysRun = true)
     public void deployWebApps(ITestContext ctx) throws Exception {
         super.init();
-        String fileFormat = ".war";
-        String webApp = "jaxrs_basic";
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        if (!WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp)) {
-            webAppAdminClient.uploadWarFile(sourcePath);
-
-            WebAppDeploymentUtil
-                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        }
-
-        if (!WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
-                APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME)) {
-            webAppAdminClient.uploadWarFile(path + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
-
-            WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId,
-                    APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
-        }
-
-
-        //Deploying the Mock ETCD Server
-        String webAppName = "etcdmock";
-        sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
-                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
-                + webAppName + ".war";
-
-        if (!WebAppDeploymentUtil
-                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName)) {
-            webAppAdminClient.uploadWarFile(sourcePath);
-
-            WebAppDeploymentUtil
-                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webAppName);
-        }
-
-        log.info("Web App Deployed");
-
         initialize(ctx);
     }
 
@@ -118,7 +77,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationID = applicationResponse.getData();
         //Create publish and subscribe a API
         APIRequest apiRequest;

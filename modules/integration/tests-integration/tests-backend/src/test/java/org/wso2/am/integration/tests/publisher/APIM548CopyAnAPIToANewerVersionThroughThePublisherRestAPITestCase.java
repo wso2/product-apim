@@ -128,7 +128,7 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
         do {
             Thread.sleep(2000);
             APIListDTO apiResponsePublisher = restAPIPublisher
-                    .getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName));           
+                    .getAllAPIs();
             if (apiResponsePublisher != null) {
                 jsonObject = new JSONObject(apiResponsePublisher);
                 available = true;
@@ -159,7 +159,7 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
         currentTry = 0;
         do {
             Thread.sleep(2000);
-            APIListDTO allApiResponse = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(apiProviderName)); 
+            APIListDTO allApiResponse = restAPIPublisher.getAllAPIs();
             if (allApiResponse != null) {
                 allApiObject = new JSONObject(allApiResponse);
                 available = true;

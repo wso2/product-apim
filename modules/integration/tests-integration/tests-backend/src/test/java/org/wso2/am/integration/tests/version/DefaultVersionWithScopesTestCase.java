@@ -83,13 +83,6 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        //Load the back-end dummy API
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                    + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
@@ -139,7 +132,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
         try {
             HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                     "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                    ApplicationDTO.TokenTypeEnum.OAUTH);
+                    ApplicationDTO.TokenTypeEnum.JWT);
             applicationID = applicationResponse.getData();
 
             apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,

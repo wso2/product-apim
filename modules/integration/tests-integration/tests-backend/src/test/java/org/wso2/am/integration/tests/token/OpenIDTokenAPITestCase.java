@@ -52,7 +52,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     private String consumerKey;
     private String consumerSecret;
     private String userAccessToken;
-    private String applicarionId;
+    private String applicationId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public OpenIDTokenAPITestCase(TestUserMode userMode) {
@@ -65,13 +65,13 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
 
         HttpResponse applicationResponse = restAPIStore.createApplication("OpenIDTokenTestAPIApplication", " Description",
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicarionId = applicationResponse.getData();
+        applicationId = applicationResponse.getData();
 
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
         grantTypes.add("password");
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicarionId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
     }
@@ -103,6 +103,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
         super.cleanUp();
     }
 

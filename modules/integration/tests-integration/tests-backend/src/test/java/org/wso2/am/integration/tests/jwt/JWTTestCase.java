@@ -383,9 +383,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         //Load the back-end API
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                                              + "synapseconfigs" + File.separator + "rest" + File.separator
-                                              + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
         String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
@@ -436,10 +433,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException {
 
         //Load the back-end API
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                                              + "synapseconfigs" + File.separator + "rest" + File.separator
-                                              + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
         String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);

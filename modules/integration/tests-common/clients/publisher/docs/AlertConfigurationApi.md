@@ -4,9 +4,9 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1.0*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addAlertConfig**](AlertConfigurationApi.md#addAlertConfig) | **PUT** /alerts/{alert-type}/configurations/{configuration-id} | Add AbnormalRequestsPerMin alert configurations. 
-[**deleteAlertConfig**](AlertConfigurationApi.md#deleteAlertConfig) | **DELETE** /alerts/{alert-type}/configurations/{configuration-id} | Delete the selected configuration from AbnormalRequestsPerMin alert type. 
-[**getAllAlertConfigs**](AlertConfigurationApi.md#getAllAlertConfigs) | **GET** /alerts/{alert-type}/configurations | Get all AbnormalRequestsPerMin alert configurations 
+[**addAlertConfig**](AlertConfigurationApi.md#addAlertConfig) | **PUT** /alerts/{alertType}/configurations/{configurationId} | Add AbnormalRequestsPerMin alert configurations. 
+[**deleteAlertConfig**](AlertConfigurationApi.md#deleteAlertConfig) | **DELETE** /alerts/{alertType}/configurations/{configurationId} | Delete the selected configuration from AbnormalRequestsPerMin alert type. 
+[**getAllAlertConfigs**](AlertConfigurationApi.md#getAllAlertConfigs) | **GET** /alerts/{alertType}/configurations | Get all AbnormalRequestsPerMin alert configurations 
 
 
 <a name="addAlertConfig"></a>

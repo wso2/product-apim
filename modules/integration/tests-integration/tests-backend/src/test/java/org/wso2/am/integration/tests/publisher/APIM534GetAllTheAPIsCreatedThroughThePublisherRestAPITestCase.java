@@ -140,7 +140,7 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
 
         //Check the availability of API in Publisher
         Thread.sleep(5000);
-        APIListDTO response = restAPIPublisher.getAllAPIs(MultitenantUtils.getTenantDomain(provider));
+        APIListDTO response = restAPIPublisher.getAllAPIs();
         JSONObject jsonObject = new JSONObject(response);
         JSONArray jsonArray = jsonObject.getJSONArray("list");
         List<String> allApiList = new ArrayList<String>();

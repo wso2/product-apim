@@ -54,8 +54,8 @@ import static org.testng.Assert.assertEquals;
 /**
  * Test to check some security issues in Error responses
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL }) public class ErrorResponseCheckTestCase
-        extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
+public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(ErrorResponseCheckTestCase.class);
 
@@ -76,13 +76,8 @@ import static org.testng.Assert.assertEquals;
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
 
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "error_response_check_dummy_api.xml", gatewayContextMgt,
-                gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "testing error responses")
@@ -90,7 +85,7 @@ import static org.testng.Assert.assertEquals;
         String apiName = "ErrorResponseSecAPI";
         String apiVersion = "1.0.0";
         String apiContext = "sec";
-        String endpointUrl = getGatewayURLNhttp() + "response";
+        String endpointUrl = getGatewayURLNhttp() + "response_error";
         String applicationName = "SecApp";
         String providerName = user.getUserName();
 
@@ -112,7 +107,7 @@ import static org.testng.Assert.assertEquals;
 
             //create an application
             HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, "Test Application",
-                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
             applicationId = applicationResponse.getData();
 
             waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
@@ -136,7 +131,7 @@ import static org.testng.Assert.assertEquals;
             //Going to access the API with the version in the request url.
             HttpResponse apiInvokeResponse = HttpRequestUtil
                     .doGet(getAPIInvocationURLHttp(apiContext, apiVersion), requestHeaders);
-            assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+            assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response Code Mismatched");
 
 

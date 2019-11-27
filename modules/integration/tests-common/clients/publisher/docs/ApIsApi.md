@@ -364,7 +364,7 @@ Name | Type | Description  | Notes
 
 <a name="apisApiIdSwaggerPut"></a>
 # **apisApiIdSwaggerPut**
-> String apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch)
+> String apisApiIdSwaggerPut(apiId, apiDefinition, url, file, ifMatch)
 
 Update swagger definition
 
@@ -388,9 +388,11 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 ApIsApi apiInstance = new ApIsApi();
 String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
 String apiDefinition = "apiDefinition_example"; // String | Swagger definition of the API
+String url = "url_example"; // String | Swagger definition URL of the API
+File file = new File("/path/to/file.txt"); // File | Swagger definitio as a file
 String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
 try {
-    String result = apiInstance.apisApiIdSwaggerPut(apiId, apiDefinition, ifMatch);
+    String result = apiInstance.apisApiIdSwaggerPut(apiId, apiDefinition, url, file, ifMatch);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisApiIdSwaggerPut");
@@ -403,7 +405,9 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **apiDefinition** | **String**| Swagger definition of the API |
+ **apiDefinition** | **String**| Swagger definition of the API | [optional]
+ **url** | **String**| Swagger definition URL of the API | [optional]
+ **file** | **File**| Swagger definitio as a file | [optional]
  **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
 
 ### Return type
@@ -532,7 +536,7 @@ Name | Type | Description  | Notes
 
 <a name="apisGet"></a>
 # **apisGet**
-> APIListDTO apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain)
+> APIListDTO apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept)
 
 Retrieve/Search APIs 
 
@@ -561,9 +565,8 @@ String query = "query_example"; // String | **Search condition**.  You can searc
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
 Boolean expand = true; // Boolean | Defines whether the returned response should contain full details of API 
 String accept = "application/json"; // String | Media types acceptable for the response. Default is application/json. 
-String tenantDomain = "tenantDomain_example"; // String | Tenant domain, whose APIs should be retrieved. If not specified, the logged in user's tenant domain will be considered for this. 
 try {
-    APIListDTO result = apiInstance.apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, tenantDomain);
+    APIListDTO result = apiInstance.apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling ApIsApi#apisGet");
@@ -582,7 +585,6 @@ Name | Type | Description  | Notes
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
  **expand** | **Boolean**| Defines whether the returned response should contain full details of API  | [optional]
  **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to application/json]
- **tenantDomain** | **String**| Tenant domain, whose APIs should be retrieved. If not specified, the logged in user&#39;s tenant domain will be considered for this.  | [optional]
 
 ### Return type
 
@@ -696,7 +698,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**APIDTO**](APIDTO.md)| API object that needs to be added  |
- **openAPIVersion** | **String**| Open api version | [optional]
+ **openAPIVersion** | **String**| Open api version | [optional] [enum: V2, V3]
 
 ### Return type
 

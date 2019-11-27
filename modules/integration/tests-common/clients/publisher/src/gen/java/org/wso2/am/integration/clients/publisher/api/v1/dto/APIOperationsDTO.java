@@ -49,6 +49,9 @@ public class APIOperationsDTO {
   @SerializedName("scopes")
   private List<String> scopes = null;
 
+  @SerializedName("usedProductIds")
+  private List<String> usedProductIds = null;
+
   public APIOperationsDTO id(String id) {
     this.id = id;
     return this;
@@ -165,6 +168,32 @@ public class APIOperationsDTO {
     this.scopes = scopes;
   }
 
+  public APIOperationsDTO usedProductIds(List<String> usedProductIds) {
+    this.usedProductIds = usedProductIds;
+    return this;
+  }
+
+  public APIOperationsDTO addUsedProductIdsItem(String usedProductIdsItem) {
+    if (this.usedProductIds == null) {
+      this.usedProductIds = new ArrayList<>();
+    }
+    this.usedProductIds.add(usedProductIdsItem);
+    return this;
+  }
+
+   /**
+   * Get usedProductIds
+   * @return usedProductIds
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getUsedProductIds() {
+    return usedProductIds;
+  }
+
+  public void setUsedProductIds(List<String> usedProductIds) {
+    this.usedProductIds = usedProductIds;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -180,12 +209,13 @@ public class APIOperationsDTO {
         Objects.equals(this.verb, apIOperations.verb) &&
         Objects.equals(this.authType, apIOperations.authType) &&
         Objects.equals(this.throttlingPolicy, apIOperations.throttlingPolicy) &&
-        Objects.equals(this.scopes, apIOperations.scopes);
+        Objects.equals(this.scopes, apIOperations.scopes) &&
+        Objects.equals(this.usedProductIds, apIOperations.usedProductIds);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes);
+    return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds);
   }
 
 
@@ -200,6 +230,7 @@ public class APIOperationsDTO {
     sb.append("    authType: ").append(toIndentedString(authType)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
+    sb.append("    usedProductIds: ").append(toIndentedString(usedProductIds)).append("\n");
     sb.append("}");
     return sb.toString();
   }

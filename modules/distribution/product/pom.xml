@@ -580,6 +580,11 @@
                                     <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
                                 </replacement>
                                 <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.grant.jwt.JWTBearerGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.token.ExtendedJWTBearerGrantHandler</value>
+                                </replacement>
+                                <replacement>
                                     <xpath>/Server/ResourceAccessControl/@default-access</xpath>
                                     <token>(deny)</token>
                                     <value>allow</value>

@@ -469,6 +469,10 @@ public class APIRequest extends AbstractRequest {
         this.endpointType = endpointType;
     }
 
+    public void setEndpoint(org.json.simple.JSONObject endpoint) {
+        this.endpoint = endpoint;
+    }
+
     public String getHttp_checked() {
         return http_checked;
     }

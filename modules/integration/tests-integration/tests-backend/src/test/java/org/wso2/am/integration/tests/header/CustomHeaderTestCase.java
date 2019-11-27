@@ -92,16 +92,8 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.createApplication(APPLICATION_NAME,
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
+                        ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
-
-        //get access token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
     @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for all APIs in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
@@ -118,6 +110,14 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API1_NAME, API1_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
+        //get access token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         // Test whether a request made with a valid token using the relevant custom auth header should yield the proper
         // response from the back-end, assuming the application has a valid subscription to the API. (Test ID: 3.1.1.5)

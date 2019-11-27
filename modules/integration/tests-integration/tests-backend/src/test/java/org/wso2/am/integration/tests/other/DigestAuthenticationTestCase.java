@@ -49,16 +49,12 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
 
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy_digest_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API")

@@ -74,7 +74,6 @@ public class APIScopeTestForTenantsTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private String gatewaySessionCookie;
 
 
     @BeforeClass(alwaysRun = true)
@@ -105,11 +104,7 @@ public class APIScopeTestForTenantsTestCase extends APIMIntegrationBaseTest {
         userManagementClient2.addRole(TENANT2_SUBSCRIBER_ROLE, new String[]{}, userPermissions);
         userManagementClient2.addUser(USER_PETER, USER_PASSWORD, new String[]{TENANT2_SUBSCRIBER_ROLE}, USER_PETER);
 
-        gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
 
     }
 

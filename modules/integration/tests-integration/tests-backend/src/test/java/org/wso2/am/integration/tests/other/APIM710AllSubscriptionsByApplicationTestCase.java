@@ -86,11 +86,11 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         HttpResponse applicationResponse = restAPIStore.createApplication("app1",
                 "app1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationList.add(0, applicationResponse.getData());
         HttpResponse applicationResponse2 = restAPIStore.createApplication("app2",
                 "app2", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationList.add(1, applicationResponse2.getData());
 
         //creating 1st set of apis and subscribe to app1

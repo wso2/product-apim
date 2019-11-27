@@ -112,10 +112,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
                 + File.separator + "log4j2.properties"));
             subscriberUserWithTenantDomain = subscriberUser;
             //Load the back-end API
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                + "synapseconfigs" + File.separator + "rest" + File.separator + "jwt_backend.xml",
-                gatewayContextMgt, gatewaySessionCookie);
         }
 
         backendURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");

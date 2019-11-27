@@ -18,8 +18,6 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -44,11 +42,8 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +64,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
-    private ServerConfigurationManager serverConfigurationManager;
     private String accessToken;
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
@@ -80,7 +74,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     public void initialize()
             throws APIManagerIntegrationTestException, IOException, ApiException, org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException {
         super.init();
-        startServerWithConfigChanges();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
         APIRequest apiRequest1 = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
@@ -136,7 +129,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationId = applicationResponse.getData();
         restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
@@ -227,23 +220,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
-
-        serverConfigurationManager.restoreToLastConfiguration(true);
     }
 
-    /**
-     * To start the server after making config changes.
-     *
-     * @throws AutomationUtilException  Automation Util Exception.
-     * @throws XPathExpressionException XPath Expression Exception.
-     * @throws IOException              IO Exception.
-     */
-    private void startServerWithConfigChanges() throws AutomationUtilException, XPathExpressionException, IOException {
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "deployment.toml"));
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.restartGracefully();
-    }
 }

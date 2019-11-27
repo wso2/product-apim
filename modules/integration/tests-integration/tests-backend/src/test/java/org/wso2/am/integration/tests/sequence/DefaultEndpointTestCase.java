@@ -3,6 +3,8 @@ package org.wso2.am.integration.tests.sequence;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
@@ -42,8 +44,6 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AddDynamicEndpointAndInvokeAPI";
     private final String RESOURCE_PATH_SEPARATOR = "/";
-    private RestAPIPublisherImpl restAPIPublisher;
-    private RestAPIStoreImpl restAPIStore;
     private String apiId;
     private String applicationID;
     private String subscriptionId1;
@@ -57,16 +57,8 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         super.init();
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationID = applicationResponse.getData();
-
-        ArrayList<String> grantTypes = new ArrayList<>();
-        //get access token
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the default endpoint")
@@ -78,7 +70,6 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setVersion(API_VERSION_1_0_0);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-
 
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
@@ -95,6 +86,14 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse subscription = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId1 = subscription.getData();
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        //get access token
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         ResourceAdminServiceClient resourceAdminServiceClient =
                 new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(), "admin", "admin");
@@ -117,6 +116,22 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         mediationPolicyDTO.setType("in");
         mediationPolicies.add(mediationPolicyDTO);
         apiRequest.setMediationPolicies(mediationPolicies);
+
+        String endPointString = "{\n" +
+                "  \"production_endpoints\": {\n" +
+                "    \"template_not_supported\": false,\n" +
+                "    \"config\": null,\n" +
+                "    \"url\": \"" + apiEndPointUrl + "\"\n" +
+                "  },\n" +
+                "  \"sandbox_endpoints\": {\n" +
+                "    \"url\": \"" + apiEndPointUrl + "\",\n" +
+                "    \"config\": null,\n" +
+                "    \"template_not_supported\": false\n" +
+                "  },\n" +
+                "  \"endpoint_type\": \"default\"\n" +
+                "}";
+        JSONParser parser = new JSONParser();
+        apiRequest.setEndpoint((org.json.simple.JSONObject) parser.parse(endPointString));
 
         restAPIPublisher.updateAPI(apiRequest, apiId);
         waitForAPIDeployment();

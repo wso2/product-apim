@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
@@ -105,6 +106,15 @@ public class APIProductDTO {
   @SerializedName("state")
   private StateEnum state = null;
 
+  @SerializedName("enableSchemaValidation")
+  private Boolean enableSchemaValidation = null;
+
+  @SerializedName("responseCachingEnabled")
+  private Boolean responseCachingEnabled = null;
+
+  @SerializedName("cacheTimeout")
+  private Integer cacheTimeout = null;
+
   /**
    * The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED.
    */
@@ -155,7 +165,7 @@ public class APIProductDTO {
   }
 
   @SerializedName("visibility")
-  private VisibilityEnum visibility = null;
+  private VisibilityEnum visibility = VisibilityEnum.PUBLIC;
 
   @SerializedName("visibleRoles")
   private List<String> visibleRoles = null;
@@ -211,7 +221,7 @@ public class APIProductDTO {
   }
 
   @SerializedName("accessControl")
-  private AccessControlEnum accessControl = null;
+  private AccessControlEnum accessControl = AccessControlEnum.NONE;
 
   @SerializedName("accessControlRoles")
   private List<String> accessControlRoles = null;
@@ -231,6 +241,9 @@ public class APIProductDTO {
   @SerializedName("policies")
   private List<String> policies = null;
 
+  @SerializedName("apiThrottlingPolicy")
+  private String apiThrottlingPolicy = null;
+
   @SerializedName("authorizationHeader")
   private String authorizationHeader = null;
 
@@ -238,15 +251,15 @@ public class APIProductDTO {
   private List<String> securityScheme = null;
 
   /**
-   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
+   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
    */
   @JsonAdapter(SubscriptionAvailabilityEnum.Adapter.class)
   public enum SubscriptionAvailabilityEnum {
-    CURRENT_TENANT("CURRENT_TENANT"),
+    CURRENT_TENANT("current_tenant"),
     
-    ALL_TENANTS("ALL_TENANTS"),
+    ALL_TENANTS("all_tenants"),
     
-    SPECIFIC_TENANTS("SPECIFIC_TENANTS");
+    SPECIFIC_TENANTS("specific_tenants");
 
     private String value;
 
@@ -287,13 +300,16 @@ public class APIProductDTO {
   }
 
   @SerializedName("subscriptionAvailability")
-  private SubscriptionAvailabilityEnum subscriptionAvailability = null;
+  private SubscriptionAvailabilityEnum subscriptionAvailability = SubscriptionAvailabilityEnum.ALL_TENANTS;
 
   @SerializedName("subscriptionAvailableTenants")
   private List<String> subscriptionAvailableTenants = null;
 
   @SerializedName("additionalProperties")
   private Map<String, String> additionalProperties = null;
+
+  @SerializedName("monetization")
+  private APIMonetizationInfoDTO monetization = null;
 
   @SerializedName("businessInformation")
   private APIProductBusinessInformationDTO businessInformation = null;
@@ -437,6 +453,60 @@ public class APIProductDTO {
 
   public void setState(StateEnum state) {
     this.state = state;
+  }
+
+  public APIProductDTO enableSchemaValidation(Boolean enableSchemaValidation) {
+    this.enableSchemaValidation = enableSchemaValidation;
+    return this;
+  }
+
+   /**
+   * Get enableSchemaValidation
+   * @return enableSchemaValidation
+  **/
+  @ApiModelProperty(example = "false", value = "")
+  public Boolean isEnableSchemaValidation() {
+    return enableSchemaValidation;
+  }
+
+  public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
+    this.enableSchemaValidation = enableSchemaValidation;
+  }
+
+  public APIProductDTO responseCachingEnabled(Boolean responseCachingEnabled) {
+    this.responseCachingEnabled = responseCachingEnabled;
+    return this;
+  }
+
+   /**
+   * Get responseCachingEnabled
+   * @return responseCachingEnabled
+  **/
+  @ApiModelProperty(example = "true", value = "")
+  public Boolean isResponseCachingEnabled() {
+    return responseCachingEnabled;
+  }
+
+  public void setResponseCachingEnabled(Boolean responseCachingEnabled) {
+    this.responseCachingEnabled = responseCachingEnabled;
+  }
+
+  public APIProductDTO cacheTimeout(Integer cacheTimeout) {
+    this.cacheTimeout = cacheTimeout;
+    return this;
+  }
+
+   /**
+   * Get cacheTimeout
+   * @return cacheTimeout
+  **/
+  @ApiModelProperty(example = "300", value = "")
+  public Integer getCacheTimeout() {
+    return cacheTimeout;
+  }
+
+  public void setCacheTimeout(Integer cacheTimeout) {
+    this.cacheTimeout = cacheTimeout;
   }
 
   public APIProductDTO visibility(VisibilityEnum visibility) {
@@ -675,6 +745,24 @@ public class APIProductDTO {
     this.policies = policies;
   }
 
+  public APIProductDTO apiThrottlingPolicy(String apiThrottlingPolicy) {
+    this.apiThrottlingPolicy = apiThrottlingPolicy;
+    return this;
+  }
+
+   /**
+   * The API level throttling policy selected for the particular API Product
+   * @return apiThrottlingPolicy
+  **/
+  @ApiModelProperty(example = "Unlimited", value = "The API level throttling policy selected for the particular API Product")
+  public String getApiThrottlingPolicy() {
+    return apiThrottlingPolicy;
+  }
+
+  public void setApiThrottlingPolicy(String apiThrottlingPolicy) {
+    this.apiThrottlingPolicy = apiThrottlingPolicy;
+  }
+
   public APIProductDTO authorizationHeader(String authorizationHeader) {
     this.authorizationHeader = authorizationHeader;
     return this;
@@ -725,10 +813,10 @@ public class APIProductDTO {
   }
 
    /**
-   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
+   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
    * @return subscriptionAvailability
   **/
-  @ApiModelProperty(example = "CURRENT_TENANT", value = "The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.")
+  @ApiModelProperty(example = "current_tenant", value = "The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.")
   public SubscriptionAvailabilityEnum getSubscriptionAvailability() {
     return subscriptionAvailability;
   }
@@ -787,6 +875,24 @@ public class APIProductDTO {
 
   public void setAdditionalProperties(Map<String, String> additionalProperties) {
     this.additionalProperties = additionalProperties;
+  }
+
+  public APIProductDTO monetization(APIMonetizationInfoDTO monetization) {
+    this.monetization = monetization;
+    return this;
+  }
+
+   /**
+   * Get monetization
+   * @return monetization
+  **/
+  @ApiModelProperty(value = "")
+  public APIMonetizationInfoDTO getMonetization() {
+    return monetization;
+  }
+
+  public void setMonetization(APIMonetizationInfoDTO monetization) {
+    this.monetization = monetization;
   }
 
   public APIProductDTO businessInformation(APIProductBusinessInformationDTO businessInformation) {
@@ -930,6 +1036,9 @@ public class APIProductDTO {
         Objects.equals(this.provider, apIProduct.provider) &&
         Objects.equals(this.thumbnailUri, apIProduct.thumbnailUri) &&
         Objects.equals(this.state, apIProduct.state) &&
+        Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
+        Objects.equals(this.responseCachingEnabled, apIProduct.responseCachingEnabled) &&
+        Objects.equals(this.cacheTimeout, apIProduct.cacheTimeout) &&
         Objects.equals(this.visibility, apIProduct.visibility) &&
         Objects.equals(this.visibleRoles, apIProduct.visibleRoles) &&
         Objects.equals(this.visibleTenants, apIProduct.visibleTenants) &&
@@ -940,11 +1049,13 @@ public class APIProductDTO {
         Objects.equals(this.transport, apIProduct.transport) &&
         Objects.equals(this.tags, apIProduct.tags) &&
         Objects.equals(this.policies, apIProduct.policies) &&
+        Objects.equals(this.apiThrottlingPolicy, apIProduct.apiThrottlingPolicy) &&
         Objects.equals(this.authorizationHeader, apIProduct.authorizationHeader) &&
         Objects.equals(this.securityScheme, apIProduct.securityScheme) &&
         Objects.equals(this.subscriptionAvailability, apIProduct.subscriptionAvailability) &&
         Objects.equals(this.subscriptionAvailableTenants, apIProduct.subscriptionAvailableTenants) &&
         Objects.equals(this.additionalProperties, apIProduct.additionalProperties) &&
+        Objects.equals(this.monetization, apIProduct.monetization) &&
         Objects.equals(this.businessInformation, apIProduct.businessInformation) &&
         Objects.equals(this.corsConfiguration, apIProduct.corsConfiguration) &&
         Objects.equals(this.createdTime, apIProduct.createdTime) &&
@@ -955,7 +1066,7 @@ public class APIProductDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, provider, thumbnailUri, state, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes);
+    return Objects.hash(id, name, context, description, provider, thumbnailUri, state, enableSchemaValidation, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes);
   }
 
 
@@ -971,6 +1082,9 @@ public class APIProductDTO {
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
+    sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
+    sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
+    sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
     sb.append("    visibleRoles: ").append(toIndentedString(visibleRoles)).append("\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
@@ -981,11 +1095,13 @@ public class APIProductDTO {
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
+    sb.append("    apiThrottlingPolicy: ").append(toIndentedString(apiThrottlingPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");

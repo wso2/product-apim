@@ -32,7 +32,7 @@
                 <send/>
             </inSequence>
             <outSequence>
-                <property name="Content-Type" value="apllication/xml" scope="transport"/>
+                <property name="Content-Type" value="application/xml" scope="transport"/>
                 <send/>
             </outSequence>
         </resource>
@@ -49,8 +49,4 @@
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>
     </api>
-    <sequence name="_auth_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
-        <property name="error_message_type" value="application/json"/>
-        <sequence key="_build_"/>
-    </sequence>
 </definitions>

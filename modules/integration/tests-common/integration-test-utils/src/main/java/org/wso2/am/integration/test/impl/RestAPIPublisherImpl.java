@@ -40,6 +40,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
@@ -63,6 +64,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -79,7 +81,6 @@ public class RestAPIPublisherImpl {
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
-
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -107,7 +108,8 @@ public class RestAPIPublisherImpl {
                                 "apim:mediation_policy_create apim:mediation_policy_manage " +
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
-                                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings apim:pub_alert_manage",
+                                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
+                                "apim:pub_alert_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -169,6 +171,19 @@ public class RestAPIPublisherImpl {
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
+
+        if (apiRequest.getAccessControl() != null) {
+            body.setAccessControl(APIDTO.AccessControlEnum.valueOf(apiRequest.getAccessControl().toUpperCase()));
+            if (APIDTO.AccessControlEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getAccessControl())
+                    && StringUtils.isNotEmpty(apiRequest.getAccessControlRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getAccessControlRoles().split(" , ")));
+                body.setAccessControlRoles(roleList);
+            }
+        } else {
+            body.setAccessControl(APIDTO.AccessControlEnum.NONE);
+        }
+
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
@@ -202,6 +217,7 @@ public class RestAPIPublisherImpl {
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
+        body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -380,6 +396,19 @@ public class RestAPIPublisherImpl {
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
         }
+
+        if (apiRequest.getAccessControl() != null) {
+            body.setAccessControl(APIDTO.AccessControlEnum.valueOf(apiRequest.getAccessControl().toUpperCase()));
+            if (APIDTO.AccessControlEnum.RESTRICTED.getValue().equalsIgnoreCase(apiRequest.getAccessControl())
+                    && StringUtils.isNotEmpty(apiRequest.getAccessControlRoles())) {
+                List<String> roleList = new ArrayList<>(
+                        Arrays.asList(apiRequest.getAccessControlRoles().split(" , ")));
+                body.setAccessControlRoles(roleList);
+            }
+        } else {
+            body.setAccessControl(APIDTO.AccessControlEnum.NONE);
+        }
+
         body.setDescription(apiRequest.getDescription());
         body.setProvider(apiRequest.getProvider());
         ArrayList<String> transports = new ArrayList<>();
@@ -555,13 +584,18 @@ public class RestAPIPublisherImpl {
      * Check whether the Endpoint is valid
      *
      * @param endpointUrl url of the endpoint
-     * @param type        type of Endpoint
+     * @param apiId id of the api which the endpoint to be validated
      * @return HttpResponse -  Response of the getAPI request
      * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
-    public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
-                                           String apiVersion) throws APIManagerIntegrationTestException {
-        return null;
+    public HttpResponse checkValidEndpoint(String endpointUrl, String apiId) throws APIManagerIntegrationTestException, ApiException {
+
+        ApiEndpointValidationResponseDTO validationResponseDTO = validationApi.validateEndpoint(endpointUrl, endpointUrl);
+        HttpResponse response = null;
+        if (validationResponseDTO.getStatusCode() == 200) {
+            response = new HttpResponse(validationResponseDTO.getStatusMessage(), 200);
+        }
+        return response;
     }
 
 
@@ -630,6 +664,25 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Updating the document content using file
+     *
+     * @param apiId      - Id of the API.
+     * @param docId      - document Id.
+     * @param docContent - file content
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws ApiException - Exception throws if error occurred when adding document.
+     */
+    public HttpResponse updateContentDocument(String apiId, String docId, File docContent) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, docContent, null,
+                null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(doc.getDocumentId())) {
+            response = new HttpResponse("Successfully update the documentation", 200);
         }
         return response;
     }
@@ -714,22 +767,15 @@ public class RestAPIPublisherImpl {
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HTTPSClientUtils.doGet() method call
      */
-    public APIListDTO getAllAPIs(String tenantDomain) throws APIManagerIntegrationTestException, ApiException {
-
-        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null, tenantDomain);
-        if (apis.getCount() > 0) {
-            return apis;
-        }
-        return null;
-    }
-
     public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
-        APIListDTO apis = apIsApi.apisGet(null, null, this.tenantDomain, null, null, null, null, this.tenantDomain);
+
+        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null);
         if (apis.getCount() > 0) {
             return apis;
         }
         return null;
     }
+
 
     /**
      * This method is used to upload endpoint certificates
@@ -741,7 +787,7 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAPIs(int offset, int limit) throws ApiException {
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null,
-                null, false, null, this.tenantDomain);
+                null, false, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -791,14 +837,9 @@ public class RestAPIPublisherImpl {
      * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse validateRoles(String roleId) throws ApiException {
-        ApiResponse<Void> releResponse = rolesApi.validateSystemRoleWithHttpInfo(roleId);
-
-        HttpResponse response = null;
-        if (releResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully validate the role", 200);
-        }
-        return response;
+    public ApiResponse<Void> validateRoles(String roleId) throws ApiException {
+        String encodedRoleName = Base64.getUrlEncoder().encodeToString(roleId.getBytes());
+        return rolesApi.validateSystemRoleWithHttpInfo(encodedRoleName);
     }
 
     public String getSwaggerByID(String apiId) throws ApiException {
@@ -808,7 +849,7 @@ public class RestAPIPublisherImpl {
     }
 
     public String updateSwagger(String apiId, String definition) throws ApiException {
-        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null);
+        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -890,7 +931,8 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
-        if ("secured".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
+                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
             APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
             dto.setUsername(apiCreationRequestBean.getEpUsername());
             dto.setPassword(apiCreationRequestBean.getEpPassword());
@@ -907,7 +949,6 @@ public class RestAPIPublisherImpl {
      *
      * @param certificate certificate
      * @param alias       alis
-     * @param endpoint    endpoint.
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */

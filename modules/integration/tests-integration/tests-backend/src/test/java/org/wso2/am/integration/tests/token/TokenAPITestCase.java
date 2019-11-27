@@ -219,7 +219,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Oauth Token API Test other")
+    @Test(groups = { "wso2.am" }, description = "Oauth Token API Test other", dependsOnMethods = {
+            "testTokenEqualityBeforeExpiration" })
     public void testOauthTokenAPITestCase() throws Exception {
 
         String APIName = "oauthTokenTestAPI";

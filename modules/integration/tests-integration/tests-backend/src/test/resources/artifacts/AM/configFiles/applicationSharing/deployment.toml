@@ -61,3 +61,5 @@ allow_credentials = false
 [[event_handler]]
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
+[transport]
+passthru_https.listener.ssl_profile_interval = 6000

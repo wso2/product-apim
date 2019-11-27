@@ -6,9 +6,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiProductsApiProductIdDelete**](ApiProductsApi.md#apiProductsApiProductIdDelete) | **DELETE** /api-products/{apiProductId} | Delete an API Product
 [**apiProductsApiProductIdGet**](ApiProductsApi.md#apiProductsApiProductIdGet) | **GET** /api-products/{apiProductId} | Get details of an API Product
+[**apiProductsApiProductIdIsOutdatedGet**](ApiProductsApi.md#apiProductsApiProductIdIsOutdatedGet) | **GET** /api-products/{apiProductId}/is-outdated | Get if API Product is outdated
 [**apiProductsApiProductIdPut**](ApiProductsApi.md#apiProductsApiProductIdPut) | **PUT** /api-products/{apiProductId} | Update an API product
 [**apiProductsApiProductIdSwaggerGet**](ApiProductsApi.md#apiProductsApiProductIdSwaggerGet) | **GET** /api-products/{apiProductId}/swagger | Get swagger definition
-[**apiProductsApiProductIdSwaggerPut**](ApiProductsApi.md#apiProductsApiProductIdSwaggerPut) | **PUT** /api-products/{apiProductId}/swagger | upload swagger definition
 [**apiProductsApiProductIdThumbnailGet**](ApiProductsApi.md#apiProductsApiProductIdThumbnailGet) | **GET** /api-products/{apiProductId}/thumbnail | Get thumbnail image
 [**apiProductsApiProductIdThumbnailPut**](ApiProductsApi.md#apiProductsApiProductIdThumbnailPut) | **PUT** /api-products/{apiProductId}/thumbnail | Upload a thumbnail image
 [**apiProductsGet**](ApiProductsApi.md#apiProductsGet) | **GET** /api-products | Retrieve/Search API Products 
@@ -116,6 +116,63 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**APIProductDTO**](APIProductDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="apiProductsApiProductIdIsOutdatedGet"></a>
+# **apiProductsApiProductIdIsOutdatedGet**
+> APIProductOutdatedStatusDTO apiProductsApiProductIdIsOutdatedGet(apiProductId, accept, ifNoneMatch)
+
+Get if API Product is outdated
+
+This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApiProductsApi apiInstance = new ApiProductsApi();
+String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
+String accept = "application/json"; // String | Media types acceptable for the response. Default is application/json. 
+String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+try {
+    APIProductOutdatedStatusDTO result = apiInstance.apiProductsApiProductIdIsOutdatedGet(apiProductId, accept, ifNoneMatch);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApiProductsApi#apiProductsApiProductIdIsOutdatedGet");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
+ **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to application/json]
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+[**APIProductOutdatedStatusDTO**](APIProductOutdatedStatusDTO.md)
 
 ### Authorization
 
@@ -237,62 +294,6 @@ null (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
-
-<a name="apiProductsApiProductIdSwaggerPut"></a>
-# **apiProductsApiProductIdSwaggerPut**
-> apiProductsApiProductIdSwaggerPut(apiProductId, apiDefinition, ifMatch)
-
-upload swagger definition
-
-This operation can be used to create/update the swagger definition of an existing API Product. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-
-### Example
-```java
-// Import classes:
-//import org.wso2.am.integration.clients.publisher.api.ApiClient;
-//import org.wso2.am.integration.clients.publisher.api.ApiException;
-//import org.wso2.am.integration.clients.publisher.api.Configuration;
-//import org.wso2.am.integration.clients.publisher.api.auth.*;
-//import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-
-ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-// Configure OAuth2 access token for authorization: OAuth2Security
-OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-ApiProductsApi apiInstance = new ApiProductsApi();
-String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
-String apiDefinition = "apiDefinition_example"; // String | Swagger definition of the API product
-String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
-try {
-    apiInstance.apiProductsApiProductIdSwaggerPut(apiProductId, apiDefinition, ifMatch);
-} catch (ApiException e) {
-    System.err.println("Exception when calling ApiProductsApi#apiProductsApiProductIdSwaggerPut");
-    e.printStackTrace();
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
- **apiDefinition** | **String**| Swagger definition of the API product |
- **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 <a name="apiProductsApiProductIdThumbnailGet"></a>

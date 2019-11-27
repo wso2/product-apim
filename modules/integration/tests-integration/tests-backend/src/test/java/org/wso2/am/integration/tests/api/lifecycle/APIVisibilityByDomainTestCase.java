@@ -159,7 +159,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeployment();
 
         APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser1
-                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to creator in APi Publisher. When Visibility is private. ");
     }
@@ -180,7 +180,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForAdminInSameDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
         APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperAdmin
-                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to admin in same domain in API Publisher. When Visibility is private. " +
                         getAPIIdentifierString(apiIdentifier));
@@ -203,7 +203,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForAnotherUserInSameDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
         APIListDTO getAllApisResponse = restAPIPublisherCarbonSuperUser2
-                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is not visible to another user in same domain in API Publisher. When Visibility is private." +
                         getAPIIdentifierString(apiIdentifier));
@@ -225,7 +225,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForAnotherUserInOtherDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
         APIListDTO getAllApisResponse = restAPIPublisherOtherDomainUser
-                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getAllAPIs();
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is  visible to another user in other domain in API Publisher. When Visibility is private."
                         + getAPIIdentifierString(apiIdentifier));
@@ -248,7 +248,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForAdminInOtherDomainInPublisher() throws APIManagerIntegrationTestException,
             ApiException {
         APIListDTO getAllApisResponse = restAPIPublisherOtherDomainAdmin
-                .getAllAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getAllAPIs();
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllApisResponse),
                 "API is  visible to admin in other domain in API Publisher. When Visibility is private. " +
                         getAPIIdentifierString(apiIdentifier));

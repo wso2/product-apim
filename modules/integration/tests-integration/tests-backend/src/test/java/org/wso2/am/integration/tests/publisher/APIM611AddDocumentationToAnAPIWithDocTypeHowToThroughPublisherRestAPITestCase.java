@@ -20,24 +20,23 @@
 
 package org.wso2.am.integration.tests.publisher;
 
-import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Add Documentation To An API with doc Type How To and different Source types
@@ -52,6 +51,7 @@ public class APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestA
     private APIPublisherRestClient apiPublisher;
     private String apiProvider;
     private String apiEndPointUrl;
+    private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase
@@ -96,43 +96,36 @@ public class APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestA
         String docType = "How To";
         String sourceType = "Inline";
 
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointUrl));
 
-        //Create an API
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(apiName, apiContext, apiVersion, apiProvider,
-                        new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(apiTags);
-        apiCreationRequestBean.setDescription(apiDescription);
-        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
-        apiCreationRequestBean.setDefaultVersion("default_version");
-        apiCreationRequestBean.setDefaultVersionChecked("default_version");
-        apiCreationRequestBean.setBizOwner("api611b");
-        apiCreationRequestBean.setBizOwnerMail("api611b@ee.com");
-        apiCreationRequestBean.setTechOwner("api611t");
-        apiCreationRequestBean.setTechOwnerMail("api611t@ww.com");
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setProvider(apiProvider);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTags(apiTags);
+        apiRequest.setDescription(apiDescription);
+        apiRequest.setBusinessOwner("api611b");
+        apiRequest.setBusinessOwnerEmail("api611b@ee.com");
+        apiRequest.setTechnicalOwner("api611t");
+        apiRequest.setTechnicalOwnerEmail("api611t@ww.com");
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        assertFalse(apiResponse.getBoolean("error"), apiName + "is not created as expected");
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = apiResponse.getData();
 
-        //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, apiProvider, apiVersion);
-        JSONObject jsonObject = new JSONObject(apiResponsePublisher.getData());
-        JSONObject apiObject = new JSONObject(jsonObject.getString("api"));
-        assertFalse(jsonObject.getBoolean("error"), apiName + " is not visible in publisher");
-        assertTrue(apiObject.getString("name").equals(apiName),
-                apiName + " is not visible in publisher");
-        assertTrue(apiObject.getString("status").equals("CREATED"),
-                "Status of the " + apiName + "is not a valid status");
+        DocumentDTO documentDTO = new DocumentDTO();
+        documentDTO.setSourceType(DocumentDTO.SourceTypeEnum.INLINE);
+        documentDTO.setName(docName);
+        documentDTO.setSummary("Testing");
+        documentDTO.setType(DocumentDTO.TypeEnum.HOWTO);
+        documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
 
-        //Add Documentation to an API "APIM611PublisherTest" - How To |Inline
-        HttpResponse docResponse = apiPublisher.addDocument
-                (apiName, apiVersion, apiProvider, docName, docType, sourceType, null,
-                        "Testing", null, "", "");
-        JSONObject jsonObjectDoc1 = new JSONObject(docResponse.getData());
-        assertFalse(jsonObjectDoc1.getBoolean("error"), "Error when adding document to the API");
+        HttpResponse response1 = restAPIPublisher.addDocument(apiId, documentDTO);
+        String documentId = response1.getData();
+
+        DocumentListDTO documentListDTO = restAPIPublisher.getDocuments(apiId);
+        DocumentDTO documentOne = documentListDTO.getList().get(0);
+
+        assertEquals(documentId, documentOne.getDocumentId(), "Document addition failed.");
     }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type HowTo And" +
@@ -141,23 +134,30 @@ public class APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestA
     public void testAddDocumentToAnAPIHowToUrl() throws Exception {
 
         String docName = "APIM612PublisherTestHowTo-Url-summary";
-        String docType = "How To";
-        String sourceType = "URL";
         String docUrl = "https://docs.wso2.com/display/AM191/Published+APIs";
 
-        //Add Documentation to an API "APIM611PublisherTest" - How To | Url
-        HttpResponse docResponse = apiPublisher.addDocument
-                (apiName, apiVersion, apiProvider, docName, docType, sourceType, docUrl,
-                        "Testing", "", "", "");
-        JSONObject jsonObjectDoc1 = new JSONObject(docResponse.getData());
-        assertFalse(jsonObjectDoc1.getBoolean("error"), "Error when adding document with source " +
-                "Url to the API");
+
+        DocumentDTO documentDTO = new DocumentDTO();
+        documentDTO.setSourceType(DocumentDTO.SourceTypeEnum.URL);
+        documentDTO.setName(docName);
+        documentDTO.setSummary("Testing");
+        documentDTO.setType(DocumentDTO.TypeEnum.HOWTO);
+        documentDTO.setSourceUrl(docUrl);
+        documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
+
+        HttpResponse response1 = restAPIPublisher.addDocument(apiId, documentDTO);
+        String documentId = response1.getData();
+
+        DocumentListDTO documentListDTO = restAPIPublisher.getDocuments(apiId);
+        DocumentDTO documentOne = documentListDTO.getList().get(1);
+
+        assertEquals(documentId, documentOne.getDocumentId(), "Document addition failed.");
     }
 
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 }

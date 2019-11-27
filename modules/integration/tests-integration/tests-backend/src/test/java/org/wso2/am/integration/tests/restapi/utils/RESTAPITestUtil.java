@@ -182,6 +182,15 @@ public class RESTAPITestUtil {
                         (method, actualResourceURL, queryParameters, requestHeaders, actualRequestPayload, cookie);
                 String outputText = ((ResponseImpl) responseOfHttpCall).readEntity(String.class);
 
+                if (RESTAPITestConstants.POST_METHOD.equals(method) || RESTAPITestConstants.PUT_METHOD.equals(method)) {
+                    //This delay is added to avoid test failures which occurs due to changes not getting reflected
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        log.warn("Interrupted Exception while rest API test cases " + e);
+                    }
+                }
+
                 //put the values (to the map) that should be preserved from the response of the current request,
                 if (!configObject.isNull(RESTAPITestConstants.PRESERVE_LIST)) {
                     JSONArray preserveListArray = configObject.getJSONArray(RESTAPITestConstants.PRESERVE_LIST);

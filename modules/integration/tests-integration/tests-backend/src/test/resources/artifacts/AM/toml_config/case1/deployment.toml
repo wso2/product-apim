@@ -274,3 +274,6 @@ enable = true
 #port = 3025
 #enable_start_tls = false
 #enable_authentication = true
+
+[transport]
+passthru_https.listener.ssl_profile_interval = 6000

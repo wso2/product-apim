@@ -79,11 +79,6 @@ public class HardThrottlingTestCase extends APIMIntegrationBaseTest {
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
-                                              "synapseconfigs" + File.separator + "throttling" + File.separator +
-                                              "dummy-stockquote.xml", gatewayContextMgt, gatewaySessionCookie);
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Token API Test sample")

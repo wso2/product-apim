@@ -21,63 +21,48 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.testng.Assert.assertTrue;
 
 /**
  * This is the test case for https://wso2.org/jira/browse/APIMANAGER-4765
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class APIM4765ResourceOrderInSwagger
-        extends APIMIntegrationBaseTest {
-
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
+public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIM4765ResourceOrderInSwagger.class);
+    private String apiId;
 
-    @Factory(dataProvider = "userModeDataProvider") public APIM4765ResourceOrderInSwagger(TestUserMode userMode) {
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIM4765ResourceOrderInSwagger(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
-    @DataProvider public static Object[][] userModeDataProvider() {
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN }, };
     }
 
-    @BeforeClass(alwaysRun = true) public void setEnvironment() throws Exception {
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
         super.init(userMode);
-
-        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
-        apiStore = new APIStoreRestClient(getStoreURLHttp());
-
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
-
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test resource order in the swagger") public void swaggerResourceOrderTest()
-            throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Test resource order in the swagger")
+    public void swaggerResourceOrderTest() throws Exception {
 
         String APIName = "SwaggerReorderTest";
         String APIContext = "swagger_reorder_test";
         String tags = "youtube, token, media";
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url), new URL(url));
@@ -86,10 +71,8 @@ import static org.testng.Assert.assertTrue;
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
         apiRequest.setProvider(user.getUserName());
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         String swagger = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\","
                 + "\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
@@ -99,24 +82,34 @@ import static org.testng.Assert.assertTrue;
                 + "\"TokenTestAPI\",\"description\":\"This is test API create by API manager integration test\","
                 + "\"contact\":{\"email\":null,\"name\":null},\"version\":\"1.0.0\"}}";
 
-        String resourceOrder = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\""
+        /*String resourceOrder = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\""
                 + ":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
                 + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
-                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}}";
+                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}}";*/
 
-        apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, swagger);
+        String resourceOrder = "\"paths\" : {\n" + "    \"/*\" : {\n" + "      \"get\" : {\n"
+                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
+                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
+                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
+                + "      }\n" + "    },\n" + "    \"/post\" : {\n" + "      \"get\" : {\n"
+                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
+                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
+                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
+                + "      }\n" + "    },\n" + "    \"/list\" : {\n" + "      \"get\" : {\n"
+                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
+                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
+                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
+                + "      }\n" + "    }\n" + "  }";
+
+
+        restAPIPublisher.updateSwagger(apiId, swagger);
         //get swagger doc.
-        String swaggerURL = getStoreURLHttps() + "store-old/api-docs/carbon.super/SwaggerReorderTest/1.0.0";
-
-        Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
-        HttpResponse swaggerFileReadFromRegistry = HttpRequestUtil.doGet(swaggerURL, requestHeadersSandBox);
-
-        String swaggerTextFromRegisrtry = swaggerFileReadFromRegistry.getData();
+        String storeDefinition = restAPIStore.getSwaggerByID(apiId, user.getUserDomain());
 
         //resourceOrder should  be equal to the given resource order.
-        boolean isResourceOrderEqaul = swaggerTextFromRegisrtry.contains(resourceOrder);
+        boolean isResourceOrderEqual = storeDefinition.contains(resourceOrder);
 
-        assertTrue(isResourceOrderEqaul, "Resource order is not equal to the given order.");
+        assertTrue(isResourceOrderEqual, "Resource order is not equal to the given order.");
 
     }
 

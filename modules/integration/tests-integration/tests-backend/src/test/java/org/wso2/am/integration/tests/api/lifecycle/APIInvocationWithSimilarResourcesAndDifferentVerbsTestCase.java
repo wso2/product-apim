@@ -71,17 +71,13 @@ import static org.testng.Assert.assertTrue;
         apiEndPointUrl = getGatewayURLNhttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         //Load the back-end dummy API
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath(
-                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                        + File.separator + "dummy-api-multiResourceSameVerb.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke all resources and verbs that are valid")
     public void testInvokeAllResources() throws Exception {
         //Create application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, " Description",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
         applicarionId = applicationResponse.getData();
 
         //Create publish and subscribe a API
