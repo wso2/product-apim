@@ -669,6 +669,25 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * Updating the document content using file
+     *
+     * @param apiId      - Id of the API.
+     * @param docId      - document Id.
+     * @param docContent - file content
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws ApiException - Exception throws if error occurred when adding document.
+     */
+    public HttpResponse updateContentDocument(String apiId, String docId, File docContent) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, docContent, null,
+                null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(doc.getDocumentId())) {
+            response = new HttpResponse("Successfully update the documentation", 200);
+        }
+        return response;
+    }
+
+    /**
      * Update API document.
      *
      * @param apiId       api Id
