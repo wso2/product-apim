@@ -1,37 +1,40 @@
 /*
-* Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-* WSO2 Inc. licenses this file to you under the Apache License,
-* Version 2.0 (the "License"); you may not use this file except
-* in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*
-*/
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
 package org.wso2.am.integration.tests.websocket;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.*;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -45,15 +48,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
  * This class is used to test gateway urls of WS APIs
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest {
+
     private final Log log = LogFactory.getLog(APIMANAGER5869WSGayewatURLTestCase.class);
     private final String API_NAME = "WSGayewatURLAPIName";
     private final String API_CONTEXT = "WSGayewatURLContext";
@@ -64,64 +67,57 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
     private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.UNLIMITED;
     private String publisherURLHttps;
     private String storeURLHttp;
-    private APICreationRequestBean apiCreationRequestBean;
-    private List<APIResourceBean> resList;
+    private APIRequest apiCreationRequestBean;
+    private List<APIOperationsDTO> resList;
     private String endpointUrl;
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
+    private String websocketAPIID;
+    private String restAPIId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5869WSGayewatURLTestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init(userMode);
-        publisherURLHttps = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation")
+    @Test(groups = {"wso2.am"}, description = "Sample API creation")
     public void testAPICreation() throws Exception {
-        String providerName = user.getUserName();
 
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
-                new URL(endpointUrl));
+        apiCreationRequestBean = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
-
+        apiCreationRequestBean.setVersion(API_VERSION);
+        apiCreationRequestBean.setProvider(user.getUserName());
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setAuthType(APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType());
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/add");
+        apiOperationsDTO.setThrottlingPolicy(APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN);
         //define resources
-        resList = new ArrayList<APIResourceBean>();
-        APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/add");
-        resList.add(res1);
+        resList = new ArrayList<>();
+        resList.add(apiOperationsDTO);
 
-        apiCreationRequestBean.setResourceBeanList(resList);
+        apiCreationRequestBean.setOperationsDTOS(resList);
 
         //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        restAPIId = serviceResponse.getData();
+        restAPIPublisher.changeAPILifeCycleStatus(restAPIId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(description = "Publish WebSocket API", dependsOnMethods = "testAPICreation")
     public void publishWebSocketAPI() throws Exception {
-        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
-        apiStore = new APIStoreRestClient(getStoreURLHttp());
+
         String provider = user.getUserName();
 
         URI endpointUri = new URI("ws://echo.websocket.org");
@@ -132,21 +128,14 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         apiRequest.setTiersCollection(TIER_COLLECTION);
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        HttpResponse addAPIResponse = apiPublisher.addAPI(apiRequest);
+        HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
+        restAPIPublisher.changeAPILifeCycleStatus(addAPIResponse.getData(), APILifeCycleAction.PUBLISH.getAction(), null);
+        websocketAPIID = addAPIResponse.getData();
+        //publish the api
 
-        verifyResponse(addAPIResponse);
-
-        //publishing API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(WS_API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         waitForAPIDeploymentSync(user.getUserName(), WS_API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         APIIdentifier apiIdentifierWebSocket = new APIIdentifier(provider, WS_API_NAME, API_VERSION);
-
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
 
         // replace port with inbound endpoint port
         String apiEndPoint;
@@ -157,59 +146,59 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         }
         log.info("API Endpoint URL" + apiEndPoint);
 
-        List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, publisherAPIList),
+        APIListDTO apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
+        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, apiPublisherAllAPIs),
                 "Published API is visible in API Publisher.");
-
-        List<APIIdentifier> storeAPIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse(apiStore.getAllPaginatedPublishedAPIs(storeContext
-                        .getContextTenant().getDomain(), 0, 100));
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, storeAPIList),
+        org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO restAPIStoreAllAPIs;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            restAPIStoreAllAPIs = restAPIStore.getAllAPIs();
+        } else {
+            restAPIStoreAllAPIs = restAPIStore.getAllAPIs(user.getUserDomain());
+        }
+        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifierWebSocket, restAPIStoreAllAPIs),
                 "Published API is visible in API Store.");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test API gateway urls", dependsOnMethods = "publishWebSocketAPI")
+    @Test(groups = {"wso2.am"}, description = "Test API gateway urls", dependsOnMethods = "publishWebSocketAPI")
     public void testApiGatewayUrlsTest() throws Exception {
-        String provider = user.getUserName();
-        String tenant;
-        tenant = storeContext.getContextTenant().getDomain();
-
-
-        HttpResponse serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + API_NAME + "&version=" + API_VERSION
-                        + "&tenant=" + tenant + "&provider=" + provider, null);
-        assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
-
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"http://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"https://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
-        } else {
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"http://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"https://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
+            APIDTO restAPIStoreAPI = restAPIStore.getAPI(restAPIId);
+        Assert.assertNotNull(restAPIStoreAPI);
+        Assert.assertNotNull(restAPIStoreAPI.getEndpointURLs());
+        for (APIEndpointURLsDTO endpointURL : restAPIStoreAPI.getEndpointURLs()) {
+            Assert.assertNotNull(endpointURL.getUrLs());
+            Assert.assertNotNull(endpointURL.getUrLs().getHttp());
+            Assert.assertNotNull(endpointURL.getUrLs().getHttps());
+            if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+                assertTrue(endpointURL.getUrLs().getHttp().matches("http://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION));
+                assertTrue(endpointURL.getUrLs().getHttps()
+                        .matches("https://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION));
+            } else {
+                assertTrue(endpointURL.getUrLs().getHttp()
+                        .matches("http://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION));
+                assertTrue(endpointURL.getUrLs().getHttps()
+                        .matches("https://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION ));
+            }
         }
-        serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
-                        + "&tenant=" + tenant + "&provider=" + provider, null);
-        assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"ws://(.)+:[0-9]+/" + WS_API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
-        } else {
-            assertTrue(serviceResponse.getData()
-                    .matches("(.)*\"ws://(.)+:[0-9]+/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
+        APIDTO wsApidto = restAPIStore.getAPI(websocketAPIID);
+        Assert.assertNotNull(wsApidto);
+        Assert.assertNotNull(wsApidto.getEndpointURLs());
+        for (APIEndpointURLsDTO endpointURL : wsApidto.getEndpointURLs()) {
+            Assert.assertNotNull(endpointURL.getUrLs());
+            Assert.assertNotNull(endpointURL.getUrLs().getWs());
+            if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+                assertTrue(endpointURL.getUrLs().getWs()
+                        .matches("ws://(.)+:[0-9]+/" + WS_API_CONTEXT + "/" + API_VERSION ));
+            } else {
+                assertTrue(endpointURL.getUrLs().getWs()
+                        .matches("ws://(.)+:[0-9]+/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION ));
+            }
+
         }
 
     }
 
-    // Test is disabled due to a known issue in loading overview page with Gateway URLs of WS APIs in the old Jaggery
-    // Store. Issue is not available in the new React Dev portal, hence not required to fix the test.
-    @Test(groups = { "wso2.am" }, description = "Test WS API gateway urls", dependsOnMethods =
-            "testApiGatewayUrlsTest",  enabled = false)
+    @Test(groups = {"wso2.am"}, description = "Test WS API gateway urls", dependsOnMethods =
+            "testApiGatewayUrlsTest",enabled = false)
     public void testApiGatewayUrlsAfterConfigChangeTest() throws Exception {
         //change the api-manager.xml for new gateway urls
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -218,50 +207,57 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
                     getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketTest"
                             + File.separator + "deployment.toml"));
         }
-        String tenant = storeContext.getContextTenant().getDomain();
-        String provider = user.getUserName();
-        HttpResponse serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + API_NAME + "&version=" + API_VERSION
-                        + "&tenant=" + tenant + "&provider=" + provider, null);
-        assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
-
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            assertTrue(
-                    serviceResponse.getData().contains("https://serverhost:9898/" + API_CONTEXT + "/" + API_VERSION));
-            assertFalse(serviceResponse.getData()
-                    .matches("(.)*\"http://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
-        } else {
-            assertTrue(serviceResponse.getData()
-                    .contains("https://serverhost:9898/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION));
-            assertFalse(serviceResponse.getData()
-                    .matches("(.)*\"http://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION + "\"(.)*"));
+        APIDTO restAPIStoreAPI = restAPIStore.getAPI(restAPIId);
+        Assert.assertNotNull(restAPIStoreAPI);
+        Assert.assertNotNull(restAPIStoreAPI.getEndpointURLs());
+        for (APIEndpointURLsDTO endpointURL : restAPIStoreAPI.getEndpointURLs()) {
+            Assert.assertNotNull(endpointURL.getUrLs());
+            Assert.assertNull(endpointURL.getUrLs().getHttp());
+            Assert.assertNotNull(endpointURL.getUrLs().getHttps());
+            if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+                assertTrue(
+                        endpointURL.getUrLs().getHttps().contains("https://serverhost:9898/" + API_CONTEXT + "/" + API_VERSION));
+                assertFalse(endpointURL.getUrLs().getHttp()
+                        .matches("http://(.)+:[0-9]+/" + API_CONTEXT + "/" + API_VERSION));
+            } else {
+                assertTrue(endpointURL.getUrLs().getHttps()
+                        .contains("https://serverhost:9898/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION));
+                assertFalse(endpointURL.getUrLs().getHttp()
+                        .matches("http://(.)+:[0-9]+/t/wso2.com/" + API_CONTEXT + "/" + API_VERSION ));
+            }
         }
-        serviceResponse = HTTPSClientUtils
-                .doGet(getStoreURLHttps() + "store-old/apis/info?name=" + WS_API_NAME + "&version=" + API_VERSION
-                        + "&tenant=" + tenant + "&provider=" + provider, null);
-        assertEquals(serviceResponse.getResponseCode(), 200, "HTTP status code mismatched");
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            assertTrue(
-                    serviceResponse.getData().contains("ws://localhost:9099/" + WS_API_CONTEXT + "/" + API_VERSION));
-        } else {
-            assertTrue(serviceResponse.getData()
-                    .contains("ws://localhost:9099/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION));
+        APIDTO wsAPIDto = restAPIStore.getAPI(websocketAPIID);
+        Assert.assertNotNull(wsAPIDto);
+        Assert.assertNotNull(wsAPIDto.getEndpointURLs());
+        for (APIEndpointURLsDTO endpointURL : wsAPIDto.getEndpointURLs()) {
+            Assert.assertNotNull(endpointURL.getUrLs());
+            Assert.assertNotNull(endpointURL.getUrLs().getWs());
+            if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+                assertTrue(
+                        endpointURL.getUrLs().getWs().contains("ws://localhost:9099/" + WS_API_CONTEXT + "/" + API_VERSION));
+            } else {
+                assertTrue(endpointURL.getUrLs().getWs()
+                        .contains("ws://localhost:9099/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION));
+            }
+
         }
 
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
         super.cleanUp();
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration(true);
-        }
+//        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+//            serverConfigurationManager.restoreToLastConfiguration(true);
+//        }
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},};
     }
 
 }

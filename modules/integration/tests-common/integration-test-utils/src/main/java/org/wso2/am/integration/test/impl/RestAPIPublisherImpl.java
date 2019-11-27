@@ -56,16 +56,15 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -218,6 +217,7 @@ public class RestAPIPublisherImpl {
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
+        body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -800,14 +800,9 @@ public class RestAPIPublisherImpl {
      * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse validateRoles(String roleId) throws ApiException {
-        ApiResponse<Void> releResponse = rolesApi.validateSystemRoleWithHttpInfo(roleId);
-
-        HttpResponse response = null;
-        if (releResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully validate the role", 200);
-        }
-        return response;
+    public ApiResponse<Void> validateRoles(String roleId) throws ApiException {
+        String encodedRoleName = Base64.getUrlEncoder().encodeToString(roleId.getBytes());
+        return rolesApi.validateSystemRoleWithHttpInfo(encodedRoleName);
     }
 
     public String getSwaggerByID(String apiId) throws ApiException {
