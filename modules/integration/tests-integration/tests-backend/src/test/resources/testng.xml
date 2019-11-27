@@ -275,10 +275,10 @@
         </classes>
     </test>-->
 
-    <!--<test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
+    <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
         </classes>
-    </test>-->
+    </test>
 </suite>
