@@ -157,7 +157,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublisherRestAPITestCase"/>
