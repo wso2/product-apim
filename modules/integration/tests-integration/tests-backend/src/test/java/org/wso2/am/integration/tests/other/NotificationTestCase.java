@@ -216,7 +216,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.removeSubscription(subscriptionId);
-        restAPIStore.removeApplication(applicationId);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
     }
 

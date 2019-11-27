@@ -144,7 +144,7 @@
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>-->
+            <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
         </classes>
     </test>
@@ -153,7 +153,7 @@
 
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIMANAGER5834APICreationWithInvalidInputsTestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
@@ -164,7 +164,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>
             <!--<class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase"/>
@@ -198,7 +198,6 @@
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.StoreChangePasswordTestCase"/>-->
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
@@ -226,17 +225,17 @@
             <!--<class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>-->
         </classes>
     </test>
-    <!--<test name="apim-mediation-tests" preserve-order="true" parallel="false" group-by-instances="true">
+    <test name="apim-mediation-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
         </classes>
-    </test>-->
-    <!--<test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
+    </test>
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
-    </test>-->
+    </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
@@ -247,7 +246,7 @@
             <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
             <!-- Temporarily disabling intermittently failing test-->
             <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
-           <!-- <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>
             <class name="org.wso2.am.integration.tests.other.GIT2231HeadRequestNPEErrorTestCase"/>

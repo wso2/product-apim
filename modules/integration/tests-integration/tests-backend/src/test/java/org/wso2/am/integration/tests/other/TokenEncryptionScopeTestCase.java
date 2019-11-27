@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -40,7 +40,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -70,22 +69,11 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final String SUBSCRIBER_ROLE = "subscriber";
 
-    private ServerConfigurationManager serverManager;
-
-    private static final String APIM_CONFIG_XML = "api-manager.xml";
-
-    private static final String IDENTITY_CONFIG_XML = "identity.xml";
-
-    private static String apiProvider;
+    private static String applicationId;
     private static String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
-        super.init();
-
-        apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
-
         super.init();
     }
 
@@ -166,24 +154,17 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
                     "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
                     "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
 
-            apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
-
-            // For Admin user
-            // create new application and subscribing
-            apiStore.login(APP_DEV_USER, APP_DEV_PWD);
+            restAPIPublisher.updateSwagger(apiId, modifiedResource);
 
             HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                     "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                     ApplicationDTO.TokenTypeEnum.OAUTH);
-            String applicationID = applicationResponse.getData();
-
-            //Subscribe the API to the Application
-            HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
+            applicationId = applicationResponse.getData();
 
             //Generate production token and invoke with that
             ArrayList grantTypes = new ArrayList();
             grantTypes.add("client_credentials");
-            ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+            ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
             // get Consumer Key and Consumer Secret
             String consumerKey = applicationKeyDTO.getConsumerKey();
@@ -191,16 +172,12 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
             URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
             String requestBody;
-            JSONObject accessTokenGenerationResponse;
 
             //Obtain user access token for sam, request scope 'user_scope'
             requestBody = "grant_type=password&username=" + USER_SAM + "&password=sam123&scope=user_scope";
-            accessTokenGenerationResponse = new JSONObject(
-                    apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                            requestBody, tokenEndpointURL).getData());
-
-
-            ApplicationKeyDTO applicationKeyDTO1 = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+            HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                    tokenEndpointURL);
+            JSONObject accessTokenGenerationResponse = new JSONObject(firstResponse.getData());
             String receivedScope = accessTokenGenerationResponse.getString("scope");
 
             //Check if we receive the scope we requested for.
@@ -228,21 +205,13 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        if (apiStore != null) {
-            apiStore.removeApplication(APP_NAME);
-        }
-
-        if (apiPublisher != null) {
-            restAPIPublisher.deleteAPI(apiId);
-        }
-
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         if (userManagementClient1 != null) {
             userManagementClient1.deleteUser(USER_SAM);
             userManagementClient1.deleteUser(APP_DEV_USER);
             userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
-        super.cleanUp();
-        log.info("Restored configuration and restarted gracefully...");
     }
 
 }
