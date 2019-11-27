@@ -102,7 +102,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                 "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         applicationId = applicationResponse.getData();
@@ -288,7 +288,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(CALLBACK_URL_UPDATE_APP_NAME,
                 "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         applicationIdWithoutCallback = applicationResponse.getData();

@@ -95,7 +95,7 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
 
             String appName = "APIEndpointTypeUpdateTestCaseAPIApp";
             HttpResponse applicationResponse = restAPIStore.createApplication(appName, "This-is-test",
-                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                    APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
             applicationID = applicationResponse.getData();
 
             apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,

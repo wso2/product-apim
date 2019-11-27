@@ -78,7 +78,7 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
 
             HttpResponse applicationResponse = restAPIStore.createApplication("subscriptionCheckApp1",
                     "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                    ApplicationDTO.TokenTypeEnum.OAUTH);
+                    ApplicationDTO.TokenTypeEnum.JWT);
             //verifyResponse(applicationResponse);
 
             String applicationID = applicationResponse.getData();

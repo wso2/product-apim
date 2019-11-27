@@ -124,7 +124,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleB
         //add an application
         HttpResponse applicationResponse = apiStoreSubUser.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         appId = applicationResponse.getData();
 
         //subscribe to healthy api

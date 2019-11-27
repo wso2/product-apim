@@ -114,8 +114,11 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.createApplication(APPLICATION_NAME,
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
+                        ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
+
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //get access token
         grantTypes = new ArrayList<>();
@@ -129,9 +132,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
-
-        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }

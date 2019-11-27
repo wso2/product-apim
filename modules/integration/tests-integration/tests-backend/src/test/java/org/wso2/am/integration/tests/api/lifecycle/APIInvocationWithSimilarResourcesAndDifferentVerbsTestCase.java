@@ -77,7 +77,7 @@ import static org.testng.Assert.assertTrue;
     public void testInvokeAllResources() throws Exception {
         //Create application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, " Description",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
         applicarionId = applicationResponse.getData();
 
         //Create publish and subscribe a API
