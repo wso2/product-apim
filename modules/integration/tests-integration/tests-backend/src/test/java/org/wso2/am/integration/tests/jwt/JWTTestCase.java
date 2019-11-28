@@ -264,31 +264,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStoreSubsriberUser.deleteApplication(applicationId);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoking Prototype api with JWT enabled",
-            dependsOnMethods = "testSpecificUserJWTClaims")
-    public void testPrototypeInvocationWithJWTEnabled() throws Exception {
 
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
-                PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(endpointURL));
-        apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        //define resources
-        ArrayList<APIResourceBean> resList = new ArrayList<APIResourceBean>();
-        APIResourceBean res = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
-        resList.add(res);
-        apiCreationRequestBean.setResourceBeanList(resList);
-        //add test api
-        APIDTO apidto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        String apiId = apidto.getId();
-        restAPIPublisher.deployPrototypeAPI(apiId);
-        String invokeURL = getAPIInvocationURLHttp(PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION);
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse serviceResponse = HTTPSClientUtils.doGet(
-                invokeURL, requestHeaders);
-        Assert.assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code is not as expected");
-    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
@@ -301,11 +277,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void restoreConfiguration() throws Exception {
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.restoreToLastConfiguration(false);
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
     private String addAndSubscribeToAPI(String apiName, String apiContext, String description,
