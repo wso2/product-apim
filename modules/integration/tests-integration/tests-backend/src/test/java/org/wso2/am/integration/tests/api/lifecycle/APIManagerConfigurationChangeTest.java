@@ -52,6 +52,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
                                                   APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
 
+        String GraphqlAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war";
+
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
         String publisherSessionId = createSession(publisherContext);
 
@@ -66,6 +69,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
+        webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
@@ -83,6 +87,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                                                       gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                gatewayMgtSessionId, APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
     }
 
