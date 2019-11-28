@@ -90,7 +90,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator + "schema.graphql"),
                 "UTF-8");
 
-        File file = geTempFileWithContent(schemaDefinition);
+        File file = getTempFileWithContent(schemaDefinition);
         GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinition(file);
         GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
         String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
@@ -137,7 +137,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlAPIId);
         Assert.assertEquals(schema.getSchemaDefinition(), schemaDefinition);
     }
-/*
+
     @Test(groups = {"wso2.am"}, description = "test update schemaDefinition at publisher",
             dependsOnMethods = "testRetrieveSchemaDefinitionAtPublisher")
     public void testUpdateSchemaDefinitionOfAPI() throws Exception {
@@ -149,7 +149,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlAPIId);
         Assert.assertEquals(schema.getSchemaDefinition(), updatedSchemaDefinition);
     }
-*/
+
 
     @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
     public void testInvokeGraphqlAPIUsingJWTApplication() throws Exception {
@@ -201,7 +201,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Oauth Scopes")
+    @Test(groups = {"wso2.am"}, description = "Oauth Scopes",
+            dependsOnMethods = { "testInvokeGraphqlAPIUsingOAuthApplication","testInvokeGraphqlAPIUsingJWTApplication"})
     public void testOperationalLevelOAuthScopesForGraphql() throws Exception {
         ArrayList role = new ArrayList();
         role.add("Internal/subscriber");
@@ -328,7 +329,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIStore.subscribeToAPI(graphqlAPIId, testApiId, APIMIntegrationConstants.API_TIER.UNLIMITED);
     }
 
-    private File geTempFileWithContent(String schema) throws Exception {
+    private File getTempFileWithContent(String schema) throws Exception {
         File temp = File.createTempFile("schema", ".graphql");
         temp.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(temp));
