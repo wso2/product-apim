@@ -50,6 +50,7 @@ public class APIMIntegrationConstants {
     public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
     public static final String JAXRS_BASIC_WEB_APP_NAME = "jaxrs_basic";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
+    public static final String GRAPHQL_API_WEB_APP_NAME = "am-graphQL-sample";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";

@@ -31,6 +31,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
@@ -46,6 +48,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
@@ -79,11 +83,14 @@ public class RestAPIPublisherImpl {
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
     public EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
+    public GraphQlSchemaApi graphQlSchemaApi = new GraphQlSchemaApi();
+    public GraphQlSchemaIndividualApi graphQlSchemaIndividualApi = new GraphQlSchemaIndividualApi();
     public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
+
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -118,6 +125,8 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
         apIsApi.setApiClient(apiPublisherClient);
+        graphQlSchemaApi.setApiClient(apiPublisherClient);
+        graphQlSchemaIndividualApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
         apiLifecycleApi.setApiClient(apiPublisherClient);
@@ -899,6 +908,33 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
+    }
+
+    public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
+        ApiResponse<GraphQLValidationResponseDTO> response =
+                validationApi.apisValidateGraphqlSchemaPostWithHttpInfo(schemaDefinition);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO importGraphqlSchemaDefinition(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisImportGraphqlSchemaPostWithHttpInfo("GRAPHQL", file,
+                properties, null);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public GraphQLSchemaDTO getGraphqlSchemaDefinition(String apiId) throws ApiException {
+        ApiResponse<GraphQLSchemaDTO> schemaDefinitionDTO = graphQlSchemaIndividualApi.
+                apisApiIdGraphqlSchemaGetWithHttpInfo(apiId, "application/json", null);
+        Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
+        return schemaDefinitionDTO.getData();
+    }
+
+    public void updateGraphqlSchemaDefinition(String apiId, String schemaDefinition) throws ApiException {
+        ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.apisApiIdGraphqlSchemaPutWithHttpInfo
+                (apiId, schemaDefinition, null);
+        Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
