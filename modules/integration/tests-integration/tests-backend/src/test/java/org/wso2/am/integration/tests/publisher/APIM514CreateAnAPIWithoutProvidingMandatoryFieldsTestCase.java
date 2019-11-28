@@ -48,7 +48,6 @@ import static org.testng.Assert.assertEquals;
  * JIRA Issue Id - APIMANAGER-4039
  */
 
-// Need to remove all the APIException after resolving https://github.com/wso2/product-apim/issues/6172
 
 public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         APIManagerLifecycleBaseTest {
@@ -102,7 +101,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         } catch (ApiException e) {
             assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
         }
-
+//        Need to uncomment this after resolving https://github.com/wso2/product-apim/issues/6172
 //        JSONObject apiResponse = new JSONObject(apiId);
 //        assertTrue(apiResponse.getBoolean("error"), "can be create API without name");
 //        assertTrue(apiResponse.getString("message").contains
@@ -126,6 +125,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
             assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Internal Server Error " );
         }
+//        Need to uncomment this after resolving https://github.com/wso2/product-apim/issues/6172
 //        JSONObject apiResponse = new JSONObject(apiId);
 //        assertTrue(apiResponse.getBoolean("error"), apiNameTest1 + "can be create without Context");
 //        assertTrue(apiResponse.getString("message").contains
@@ -152,6 +152,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         } catch (ApiException e) {
             assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
         }
+//        Need to uncomment this after resolving https://github.com/wso2/product-apim/issues/6172
 //        JSONObject apiResponse = new JSONObject(apiId);
 //        assertTrue(apiResponse.getBoolean("error"), apiNameTest2 + "can be create without Version");
 //        assertTrue(apiResponse.getString("message").contains
@@ -179,6 +180,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         } catch (ApiException e) {
             assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
         }
+//        Need to uncomment this after resolving https://github.com/wso2/product-apim/issues/6172
 //        JSONObject apiResponse = new JSONObject(apiDto.getId());
 //        assertTrue(apiResponse.getBoolean("error"), apiNameTest3 +
 //                "can be create without Tier availability");
@@ -247,6 +249,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         } catch (ApiException e) {
             assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
         }
+//        Need to uncomment this after resolving https://github.com/wso2/product-apim/issues/6172
 //        JSONObject apiResponse = new JSONObject(apiDto.getId());
 //        assertTrue(apiResponse.getBoolean("error"), apiNameTest6 + "can be create without Action");
 //        assertTrue(apiResponse.getString("message").contains
