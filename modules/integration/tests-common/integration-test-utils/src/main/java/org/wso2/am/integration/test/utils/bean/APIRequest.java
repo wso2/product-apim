@@ -243,10 +243,7 @@ public class APIRequest extends AbstractRequest {
                         "},";
                 productionEPs = productionEPs + uri;
             }
-            productionEPs = "\"production_endpoints\": [\n" +
-                    "{\n" +
-                    "\"url\": \"" + productionEndpoints.get(0) +
-                    "\"}," + productionEPs + "],";
+            productionEPs = "\"production_endpoints\": [\n" + productionEPs + "],";
         }
         if (sandboxEndpoints != null) {
             for (String sandboxEndpoint : sandboxEndpoints) {
@@ -257,10 +254,7 @@ public class APIRequest extends AbstractRequest {
                         " },";
                 sandboxEPs = sandboxEPs + uri;
             }
-            sandboxEPs = "\"sandbox_endpoints\": [\n" +
-                    "{\n" +
-                    "\"url\": \"" + sandboxEndpoints.get(0) +
-                    "\"}," + sandboxEPs + "],";
+            sandboxEPs = "\"sandbox_endpoints\": [\n" + sandboxEPs + "],";
         }
         try {
             JSONParser parser = new JSONParser();

@@ -308,6 +308,16 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * This method is used to  deploy the api as a prototype.
+     *
+     * @param apiId API id that need to be prototyped.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public void deployPrototypeAPI(String apiId) throws ApiException {
+        apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPLOY_AS_PROTOTYPE, apiId, null, null);
+    }
+
+    /**
      * This method is used to block the created API.
      *
      * @param apiId API id that need to published.
