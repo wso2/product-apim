@@ -80,6 +80,7 @@ public class APIMIntegrationConstants {
         public static final String LARGE = "Large";
         public static final String MEDIUM = "Medium";
         public static final String SMALL = "Small";
+        public static final String TEN_PER_MIN = "10PerMin";
 
         public static final int LARGE_LIMIT = 20;
         public static final int MEDIUM_LIMIT = 5;
@@ -144,4 +145,12 @@ public class APIMIntegrationConstants {
     }
 
     public static final String SUPER_TENANT_DOMAIN = "carbon.super";
+    public static final String DEFAULT_TOKEN_VALIDITY_TIME = "3600";
+
+    public static final class APIM_INTERNAL_ROLE {
+        public static final String SUBSCRIBER = "Internal/subscriber";
+        public static final String PUBLISHER = "Internal/publisher";
+        public static final String CREATOR = "Internal/creator";
+        public static final String EVERYONE = "Internal/everyone";
+    }
 }
