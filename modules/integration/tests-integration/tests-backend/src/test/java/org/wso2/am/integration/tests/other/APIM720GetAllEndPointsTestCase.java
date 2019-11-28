@@ -148,8 +148,8 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         List sandboxEndpoints = (ArrayList) endpointConfig.get("sandbox_endpoints");
         List productionEndpoints = (ArrayList) endpointConfig.get("production_endpoints");
 
-        assertEquals(productionEndpoints.size(), 5, "Mismatch in the number of production endpoints");
-        assertEquals(sandboxEndpoints.size(), 5, "Mismatch in the number of sandbox endpoints");
+        assertEquals(productionEndpoints.size(), 4, "Mismatch in the number of production endpoints");
+        assertEquals(sandboxEndpoints.size(), 4, "Mismatch in the number of sandbox endpoints");
 
         assertEquals(endpointConfig.get("endpoint_type"), "load_balance", "Endpoint type mismatched");
         assertEquals(endpointConfig.get("algoCombo"), "org.apache.synapse.endpoints.algorithms.RoundRobin",
