@@ -134,7 +134,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         //add an application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
 
         String provider = user.getUserName();

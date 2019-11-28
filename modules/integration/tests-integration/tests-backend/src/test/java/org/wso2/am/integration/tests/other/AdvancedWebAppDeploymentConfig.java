@@ -73,7 +73,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationID = applicationResponse.getData();
         //Create publish and subscribe a API
         APIRequest apiRequest;

@@ -126,7 +126,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         // create new application and subscribing
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationId = applicationResponse.getData();
 
@@ -216,7 +216,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.removeSubscription(subscriptionId);
-        restAPIStore.removeApplication(applicationId);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
     }
 

@@ -91,7 +91,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
         //Add an Application in the Store.
         HttpResponse applicationResponse = restAPIStore
-                .createApplication("DefaultVersionAPP", "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                .createApplication("DefaultVersionAPP", "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationID = applicationResponse.getData();
 

@@ -92,7 +92,7 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIManagerLifecycleBas
         //Create application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                 "Test Application", APIThrottlingTier.UNLIMITED.getState(),
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
         applicationId = applicationResponse.getData();

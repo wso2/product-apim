@@ -351,7 +351,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add an application
         HttpResponse applicationResponse = allowedStoreUser.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
 
 
@@ -432,7 +432,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add an application
         HttpResponse applicationResponse = allowedStoreUser.createApplication(NEW_APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         newApplicationId = applicationResponse.getData();
 
         String provider = user.getUserName();

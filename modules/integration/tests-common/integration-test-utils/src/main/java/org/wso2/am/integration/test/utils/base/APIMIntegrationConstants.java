@@ -143,4 +143,6 @@ public class APIMIntegrationConstants {
             return authType;
         }
     }
+
+    public static final String SUPER_TENANT_DOMAIN = "carbon.super";
 }

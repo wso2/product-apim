@@ -20,24 +20,26 @@
 //TODO change as prototype
 package org.wso2.am.integration.tests.prototype;
 
+import com.google.gson.Gson;
 import org.json.JSONException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.ws.rs.core.Response;
-
 import java.net.URL;
-import java.util.List;
-
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -54,32 +56,15 @@ public class APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase exten
     private final String apiVersion = "1.0.0";
     private final String apiTags = "pizza, order, pizza-menu";
     private final String superUser = "carbon.super";
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-    private APIIdentifier apiIdentifierStore;
-    private APIIdentifier apiIdentifierPublisher;
-    private String apiProvider;
     private String apiEndPointUrl;
-
+    private String apiId;
+    private APIIdentifier apiIdentifier;
+    private APIListDTO apis;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
         apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + "pizzashack-api-1.0.0/api/";
-
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-
-
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
-
-        apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
-
-        apiIdentifierPublisher = new APIIdentifier(apiProvider, apiName, apiVersion);
-        apiIdentifierStore = new APIIdentifier(apiProvider, apiName, apiVersion);
     }
 
     @Test(groups = {"wso2.am"}, description = "Open already Saved API in design stage and Deploy" +
@@ -90,89 +75,82 @@ public class APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase exten
         String apiDescription = "Pizza API:Allows to manage pizza orders" +
                 " (create, update, retrieve orders)";
 
-        APIDesignBean apiDesignBean = new APIDesignBean(apiName, apiContext, apiVersion,
-                apiDescription, apiTags);
+        String apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiIdentifier = new APIIdentifier(apiProvider, apiName, apiVersion);
 
-        HttpResponse apiDesignResponse = apiPublisher.designAPI(apiDesignBean);
-        assertEquals(apiDesignResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                apiName + "is not Designed as expected");
-        assertTrue(apiDesignResponse.getData().contains("\"error\" : false"),
-                apiName + "is not created as expected");
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setProvider(apiProvider);
+        apiRequest.setTags(apiTags);
 
-        APIImplementationBean apiImplementationBean =
-                new APIImplementationBean(apiName, apiVersion, apiProvider, new URL(apiEndPointUrl));
-        apiImplementationBean.setSwagger(apiDesignBean.getSwagger());
+        //Adding the API to the publisher
+        apiId = restAPIPublisher.addAPI(apiRequest).getData();
 
-        HttpResponse apiImplementationResponse = apiPublisher.implement(apiImplementationBean);
-        assertEquals(apiImplementationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                apiName + "is not Implemented as expected");
-        assertTrue(apiImplementationResponse.getData().contains("\"error\" : false"),
-                apiName + "is not created as expected");
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
 
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, apiProvider,
-                APILifeCycleState.PROTOTYPED);
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("PROTOTYPED"),
-                apiName + " status not updated as Prototyped");
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        String endPointString = "{\n" +
+                "  \"production_endpoints\": {\n" +
+                "    \"template_not_supported\": false,\n" +
+                "    \"config\": null,\n" +
+                "    \"url\": \"" + apiEndPointUrl + "\"\n" +
+                "  },\n" +
+                "  \"sandbox_endpoints\": {\n" +
+                "    \"url\": \"" + apiEndPointUrl + "\",\n" +
+                "    \"config\": null,\n" +
+                "    \"template_not_supported\": false\n" +
+                "  },\n" +
+                "  \"endpoint_type\": \"http\",\n" +
+                "  \"implementation_status\": \"prototyped\"\n" +
+                "}";
 
-        //Check whether Prototype API is available in general store
-        List<APIIdentifier> implementedAPIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierPublisher, implementedAPIList),
-                apiName + " is not visible in API Publisher.");
+        JSONParser parser = new JSONParser();
+        JSONObject endpoint = (JSONObject) parser.parse(endPointString);
+        apidto.setEndpointConfig(endpoint);
 
+        restAPIPublisher.updateAPI(apidto);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
+
+        HttpResponse response2 = restAPIPublisher.getAPI(apiId);
+        Gson g2 = new Gson();
+        APIDTO apidto2 = g2.fromJson(response2.getData(), APIDTO.class);
+
+        JSONObject endPointConfigUpdated = (JSONObject) apidto.getEndpointConfig();
+        String implementation_status = (String) endPointConfigUpdated.get("implementation_status");
+        String lcStatus = apidto2.getLifeCycleStatus();
+
+        assertEquals(implementation_status, "prototyped", "Endpoint implementation is not prototyped");
+        assertEquals(lcStatus, "PROTOTYPED", "Lifecycle status is not PROTOTYPED");
         Thread.sleep(20000);
-
-        //Check whether Prototype API is available under the Prototyped API
-        HttpResponse apiResponse = apiStore.getPrototypedAPI(superUser);
-        assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Invalid Response Code");
-        assertTrue(apiResponse.getData().contains(apiName),
-                apiName + " is not visible as Prototyped API");
+        apis = restAPIStore.getPrototypedAPIs(superUser);
+        assertTrue((apis.getList().size() > 0), apiName + " is not visible as Prototyped API");
     }
 
     @Test(groups = {"wso2.am"}, description = "API deployed as a prototype and check the" +
             " visibility in general store",
             dependsOnMethods = "testOpenAlreadySavedAPIAndDeployedAsAPrototyped")
-    public void testPrototypedAPIVisibilityInGeneralAPI() throws
-            APIManagerIntegrationTestException {
-
-        List<APIIdentifier> publishedAPIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse(apiStore.getAllPublishedAPIs());
-        assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifierStore, publishedAPIList),
+    public void testPrototypedAPIVisibilityInGeneralAPI() {
+        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, apis),
                 apiName + "is not in general Store.");
     }
 
-    @Test(groups = {"wso2.am"}, description = "API deployed as a prototype and check the " +
-            "visibility in Recently Added list in store",
-            dependsOnMethods = "testOpenAlreadySavedAPIAndDeployedAsAPrototyped")
-    public void testPrototypedAPIVisibilityInRecentlyAddedList() throws
-            APIManagerIntegrationTestException {
-
-        String apiLimit = "5";
-
-        List<APIIdentifier> recentlyAddedAPIIList = APIMTestCaseUtils.
-                getAPIIdentifierListFromHttpResponse
-                        (apiStore.getRecentlyAddedAPIs(superUser, apiLimit));
-        assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifierStore, recentlyAddedAPIIList),
-                apiName + "is visible in Recently added API List.");
-    }
 
     @Test(groups = {"wso2.am"}, description = "API deployed as a prototype and check the " +
             "tags of API visibility in Tag list in store",
-            dependsOnMethods = "testOpenAlreadySavedAPIAndDeployedAsAPrototyped")
-    public void testTagsOfPrototypedAPIVisibilityInTagList() throws
-            APIManagerIntegrationTestException {
+            dependsOnMethods = "testPrototypedAPIVisibilityInGeneralAPI")
+    public void testTagsOfPrototypedAPIVisibilityInTagList() throws org.wso2.am.integration.clients.store.api.ApiException {
 
-        HttpResponse tagResponse = apiStore.getAllTags();
-        assertFalse(tagResponse.getData().contains(apiTags),
+        TagListDTO allTags = restAPIStore.getAllTags();
+        assertFalse(allTags.getList().contains(apiTags),
                 "Tags of" + apiName + " PizzaAPI are visible in Tag List.");
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, JSONException {
-        apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
-
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, JSONException, ApiException {
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+        restAPIPublisher.deleteAPI(apiId);
     }
 
 }

@@ -1858,4 +1858,18 @@ public class APIMTestCaseUtils {
         }
         return isFound;
     }
+
+    /**
+     * get the base64 encoded username and password
+     *
+     * @param user username
+     * @param pass password
+     * @return encoded basic auth, as string
+     */
+    public static String encodeCredentials(String user, char[] pass) {
+        StringBuilder builder = new StringBuilder(user).append(':').append(pass);
+        String cred = builder.toString();
+        byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
+        return new String(encodedBytes);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import com.google.gson.Gson;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
@@ -25,30 +26,24 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-
-import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Add new Log mediation to the in-flow and check the logs to verify the  added mediation is working.
@@ -59,54 +54,49 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     private final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
-    private APICreationRequestBean apiCreationRequestBean;
-    private APIIdentifier apiIdentifier;
     private String accessToken;
+    private String applicationId;
+    private String apiId;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
-        String providerName = user.getUserName();
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME,
-                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        applicationId = applicationResponse.getData();
 
-
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API before adding the log mediation")
-    public void testAPIInvocationBeforeAddingNewMediation() throws Exception    {
-        //Create publish and subscribe a API
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+    public void testAPIInvocationBeforeAddingNewMediation() throws Exception {
 
-        //Send GET Request
+        //Create the api creation request object
+        APIRequest apiRequest;
+        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTags(API_TAGS);
+
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
-        request.setHeader("Authorization" , "Bearer " + accessToken);
+        request.setHeader("Authorization", "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
 
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
@@ -118,43 +108,60 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the log mediation",
             dependsOnMethods = "testAPIInvocationBeforeAddingNewMediation")
-    public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
-        apiCreationRequestBean.setOutSequence("xml_to_json_out_message");
-        apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+    public void testAPIInvocationAfterAddingNewMediation() throws Exception {
+
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        MediationPolicyDTO mediationPolicyDTO = new MediationPolicyDTO();
+        mediationPolicyDTO.setType("out");
+        mediationPolicyDTO.setName("xml_to_json_out_message");
+
+        List<MediationPolicyDTO> mediationPolicyDTOList = new ArrayList<>();
+        mediationPolicyDTOList.add(mediationPolicyDTO);
+        apidto.setMediationPolicies(mediationPolicyDTOList);
+        restAPIPublisher.updateAPI(apidto);
+
         waitForAPIDeployment();
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
-        request.setHeader("Authorization" , "Bearer " + accessToken);
-        org.apache.http.HttpResponse response = client.execute(request);
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        org.apache.http.HttpResponse response2 = client.execute(request);
 
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
 
-        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/json; charset=UTF-8");
+        assertEquals(response2.getHeaders("Content-Type")[0].getValue(), "application/json; charset=UTF-8");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "IInvoke the API after removing the log mediation",
             dependsOnMethods = "testAPIInvocationAfterAddingNewMediation")
     public void testAPIInvocationBeforeRemovingNewMediation() throws Exception {
-        apiCreationRequestBean.setOutSequence("");
-        apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        List<MediationPolicyDTO> mediationPolicyDTOList = new ArrayList<>();
+        apidto.setMediationPolicies(mediationPolicyDTOList);
+        restAPIPublisher.updateAPI(apidto);
+
         waitForAPIDeployment();
         //Send GET Request
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
-        request.setHeader("Authorization" , "Bearer " + accessToken);
-        org.apache.http.HttpResponse response = client.execute(request);
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        org.apache.http.HttpResponse response2 = client.execute(request);
 
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
 
-        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml; charset=UTF-8");
+        assertEquals(response2.getHeaders("Content-Type")[0].getValue(), "application/xml; charset=UTF-8");
     }
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
 
     }
 

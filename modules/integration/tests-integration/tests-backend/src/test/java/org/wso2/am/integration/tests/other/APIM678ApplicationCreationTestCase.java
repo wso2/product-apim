@@ -99,7 +99,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @DataProvider(name = "createApplicationWithCustomAttributes")
     public static Object[][] createApplicationWithCustomAttributes() throws Exception {
         return new Object[][]{
-                {"NewApplication6", appTier, description, ApplicationDTO.TokenTypeEnum.OAUTH, customAttributes}
+                {"NewApplication6", appTier, description, ApplicationDTO.TokenTypeEnum.JWT, customAttributes}
         };
     }
 
@@ -122,7 +122,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 description, appTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
         assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched in add application " + applicationName);
@@ -141,7 +141,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 //            throws Exception {
 //        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
 //                description, tier,
-//                ApplicationDTO.TokenTypeEnum.OAUTH);
+//                ApplicationDTO.TokenTypeEnum.JWT);
 //
 //        assertNull(applicationResponse , "Error in Application Creation with Invalid data: "
 //         + applicationName);
@@ -154,7 +154,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 description, appTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertNull(applicationResponse, "Create already created application: "
                 + applicationName);
     }
@@ -174,7 +174,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         String applicationName = "testApplication";
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 description, appTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched in add application " + applicationName);
         applicationsList.add(applicationResponse.getData());
@@ -187,21 +187,21 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         //Update AppTier
         HttpResponse updateTierResponse = restAPIStore.updateApplicationByID(applicationResponse.getData(),
                 applicationName, description, newAppTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertTrue(updateTierResponse.getData().contains(newAppTier), "Error while updating application tier" +
                 applicationName);
 
         //Update AppName
         HttpResponse updateNameResponse = restAPIStore.updateApplicationByID(applicationResponse.getData(),
                 newAppName, description, appTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertTrue(updateNameResponse.getData().contains(newAppName), "Error while updating application name" +
                 applicationName);
 
         //Update AppDescription
         HttpResponse updateDesResponse = restAPIStore.updateApplicationByID(applicationResponse.getData(),
                 applicationName, newappDescription, newAppTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertTrue(updateDesResponse.getData().contains(newappDescription), "Error while updating application " +
                 "description" + applicationName);
 
@@ -214,7 +214,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         String applicationName = "RemoveMeApp";
         HttpResponse createApplicationResponse = restAPIStore.createApplication(applicationName,
                 description, appTier,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(createApplicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched in add application " + applicationName);
 

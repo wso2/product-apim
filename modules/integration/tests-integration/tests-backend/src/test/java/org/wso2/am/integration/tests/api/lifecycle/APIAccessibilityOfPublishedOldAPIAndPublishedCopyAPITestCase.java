@@ -87,7 +87,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
 
     }
@@ -231,7 +231,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
-        restAPIStore.removeApplication(APPLICATION_NAME);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
 

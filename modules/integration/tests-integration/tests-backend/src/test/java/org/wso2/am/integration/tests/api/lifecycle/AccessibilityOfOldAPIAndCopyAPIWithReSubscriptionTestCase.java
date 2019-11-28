@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -27,10 +28,19 @@ import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +69,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     private String applicationId;
     private String apiId;
     private String newApiId;
+    private String consumerKey;
+    private String consumerSecret;
     private APIRequest apiRequest;
     private Map<String, String> requestHeaders;
     private ArrayList<String> grantTypes;
@@ -84,7 +96,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
     }
 
@@ -142,6 +154,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         ApplicationKeyDTO applicationKeyDTO = restAPIStore
                 .generateKeys(applicationId, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                         grantTypes);
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "text/xml");
@@ -182,6 +196,15 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
                         getAPIIdentifierStringFromAPIRequest(apiRequest));
         assertTrue(StringUtils.isNotEmpty(newVersionSubscribeResponse.getData()),
                 "Error in subscribe of old API version" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
+                user.getPassword());
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
+                        tokenEndpointURL).getData());
+
+        requestHeaders.put("Authorization", "Bearer " + subsAccessTokenGenerationResponse.getString("access_token"));
     }
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
