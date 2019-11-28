@@ -8,6 +8,9 @@ Name | Type | Description | Notes
 **scopes** | **List&lt;String&gt;** |  |  [optional]
 **applicationSharingEnabled** | **Boolean** |  |  [optional]
 **mapExistingAuthApps** | **Boolean** |  |  [optional]
+**apiGatewayEndpoint** | **String** |  |  [optional]
+**monetizationEnabled** | **Boolean** |  |  [optional]
+**isUnlimitedTierPaid** | **Boolean** |  |  [optional]
 
 
 

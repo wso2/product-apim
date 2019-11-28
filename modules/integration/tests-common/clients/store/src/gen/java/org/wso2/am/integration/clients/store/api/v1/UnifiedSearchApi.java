@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -60,7 +60,7 @@ public class UnifiedSearchApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search**. You can search by using providing the search term in the query parameters.  (optional)
+     * @param query **Search**.  You can search by using providing the search term in the query parameters.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
@@ -133,7 +133,7 @@ public class UnifiedSearchApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search**. You can search by using providing the search term in the query parameters.  (optional)
+     * @param query **Search**.  You can search by using providing the search term in the query parameters.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return SearchResultListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -149,7 +149,7 @@ public class UnifiedSearchApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search**. You can search by using providing the search term in the query parameters.  (optional)
+     * @param query **Search**.  You can search by using providing the search term in the query parameters.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return ApiResponse&lt;SearchResultListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -166,7 +166,7 @@ public class UnifiedSearchApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search**. You can search by using providing the search term in the query parameters.  (optional)
+     * @param query **Search**.  You can search by using providing the search term in the query parameters.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

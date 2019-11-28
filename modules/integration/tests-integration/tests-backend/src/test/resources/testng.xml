@@ -216,7 +216,7 @@
             <class name="org.wso2.am.integration.tests.restapi.GIT_1638_UrlEncodedApiNameTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationScopeValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
         </classes>
     </test>
     <test name="apim-mediation-tests" preserve-order="true" parallel="false" group-by-instances="true">

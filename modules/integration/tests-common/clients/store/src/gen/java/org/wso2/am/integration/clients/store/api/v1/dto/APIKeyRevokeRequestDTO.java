@@ -25,50 +25,29 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 
 /**
- * TenantDTO
+ * APIKeyRevokeRequestDTO
  */
 
-public class TenantDTO {
-  @SerializedName("domain")
-  private String domain = null;
+public class APIKeyRevokeRequestDTO {
+  @SerializedName("apikey")
+  private String apikey = null;
 
-  @SerializedName("status")
-  private String status = null;
-
-  public TenantDTO domain(String domain) {
-    this.domain = domain;
+  public APIKeyRevokeRequestDTO apikey(String apikey) {
+    this.apikey = apikey;
     return this;
   }
 
    /**
-   * tenant domain
-   * @return domain
+   * API Key to revoke
+   * @return apikey
   **/
-  @ApiModelProperty(example = "wso2.com", value = "tenant domain")
-  public String getDomain() {
-    return domain;
+  @ApiModelProperty(value = "API Key to revoke")
+  public String getApikey() {
+    return apikey;
   }
 
-  public void setDomain(String domain) {
-    this.domain = domain;
-  }
-
-  public TenantDTO status(String status) {
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * current status of the tenant active/inactive
-   * @return status
-  **/
-  @ApiModelProperty(example = "active", value = "current status of the tenant active/inactive")
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
+  public void setApikey(String apikey) {
+    this.apikey = apikey;
   }
 
 
@@ -80,24 +59,22 @@ public class TenantDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    TenantDTO tenant = (TenantDTO) o;
-    return Objects.equals(this.domain, tenant.domain) &&
-        Objects.equals(this.status, tenant.status);
+    APIKeyRevokeRequestDTO apIKeyRevokeRequest = (APIKeyRevokeRequestDTO) o;
+    return Objects.equals(this.apikey, apIKeyRevokeRequest.apikey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(domain, status);
+    return Objects.hash(apikey);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class TenantDTO {\n");
+    sb.append("class APIKeyRevokeRequestDTO {\n");
     
-    sb.append("    domain: ").append(toIndentedString(domain)).append("\n");
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
+    sb.append("    apikey: ").append(toIndentedString(apikey)).append("\n");
     sb.append("}");
     return sb.toString();
   }

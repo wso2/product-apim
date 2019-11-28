@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com

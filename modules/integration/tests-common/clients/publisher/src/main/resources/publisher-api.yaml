@@ -8702,7 +8702,10 @@ definitions:
       list:
         type: array
         items:
-          $ref: '#/definitions/SearchResult'
+          anyOf:
+            - $ref: '#/definitions/APISearchResult'
+            - $ref: '#/definitions/APIProductSearchResult'
+            - $ref: '#/definitions/DocumentSearchResult'
       pagination:
         $ref: '#/definitions/Pagination'
 

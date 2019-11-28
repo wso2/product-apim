@@ -16,6 +16,9 @@ Name | Type | Description | Notes
 **avgRating** | **String** | Average rating of the API |  [optional]
 **throttlingPolicies** | **List&lt;String&gt;** | List of throttling policies of the API |  [optional]
 **advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
+**businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
+**isSubscriptionAvailable** | **Boolean** |  |  [optional]
+**monetizationLabel** | **String** |  |  [optional]
 
 
 

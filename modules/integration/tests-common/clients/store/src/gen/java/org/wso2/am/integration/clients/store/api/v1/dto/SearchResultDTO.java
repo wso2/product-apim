@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -86,6 +86,9 @@ public class SearchResultDTO {
   @SerializedName("type")
   private TypeEnum type = null;
 
+  @SerializedName("transportType")
+  private String transportType = null;
+
   public SearchResultDTO() {
     this.name = this.getClass().getSimpleName();
   }
@@ -143,6 +146,24 @@ public class SearchResultDTO {
     this.type = type;
   }
 
+  public SearchResultDTO transportType(String transportType) {
+    this.transportType = transportType;
+    return this;
+  }
+
+   /**
+   * Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
+   * @return transportType
+  **/
+  @ApiModelProperty(value = "Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL")
+  public String getTransportType() {
+    return transportType;
+  }
+
+  public void setTransportType(String transportType) {
+    this.transportType = transportType;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -155,12 +176,13 @@ public class SearchResultDTO {
     SearchResultDTO searchResult = (SearchResultDTO) o;
     return Objects.equals(this.id, searchResult.id) &&
         Objects.equals(this.name, searchResult.name) &&
-        Objects.equals(this.type, searchResult.type);
+        Objects.equals(this.type, searchResult.type) &&
+        Objects.equals(this.transportType, searchResult.transportType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type);
+    return Objects.hash(id, name, type, transportType);
   }
 
 
@@ -172,6 +194,7 @@ public class SearchResultDTO {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    transportType: ").append(toIndentedString(transportType)).append("\n");
     sb.append("}");
     return sb.toString();
   }

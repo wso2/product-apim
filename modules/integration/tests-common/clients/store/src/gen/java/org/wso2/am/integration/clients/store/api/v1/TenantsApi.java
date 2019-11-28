@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -57,7 +57,7 @@ public class TenantsApi {
 
     /**
      * Build call for tenantsGet
-     * @param state The state represents the current state of the tenant Supported states are [ active, inactive]  (optional, default to active)
+     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param progressListener Progress listener
@@ -124,7 +124,7 @@ public class TenantsApi {
     /**
      * Get get tenants by state 
      * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant Supported states are [ active, inactive]  (optional, default to active)
+     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return TenantListDTO
@@ -138,7 +138,7 @@ public class TenantsApi {
     /**
      * Get get tenants by state 
      * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant Supported states are [ active, inactive]  (optional, default to active)
+     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return ApiResponse&lt;TenantListDTO&gt;
@@ -153,7 +153,7 @@ public class TenantsApi {
     /**
      * Get get tenants by state  (asynchronously)
      * This operation is to get tenants by state 
-     * @param state The state represents the current state of the tenant Supported states are [ active, inactive]  (optional, default to active)
+     * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param callback The callback to be executed when the API call finishes

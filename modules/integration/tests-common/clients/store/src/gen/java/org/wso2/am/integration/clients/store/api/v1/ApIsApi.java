@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -129,7 +129,7 @@ public class ApIsApi {
 
     /**
      * Get details of an API 
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -143,7 +143,7 @@ public class ApIsApi {
 
     /**
      * Get details of an API 
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -158,7 +158,7 @@ public class ApIsApi {
 
     /**
      * Get details of an API  (asynchronously)
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \\n 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -264,7 +264,7 @@ public class ApIsApi {
 
     /**
      * Get graphQL definition 
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -276,7 +276,7 @@ public class ApIsApi {
 
     /**
      * Get graphQL definition 
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -290,7 +290,7 @@ public class ApIsApi {
 
     /**
      * Get graphQL definition  (asynchronously)
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -395,7 +395,7 @@ public class ApIsApi {
 
     /**
      * Get details of the subscription throttling policies of an API 
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -409,7 +409,7 @@ public class ApIsApi {
 
     /**
      * Get details of the subscription throttling policies of an API 
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -424,7 +424,7 @@ public class ApIsApi {
 
     /**
      * Get details of the subscription throttling policies of an API  (asynchronously)
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -536,7 +536,7 @@ public class ApIsApi {
 
     /**
      * Get swagger definition 
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
@@ -552,7 +552,7 @@ public class ApIsApi {
 
     /**
      * Get swagger definition 
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
@@ -569,7 +569,7 @@ public class ApIsApi {
 
     /**
      * Get swagger definition  (asynchronously)
-     * You can use this operation to retrieve the swagger definition of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
+     * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
@@ -677,7 +677,7 @@ public class ApIsApi {
 
     /**
      * Get thumbnail image
-     * This operation can be used to download a thumbnail image of an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
+     * This operation can be used to download a thumbnail image of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -689,7 +689,7 @@ public class ApIsApi {
 
     /**
      * Get thumbnail image
-     * This operation can be used to download a thumbnail image of an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
+     * This operation can be used to download a thumbnail image of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -703,7 +703,7 @@ public class ApIsApi {
 
     /**
      * Get thumbnail image (asynchronously)
-     * This operation can be used to download a thumbnail image of an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
+     * This operation can be used to download a thumbnail image of an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s thumbnail, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -741,7 +741,7 @@ public class ApIsApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**. You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier. Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. Additionally you can use wildcards. Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;. Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**] If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
@@ -810,11 +810,11 @@ public class ApIsApi {
 
     /**
      * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition. Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used. **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.  This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**. You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier. Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. Additionally you can use wildcards. Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;. Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**] If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return APIListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -826,11 +826,11 @@ public class ApIsApi {
 
     /**
      * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition. Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used. **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.  This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**. You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier. Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. Additionally you can use wildcards. Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;. Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**] If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return ApiResponse&lt;APIListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -843,11 +843,11 @@ public class ApIsApi {
 
     /**
      * Retrieve/Search APIs  (asynchronously)
-     * This operation provides you a list of available APIs qualifying under a given search condition. Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used. **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.  This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header &#x60;X-WSO2-Tenant&#x60;. If not specified super tenant&#39;s APIs will be retrieved. If you used an Authorization header, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**. * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. 
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**. You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier. Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. Additionally you can use wildcards. Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;. Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**] If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

@@ -31,6 +31,7 @@ Name | Type | Description | Notes
 **scopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **avgRating** | **String** | The average rating of the API |  [optional]
 **advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
+**isSubscriptionAvailable** | **Boolean** |  |  [optional]
 
 
 
