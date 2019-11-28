@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -98,6 +98,9 @@ public class ApplicationKeyGenerateRequestDTO {
 
   @SerializedName("clientSecret")
   private String clientSecret = null;
+
+  @SerializedName("additionalProperties")
+  private String additionalProperties = null;
 
   public ApplicationKeyGenerateRequestDTO keyType(KeyTypeEnum keyType) {
     this.keyType = keyType;
@@ -238,6 +241,24 @@ public class ApplicationKeyGenerateRequestDTO {
     this.clientSecret = clientSecret;
   }
 
+  public ApplicationKeyGenerateRequestDTO additionalProperties(String additionalProperties) {
+    this.additionalProperties = additionalProperties;
+    return this;
+  }
+
+   /**
+   * Additional properties needed.
+   * @return additionalProperties
+  **/
+  @ApiModelProperty(example = "", value = "Additional properties needed.")
+  public String getAdditionalProperties() {
+    return additionalProperties;
+  }
+
+  public void setAdditionalProperties(String additionalProperties) {
+    this.additionalProperties = additionalProperties;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -254,12 +275,13 @@ public class ApplicationKeyGenerateRequestDTO {
         Objects.equals(this.scopes, applicationKeyGenerateRequest.scopes) &&
         Objects.equals(this.validityTime, applicationKeyGenerateRequest.validityTime) &&
         Objects.equals(this.clientId, applicationKeyGenerateRequest.clientId) &&
-        Objects.equals(this.clientSecret, applicationKeyGenerateRequest.clientSecret);
+        Objects.equals(this.clientSecret, applicationKeyGenerateRequest.clientSecret) &&
+        Objects.equals(this.additionalProperties, applicationKeyGenerateRequest.additionalProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyType, grantTypesToBeSupported, callbackUrl, scopes, validityTime, clientId, clientSecret);
+    return Objects.hash(keyType, grantTypesToBeSupported, callbackUrl, scopes, validityTime, clientId, clientSecret, additionalProperties);
   }
 
 
@@ -275,6 +297,7 @@ public class ApplicationKeyGenerateRequestDTO {
     sb.append("    validityTime: ").append(toIndentedString(validityTime)).append("\n");
     sb.append("    clientId: ").append(toIndentedString(clientId)).append("\n");
     sb.append("    clientSecret: ").append(toIndentedString(clientSecret)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -282,7 +282,7 @@ public class ThrottlingPoliciesApi {
 
     /**
      * Get details of a throttling policy 
-     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param policyId Policy Id represented as a UUID  (required)
      * @param policyLevel List Application or Subscription type thro.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -297,7 +297,7 @@ public class ThrottlingPoliciesApi {
 
     /**
      * Get details of a throttling policy 
-     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param policyId Policy Id represented as a UUID  (required)
      * @param policyLevel List Application or Subscription type thro.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -313,7 +313,7 @@ public class ThrottlingPoliciesApi {
 
     /**
      * Get details of a throttling policy  (asynchronously)
-     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
      * @param policyId Policy Id represented as a UUID  (required)
      * @param policyLevel List Application or Subscription type thro.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)

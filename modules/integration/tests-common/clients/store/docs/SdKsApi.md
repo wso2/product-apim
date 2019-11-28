@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="apisApiIdSdksLanguageGet"></a>
 # **apisApiIdSdksLanguageGet**
-> byte[] apisApiIdSdksLanguageGet(apiId, language)
+> byte[] apisApiIdSdksLanguageGet(apiId, language, xWSO2Tenant)
 
 Generate a SDK for an API 
 
@@ -34,8 +34,9 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 SdKsApi apiInstance = new SdKsApi();
 String apiId = "apiId_example"; // String | ID of the specific API for which the SDK is required. 
 String language = "language_example"; // String | Programming language of the SDK that is required. 
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    byte[] result = apiInstance.apisApiIdSdksLanguageGet(apiId, language);
+    byte[] result = apiInstance.apisApiIdSdksLanguageGet(apiId, language, xWSO2Tenant);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SdKsApi#apisApiIdSdksLanguageGet");
@@ -49,6 +50,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| ID of the specific API for which the SDK is required.  |
  **language** | **String**| Programming language of the SDK that is required.  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
 
 ### Return type
 

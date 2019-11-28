@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.AdvertiseInfoDTO;
 
 /**
@@ -67,6 +68,15 @@ public class APIInfoDTO {
 
   @SerializedName("advertiseInfo")
   private AdvertiseInfoDTO advertiseInfo = null;
+
+  @SerializedName("businessInformation")
+  private APIBusinessInformationDTO businessInformation = null;
+
+  @SerializedName("isSubscriptionAvailable")
+  private Boolean isSubscriptionAvailable = null;
+
+  @SerializedName("monetizationLabel")
+  private String monetizationLabel = null;
 
   public APIInfoDTO id(String id) {
     this.id = id;
@@ -292,6 +302,60 @@ public class APIInfoDTO {
     this.advertiseInfo = advertiseInfo;
   }
 
+  public APIInfoDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+    this.businessInformation = businessInformation;
+    return this;
+  }
+
+   /**
+   * Get businessInformation
+   * @return businessInformation
+  **/
+  @ApiModelProperty(value = "")
+  public APIBusinessInformationDTO getBusinessInformation() {
+    return businessInformation;
+  }
+
+  public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
+    this.businessInformation = businessInformation;
+  }
+
+  public APIInfoDTO isSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+    this.isSubscriptionAvailable = isSubscriptionAvailable;
+    return this;
+  }
+
+   /**
+   * Get isSubscriptionAvailable
+   * @return isSubscriptionAvailable
+  **/
+  @ApiModelProperty(example = "false", value = "")
+  public Boolean isIsSubscriptionAvailable() {
+    return isSubscriptionAvailable;
+  }
+
+  public void setIsSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+    this.isSubscriptionAvailable = isSubscriptionAvailable;
+  }
+
+  public APIInfoDTO monetizationLabel(String monetizationLabel) {
+    this.monetizationLabel = monetizationLabel;
+    return this;
+  }
+
+   /**
+   * Get monetizationLabel
+   * @return monetizationLabel
+  **/
+  @ApiModelProperty(example = "Free", value = "")
+  public String getMonetizationLabel() {
+    return monetizationLabel;
+  }
+
+  public void setMonetizationLabel(String monetizationLabel) {
+    this.monetizationLabel = monetizationLabel;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -313,12 +377,15 @@ public class APIInfoDTO {
         Objects.equals(this.thumbnailUri, apIInfo.thumbnailUri) &&
         Objects.equals(this.avgRating, apIInfo.avgRating) &&
         Objects.equals(this.throttlingPolicies, apIInfo.throttlingPolicies) &&
-        Objects.equals(this.advertiseInfo, apIInfo.advertiseInfo);
+        Objects.equals(this.advertiseInfo, apIInfo.advertiseInfo) &&
+        Objects.equals(this.businessInformation, apIInfo.businessInformation) &&
+        Objects.equals(this.isSubscriptionAvailable, apIInfo.isSubscriptionAvailable) &&
+        Objects.equals(this.monetizationLabel, apIInfo.monetizationLabel);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, type, provider, lifeCycleStatus, thumbnailUri, avgRating, throttlingPolicies, advertiseInfo);
+    return Objects.hash(id, name, description, context, version, type, provider, lifeCycleStatus, thumbnailUri, avgRating, throttlingPolicies, advertiseInfo, businessInformation, isSubscriptionAvailable, monetizationLabel);
   }
 
 
@@ -339,6 +406,9 @@ public class APIInfoDTO {
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    throttlingPolicies: ").append(toIndentedString(throttlingPolicies)).append("\n");
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
+    sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
+    sb.append("    isSubscriptionAvailable: ").append(toIndentedString(isSubscriptionAvailable)).append("\n");
+    sb.append("    monetizationLabel: ").append(toIndentedString(monetizationLabel)).append("\n");
     sb.append("}");
     return sb.toString();
   }

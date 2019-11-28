@@ -34,7 +34,7 @@ UnifiedSearchApi apiInstance = new UnifiedSearchApi();
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
-String query = "query_example"; // String | **Search**. You can search by using providing the search term in the query parameters. 
+String query = "query_example"; // String | **Search**.  You can search by using providing the search term in the query parameters. 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 try {
     SearchResultListDTO result = apiInstance.searchGet(limit, offset, xWSO2Tenant, query, ifNoneMatch);
@@ -52,7 +52,7 @@ Name | Type | Description  | Notes
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
- **query** | **String**| **Search**. You can search by using providing the search term in the query parameters.  | [optional]
+ **query** | **String**| **Search**.  You can search by using providing the search term in the query parameters.  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
 
 ### Return type

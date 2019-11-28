@@ -226,7 +226,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
             userManagementClient1.deleteUser(TENANT_USER3);
         }
         tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
-        super.cleanUp();
     }
 
     /**

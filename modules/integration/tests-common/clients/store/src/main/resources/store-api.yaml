@@ -22,7 +22,9 @@ info:
   title: "WSO2 API Manager - Store"
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - Store.
+
     It is written with [swagger 2](http://swagger.io/).
+
   contact:
     name: "WSO2"
     url: "http://wso2.com/products/api-manager/"
@@ -105,8 +107,11 @@ paths:
         Retrieve/Search APIs
       description: |
         This operation provides you a list of available APIs qualifying under a given search condition.
+
         Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+
         This operation supports retriving APIs of other tenants. The required tenant domain need to be specified as a header `X-WSO2-Tenant`. If not specified super tenant's APIs will be retrieved. If you used an Authorization header, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**.
         * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles.
@@ -118,14 +123,20 @@ paths:
           in: query
           description: |
             **Search condition**.
+
             You can search in attributes by using an **"<attribute>:"** modifier.
+
             Eg.
             "provider:wso2" will match an API if the provider of the API is exactly "wso2".
+
             Additionally you can use wildcards.
+
             Eg.
             "provider:wso2*" will match an API if the provider of the API starts with "wso2".
+
             Supported attribute modifiers are [**version, context, status,
             description, subcontext, doc, provider, tag**]
+
             If no advanced attribute modifier has been specified, search will match the
             given query string against API Name.
           type: string
@@ -166,7 +177,9 @@ paths:
         Get details of an API
       description: |
         Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
+
         `X-WSO2-Tenant` header can be used to retrive an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \n
       parameters:
@@ -226,7 +239,9 @@ paths:
         Get swagger definition
       description: |
         You can use this operation to retrieve the swagger definition of an API.
+
          `X-WSO2-Tenant` header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
       parameters:
@@ -288,7 +303,9 @@ paths:
         Get graphQL definition
       description: |
         You can use this operation to retrieve the swagger definition of an API.
+
          `X-WSO2-Tenant` header can be used to retrive the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
       parameters:
@@ -361,6 +378,7 @@ paths:
           required : true
           description: |
             Programming language of the SDK that is required.
+        - $ref: '#/parameters/requestedTenant'
       tags:
         - SDKs
       responses:
@@ -470,7 +488,9 @@ paths:
         Get a list of documents of an API
       description: |
         This operation can be used to retrive a list of documents belonging to an API by providing the id of the API.
+
         `X-WSO2-Tenant` header can be used to retrive documents of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's documents, you need to provide Authorization header.
       parameters:
@@ -530,7 +550,9 @@ paths:
         Get a document of an API
       description: |
         This operation can be used to retrieve a particular document's metadata associated with an API.
+
         `X-WSO2-Tenant` header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document, you need to provide Authorization header.
       parameters:
@@ -592,14 +614,18 @@ paths:
         Get the content of an API document
       description: |
         This operation can be used to retrive the content of an API's document.
+
         The document can be of 3 types. In each cases responses are different.
+
         1. **Inline type**:
            The content of the document will be retrieved in `text/plain` content type
         2. **FILE type**:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
             The client will recieve the URL of the document as the Location header with the response with - `303 See Other`
+
         `X-WSO2-Tenant` header can be used to retrive the content of a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document content, you need to provide Authorization header.
       parameters:
@@ -670,7 +696,9 @@ paths:
       summary: Get thumbnail image
       description: |
         This operation can be used to download a thumbnail image of an API.
+
         `X-WSO2-Tenant` header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's thumbnail, you need to provide Authorization header.
       parameters:
@@ -729,6 +757,7 @@ paths:
       summary: Retrieve API ratings
       description: |
         This operation can be used to retrieve the list of ratings of an API.
+
         `X-WSO2-Tenant` header can be used to retrieve ratings of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       x-examples:
         $ref: docs/examples/apis/apis_id_ratings_get.yaml
@@ -767,6 +796,7 @@ paths:
       summary: Retrieve API rating of user
       description: |
         This operation can be used to get the user rating of an API.
+
         `X-WSO2-Tenant` header can be used to retrieve the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/get
@@ -821,6 +851,7 @@ paths:
       summary: Add or update logged in user's rating for an API
       description: |
         This operation can be used to add or update an API rating.
+
         `X-WSO2-Tenant` header can be used to add or update the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/put
@@ -872,6 +903,7 @@ paths:
       summary: Delete user API rating
       description: |
         This operation can be used to delete logged in user API rating.
+
         `X-WSO2-Tenant` header can be used to delete the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/delete
@@ -886,6 +918,7 @@ paths:
           description: |
             OK.
             Resource successfully deleted.
+
   ######################################################
   # The "Comments Collection" resource API
   ######################################################
@@ -1112,6 +1145,7 @@ paths:
         Get details of the subscription throttling policies of an API
       description: |
         This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.
+
         `X-WSO2-Tenant` header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/parameters/apiId'
@@ -1181,9 +1215,12 @@ paths:
           in: query
           description: |
             **Search condition**.
+
             You can search for an application by specifying the name as "query" attribute.
+
             Eg.
             "app1" will match an application if the name is exactly "app1".
+
             Currently this does not support wildcards. Given name must exactly match the application name.
           type: string
         - name: sortBy
@@ -1979,6 +2016,50 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+  ######################################################
+  # The "Generate API Key" Processing Function resource API
+  ######################################################
+  '/applications/{applicationId}/api-keys/{keyType}/revoke':
+
+    #-----------------------------------------------------
+    # Revoke apikey for an application
+    #-----------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+            - apim:api_key
+      summary: Revoke API Key
+      description: |
+        Revoke a self contained API Key for the application
+      parameters:
+        - $ref: '#/parameters/applicationId'
+        - $ref: '#/parameters/keyType'
+        - in: body
+          name: body
+          description: |
+            API Key revoke request object
+          schema:
+            $ref: '#/definitions/APIKeyRevokeRequest'
+        - $ref: '#/parameters/If-Match'
+      tags:
+        - API Keys
+      responses:
+        200:
+          description: |
+            OK.
+            apikey revoked successfully.
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
 
   '/applications/{applicationId}/scopes':
     get:
@@ -2252,10 +2333,13 @@ paths:
         Get all subscriptions
       description: |
         This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of
+
         1. Retrieving applications which are subscibed to a specific API.
         `GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
+
         2. Retrieving APIs which are subscribed by a specific application.
         `GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId=c43a325c-260b-4302-81cb-768eafaa3aed`
+
         **IMPORTANT:**
         * It is mandatory to provide either **apiId** or **applicationId**.
       parameters:
@@ -2263,6 +2347,7 @@ paths:
         - $ref: '#/parameters/applicationId-Q'
         - $ref: '#/parameters/apiType-Q'
         - $ref: '#/parameters/groupId'
+        - $ref: '#/parameters/requestedTenant'
         - $ref: '#/parameters/offset'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/If-None-Match'
@@ -2313,6 +2398,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Subscription'
+        - $ref: '#/parameters/requestedTenant'
       tags:
         - Subscriptions
       responses:
@@ -2353,6 +2439,8 @@ paths:
           description: |
             Unsupported media type.
             The entity of the request was in a not supported format.
+
+
   ######################################################
   # The "Multiple Subscriptions" resource API
   ######################################################
@@ -2381,6 +2469,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Subscription'
+        - $ref: '#/parameters/requestedTenant'
       tags:
         - Subscriptions
       responses:
@@ -2411,6 +2500,7 @@ paths:
           description: |
             Unsupported media type.
             The entity of the request was in a not supported format.
+
   ######################################################
   # The "Individual Subscription" resource APIs
   ######################################################
@@ -2628,6 +2718,7 @@ paths:
         Get details of a throttling policy
       description: |
         This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.
+
         `X-WSO2-Tenant` header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/parameters/policyId'
@@ -2691,7 +2782,9 @@ paths:
         Get all tags
       description: |
         This operation can be used to retrieve a list of tags that are already added to APIs.
+
         `X-WSO2-Tenant` header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's tags, you need to provide Authorization header.
       parameters:
@@ -2751,6 +2844,7 @@ paths:
         Retrieve/Search APIs and API Documents by content
       description: |
         This operation provides you a list of available APIs and API Documents qualifying the given keyword match.
+
       parameters:
         - $ref : '#/parameters/limit'
         - $ref : '#/parameters/offset'
@@ -2759,7 +2853,9 @@ paths:
           in: query
           description: |
             **Search**.
+
             You can search by using providing the search term in the query parameters.
+
           type: string
         - $ref : "#/parameters/If-None-Match"
       tags:
@@ -2980,7 +3076,9 @@ paths:
         - name: state
           description: |
             The state represents the current state of the tenant
+
             Supported states are [ active, inactive]
+
           in: query
           type: string
           required: false
@@ -3549,6 +3647,7 @@ parameters:
     required: true
     description: |
       The alert type.
+
   # The alert subscription id parameter
   configurationId:
     name: configurationId
@@ -3557,6 +3656,7 @@ parameters:
     required: true
     description: |
       The alert configuration id.
+
 ######################################################
 # The resources used by some of the APIs above within the message body
 ######################################################
@@ -3653,6 +3753,14 @@ definitions:
       advertiseInfo:
         description: The advertise info of the API
         $ref: '#/definitions/AdvertiseInfo'
+      businessInformation:
+        $ref: '#/definitions/APIBusinessInformation'
+      isSubscriptionAvailable:
+        type: boolean
+        example: false
+      monetizationLabel:
+        type: string
+        example: Free
 
   #-----------------------------------------------------
   # The Standard API resource
@@ -3827,19 +3935,7 @@ definitions:
                   description: WSS environment default URL
                   example: "ws://localhost:9099/phoneverify/"
       businessInformation:
-        properties:
-          businessOwner:
-            type: string
-            example: businessowner
-          businessOwnerEmail:
-            type: string
-            example: businessowner@wso2.com
-          technicalOwner:
-            type: string
-            example: technicalowner
-          technicalOwnerEmail:
-            type: string
-            example: technicalowner@wso2.com
+        $ref: '#/definitions/APIBusinessInformation'
       labels:
         description: |
           Labels of micro-gateway environments attached to the API.
@@ -3863,6 +3959,9 @@ definitions:
       advertiseInfo:
         description: The advertise info of the API
         $ref: '#/definitions/AdvertiseInfo'
+      isSubscriptionAvailable:
+        type: boolean
+        example: false
 
   #-----------------------------------------------------
   # The Label resource
@@ -3945,6 +4044,7 @@ definitions:
           - JWT
         description: |
           Type of the access token generated for this application.
+
           **OAUTH:** A UUID based access token which is issued by default.
           **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments.
         default: JWT
@@ -3980,6 +4080,8 @@ definitions:
           Application created user
         type: string
         example: admin
+      hashEnabled:
+        type: boolean
 
   #-----------------------------------------------------
   # The Application Info resource
@@ -4185,6 +4287,23 @@ definitions:
         #   next: "/subscriptions?limit=1&offset=2&apiId=01234567-0123-0123-0123-012345678901&groupId="
         #   previous: "/subscriptions?limit=1&offset=0&apiId=01234567-0123-0123-0123-012345678901&groupId="
 
+  #-----------------------------------------------------
+  # API Business Information resource
+  #-----------------------------------------------------
+  APIBusinessInformation:
+    properties:
+      businessOwner:
+        type: string
+        example: businessowner
+      businessOwnerEmail:
+        type: string
+        example: businessowner@wso2.com
+      technicalOwner:
+        type: string
+        example: technicalowner
+      technicalOwnerEmail:
+        type: string
+        example: technicalowner@wso2.com
   #-----------------------------------------------------
   # The Subscription resource
   #-----------------------------------------------------
@@ -4399,6 +4518,7 @@ definitions:
         type: string
         description: |
           Description about individual errors occurred
+
   #-----------------------------------------------------
   # The Application Token resource
   #-----------------------------------------------------
@@ -4548,6 +4668,10 @@ definitions:
         type: string
         description: Client secret for generating access token. This is given together with the client Id.
         example: ""
+      additionalProperties:
+        type: string
+        description: Additional properties needed.
+        example: ""
 
   #-----------------------------------------------------
   # The Application Key Mapping Request schema
@@ -4609,6 +4733,16 @@ definitions:
       additionalProperties:
         type: object
         description: Additional parameters if Authorization server needs any
+
+  #-----------------------------------------------------
+  # The APIKey Revoke Request schema
+  #-----------------------------------------------------
+  APIKeyRevokeRequest :
+    title: API Key revoke request object
+    properties:
+      apikey:
+        type: string
+        description: API Key to revoke
 
   #-----------------------------------------------------
   # Scope Info resource
@@ -4773,7 +4907,9 @@ definitions:
       list:
         type: array
         items:
-          $ref: '#/definitions/SearchResult'
+          anyOf:
+            - $ref: '#/definitions/APISearchResult'
+            - $ref: '#/definitions/DocumentSearchResult'
       pagination:
         $ref: '#/definitions/Pagination'
 
@@ -4795,6 +4931,9 @@ definitions:
           - DOC
           - API
         example: API
+      transportType:
+        type: string
+        description: Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
 
   APISearchResult:
     title: API Result
@@ -4825,7 +4964,12 @@ definitions:
           thumbnailUri:
             type: string
             example: /apis/01234567-0123-0123-0123-012345678901/thumbnail
-
+          businessInformation:
+            $ref: '#/definitions/APIBusinessInformation'
+          avgRating:
+            type: string
+            description: Average rating of the API
+            example: 4.5
   DocumentSearchResult:
     title: Document Result
     allOf:
@@ -4903,6 +5047,7 @@ definitions:
         description: |
           Link to the previous subset of resources qualified.
           Empty if current subset is the first subset returned.
+
   #-----------------------------------------------------
   # The settings resource
   #-----------------------------------------------------
@@ -4923,7 +5068,14 @@ definitions:
       mapExistingAuthApps:
         type: boolean
         default: false
-
+      apiGatewayEndpoint:
+        type: string
+      monetizationEnabled:
+        type: boolean
+        default: false
+      IsUnlimitedTierPaid:
+        type: boolean
+        default: false
   #-----------------------------------------------------
   # The Application Attribute resource
   #-----------------------------------------------------

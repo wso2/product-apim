@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
@@ -51,6 +52,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionVal
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -81,6 +83,7 @@ public class RestAPIPublisherImpl {
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
+    public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -122,6 +125,7 @@ public class RestAPIPublisherImpl {
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
         subscriptionsApi.setApiClient(apiPublisherClient);
+        unifiedSearchApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -774,6 +778,20 @@ public class RestAPIPublisherImpl {
             return apis;
         }
         return null;
+    }
+
+    /**
+     * Retrieve the APIs according to the search query in Publisher.
+     *
+     * @param query - The query on which the APIs needs to be filtered
+     * @return SearchResultListDTO - The search results of the query
+     * @throws ApiException
+     */
+    public SearchResultListDTO searchAPIs(String query) throws ApiException {
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
+                .searchGetWithHttpInfo(null, null, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
+        return searchResponse.getData();
     }
 
 

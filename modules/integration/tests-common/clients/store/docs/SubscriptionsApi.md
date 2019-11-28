@@ -13,11 +13,11 @@ Method | HTTP request | Description
 
 <a name="subscriptionsGet"></a>
 # **subscriptionsGet**
-> SubscriptionListDTO subscriptionsGet(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch)
+> SubscriptionListDTO subscriptionsGet(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch)
 
 Get all subscriptions 
 
-This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
 
 ### Example
 ```java
@@ -39,11 +39,12 @@ String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID*
 String applicationId = "applicationId_example"; // String | **Application Identifier** consisting of the UUID of the Application. 
 String apiType = "apiType_example"; // String | **API TYPE** Identifies the type API(API or API_PRODUCT). 
 String groupId = "groupId_example"; // String | Application Group Id 
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 try {
-    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch);
+    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SubscriptionsApi#subscriptionsGet");
@@ -59,6 +60,7 @@ Name | Type | Description  | Notes
  **applicationId** | **String**| **Application Identifier** consisting of the UUID of the Application.  | [optional]
  **apiType** | **String**| **API TYPE** Identifies the type API(API or API_PRODUCT).  | [optional]
  **groupId** | **String**| Application Group Id  | [optional]
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
@@ -78,7 +80,7 @@ Name | Type | Description  | Notes
 
 <a name="subscriptionsMultiplePost"></a>
 # **subscriptionsMultiplePost**
-> List&lt;SubscriptionDTO&gt; subscriptionsMultiplePost(body)
+> List&lt;SubscriptionDTO&gt; subscriptionsMultiplePost(body, xWSO2Tenant)
 
 Add new subscriptions 
 
@@ -101,8 +103,9 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
 SubscriptionsApi apiInstance = new SubscriptionsApi();
 List<SubscriptionDTO> body = Arrays.asList(new SubscriptionDTO()); // List<SubscriptionDTO> | Subscription objects that should to be added 
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    List<SubscriptionDTO> result = apiInstance.subscriptionsMultiplePost(body);
+    List<SubscriptionDTO> result = apiInstance.subscriptionsMultiplePost(body, xWSO2Tenant);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SubscriptionsApi#subscriptionsMultiplePost");
@@ -115,6 +118,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**List&lt;SubscriptionDTO&gt;**](SubscriptionDTO.md)| Subscription objects that should to be added  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
 
 ### Return type
 
@@ -131,7 +135,7 @@ Name | Type | Description  | Notes
 
 <a name="subscriptionsPost"></a>
 # **subscriptionsPost**
-> SubscriptionDTO subscriptionsPost(body)
+> SubscriptionDTO subscriptionsPost(body, xWSO2Tenant)
 
 Add a new subscription 
 
@@ -154,8 +158,9 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
 SubscriptionsApi apiInstance = new SubscriptionsApi();
 SubscriptionDTO body = new SubscriptionDTO(); // SubscriptionDTO | Subscription object that should to be added 
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    SubscriptionDTO result = apiInstance.subscriptionsPost(body);
+    SubscriptionDTO result = apiInstance.subscriptionsPost(body, xWSO2Tenant);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SubscriptionsApi#subscriptionsPost");
@@ -168,6 +173,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**SubscriptionDTO**](SubscriptionDTO.md)| Subscription object that should to be added  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
 
 ### Return type
 

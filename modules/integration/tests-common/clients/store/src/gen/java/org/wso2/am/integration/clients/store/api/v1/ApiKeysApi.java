@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyRevokeRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
 
 import java.lang.reflect.Type;
@@ -197,6 +198,145 @@ public class ApiKeysApi {
         com.squareup.okhttp.Call call = applicationsApplicationIdApiKeysKeyTypeGeneratePostValidateBeforeCall(applicationId, keyType, body, ifMatch, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for applicationsApplicationIdApiKeysKeyTypeRevokePost
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param body API Key revoke request object  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdApiKeysKeyTypeRevokePostCall(String applicationId, String keyType, APIKeyRevokeRequestDTO body, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/revoke"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", apiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null)
+        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(String applicationId, String keyType, APIKeyRevokeRequestDTO body, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdApiKeysKeyTypeRevokePost(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling applicationsApplicationIdApiKeysKeyTypeRevokePost(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdApiKeysKeyTypeRevokePostCall(applicationId, keyType, body, ifMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Revoke API Key
+     * Revoke a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param body API Key revoke request object  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public void applicationsApplicationIdApiKeysKeyTypeRevokePost(String applicationId, String keyType, APIKeyRevokeRequestDTO body, String ifMatch) throws ApiException {
+        applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(applicationId, keyType, body, ifMatch);
+    }
+
+    /**
+     * Revoke API Key
+     * Revoke a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param body API Key revoke request object  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<Void> applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(String applicationId, String keyType, APIKeyRevokeRequestDTO body, String ifMatch) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, body, ifMatch, null, null);
+        return apiClient.execute(call);
+    }
+
+    /**
+     * Revoke API Key (asynchronously)
+     * Revoke a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param body API Key revoke request object  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdApiKeysKeyTypeRevokePostAsync(String applicationId, String keyType, APIKeyRevokeRequestDTO body, String ifMatch, final ApiCallback<Void> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, body, ifMatch, progressListener, progressRequestListener);
+        apiClient.executeAsync(call, callback);
         return call;
     }
 }

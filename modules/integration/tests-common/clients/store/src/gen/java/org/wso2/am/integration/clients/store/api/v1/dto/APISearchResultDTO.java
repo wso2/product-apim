@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultDTO;
 
 /**
@@ -47,6 +48,12 @@ public class APISearchResultDTO extends SearchResultDTO {
 
   @SerializedName("thumbnailUri")
   private String thumbnailUri = null;
+
+  @SerializedName("businessInformation")
+  private APIBusinessInformationDTO businessInformation = null;
+
+  @SerializedName("avgRating")
+  private String avgRating = null;
 
   public APISearchResultDTO description(String description) {
     this.description = description;
@@ -156,6 +163,42 @@ public class APISearchResultDTO extends SearchResultDTO {
     this.thumbnailUri = thumbnailUri;
   }
 
+  public APISearchResultDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+    this.businessInformation = businessInformation;
+    return this;
+  }
+
+   /**
+   * Get businessInformation
+   * @return businessInformation
+  **/
+  @ApiModelProperty(value = "")
+  public APIBusinessInformationDTO getBusinessInformation() {
+    return businessInformation;
+  }
+
+  public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
+    this.businessInformation = businessInformation;
+  }
+
+  public APISearchResultDTO avgRating(String avgRating) {
+    this.avgRating = avgRating;
+    return this;
+  }
+
+   /**
+   * Average rating of the API
+   * @return avgRating
+  **/
+  @ApiModelProperty(example = "4.5", value = "Average rating of the API")
+  public String getAvgRating() {
+    return avgRating;
+  }
+
+  public void setAvgRating(String avgRating) {
+    this.avgRating = avgRating;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -172,12 +215,14 @@ public class APISearchResultDTO extends SearchResultDTO {
         Objects.equals(this.provider, apISearchResult.provider) &&
         Objects.equals(this.status, apISearchResult.status) &&
         Objects.equals(this.thumbnailUri, apISearchResult.thumbnailUri) &&
+        Objects.equals(this.businessInformation, apISearchResult.businessInformation) &&
+        Objects.equals(this.avgRating, apISearchResult.avgRating) &&
         super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(description, context, version, provider, status, thumbnailUri, super.hashCode());
+    return Objects.hash(description, context, version, provider, status, thumbnailUri, businessInformation, avgRating, super.hashCode());
   }
 
 
@@ -192,6 +237,8 @@ public class APISearchResultDTO extends SearchResultDTO {
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
+    sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
+    sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("}");
     return sb.toString();
   }
