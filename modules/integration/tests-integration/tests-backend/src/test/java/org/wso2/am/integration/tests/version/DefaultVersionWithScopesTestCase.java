@@ -132,7 +132,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
         try {
             HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
                     "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                    ApplicationDTO.TokenTypeEnum.OAUTH);
+                    ApplicationDTO.TokenTypeEnum.JWT);
             applicationID = applicationResponse.getData();
 
             apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,

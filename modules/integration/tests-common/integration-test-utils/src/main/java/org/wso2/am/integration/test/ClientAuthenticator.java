@@ -33,7 +33,7 @@ public class ClientAuthenticator {
     private static String consumerKey = null;
     private static String consumerSecret = null;
     private static final String TLS_PROTOCOL = "TLS";
-
+    private static int count = 0;
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
 
@@ -80,7 +80,7 @@ public class ClientAuthenticator {
                 postParams = "grant_type=client_credentials";
             }
             if (!scopeList.isEmpty()) {
-                postParams += "&scope=" + scopeList;
+                postParams += "&scope=" + scopeList+" device_"+count;
             }
             urlConn.setHostnameVerifier(new HostnameVerifier() {
 
@@ -98,6 +98,7 @@ public class ClientAuthenticator {
                 String responseStr = getResponseString(urlConn.getInputStream());
                 JsonParser parser = new JsonParser();
                 JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                count++;
                 return obj.get("access_token").getAsString();
             } else {
                 throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);

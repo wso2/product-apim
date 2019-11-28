@@ -57,16 +57,8 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         super.init();
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
+                ApplicationDTO.TokenTypeEnum.JWT);
         applicationID = applicationResponse.getData();
-
-        ArrayList<String> grantTypes = new ArrayList<>();
-        //get access token
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the default endpoint")
@@ -94,6 +86,14 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse subscription = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId1 = subscription.getData();
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        //get access token
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         ResourceAdminServiceClient resourceAdminServiceClient =
                 new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(), "admin", "admin");

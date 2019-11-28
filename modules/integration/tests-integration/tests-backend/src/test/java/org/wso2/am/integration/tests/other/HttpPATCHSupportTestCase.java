@@ -110,7 +110,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
         //create an application
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, "Test Application",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
 
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);

@@ -136,5 +136,16 @@
       "transport.binary.receiver.enable": false,
       "transport.thrift.receiver.enable": true
     }
+  },
+  "apim.oauth_config.enable_token_encryption": {
+    "true": {
+      "oauth.extensions.token_persistence_processor": "org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor"
+    }
+  },
+  "apim.oauth_config.enable_token_hashing": {
+    "true": {
+      "oauth.extensions.token_persistence_processor": "org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor",
+      "oauth.hash_tokens_and_secrets": true
+    }
   }
 }

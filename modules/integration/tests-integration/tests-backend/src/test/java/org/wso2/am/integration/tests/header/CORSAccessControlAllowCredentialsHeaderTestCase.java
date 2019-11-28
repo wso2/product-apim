@@ -167,8 +167,11 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                 restAPIStore.createApplication(appName,
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
+                        ApplicationDTO.TokenTypeEnum.JWT);
         String applicationId = applicationResponse.getData();
+
+        //Subscribe to api
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //get access token
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -178,8 +181,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         accessToken = applicationKeyDTO.getToken().getAccessToken();
 
-        //Subscribe to api
-        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
         return accessToken;
     }
 

@@ -56,16 +56,15 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -82,7 +81,6 @@ public class RestAPIPublisherImpl {
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
-
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -110,7 +108,8 @@ public class RestAPIPublisherImpl {
                                 "apim:mediation_policy_create apim:mediation_policy_manage " +
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
-                                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings apim:pub_alert_manage",
+                                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
+                                "apim:pub_alert_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -680,6 +679,25 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * Updating the document content using file
+     *
+     * @param apiId      - Id of the API.
+     * @param docId      - document Id.
+     * @param docContent - file content
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws ApiException - Exception throws if error occurred when adding document.
+     */
+    public HttpResponse updateContentDocument(String apiId, String docId, File docContent) throws ApiException {
+        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, docContent, null,
+                null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(doc.getDocumentId())) {
+            response = new HttpResponse("Successfully update the documentation", 200);
+        }
+        return response;
+    }
+
+    /**
      * Update API document.
      *
      * @param apiId       api Id
@@ -712,6 +730,24 @@ public class RestAPIPublisherImpl {
         return apiResponse.getData();
     }
 
+    /**
+     * This method is used to get the content of API documents
+     *
+     * @param apiId      UUID of the API
+     * @param documentId UUID of the API document
+     * @return
+     * @throws ApiException
+     */
+    public HttpResponse getDocumentContent(String apiId, String documentId) throws ApiException {
+
+        ApiResponse<Void> apiResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentGetWithHttpInfo(apiId,
+                documentId, null);
+        HttpResponse response = null;
+        if (apiResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully retrieved the Document content", 200);
+        }
+        return response;
+    }
 
     /**
      * delete Document
@@ -811,14 +847,9 @@ public class RestAPIPublisherImpl {
      * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
-    public HttpResponse validateRoles(String roleId) throws ApiException {
-        ApiResponse<Void> releResponse = rolesApi.validateSystemRoleWithHttpInfo(roleId);
-
-        HttpResponse response = null;
-        if (releResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully validate the role", 200);
-        }
-        return response;
+    public ApiResponse<Void> validateRoles(String roleId) throws ApiException {
+        String encodedRoleName = Base64.getUrlEncoder().encodeToString(roleId.getBytes());
+        return rolesApi.validateSystemRoleWithHttpInfo(encodedRoleName);
     }
 
     public String getSwaggerByID(String apiId) throws ApiException {
