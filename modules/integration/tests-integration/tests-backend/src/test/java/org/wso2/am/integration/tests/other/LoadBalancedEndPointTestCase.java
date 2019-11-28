@@ -66,8 +66,11 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
     private String productionEndpointPrefix = "HelloWSO2 from File ";
     private String gatewayUrl;
     private List<APIOperationsDTO> apiOperationsDTOS;
-    String apiId;
-    String sandboxApiId;
+    private String apiId;
+    private String sandboxApiId;
+    private String appId;
+    private String sandboxAppId;
+
 
     @Factory(dataProvider = "userModeDataProvider")
     public LoadBalancedEndPointTestCase(TestUserMode userMode) {
@@ -134,13 +137,13 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
         String accessUrl = gatewayUrl + context + "/" + version + "/name";
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName, appTier, "", "Test App");
-        String applicationId =  applicationDTO.getApplicationId();
-        subscribeToAPIUsingRest(apiId, applicationId, tier, restAPIStore);
+        appId =  applicationDTO.getApplicationId();
+        subscribeToAPIUsingRest(apiId, appId, tier, restAPIStore);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         //generate keys
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
@@ -223,14 +226,14 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationNameSandbox, appTier, "",
                 "Test Application");
-        String applicationId =  applicationDTO.getApplicationId();
-        subscribeToAPIUsingRest(sandboxApiId, applicationId, tier, restAPIStore);
+        sandboxAppId =  applicationDTO.getApplicationId();
+        subscribeToAPIUsingRest(sandboxApiId, sandboxAppId, tier, restAPIStore);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         //generate production endpoint key
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(sandboxAppId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessTokenProduction = applicationKeyDTO.getToken().getAccessToken();
 
@@ -238,7 +241,7 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
         applicationHeaderProduction.put("Authorization", " Bearer " + accessTokenProduction);
 
         //generate sandbox endpoint key
-        ApplicationKeyDTO applicationKeyDTOSandBox = restAPIStore.generateKeys(applicationId, "36000", "",
+        ApplicationKeyDTO applicationKeyDTOSandBox = restAPIStore.generateKeys(sandboxAppId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes);
         String accessTokenSandbox = applicationKeyDTOSandBox.getToken().getAccessToken();
 
@@ -295,7 +298,10 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        restAPIStore.deleteApplication(appId);
+        restAPIStore.deleteApplication(sandboxAppId);
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(sandboxApiId);
     }
 }
 
