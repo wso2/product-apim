@@ -20,37 +20,41 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import org.apache.http.HttpStatus;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIDesignBean;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Create an API through the Publisher Rest API without providing mandatory fields
  * JIRA Issue Id - APIMANAGER-4039
  */
 
+// Need to remove all the APIException after resolving https://github.com/wso2/product-apim/issues/6172
+
 public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
-        APIMIntegrationBaseTest {
+        APIManagerLifecycleBaseTest {
     private final String apiNameTest1 = "APIM514PublisherTest1";
     private final String apiVersion = "1.0.0";
-    private final String apiDescription =
-            "This is Test API Created by API Manager Integration Test";
+    private final String apiDescription = "This is Test API Created by API Manager Integration Test";
     private String apiTag = "tag514-1, tag514-2, tag514-3";
-    private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
     private String apiProductionEndPointUrl;
 
@@ -74,14 +78,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
                 "customerservice/customers/123";
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-
-        apiProductionEndPointUrl = getGatewayURLHttp() +
-                apiProductionEndpointPostfixUrl;
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
 
     }
@@ -98,12 +95,17 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), "can be create API without name");
-        assertTrue(apiResponse.getString("message").contains
-                ("API name is not specified"), "can be create API without name");
+        try {
+            APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+            assertFalse(StringUtils.isNotEmpty(apiDto.getId()), "Api is not created without proving API Name");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
+        }
 
+//        JSONObject apiResponse = new JSONObject(apiId);
+//        assertTrue(apiResponse.getBoolean("error"), "can be create API without name");
+//        assertTrue(apiResponse.getString("message").contains
+//                ("API name is not specified"), "can be create API without name");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -116,12 +118,18 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest1 + "can be create without Context");
-        assertTrue(apiResponse.getString("message").contains
-                        ("Context not defined for API"),
-                apiNameTest1 + "can be create without Context");
+        try {
+            APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+            assertFalse(StringUtils.isNotEmpty(apiDto.getId()), "Api is not created without proving Context");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Internal Server Error " );
+        }
+//        JSONObject apiResponse = new JSONObject(apiId);
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest1 + "can be create without Context");
+//        assertTrue(apiResponse.getString("message").contains
+//                        ("Context not defined for API"),
+//                apiNameTest1 + "can be create without Context");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -137,11 +145,16 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest2 + "can be create without Version");
-        assertTrue(apiResponse.getString("message").contains
-                ("Version not specified for API " + apiNameTest2), apiNameTest2 + "can be create without Version");
+        try {
+            APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+            assertFalse(StringUtils.isNotEmpty(apiDto.getId()), "Api is not created without proving Version");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
+        }
+//        JSONObject apiResponse = new JSONObject(apiId);
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest2 + "can be create without Version");
+//        assertTrue(apiResponse.getString("message").contains
+//                ("Version not specified for API " + apiNameTest2), apiNameTest2 + "can be create without Version");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -159,12 +172,17 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setTiersCollection("");
         apiCreationRequestBean.setTier("");
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest3 +
-                "can be create without Tier availability");
-        assertTrue(apiResponse.getString("message").contains
-                ("No tier defined for the API"), apiNameTest3 + "can be create without Tier availability");
+        try {
+            APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+            assertFalse(StringUtils.isEmpty(apiDto.getId()), "Api is created without proving Version");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
+        }
+//        JSONObject apiResponse = new JSONObject(apiDto.getId());
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest3 +
+//                "can be create without Tier availability");
+//        assertTrue(apiResponse.getString("message").contains
+//                ("No tier defined for the API"), apiNameTest3 + "can be create without Tier availability");
     }
     
 //TODO Disabling test case due to the error occured while creating empty/null URL
@@ -181,11 +199,11 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest4 + "can be create without Endpoint");
-        assertTrue(apiResponse.getString("message").contains
-                ("Endpoint Configuration is missing"), apiNameTest4 + "can be create without Endpoint");
+        APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+//        JSONObject apiResponse = new JSONObject(apiDto.getId());
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest4 + "can be create without Endpoint");
+//        assertTrue(apiResponse.getString("message").contains
+//                ("Endpoint Configuration is missing"), apiNameTest4 + "can be create without Endpoint");
     }
 
 //TODO Disabling test case: Reference https://wso2.org/jira/browse/APIMANAGER-4240
@@ -201,12 +219,10 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         designBean.setSwagger("");
 
         HttpResponse apiCreationResponse = apiPublisher.designAPI(designBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest5 +
-                "can be create without Resources");
-        assertTrue(apiResponse.getString("message").contains
-                ("Invalid resource configuration "), apiNameTest5 +
-                "can be create without Resources");
+//        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest5 + "can be create without Resources");
+//        assertTrue(apiResponse.getString("message").contains
+//                ("Invalid resource configuration "), apiNameTest5 + "can be create without Resources");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -224,18 +240,21 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setAction("");
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
-        assertTrue(apiResponse.getBoolean("error"), apiNameTest6 + "can be create without Action");
-        assertTrue(apiResponse.getString("message").contains
-                (" is not supported"), apiNameTest6 + "can be create without Action");
+        try {
+            APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
+            assertFalse(StringUtils.isEmpty(apiDto.getId()), "Api is created without proving Action");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error " );
+        }
+//        JSONObject apiResponse = new JSONObject(apiDto.getId());
+//        assertTrue(apiResponse.getBoolean("error"), apiNameTest6 + "can be create without Action");
+//        assertTrue(apiResponse.getString("message").contains
+//                (" is not supported"), apiNameTest6 + "can be create without Action");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        apiPublisher.deleteAPI("",apiVersion,apiProviderName);
-        apiPublisher.deleteAPI("APIM514PublisherTest5",apiVersion,apiProviderName);
-
+        super.cleanUp();
     }
 
     private class APICreationRequestBeanWithoutAction extends APICreationRequestBean {
