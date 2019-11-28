@@ -46,8 +46,8 @@ public class APIProductInfoDTO {
   @SerializedName("provider")
   private String provider = null;
 
-  @SerializedName("thumbnailUri")
-  private String thumbnailUri = null;
+  @SerializedName("hasThumbnail")
+  private Boolean hasThumbnail = null;
 
   /**
    * State of the API product. Only published api products are visible on the store 
@@ -192,22 +192,22 @@ public class APIProductInfoDTO {
     this.provider = provider;
   }
 
-  public APIProductInfoDTO thumbnailUri(String thumbnailUri) {
-    this.thumbnailUri = thumbnailUri;
+  public APIProductInfoDTO hasThumbnail(Boolean hasThumbnail) {
+    this.hasThumbnail = hasThumbnail;
     return this;
   }
 
    /**
-   * Get thumbnailUri
-   * @return thumbnailUri
+   * Get hasThumbnail
+   * @return hasThumbnail
   **/
-  @ApiModelProperty(example = "/api-products/01234567-0123-0123-0123-012345678901/thumbnail", value = "")
-  public String getThumbnailUri() {
-    return thumbnailUri;
+  @ApiModelProperty(example = "true", value = "")
+  public Boolean isHasThumbnail() {
+    return hasThumbnail;
   }
 
-  public void setThumbnailUri(String thumbnailUri) {
-    this.thumbnailUri = thumbnailUri;
+  public void setHasThumbnail(Boolean hasThumbnail) {
+    this.hasThumbnail = hasThumbnail;
   }
 
   public APIProductInfoDTO state(StateEnum state) {
@@ -269,14 +269,14 @@ public class APIProductInfoDTO {
         Objects.equals(this.context, apIProductInfo.context) &&
         Objects.equals(this.description, apIProductInfo.description) &&
         Objects.equals(this.provider, apIProductInfo.provider) &&
-        Objects.equals(this.thumbnailUri, apIProductInfo.thumbnailUri) &&
+        Objects.equals(this.hasThumbnail, apIProductInfo.hasThumbnail) &&
         Objects.equals(this.state, apIProductInfo.state) &&
         Objects.equals(this.securityScheme, apIProductInfo.securityScheme);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, provider, thumbnailUri, state, securityScheme);
+    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme);
   }
 
 
@@ -290,7 +290,7 @@ public class APIProductInfoDTO {
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
-    sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
+    sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("}");

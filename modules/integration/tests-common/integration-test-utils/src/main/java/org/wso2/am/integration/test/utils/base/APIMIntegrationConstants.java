@@ -58,6 +58,7 @@ public class APIMIntegrationConstants {
     public static final String SANDBOXEP3_WEB_APP_NAME = "name-check3_SB";
     public static final String BPMN_PROCESS_ENGINE_WEB_APP_NAME = "BPMNProcessServerApp-1.0.0";
     public static final String ETCD_WEB_APP_NAME = "etcdmock";
+    public static final String WILDCARD_WEB_APP_NAME = "wildcard";
 
     public static final String RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER = "Application & Application User";
     public static final String RESOURCE_AUTH_TYPE_APPLICATION = "Application";

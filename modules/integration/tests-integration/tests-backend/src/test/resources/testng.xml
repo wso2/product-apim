@@ -29,6 +29,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
+            <class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>
         </classes>
     </test>
 

@@ -16,41 +16,25 @@
 
 package org.wso2.am.integration.test.impl;
 
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public class DtoUtils {
+public class DtoFactory {
 
-    public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis) {
+    public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
+                                                    List<String> polices) {
         return new APIProductDTO().
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
                 apis(apis).
                 context(context).
                 name(name).
+                policies(polices).
+                gatewayEnvironments(Arrays.asList("Production and Sandbox")).
                 provider(provider);
     }
 
-    public static List<ProductAPIDTO> getProductApiResources(Map<APIDTO, Set<APIOperationsDTO>> selectedResources) {
-        List<ProductAPIDTO> apiResources = new ArrayList<>();
-
-        for (Map.Entry<APIDTO, Set<APIOperationsDTO>> entry : selectedResources.entrySet()) {
-            APIDTO apiDto = entry.getKey();
-            Set<APIOperationsDTO> operations = entry.getValue();
-
-            apiResources.add(new ProductAPIDTO().
-                    apiId(apiDto.getId()).
-                    name(apiDto.getName()).
-                    operations(new ArrayList<>(operations)));
-        }
-
-        return apiResources;
-    }
 }

@@ -42,6 +42,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityD
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
@@ -69,6 +70,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -961,11 +963,28 @@ public class RestAPIPublisherImpl {
         return apiResponse.getData();
     }
 
-    public ApiResponse<APIProductDTO> addApiProduct(APIProductDTO apiProductDTO) throws ApiException {
-        return apiProductsApi.apiProductsPostWithHttpInfo(apiProductDTO);
+    public APIProductListDTO getAllApiProducts() throws ApiException {
+        ApiResponse<APIProductListDTO> apiResponse =
+                apiProductsApi.apiProductsGetWithHttpInfo(null, null, null, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
     }
 
-    public ApiResponse<Void> deleteApiProduct(String apiProductId) throws ApiException {
-        return apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
+    public APIProductDTO getApiProduct(String apiProductId) throws ApiException {
+        ApiResponse<APIProductDTO> apiResponse =
+                apiProductsApi.apiProductsApiProductIdGetWithHttpInfo(apiProductId, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
+    }
+
+    public APIProductDTO addApiProduct(APIProductDTO apiProductDTO) throws ApiException {
+        ApiResponse<APIProductDTO> apiResponse = apiProductsApi.apiProductsPostWithHttpInfo(apiProductDTO);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
+        return apiResponse.getData();
+    }
+
+    public void deleteApiProduct(String apiProductId) throws ApiException {
+        ApiResponse<Void> apiResponse = apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 }

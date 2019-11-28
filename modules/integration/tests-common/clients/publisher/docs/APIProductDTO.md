@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **context** | **String** |  |  [optional]
 **description** | **String** | A brief description about the API |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
-**thumbnailUri** | **String** |  |  [optional]
+**hasThumbnail** | **Boolean** |  |  [optional]
 **state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the store  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
 **responseCachingEnabled** | **Boolean** |  |  [optional]
@@ -27,7 +27,7 @@ Name | Type | Description | Notes
 **apiThrottlingPolicy** | **String** | The API level throttling policy selected for the particular API Product |  [optional]
 **authorizationHeader** | **String** | Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used.  |  [optional]
 **securityScheme** | **List&lt;String&gt;** | Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API.  |  [optional]
-**subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants. |  [optional]
+**subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
 **additionalProperties** | **Map&lt;String, String&gt;** | Map of custom properties of API |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
@@ -68,9 +68,9 @@ RESTRICTED | &quot;RESTRICTED&quot;
 ## Enum: SubscriptionAvailabilityEnum
 Name | Value
 ---- | -----
-CURRENT_TENANT | &quot;current_tenant&quot;
-ALL_TENANTS | &quot;all_tenants&quot;
-SPECIFIC_TENANTS | &quot;specific_tenants&quot;
+CURRENT_TENANT | &quot;CURRENT_TENANT&quot;
+ALL_TENANTS | &quot;ALL_TENANTS&quot;
+SPECIFIC_TENANTS | &quot;SPECIFIC_TENANTS&quot;
 
 
 

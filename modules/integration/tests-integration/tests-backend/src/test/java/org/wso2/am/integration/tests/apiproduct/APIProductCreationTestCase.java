@@ -16,111 +16,87 @@
 
 package org.wso2.am.integration.tests.apiproduct;
 
-import org.testng.Assert;
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
-import org.wso2.am.integration.test.impl.DtoUtils;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.ApiTestHelper;
+import org.wso2.am.integration.test.impl.ApiProductTestHelper;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
-
-    private static String SWAGGER_FOLDER = "swagger";
-    private static String API_1_DEFINITION_NAME = "customer-info-api.yaml";
-    private static String API_2_DEFINITION_NAME  = "leasing-api.yaml";
-
-    private List<APIDTO> apiDtos = new ArrayList<>();
-    private List<String> apiProductIds = new ArrayList<>();
+    private ApiTestHelper apiTestHelper;
+    private ApiProductTestHelper apiProductTestHelper;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, ApiException, JSONException {
         super.init();
-        String swaggerPath = getAMResourceLocation() + File.separator + SWAGGER_FOLDER +
-                File.separator + API_1_DEFINITION_NAME;
-
-        File firstApiDefinition = new File(swaggerPath);
-
-        swaggerPath = getAMResourceLocation() + File.separator + SWAGGER_FOLDER +
-                File.separator + API_2_DEFINITION_NAME;
-
-        File secondApiDefinition = new File(swaggerPath);
-
-        apiDtos.add(restAPIPublisher.importOASDefinition(firstApiDefinition, null));
-        apiDtos.add(restAPIPublisher.importOASDefinition(secondApiDefinition, null));
+        apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation());
+        apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product")
     public void testCreateAndInvokeApiProduct() throws Exception {
-        final String provider = "publisher";
-        final String name = "test-product";
-        final String context = "/test-product";
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
 
-        List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apiDtos);
+        apisToBeUsed.add(apiTestHelper.
+                createCustomerInfoApi(getBackendEndServiceEndPointHttp("wildcard/resources")));
+        apisToBeUsed.add(apiTestHelper.
+                createLeasingApi(getBackendEndServiceEndPointHttp("wildcard/resources")));
 
-        APIProductDTO apiProductDTO = DtoUtils.createApiProductDTO(provider, name, context, resourcesForProduct);
+        // Step 1 : Create APIProduct
+        final String provider = UUID.randomUUID().toString();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
 
-        ApiResponse<APIProductDTO> response = restAPIPublisher.addApiProduct(apiProductDTO);
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        Assert.assertEquals(response.getStatusCode(), 201);
-        APIProductDTO responseData = response.getData();
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies);
 
-        List<ProductAPIDTO> responseResources = responseData.getApis();
+        waitForAPIDeployment();
 
-        Assert.assertEquals(new HashSet<>(responseResources), new HashSet<>(resourcesForProduct));
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        // Step 3 : Verify APIProduct in dev portal
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
+                apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
+
+        // Step 4 : Subscribe to APIProduct
+        ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
+                TIER_UNLIMITED);
+
+        // Step 5 : Generate Production and Sandbox tokens without scopes
+        List<String> grantTypes = Arrays.asList("client_credentials", "password");
+        String productionAccessToken = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, new ArrayList<>(), grantTypes);
+
+        String sandboxAccessToken = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, new ArrayList<>(), grantTypes);
+
+        // Step 6 : Invoke API Product
+        apiTestHelper.verifyInvocation(apiDTO, productionAccessToken, sandboxAccessToken);
     }
 
-    private List<ProductAPIDTO> getResourcesForProduct(List<APIDTO> apiDtos) {
-        Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping = new HashMap<>();
 
-        // Pick two operations from each API to be used to create the APIProduct.
-        for (APIDTO apiDto : apiDtos) {
-            selectOperationsFromAPI(apiDto, 2, selectedApiResourceMapping);
-        }
-
-        return DtoUtils.getProductApiResources(selectedApiResourceMapping);
-    }
-
-    private void selectOperationsFromAPI(APIDTO apiDto, final int numberOfOperations,
-                                            Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping) {
-        List<APIOperationsDTO> operations = apiDto.getOperations();
-
-        Set<APIOperationsDTO> selectedOperations = new HashSet<>();
-        selectedApiResourceMapping.put(apiDto, selectedOperations);
-
-        for (APIOperationsDTO operation : operations) {
-            selectedOperations.add(operation);
-
-            // Only select upto the specified number of operations
-            if (selectedOperations.size() == numberOfOperations) {
-                break;
-            }
-        }
-    }
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        for (APIDTO apiDto : apiDtos) {
-            restAPIPublisher.deleteAPI(apiDto.getId());
-        }
-
-        for (String apiProductId : apiProductIds) {
-            restAPIPublisher.deleteApiProduct(apiProductId);
-        }
-
         super.cleanUp();
     }
 }
+
