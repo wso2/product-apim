@@ -720,6 +720,24 @@ public class RestAPIPublisherImpl {
         return apiResponse.getData();
     }
 
+    /**
+     * This method is used to get the content of API documents
+     *
+     * @param apiId      UUID of the API
+     * @param documentId UUID of the API document
+     * @return
+     * @throws ApiException
+     */
+    public HttpResponse getDocumentContent(String apiId, String documentId) throws ApiException {
+
+        ApiResponse<Void> apiResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentGetWithHttpInfo(apiId,
+                documentId, null);
+        HttpResponse response = null;
+        if (apiResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully retrieved the Document content", 200);
+        }
+        return response;
+    }
 
     /**
      * delete Document
