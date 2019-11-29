@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -63,6 +63,7 @@ public class SubscriptionsApi {
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -71,7 +72,7 @@ public class SubscriptionsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsGetCall(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsGetCall(String apiId, String applicationId, String apiType, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -93,6 +94,8 @@ public class SubscriptionsApi {
         localVarQueryParams.addAll(apiClient.parameterToPair("limit", limit));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null)
+        localVarHeaderParams.put("X-WSO2-Tenant", apiClient.parameterToString(xWSO2Tenant));
         if (ifNoneMatch != null)
         localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
 
@@ -127,58 +130,61 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call subscriptionsGetValidateBeforeCall(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call subscriptionsGetValidateBeforeCall(String apiId, String applicationId, String apiType, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = subscriptionsGetCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsGetCall(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
     }
 
     /**
      * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return SubscriptionListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public SubscriptionListDTO subscriptionsGet(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
-        ApiResponse<SubscriptionListDTO> resp = subscriptionsGetWithHttpInfo(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch);
+    public SubscriptionListDTO subscriptionsGet(String apiId, String applicationId, String apiType, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        ApiResponse<SubscriptionListDTO> resp = subscriptionsGetWithHttpInfo(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
         return resp.getData();
     }
 
     /**
      * Get all subscriptions 
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return ApiResponse&lt;SubscriptionListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<SubscriptionListDTO> subscriptionsGetWithHttpInfo(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
-        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, null, null);
+    public ApiResponse<SubscriptionListDTO> subscriptionsGetWithHttpInfo(String apiId, String applicationId, String apiType, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, null, null);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * Get all subscriptions  (asynchronously)
-     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of 1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; 2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60; **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+     * This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (optional)
      * @param apiType **API TYPE** Identifies the type API(API or API_PRODUCT).  (optional)
      * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -186,7 +192,7 @@ public class SubscriptionsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsGetAsync(String apiId, String applicationId, String apiType, String groupId, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback<SubscriptionListDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsGetAsync(String apiId, String applicationId, String apiType, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback<SubscriptionListDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -207,7 +213,7 @@ public class SubscriptionsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsGetValidateBeforeCall(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -215,12 +221,13 @@ public class SubscriptionsApi {
     /**
      * Build call for subscriptionsMultiplePost
      * @param body Subscription objects that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsMultiplePostCall(List<SubscriptionDTO> body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsMultiplePostCall(List<SubscriptionDTO> body, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
 
         // create path and map variables
@@ -230,6 +237,8 @@ public class SubscriptionsApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null)
+        localVarHeaderParams.put("X-WSO2-Tenant", apiClient.parameterToString(xWSO2Tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -262,7 +271,7 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call subscriptionsMultiplePostValidateBeforeCall(List<SubscriptionDTO> body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call subscriptionsMultiplePostValidateBeforeCall(List<SubscriptionDTO> body, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'body' is set
         if (body == null) {
@@ -270,7 +279,7 @@ public class SubscriptionsApi {
         }
         
 
-        com.squareup.okhttp.Call call = subscriptionsMultiplePostCall(body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsMultiplePostCall(body, xWSO2Tenant, progressListener, progressRequestListener);
         return call;
 
     }
@@ -279,11 +288,12 @@ public class SubscriptionsApi {
      * Add new subscriptions 
      * This operation can be used to add a new subscriptions providing the ids of the APIs and the applications. 
      * @param body Subscription objects that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return List&lt;SubscriptionDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public List<SubscriptionDTO> subscriptionsMultiplePost(List<SubscriptionDTO> body) throws ApiException {
-        ApiResponse<List<SubscriptionDTO>> resp = subscriptionsMultiplePostWithHttpInfo(body);
+    public List<SubscriptionDTO> subscriptionsMultiplePost(List<SubscriptionDTO> body, String xWSO2Tenant) throws ApiException {
+        ApiResponse<List<SubscriptionDTO>> resp = subscriptionsMultiplePostWithHttpInfo(body, xWSO2Tenant);
         return resp.getData();
     }
 
@@ -291,11 +301,12 @@ public class SubscriptionsApi {
      * Add new subscriptions 
      * This operation can be used to add a new subscriptions providing the ids of the APIs and the applications. 
      * @param body Subscription objects that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return ApiResponse&lt;List&lt;SubscriptionDTO&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<List<SubscriptionDTO>> subscriptionsMultiplePostWithHttpInfo(List<SubscriptionDTO> body) throws ApiException {
-        com.squareup.okhttp.Call call = subscriptionsMultiplePostValidateBeforeCall(body, null, null);
+    public ApiResponse<List<SubscriptionDTO>> subscriptionsMultiplePostWithHttpInfo(List<SubscriptionDTO> body, String xWSO2Tenant) throws ApiException {
+        com.squareup.okhttp.Call call = subscriptionsMultiplePostValidateBeforeCall(body, xWSO2Tenant, null, null);
         Type localVarReturnType = new TypeToken<List<SubscriptionDTO>>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -304,11 +315,12 @@ public class SubscriptionsApi {
      * Add new subscriptions  (asynchronously)
      * This operation can be used to add a new subscriptions providing the ids of the APIs and the applications. 
      * @param body Subscription objects that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsMultiplePostAsync(List<SubscriptionDTO> body, final ApiCallback<List<SubscriptionDTO>> callback) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsMultiplePostAsync(List<SubscriptionDTO> body, String xWSO2Tenant, final ApiCallback<List<SubscriptionDTO>> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -329,7 +341,7 @@ public class SubscriptionsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = subscriptionsMultiplePostValidateBeforeCall(body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsMultiplePostValidateBeforeCall(body, xWSO2Tenant, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<List<SubscriptionDTO>>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -337,12 +349,13 @@ public class SubscriptionsApi {
     /**
      * Build call for subscriptionsPost
      * @param body Subscription object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsPostCall(SubscriptionDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsPostCall(SubscriptionDTO body, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
 
         // create path and map variables
@@ -352,6 +365,8 @@ public class SubscriptionsApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null)
+        localVarHeaderParams.put("X-WSO2-Tenant", apiClient.parameterToString(xWSO2Tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -384,7 +399,7 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call subscriptionsPostValidateBeforeCall(SubscriptionDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call subscriptionsPostValidateBeforeCall(SubscriptionDTO body, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'body' is set
         if (body == null) {
@@ -392,7 +407,7 @@ public class SubscriptionsApi {
         }
         
 
-        com.squareup.okhttp.Call call = subscriptionsPostCall(body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsPostCall(body, xWSO2Tenant, progressListener, progressRequestListener);
         return call;
 
     }
@@ -401,11 +416,12 @@ public class SubscriptionsApi {
      * Add a new subscription 
      * This operation can be used to add a new subscription providing the id of the API and the application. 
      * @param body Subscription object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return SubscriptionDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public SubscriptionDTO subscriptionsPost(SubscriptionDTO body) throws ApiException {
-        ApiResponse<SubscriptionDTO> resp = subscriptionsPostWithHttpInfo(body);
+    public SubscriptionDTO subscriptionsPost(SubscriptionDTO body, String xWSO2Tenant) throws ApiException {
+        ApiResponse<SubscriptionDTO> resp = subscriptionsPostWithHttpInfo(body, xWSO2Tenant);
         return resp.getData();
     }
 
@@ -413,11 +429,12 @@ public class SubscriptionsApi {
      * Add a new subscription 
      * This operation can be used to add a new subscription providing the id of the API and the application. 
      * @param body Subscription object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return ApiResponse&lt;SubscriptionDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<SubscriptionDTO> subscriptionsPostWithHttpInfo(SubscriptionDTO body) throws ApiException {
-        com.squareup.okhttp.Call call = subscriptionsPostValidateBeforeCall(body, null, null);
+    public ApiResponse<SubscriptionDTO> subscriptionsPostWithHttpInfo(SubscriptionDTO body, String xWSO2Tenant) throws ApiException {
+        com.squareup.okhttp.Call call = subscriptionsPostValidateBeforeCall(body, xWSO2Tenant, null, null);
         Type localVarReturnType = new TypeToken<SubscriptionDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -426,11 +443,12 @@ public class SubscriptionsApi {
      * Add a new subscription  (asynchronously)
      * This operation can be used to add a new subscription providing the id of the API and the application. 
      * @param body Subscription object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call subscriptionsPostAsync(SubscriptionDTO body, final ApiCallback<SubscriptionDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call subscriptionsPostAsync(SubscriptionDTO body, String xWSO2Tenant, final ApiCallback<SubscriptionDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -451,7 +469,7 @@ public class SubscriptionsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = subscriptionsPostValidateBeforeCall(body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = subscriptionsPostValidateBeforeCall(body, xWSO2Tenant, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SubscriptionDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;

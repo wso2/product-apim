@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
+import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -45,6 +46,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -53,7 +55,6 @@ import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class RestAPIStoreImpl {
     public RatingsApi ratingsApi = new RatingsApi();
     public TagsApi tagsApi = new TagsApi();
     public SdKsApi sdKsApi = new SdKsApi();
+    public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -110,6 +112,7 @@ public class RestAPIStoreImpl {
         commentsApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
+        unifiedSearchApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -227,7 +230,7 @@ public class RestAPIStoreImpl {
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
             subscription.setType(SubscriptionDTO.TypeEnum.API);
-            SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription);
+            SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(subscriptionResponse.getSubscriptionId())) {
@@ -245,7 +248,7 @@ public class RestAPIStoreImpl {
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
             throws ApiException {
         ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
-                (apiId, applicationId, apiType, groupId, null, null, null);
+                (apiId, applicationId, apiType, groupId, this.tenantDomain, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
         return suscriptionResponse.getData();
     }
@@ -264,7 +267,7 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
-                                          ArrayList<String> grantTypes)
+                                          List<String> grantTypes)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -273,9 +276,10 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
 
-        return applicationKeysApi
-                .applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequest);
-
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
     }
 
     /**
@@ -367,6 +371,35 @@ public class RestAPIStoreImpl {
     }
 
     /**
+     * Retrieve the APIs according to the search query in Publisher.
+     *
+     * @param query - The query on which the APIs needs to be filtered
+     * @return SearchResultListDTO - The search results of the query
+     * @throws ApiException
+     */
+    public SearchResultListDTO searchAPIs(String query) throws ApiException {
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
+                .searchGetWithHttpInfo(null, null, this.tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
+        return searchResponse.getData();
+    }
+
+    /**
+     * Retrieve the APIs according to the search query in Publisher.
+     *
+     * @param query - The query on which the APIs needs to be filtered
+     * @param tenantDomain - The tenant domain on which the APIs needs to be filtered
+     * @return SearchResultListDTO - The search results of the query
+     * @throws ApiException
+     */
+    public SearchResultListDTO searchAPIs(String query, String tenantDomain) throws ApiException {
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
+                .searchGetWithHttpInfo(null, null, tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
+        return searchResponse.getData();
+    }
+
+    /**
      * Get APIs for the given limit and offset values
      *
      * @param offset starting position
@@ -385,24 +418,14 @@ public class RestAPIStoreImpl {
      * Get application by ID
      *
      * @return - http response of get of application
-     * @throws APIManagerIntegrationTestException - throws if get application fails.
+     * @throws ApiException - throws if get application fails.
      */
-    public HttpResponse getApplicationById(String applicationId) throws APIManagerIntegrationTestException {
-        try {
-            ApplicationDTO applicationDTO = applicationsApi.applicationsApplicationIdGet(applicationId, null);
-            HttpResponse response = null;
-            if (StringUtils.isNotEmpty(applicationDTO.getApplicationId())) {
-                Gson gson = new Gson();
-                response = new HttpResponse(gson.toJson(applicationDTO), 200);
-            }
-            return response;
-        } catch (ApiException e) {
-            if (e.getResponseBody().contains("already exists")) {
-                return null;
-            }
-        }
+    public ApplicationDTO getApplicationById(String applicationId) throws ApiException {
+        ApiResponse<ApplicationDTO> applicationDTOApiResponse = applicationsApi.
+                applicationsApplicationIdGetWithHttpInfo(applicationId, null);
+        Assert.assertEquals(applicationDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return applicationDTOApiResponse.getData();
 
-        return null;
     }
 
     /**
@@ -938,7 +961,7 @@ public class RestAPIStoreImpl {
      */
     public SubscriptionListDTO getAllSubscriptionsOfApplication(String applicationId) throws ApiException {
 
-        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, null, null, null);
+        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, this.tenantDomain, null, null, null);
         if (subscriptionListDTO.getCount() > 0) {
             return subscriptionListDTO;
         }
@@ -1288,7 +1311,7 @@ public class RestAPIStoreImpl {
         subscription.setThrottlingPolicy(tier);
         subscription.setType(SubscriptionDTO.TypeEnum.API);
         ApiResponse<SubscriptionDTO> subscriptionResponse =
-                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription);
+                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
         return subscriptionResponse.getData();
     }
@@ -1549,7 +1572,7 @@ public class RestAPIStoreImpl {
             throws ApiException, IOException {
 
         sdKsApi.setApiClient(apiStoreClient);
-        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language);
+        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, this.tenantDomain);
 
     }
 

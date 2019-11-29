@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **id** | **String** |  |  [optional]
 **name** | **String** |  | 
 **type** | [**TypeEnum**](#TypeEnum) |  |  [optional]
+**transportType** | **String** | Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL |  [optional]
 
 
 <a name="TypeEnum"></a>

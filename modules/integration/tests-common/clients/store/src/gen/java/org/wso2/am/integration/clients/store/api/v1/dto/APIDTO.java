@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -121,6 +121,9 @@ public class APIDTO {
 
   @SerializedName("advertiseInfo")
   private AdvertiseInfoDTO advertiseInfo = null;
+
+  @SerializedName("isSubscriptionAvailable")
+  private Boolean isSubscriptionAvailable = null;
 
   public APIDTO id(String id) {
     this.id = id;
@@ -688,6 +691,24 @@ public class APIDTO {
     this.advertiseInfo = advertiseInfo;
   }
 
+  public APIDTO isSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+    this.isSubscriptionAvailable = isSubscriptionAvailable;
+    return this;
+  }
+
+   /**
+   * Get isSubscriptionAvailable
+   * @return isSubscriptionAvailable
+  **/
+  @ApiModelProperty(example = "false", value = "")
+  public Boolean isIsSubscriptionAvailable() {
+    return isSubscriptionAvailable;
+  }
+
+  public void setIsSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+    this.isSubscriptionAvailable = isSubscriptionAvailable;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -724,12 +745,13 @@ public class APIDTO {
         Objects.equals(this.environmentList, API.environmentList) &&
         Objects.equals(this.scopes, API.scopes) &&
         Objects.equals(this.avgRating, API.avgRating) &&
-        Objects.equals(this.advertiseInfo, API.advertiseInfo);
+        Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
+        Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable);
   }
 
 
@@ -765,6 +787,7 @@ public class APIDTO {
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
+    sb.append("    isSubscriptionAvailable: ").append(toIndentedString(isSubscriptionAvailable)).append("\n");
     sb.append("}");
     return sb.toString();
   }

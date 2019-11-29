@@ -111,3 +111,7 @@ hostname = "https://localhost:9943/etcdmock/v2/keys/jti/"
 
 [transport.passthru_https.listener]
 ssl_profile_interval = 6000
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]

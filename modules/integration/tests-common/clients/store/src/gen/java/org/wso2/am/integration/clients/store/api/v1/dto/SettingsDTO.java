@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -42,6 +42,15 @@ public class SettingsDTO {
 
   @SerializedName("mapExistingAuthApps")
   private Boolean mapExistingAuthApps = false;
+
+  @SerializedName("apiGatewayEndpoint")
+  private String apiGatewayEndpoint = null;
+
+  @SerializedName("monetizationEnabled")
+  private Boolean monetizationEnabled = false;
+
+  @SerializedName("IsUnlimitedTierPaid")
+  private Boolean isUnlimitedTierPaid = false;
 
   public SettingsDTO grantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
@@ -131,6 +140,60 @@ public class SettingsDTO {
     this.mapExistingAuthApps = mapExistingAuthApps;
   }
 
+  public SettingsDTO apiGatewayEndpoint(String apiGatewayEndpoint) {
+    this.apiGatewayEndpoint = apiGatewayEndpoint;
+    return this;
+  }
+
+   /**
+   * Get apiGatewayEndpoint
+   * @return apiGatewayEndpoint
+  **/
+  @ApiModelProperty(value = "")
+  public String getApiGatewayEndpoint() {
+    return apiGatewayEndpoint;
+  }
+
+  public void setApiGatewayEndpoint(String apiGatewayEndpoint) {
+    this.apiGatewayEndpoint = apiGatewayEndpoint;
+  }
+
+  public SettingsDTO monetizationEnabled(Boolean monetizationEnabled) {
+    this.monetizationEnabled = monetizationEnabled;
+    return this;
+  }
+
+   /**
+   * Get monetizationEnabled
+   * @return monetizationEnabled
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isMonetizationEnabled() {
+    return monetizationEnabled;
+  }
+
+  public void setMonetizationEnabled(Boolean monetizationEnabled) {
+    this.monetizationEnabled = monetizationEnabled;
+  }
+
+  public SettingsDTO isUnlimitedTierPaid(Boolean isUnlimitedTierPaid) {
+    this.isUnlimitedTierPaid = isUnlimitedTierPaid;
+    return this;
+  }
+
+   /**
+   * Get isUnlimitedTierPaid
+   * @return isUnlimitedTierPaid
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isIsUnlimitedTierPaid() {
+    return isUnlimitedTierPaid;
+  }
+
+  public void setIsUnlimitedTierPaid(Boolean isUnlimitedTierPaid) {
+    this.isUnlimitedTierPaid = isUnlimitedTierPaid;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -144,12 +207,15 @@ public class SettingsDTO {
     return Objects.equals(this.grantTypes, settings.grantTypes) &&
         Objects.equals(this.scopes, settings.scopes) &&
         Objects.equals(this.applicationSharingEnabled, settings.applicationSharingEnabled) &&
-        Objects.equals(this.mapExistingAuthApps, settings.mapExistingAuthApps);
+        Objects.equals(this.mapExistingAuthApps, settings.mapExistingAuthApps) &&
+        Objects.equals(this.apiGatewayEndpoint, settings.apiGatewayEndpoint) &&
+        Objects.equals(this.monetizationEnabled, settings.monetizationEnabled) &&
+        Objects.equals(this.isUnlimitedTierPaid, settings.isUnlimitedTierPaid);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(grantTypes, scopes, applicationSharingEnabled, mapExistingAuthApps);
+    return Objects.hash(grantTypes, scopes, applicationSharingEnabled, mapExistingAuthApps, apiGatewayEndpoint, monetizationEnabled, isUnlimitedTierPaid);
   }
 
 
@@ -162,6 +228,9 @@ public class SettingsDTO {
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    applicationSharingEnabled: ").append(toIndentedString(applicationSharingEnabled)).append("\n");
     sb.append("    mapExistingAuthApps: ").append(toIndentedString(mapExistingAuthApps)).append("\n");
+    sb.append("    apiGatewayEndpoint: ").append(toIndentedString(apiGatewayEndpoint)).append("\n");
+    sb.append("    monetizationEnabled: ").append(toIndentedString(monetizationEnabled)).append("\n");
+    sb.append("    isUnlimitedTierPaid: ").append(toIndentedString(isUnlimitedTierPaid)).append("\n");
     sb.append("}");
     return sb.toString();
   }

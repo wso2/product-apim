@@ -22,12 +22,14 @@ import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -52,6 +54,7 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 
 /**
@@ -73,7 +76,9 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     private static final String EMAIL_PASSWORD = "APIM+123";
     private static final String USER_EMAIL_ADDRESS = "apim@gmail.com";
     private static final int SMTP_TEST_PORT = 3025;
-    private static final String serviceEndpoint = "https://localhost:9943/services/";
+
+    private static final String FIRST_NAME = "John";
+    private static final String ORGANIZATION = "Test";
 
     private GreenMail greenMail;
     private String apiId;
@@ -88,6 +93,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        storeURLHttp = "https://localhost:9943/";
 
     }
 
@@ -121,17 +127,21 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         //publishing API
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
+        UserManagementUtils.signupUser(STORE_USERNAME, STORE_PASSWORD, FIRST_NAME, ORGANIZATION, USER_EMAIL_ADDRESS);
+
+        RestAPIStoreImpl restAPIStoreClientUser1 = new
+                RestAPIStoreImpl(STORE_USERNAME, STORE_PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttp);
 
         // create new application and subscribing
-        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+        HttpResponse applicationResponse = restAPIStoreClientUser1.createApplication(APP_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationId = applicationResponse.getData();
 
         //Subscribe the API to the Application
-        HttpResponse responseStore = restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse responseStore = restAPIStoreClientUser1
+                .createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         subscriptionId = responseStore.getData();
 
@@ -189,29 +199,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-
-    /**
-     * API Store sign up
-     *
-     * @param userName - store user name
-     * @param password -store password
-     * @param email    - user's email
-     * @return
-     * @throws APIManagerIntegrationTestException
-     */
-    public HttpResponse signUp(String userName, String password, String email) throws
-            APIManagerIntegrationTestException {
-        try {
-            Map<String, String> requestHeaders = new HashMap<String, String>();
-            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-
-            return HttpRequestUtil.doPost(new URL(storeURLHttp + "store-old/site/blocks/user/sign-up/ajax/user-add.jag"),
-                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
-                            "||||" + email, requestHeaders);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
-        }
-    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {

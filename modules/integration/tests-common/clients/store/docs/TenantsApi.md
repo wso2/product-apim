@@ -31,7 +31,7 @@ OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security")
 OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
 TenantsApi apiInstance = new TenantsApi();
-String state = "active"; // String | The state represents the current state of the tenant Supported states are [ active, inactive] 
+String state = "active"; // String | The state represents the current state of the tenant  Supported states are [ active, inactive] 
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 try {
@@ -47,7 +47,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **state** | **String**| The state represents the current state of the tenant Supported states are [ active, inactive]  | [optional] [default to active] [enum: active, inactive]
+ **state** | **String**| The state represents the current state of the tenant  Supported states are [ active, inactive]  | [optional] [default to active] [enum: active, inactive]
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
 

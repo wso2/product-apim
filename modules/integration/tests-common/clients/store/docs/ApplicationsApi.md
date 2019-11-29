@@ -202,7 +202,7 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
 ApplicationsApi apiInstance = new ApplicationsApi();
 String groupId = "groupId_example"; // String | Application Group Id 
-String query = "query_example"; // String | **Search condition**. You can search for an application by specifying the name as \"query\" attribute. Eg. \"app1\" will match an application if the name is exactly \"app1\". Currently this does not support wildcards. Given name must exactly match the application name. 
+String query = "query_example"; // String | **Search condition**.  You can search for an application by specifying the name as \"query\" attribute.  Eg. \"app1\" will match an application if the name is exactly \"app1\".  Currently this does not support wildcards. Given name must exactly match the application name. 
 String sortBy = "sortBy_example"; // String | 
 String sortOrder = "sortOrder_example"; // String | 
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
@@ -222,7 +222,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **groupId** | **String**| Application Group Id  | [optional]
- **query** | **String**| **Search condition**. You can search for an application by specifying the name as \&quot;query\&quot; attribute. Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;. Currently this does not support wildcards. Given name must exactly match the application name.  | [optional]
+ **query** | **String**| **Search condition**.  You can search for an application by specifying the name as \&quot;query\&quot; attribute.  Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;.  Currently this does not support wildcards. Given name must exactly match the application name.  | [optional]
  **sortBy** | **String**|  | [optional] [enum: name, throttlingPolicy, status]
  **sortOrder** | **String**|  | [optional] [enum: asc, desc]
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]

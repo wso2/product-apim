@@ -36,7 +36,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;

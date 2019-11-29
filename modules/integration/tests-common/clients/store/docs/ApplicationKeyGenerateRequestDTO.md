@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **validityTime** | **String** |  |  [optional]
 **clientId** | **String** | Client ID for generating access token. |  [optional]
 **clientSecret** | **String** | Client secret for generating access token. This is given together with the client Id. |  [optional]
+**additionalProperties** | **String** | Additional properties needed. |  [optional]
 
 
 <a name="KeyTypeEnum"></a>
