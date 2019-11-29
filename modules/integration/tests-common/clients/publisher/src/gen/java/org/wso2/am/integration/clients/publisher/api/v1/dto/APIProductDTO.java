@@ -53,8 +53,8 @@ public class APIProductDTO {
   @SerializedName("provider")
   private String provider = null;
 
-  @SerializedName("thumbnailUri")
-  private String thumbnailUri = null;
+  @SerializedName("hasThumbnail")
+  private Boolean hasThumbnail = null;
 
   /**
    * State of the API product. Only published api products are visible on the store 
@@ -251,15 +251,15 @@ public class APIProductDTO {
   private List<String> securityScheme = null;
 
   /**
-   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
+   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
    */
   @JsonAdapter(SubscriptionAvailabilityEnum.Adapter.class)
   public enum SubscriptionAvailabilityEnum {
-    CURRENT_TENANT("current_tenant"),
+    CURRENT_TENANT("CURRENT_TENANT"),
     
-    ALL_TENANTS("all_tenants"),
+    ALL_TENANTS("ALL_TENANTS"),
     
-    SPECIFIC_TENANTS("specific_tenants");
+    SPECIFIC_TENANTS("SPECIFIC_TENANTS");
 
     private String value;
 
@@ -300,7 +300,7 @@ public class APIProductDTO {
   }
 
   @SerializedName("subscriptionAvailability")
-  private SubscriptionAvailabilityEnum subscriptionAvailability = SubscriptionAvailabilityEnum.ALL_TENANTS;
+  private SubscriptionAvailabilityEnum subscriptionAvailability = null;
 
   @SerializedName("subscriptionAvailableTenants")
   private List<String> subscriptionAvailableTenants = null;
@@ -419,22 +419,22 @@ public class APIProductDTO {
     this.provider = provider;
   }
 
-  public APIProductDTO thumbnailUri(String thumbnailUri) {
-    this.thumbnailUri = thumbnailUri;
+  public APIProductDTO hasThumbnail(Boolean hasThumbnail) {
+    this.hasThumbnail = hasThumbnail;
     return this;
   }
 
    /**
-   * Get thumbnailUri
-   * @return thumbnailUri
+   * Get hasThumbnail
+   * @return hasThumbnail
   **/
-  @ApiModelProperty(example = "/api-products/01234567-0123-0123-0123-012345678901/thumbnail", value = "")
-  public String getThumbnailUri() {
-    return thumbnailUri;
+  @ApiModelProperty(example = "true", value = "")
+  public Boolean isHasThumbnail() {
+    return hasThumbnail;
   }
 
-  public void setThumbnailUri(String thumbnailUri) {
-    this.thumbnailUri = thumbnailUri;
+  public void setHasThumbnail(Boolean hasThumbnail) {
+    this.hasThumbnail = hasThumbnail;
   }
 
   public APIProductDTO state(StateEnum state) {
@@ -813,10 +813,10 @@ public class APIProductDTO {
   }
 
    /**
-   * The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.
+   * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
    * @return subscriptionAvailability
   **/
-  @ApiModelProperty(example = "current_tenant", value = "The subscription availability. Accepts one of the following. current_tenant, all_tenants or specific_tenants.")
+  @ApiModelProperty(example = "CURRENT_TENANT", value = "The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.")
   public SubscriptionAvailabilityEnum getSubscriptionAvailability() {
     return subscriptionAvailability;
   }
@@ -1034,7 +1034,7 @@ public class APIProductDTO {
         Objects.equals(this.context, apIProduct.context) &&
         Objects.equals(this.description, apIProduct.description) &&
         Objects.equals(this.provider, apIProduct.provider) &&
-        Objects.equals(this.thumbnailUri, apIProduct.thumbnailUri) &&
+        Objects.equals(this.hasThumbnail, apIProduct.hasThumbnail) &&
         Objects.equals(this.state, apIProduct.state) &&
         Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
         Objects.equals(this.responseCachingEnabled, apIProduct.responseCachingEnabled) &&
@@ -1066,7 +1066,7 @@ public class APIProductDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, provider, thumbnailUri, state, enableSchemaValidation, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes);
+    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes);
   }
 
 
@@ -1080,7 +1080,7 @@ public class APIProductDTO {
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
-    sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
+    sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");

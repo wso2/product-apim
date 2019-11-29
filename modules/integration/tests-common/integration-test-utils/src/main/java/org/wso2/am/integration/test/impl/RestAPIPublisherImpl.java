@@ -28,14 +28,15 @@ import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
@@ -43,6 +44,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
@@ -79,6 +82,7 @@ import java.util.List;
 public class RestAPIPublisherImpl {
 
     public ApIsApi apIsApi = new ApIsApi();
+    private ApiProductsApi apiProductsApi = new ApiProductsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
@@ -125,6 +129,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
         apIsApi.setApiClient(apiPublisherClient);
+	    apiProductsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
         graphQlSchemaIndividualApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
@@ -1051,5 +1056,30 @@ public class RestAPIPublisherImpl {
                 subscriptionsApi.subscriptionsGetWithHttpInfo(apiID, 10, 0, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
+    }
+
+    public APIProductListDTO getAllApiProducts() throws ApiException {
+        ApiResponse<APIProductListDTO> apiResponse =
+                apiProductsApi.apiProductsGetWithHttpInfo(null, null, null, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
+    }
+
+    public APIProductDTO getApiProduct(String apiProductId) throws ApiException {
+        ApiResponse<APIProductDTO> apiResponse =
+                apiProductsApi.apiProductsApiProductIdGetWithHttpInfo(apiProductId, null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
+    }
+
+    public APIProductDTO addApiProduct(APIProductDTO apiProductDTO) throws ApiException {
+        ApiResponse<APIProductDTO> apiResponse = apiProductsApi.apiProductsPostWithHttpInfo(apiProductDTO);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
+        return apiResponse.getData();
+    }
+
+    public void deleteApiProduct(String apiProductId) throws ApiException {
+        ApiResponse<Void> apiResponse = apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 }

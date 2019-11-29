@@ -27,8 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
@@ -62,6 +65,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
@@ -462,6 +466,16 @@ public class APIMIntegrationBaseTest {
             }
             if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
                 restAPIStore.deleteApplication(applicationInfoDTO.getApplicationId());
+            }
+        }
+
+        APIProductListDTO allApiProducts = restAPIPublisher.getAllApiProducts();
+
+        List<APIProductInfoDTO> apiProductListDTO = allApiProducts.getList();
+
+        if (apiProductListDTO != null) {
+            for(APIProductInfoDTO apiProductInfoDTO : apiProductListDTO) {
+                restAPIPublisher.deleteApiProduct(apiProductInfoDTO.getId());
             }
         }
 

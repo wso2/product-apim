@@ -40,7 +40,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;

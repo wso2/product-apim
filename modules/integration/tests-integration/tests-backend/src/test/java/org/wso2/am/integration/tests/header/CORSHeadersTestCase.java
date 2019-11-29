@@ -44,7 +44,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;

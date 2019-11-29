@@ -34,8 +34,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -133,11 +131,7 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"webapp"}, description = "Get Application By Application Id")
     public void testGetApplicationById() throws Exception {
-        HttpResponse applicationResponse = restAPIStore.getApplicationById(applicationId);
-        Gson gsonObject = new Gson();
-        applicationDTO = gsonObject.fromJson(applicationResponse.getData(), ApplicationDTO.class);
-        assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when adding an application");
+        applicationDTO = restAPIStore.getApplicationById(applicationId);
         assertTrue(StringUtils.isNotEmpty(applicationDTO.getApplicationId()), "Adding application failed");
     }
 

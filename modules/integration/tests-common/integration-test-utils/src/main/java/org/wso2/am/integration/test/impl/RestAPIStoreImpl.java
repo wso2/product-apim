@@ -55,7 +55,6 @@ import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -268,7 +267,7 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
-                                          ArrayList<String> grantTypes)
+                                          List<String> grantTypes)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -277,9 +276,10 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
 
-        return applicationKeysApi
-                .applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequest);
-
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
     }
 
     /**
@@ -418,24 +418,14 @@ public class RestAPIStoreImpl {
      * Get application by ID
      *
      * @return - http response of get of application
-     * @throws APIManagerIntegrationTestException - throws if get application fails.
+     * @throws ApiException - throws if get application fails.
      */
-    public HttpResponse getApplicationById(String applicationId) throws APIManagerIntegrationTestException {
-        try {
-            ApplicationDTO applicationDTO = applicationsApi.applicationsApplicationIdGet(applicationId, null);
-            HttpResponse response = null;
-            if (StringUtils.isNotEmpty(applicationDTO.getApplicationId())) {
-                Gson gson = new Gson();
-                response = new HttpResponse(gson.toJson(applicationDTO), 200);
-            }
-            return response;
-        } catch (ApiException e) {
-            if (e.getResponseBody().contains("already exists")) {
-                return null;
-            }
-        }
+    public ApplicationDTO getApplicationById(String applicationId) throws ApiException {
+        ApiResponse<ApplicationDTO> applicationDTOApiResponse = applicationsApi.
+                applicationsApplicationIdGetWithHttpInfo(applicationId, null);
+        Assert.assertEquals(applicationDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return applicationDTOApiResponse.getData();
 
-        return null;
     }
 
     /**
