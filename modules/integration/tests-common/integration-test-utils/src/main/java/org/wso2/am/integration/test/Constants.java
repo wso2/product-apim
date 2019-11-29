@@ -51,6 +51,7 @@ public class Constants {
     public static final String RETIRE = "Retire";
     public static final String BLOCK = "Block";
     public static final String REJECT = "Reject";
+    public static final String DEPLOY_AS_PROTOTYPE = "Deploy as a Prototype";
     public static final String API_LIFECYCLE = "APILifeCycle";
     public static final String XML = ".xml";
     public static final String CARBON_HOME = "carbon.home";

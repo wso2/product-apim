@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -452,7 +452,7 @@ public class ApplicationsApi {
     /**
      * Build call for applicationsGet
      * @param groupId Application Group Id  (optional)
-     * @param query **Search condition**. You can search for an application by specifying the name as \&quot;query\&quot; attribute. Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;. Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
+     * @param query **Search condition**.  You can search for an application by specifying the name as \&quot;query\&quot; attribute.  Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;.  Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
      * @param sortBy  (optional)
      * @param sortOrder  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -531,7 +531,7 @@ public class ApplicationsApi {
      * Retrieve/Search applications 
      * This operation can be used to retrieve list of applications that is belonged to the user associated with the provided access token. 
      * @param groupId Application Group Id  (optional)
-     * @param query **Search condition**. You can search for an application by specifying the name as \&quot;query\&quot; attribute. Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;. Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
+     * @param query **Search condition**.  You can search for an application by specifying the name as \&quot;query\&quot; attribute.  Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;.  Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
      * @param sortBy  (optional)
      * @param sortOrder  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -549,7 +549,7 @@ public class ApplicationsApi {
      * Retrieve/Search applications 
      * This operation can be used to retrieve list of applications that is belonged to the user associated with the provided access token. 
      * @param groupId Application Group Id  (optional)
-     * @param query **Search condition**. You can search for an application by specifying the name as \&quot;query\&quot; attribute. Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;. Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
+     * @param query **Search condition**.  You can search for an application by specifying the name as \&quot;query\&quot; attribute.  Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;.  Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
      * @param sortBy  (optional)
      * @param sortOrder  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -568,7 +568,7 @@ public class ApplicationsApi {
      * Retrieve/Search applications  (asynchronously)
      * This operation can be used to retrieve list of applications that is belonged to the user associated with the provided access token. 
      * @param groupId Application Group Id  (optional)
-     * @param query **Search condition**. You can search for an application by specifying the name as \&quot;query\&quot; attribute. Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;. Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
+     * @param query **Search condition**.  You can search for an application by specifying the name as \&quot;query\&quot; attribute.  Eg. \&quot;app1\&quot; will match an application if the name is exactly \&quot;app1\&quot;.  Currently this does not support wildcards. Given name must exactly match the application name.  (optional)
      * @param sortBy  (optional)
      * @param sortOrder  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)

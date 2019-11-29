@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -134,7 +134,7 @@ public class DocumentsApi {
 
     /**
      * Get a document of an API 
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param documentId Document Identifier  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -149,7 +149,7 @@ public class DocumentsApi {
 
     /**
      * Get a document of an API 
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param documentId Document Identifier  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -165,7 +165,7 @@ public class DocumentsApi {
 
     /**
      * Get a document of an API  (asynchronously)
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s document, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param documentId Document Identifier  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)

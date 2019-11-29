@@ -53,6 +53,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
                                                   APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
 
+        String GraphqlAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war";
+
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
 
         webAppAdminClient = new WebAppAdminClient(
@@ -67,6 +70,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
+        webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
@@ -86,6 +90,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 gatewayMgtSessionId, APIMIntegrationConstants.WILDCARD_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                gatewayMgtSessionId, APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
         String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
                 + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator

@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.PaginationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultDTO;
 
 /**
  * SearchResultListDTO
@@ -37,7 +36,7 @@ public class SearchResultListDTO {
   private Integer count = null;
 
   @SerializedName("list")
-  private List<SearchResultDTO> list = null;
+  private List<Object> list = null;
 
   @SerializedName("pagination")
   private PaginationDTO pagination = null;
@@ -60,12 +59,12 @@ public class SearchResultListDTO {
     this.count = count;
   }
 
-  public SearchResultListDTO list(List<SearchResultDTO> list) {
+  public SearchResultListDTO list(List<Object> list) {
     this.list = list;
     return this;
   }
 
-  public SearchResultListDTO addListItem(SearchResultDTO listItem) {
+  public SearchResultListDTO addListItem(Object listItem) {
     if (this.list == null) {
       this.list = new ArrayList<>();
     }
@@ -78,11 +77,11 @@ public class SearchResultListDTO {
    * @return list
   **/
   @ApiModelProperty(value = "")
-  public List<SearchResultDTO> getList() {
+  public List<Object> getList() {
     return list;
   }
 
-  public void setList(List<SearchResultDTO> list) {
+  public void setList(List<Object> list) {
     this.list = list;
   }
 

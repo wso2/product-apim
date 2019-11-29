@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
+import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -45,6 +46,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -72,6 +74,7 @@ public class RestAPIStoreImpl {
     public RatingsApi ratingsApi = new RatingsApi();
     public TagsApi tagsApi = new TagsApi();
     public SdKsApi sdKsApi = new SdKsApi();
+    public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
 
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
@@ -109,6 +112,7 @@ public class RestAPIStoreImpl {
         commentsApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
+        unifiedSearchApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -226,7 +230,7 @@ public class RestAPIStoreImpl {
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
             subscription.setType(SubscriptionDTO.TypeEnum.API);
-            SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription);
+            SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(subscriptionResponse.getSubscriptionId())) {
@@ -244,7 +248,7 @@ public class RestAPIStoreImpl {
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
             throws ApiException {
         ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
-                (apiId, applicationId, apiType, groupId, null, null, null);
+                (apiId, applicationId, apiType, groupId, this.tenantDomain, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
         return suscriptionResponse.getData();
     }
@@ -364,6 +368,35 @@ public class RestAPIStoreImpl {
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
+    }
+
+    /**
+     * Retrieve the APIs according to the search query in Publisher.
+     *
+     * @param query - The query on which the APIs needs to be filtered
+     * @return SearchResultListDTO - The search results of the query
+     * @throws ApiException
+     */
+    public SearchResultListDTO searchAPIs(String query) throws ApiException {
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
+                .searchGetWithHttpInfo(null, null, this.tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
+        return searchResponse.getData();
+    }
+
+    /**
+     * Retrieve the APIs according to the search query in Publisher.
+     *
+     * @param query - The query on which the APIs needs to be filtered
+     * @param tenantDomain - The tenant domain on which the APIs needs to be filtered
+     * @return SearchResultListDTO - The search results of the query
+     * @throws ApiException
+     */
+    public SearchResultListDTO searchAPIs(String query, String tenantDomain) throws ApiException {
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
+                .searchGetWithHttpInfo(null, null, tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
+        return searchResponse.getData();
     }
 
     /**
@@ -928,7 +961,7 @@ public class RestAPIStoreImpl {
      */
     public SubscriptionListDTO getAllSubscriptionsOfApplication(String applicationId) throws ApiException {
 
-        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, null, null, null);
+        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, this.tenantDomain, null, null, null);
         if (subscriptionListDTO.getCount() > 0) {
             return subscriptionListDTO;
         }
@@ -1278,7 +1311,7 @@ public class RestAPIStoreImpl {
         subscription.setThrottlingPolicy(tier);
         subscription.setType(SubscriptionDTO.TypeEnum.API);
         ApiResponse<SubscriptionDTO> subscriptionResponse =
-                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription);
+                subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
         return subscriptionResponse.getData();
     }
@@ -1539,7 +1572,7 @@ public class RestAPIStoreImpl {
             throws ApiException, IOException {
 
         sdKsApi.setApiClient(apiStoreClient);
-        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language);
+        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, this.tenantDomain);
 
     }
 

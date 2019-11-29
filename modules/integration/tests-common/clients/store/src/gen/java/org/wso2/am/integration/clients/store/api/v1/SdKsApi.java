@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Store
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Store. It is written with [swagger 2](http://swagger.io/). 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Store.  It is written with [swagger 2](http://swagger.io/). 
  *
  * OpenAPI spec version: v1.0
  * Contact: architecture@wso2.com
@@ -58,12 +58,13 @@ public class SdKsApi {
      * Build call for apisApiIdSdksLanguageGet
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetCall(String apiId, String language, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetCall(String apiId, String language, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -75,6 +76,8 @@ public class SdKsApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null)
+        localVarHeaderParams.put("X-WSO2-Tenant", apiClient.parameterToString(xWSO2Tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -107,7 +110,7 @@ public class SdKsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call apisApiIdSdksLanguageGetValidateBeforeCall(String apiId, String language, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call apisApiIdSdksLanguageGetValidateBeforeCall(String apiId, String language, String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -120,7 +123,7 @@ public class SdKsApi {
         }
         
 
-        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetCall(apiId, language, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetCall(apiId, language, xWSO2Tenant, progressListener, progressRequestListener);
         return call;
 
     }
@@ -130,11 +133,12 @@ public class SdKsApi {
      * This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Store, for a requested development language. 
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return byte[]
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public byte[] apisApiIdSdksLanguageGet(String apiId, String language) throws ApiException {
-        ApiResponse<byte[]> resp = apisApiIdSdksLanguageGetWithHttpInfo(apiId, language);
+    public byte[] apisApiIdSdksLanguageGet(String apiId, String language, String xWSO2Tenant) throws ApiException {
+        ApiResponse<byte[]> resp = apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, xWSO2Tenant);
         return resp.getData();
     }
 
@@ -143,11 +147,12 @@ public class SdKsApi {
      * This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Store, for a requested development language. 
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return ApiResponse&lt;byte[]&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<byte[]> apisApiIdSdksLanguageGetWithHttpInfo(String apiId, String language) throws ApiException {
-        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, null, null);
+    public ApiResponse<byte[]> apisApiIdSdksLanguageGetWithHttpInfo(String apiId, String language, String xWSO2Tenant) throws ApiException {
+        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, xWSO2Tenant, null, null);
         Type localVarReturnType = new TypeToken<byte[]>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -157,11 +162,12 @@ public class SdKsApi {
      * This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Store, for a requested development language. 
      * @param apiId ID of the specific API for which the SDK is required.  (required)
      * @param language Programming language of the SDK that is required.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetAsync(String apiId, String language, final ApiCallback<byte[]> callback) throws ApiException {
+    public com.squareup.okhttp.Call apisApiIdSdksLanguageGetAsync(String apiId, String language, String xWSO2Tenant, final ApiCallback<byte[]> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -182,7 +188,7 @@ public class SdKsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = apisApiIdSdksLanguageGetValidateBeforeCall(apiId, language, xWSO2Tenant, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<byte[]>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
