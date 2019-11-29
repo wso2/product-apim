@@ -27,6 +27,7 @@
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.MicroGWJWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
         </classes>
