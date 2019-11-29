@@ -75,4 +75,39 @@ public class UserManagementUtils {
                     "response code " + HttpStatus.SC_CREATED + ", but returned " + response.getStatusLine().getStatusCode());
         }
     }
+
+
+    /**
+     * Self Sign-up a new user with minimal properties
+     *
+     * @throws IOException
+     * @throws APIManagerIntegrationTestException
+     */
+    public static void signupUser(String userName, String password, String firstName,
+                                  String organization, String email)  throws IOException, APIManagerIntegrationTestException {
+        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
+        HttpPost postRequest = new HttpPost("https://localhost:9943/api/identity/user/v1.0/me");
+        postRequest.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                "Basic " + encodeCredentials("admin", "admin".toCharArray()));
+        postRequest.addHeader("Content-Type", APPLICATION_JSON);
+
+        StringEntity payload = new StringEntity(
+                "{\"user\":" +
+                        "{\"username\": \"" + userName + "\"," +
+                        " \"password\": \"" + password + "\"," +
+                        "\"claims\": " +
+                        "[{\"uri\": \"http://wso2.org/claims/givenname\",\"value\": \""+ firstName +"\" }," +
+                        "{\"uri\": \"http://wso2.org/claims/emailaddress\",\"value\": \""+ email +"\" }," +
+                        "{\"uri\": \"http://wso2.org/claims/organization\",\"value\": \""+ organization + "\"" +
+                        "}]}, " +
+                        "\"properties\": []}");
+        postRequest.setEntity(payload);
+        CloseableHttpResponse response = client.execute(postRequest);
+
+        if (!(response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED)) {
+            log.error("Error occurred in self sing up a new user with user name " + userName);
+            throw new APIManagerIntegrationTestException("Error occurred in self sign-up a new user. Expected " +
+                    "response code " + HttpStatus.SC_CREATED + ", but returned " + response.getStatusLine().getStatusCode());
+        }
+    }
 }
