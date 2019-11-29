@@ -71,7 +71,6 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
     private String appId;
     private String sandboxAppId;
 
-
     @Factory(dataProvider = "userModeDataProvider")
     public LoadBalancedEndPointTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -304,4 +303,3 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(sandboxApiId);
     }
 }
-
