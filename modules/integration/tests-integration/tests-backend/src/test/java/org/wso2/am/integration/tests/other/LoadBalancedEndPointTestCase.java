@@ -153,7 +153,6 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiInvokeResponse;
         int numberOfEndpoints = 3;
         int requestCount = 10;
-
         waitForAPIDeployment();
         for (int requestNumber = 1; requestNumber < requestCount; requestNumber++) {
             apiInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeader);
@@ -255,7 +254,6 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
         int numberOfProductionEndpoints = 3;
         int numberOfSandboxEndpoints = 3;
         int requestNumber;
-
         waitForAPIDeployment();
         //production end point api invoke with production key
         for (requestNumber = 1; requestNumber < requestCount; requestNumber++) {
