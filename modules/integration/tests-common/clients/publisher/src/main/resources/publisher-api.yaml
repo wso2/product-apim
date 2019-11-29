@@ -616,9 +616,9 @@ paths:
     # Retrieve the resource policy definition
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies
+        GET https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\r\n    \"list\": [\r\n        {\r\n            \"id\": \"1990b54c-6685-4058-a08c-8fd5353056a6\",\r\n            \"httpVerb\": \"get\",\r\n            \"resourcePath\": \"checkPhoneNumbers\",\r\n            \"content\": \"<header description=\\\"SOAPAction\\\" name=\\\"SOAPAction\\\" scope=\\\"transport\\\" value=\\\"http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumber\\\"/>\"\r\n        }\r\n    ],\r\n    \"count\": 1\r\n}"
       summary: Get the resource policy (inflow/outflow) definitions
@@ -694,9 +694,9 @@ paths:
     # Retrieve the resource policy definition of a certain resource given by id
     #---------------------------------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
+        GET https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\r\n            \"id\": \"6c735e1d-8041-4f1e-b246-d28edaa650b0\",\r\n            \"httpVerb\": \"post\",\r\n            \"resourcePath\": \"checkPhoneNumbers\",\r\n            \"content\": \"<header description=\\\"SOAPAction\\\" name=\\\"SOAPAction\\\" scope=\\\"transport\\\" value=\\\"http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumber\\\"/>\"\r\n}"
       summary: Get the resource policy (inflow/outflow) definition for a given resource identifier.
@@ -764,9 +764,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_create
-      x-wso2-curl: "curl -k -H \"Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013\" -F apiDefinition=\"{\\\"paths\\\":{\\\"\\/*\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{\\\"description\\\":\\\"OK\\\"}}}}},\\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[]}},\\\"swagger\\\":\\\"2.0\\\",\\\"info\\\":{\\\"title\\\":\\\"PhoneVerification\\\",\\\"description\\\":\\\"Verify a phone number\\\",\\\"contact\\\":{\\\"email\\\":\\\"xx@ee.com\\\",\\\"name\\\":\\\"xx\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\" -X PUT \"https://localhost:9443/api/am/publisher/v0.14/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
+      x-wso2-curl: "curl -k -H \"Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013\" -F apiDefinition=\"{\\\"paths\\\":{\\\"\\/*\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{\\\"description\\\":\\\"OK\\\"}}}}},\\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[]}},\\\"swagger\\\":\\\"2.0\\\",\\\"info\\\":{\\\"title\\\":\\\"PhoneVerification\\\",\\\"description\\\":\\\"Verify a phone number\\\",\\\"contact\\\":{\\\"email\\\":\\\"xx@ee.com\\\",\\\"name\\\":\\\"xx\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\" -X PUT \"https://localhost:9443/api/am/publisher/v1.0/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
       x-wso2-request: |
-        PUT https://localhost:9443/api/am/publisher/v0.14/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
+        PUT https://localhost:9443/api/am/publisher/v1.0/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/resource-policies/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
         Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013
         Content-Length: 477
         Content-Type: application/json; boundary=------------------------4f51e636c0003d99
@@ -3845,9 +3845,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:mediation_policy_view
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v0.14/mediation-policies"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v1.0/mediation-policies"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/mediation-policies
+        GET https://localhost:9443/api/am/publisher/v1.0/mediation-policies
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\": 10,\r\n   \"next\": null,\r\n   \"previous\": null,\r\n   \"list\":    [\r\n            {\r\n         \"name\": \"debug_json_fault\",\r\n         \"id\": \"563de8f3-dd1d-4ec7-afc2-d158c663ed34\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_fault\",\r\n         \"id\": \"f9c36f4d-a2b6-41e7-b311-d358a47916be\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_in_message\",\r\n         \"id\": \"3921225b-7918-4b95-a851-22c4e4e3e911\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"debug_in_flow\",\r\n         \"id\": \"2bc15f93-4455-4763-89b8-83600fb9d731\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"log_in_message\",\r\n         \"id\": \"4d287cca-76ab-44ca-b22e-919fc27c50e3\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"preserve_accept_header\",\r\n         \"id\": \"3776b215-b3bc-40b6-bdcb-06efa7de64be\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_in_message\",\r\n         \"id\": \"50ac2002-769e-4f90-8549-6d0248dff7d2\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_out_message\",\r\n         \"id\": \"2af75853-ed75-4d25-81aa-0ebbeca691ea\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_out_message\",\r\n         \"id\": \"d9fa3ffc-f6b6-4171-ab97-eb44196cb66e\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"debug_out_flow\",\r\n         \"id\": \"260b7701-4071-46bd-9b66-900ac6fffed6\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"apply_accept_header\",\r\n         \"id\": \"15c17c2f-33e3-4c37-a262-04dfa49983a4\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"log_out_message\",\r\n         \"id\": \"d37dca41-c048-492a-82cf-9a2292c6fff0\",\r\n         \"type\": \"out\"\r\n      }\r\n   ]\r\n}"
       x-examples:
@@ -3960,9 +3960,9 @@ paths:
       produces:
         - application/json
       x-wso2-curl: "curl -X GET \
-                      https://localhost:9443/api/am/publisher/v0.14/client-certificates \
+                      https://localhost:9443/api/am/publisher/v1.0/client-certificates \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
-      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v0.14/client-certificates \ -H 'authorization:
+      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v1.0/client-certificates \ -H 'authorization:
       Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
       x-wso2-response: "HTTP/1.1 200 OK \
                         {\"count\":1,\"next\":\"\",\"previous\":\"\",\"certificates\":[{\"alias\":\"newtest1\",
@@ -4020,14 +4020,14 @@ paths:
       consumes:
         - multipart/form-data
       x-wso2-curl: "curl -X POST \
-                      https://localhost:9443/api/am/publisher/v0.14/client-certificates \
+                      https://localhost:9443/api/am/publisher/v1.0/client-certificates \
                       -H 'authorization: Bearer f2f562bd-f6d9-3fad-b48d-72ab5702c98a' \
                       -H 'content-type: multipart/form-data' \
                       -F certificate=@test.crt \
                       -F alias=alias \
                       -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b \
                       -F tier=Gold"
-      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v0.14/client-certificates \
+      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v1.0/client-certificates \
                                                   -H 'authorization: Bearer f2f562bd-f6d9-3fad-b48d-72ab5702c98a' \
                                                   -H 'content-type: multipart/form-data' \
                                                   -F certificate=@test.crt \
@@ -4035,7 +4035,7 @@ paths:
                                                   -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b \
                                                   -F tier=Gold"
       x-wso2-response: "HTTP/1.1 201 Created \
-                        Location: https://localhost:9443/api/am/publisher/v0.14/client-certificates?alias=newtest1 \
+                        Location: https://localhost:9443/api/am/publisher/v1.0/client-certificates?alias=newtest1 \
                         Date: Tue, 09 Oct 2018 16:18:10 GMT \
                         Content-Type: application/json \
                         Transfer-Encoding: chunked \
@@ -4107,10 +4107,10 @@ paths:
       consumes:
         - multipart/form-data
       x-wso2-curl: "curl -X PUT \
-                      https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
+                      https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1 \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c' \
                       -F tier=Bronze"
-      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
+      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1 \
                                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'\ -F tier=Bronze"
       x-wso2-response: "HTTP/1.1 200 OK\r\n
                         {\r\n\"alias\":\"newtest1\",\r\n\"apiId\":\"fea749dd-d548-4a8b-b308-34903b39a34b\",\r\n
@@ -4185,9 +4185,9 @@ paths:
             - apim:client_certificates_update
       x-wso2-curl:
         "curl -X DELETE \
-           https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
+           https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1 \
            -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c' "
-      x-wso2-request: "DELETE https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
+      x-wso2-request: "DELETE https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1 \
                                          -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Delete a certificate.
@@ -4246,9 +4246,9 @@ paths:
       produces:
         - application/json
       x-wso2-curl: "curl -X GET \
-                      https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1 \
+                      https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1 \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/client-certificates/newtest1 Authorization:
+      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v1.0/client-certificates/newtest1 Authorization:
       Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK
                         Date: Tue, 09 Oct 2018 16:25:43 GMT
@@ -4311,9 +4311,9 @@ paths:
         - OAuth2Security:
             - apim:client_certificates_view
       x-wso2-curl: "curl -X GET \
-                      https://localhost:9443/api/am/publisher/v0.14/client-certificates/newtest1/content \
+                      https://localhost:9443/api/am/publisher/v1.0/client-certificates/newtest1/content \
                       -H 'authorization: Bearer f80b8c34-01bc-3ac2-99b6-4873e45c861c'"
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v1.0/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK \
                         Content-Disposition: attachment; filename=\"newtest1.crt\" \
                          Date: Tue, 09 Oct 2018 16:21:25 GMT
@@ -4375,8 +4375,8 @@ paths:
             - apim:ep_certificates_view
       produces:
         - application/json
-      x-wso2-curl: "curl -X GET -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" \"https://localhost:9443/api/am/publisher/v0.14/certificates\""
-      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v0.14/certificates?alias=wso2carbon&endpoint=https://www.abc.com"
+      x-wso2-curl: "curl -X GET -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" \"https://localhost:9443/api/am/publisher/v1.0/certificates\""
+      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v1.0/certificates?alias=wso2carbon&endpoint=https://www.abc.com"
       x-wso2-response: "HTTP/1.1 200 OK \n\n{\n  \"count\":1,\n  \"next\":\"\",\n  \"previous\":\"\",\n\"certificates\":[\n   {\n    \"alias\":\"wso2carbon\",\n    \"endpoint\":\"https://www.abc.com\"\n   }\n],\n  \"pagination\":{\n    \"total\":1,\n          \"offset\":0,\n          \"limit\":25\n   } \n}"
       summary: Retrieve/Search uploaded certificates.
       description: |
@@ -4434,10 +4434,10 @@ paths:
             - apim:ep_certificates_add
       consumes:
         - multipart/form-data
-      x-wso2-curl: "curl -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: multipart/form-data\"  -F \"certificate=@/home/user/wso2carbon.cert\" -F \"alias=wso2carbon\" -F \"endpoint=https://www.abc.com\" \"https://localhost:9443/api/am/publisher/v0.14/certificates/certificate\""
-      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v0.14/certificates/certificate \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -F \"certificate=/home/user/wso2carbon.cert\" -F \"alias=wso2carbon\" -F \"endpoint=https://www.abc.com\""
+      x-wso2-curl: "curl -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: multipart/form-data\"  -F \"certificate=@/home/user/wso2carbon.cert\" -F \"alias=wso2carbon\" -F \"endpoint=https://www.abc.com\" \"https://localhost:9443/api/am/publisher/v1.0/certificates/certificate\""
+      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v1.0/certificates/certificate \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -F \"certificate=/home/user/wso2carbon.cert\" -F \"alias=wso2carbon\" -F \"endpoint=https://www.abc.com\""
       x-wso2-response: "HTTP/1.1 201 Created
-                        Location: https://localhost:9443/api/am/publisher/v0.14/client-certificates?alias=newtest1
+                        Location: https://localhost:9443/api/am/publisher/v1.0/client-certificates?alias=newtest1
                         Date: Fri, 05 Oct 2018 09:50:48 GMT
                         Content-Type: application/json
                         Transfer-Encoding: chunked
@@ -4504,8 +4504,8 @@ paths:
             - apim:ep_certificates_update
       consumes:
         - multipart/form-data
-      x-wso2-curl: "curl -X PUT -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type:multipart/form-data\" -F \"certificate=@/home/user/wso2carbon.cert\" \"https://localhost:9443/api/am/publisher/v0.14/certificates/wso2carbon\""
-      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v0.14/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8 -F  \"certificate=@/home/user/wso2carbon.cert\""
+      x-wso2-curl: "curl -X PUT -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type:multipart/form-data\" -F \"certificate=@/home/user/wso2carbon.cert\" \"https://localhost:9443/api/am/publisher/v1.0/certificates/wso2carbon\""
+      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1.0/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8 -F  \"certificate=@/home/user/wso2carbon.cert\""
       x-wso2-response: "HTTP/1.1 200 OK\r\n {\"alias\":wso2carbon,\"endpoint\":\"https://www.abc.com\"}"
       summary: Update a certificate.
       description: |
@@ -4565,8 +4565,8 @@ paths:
         - OAuth2Security:
             - apim:ep_certificates_update
       x-wso2-curl:
-        "curl -X DELETE -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v0.14/certificates/wso2carbon\""
-      x-wso2-request: "DELETE https://localhost:9443/api/am/publisher/v0.14/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        "curl -X DELETE -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1.0/certificates/wso2carbon\""
+      x-wso2-request: "DELETE https://localhost:9443/api/am/publisher/v1.0/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: HTTP/1.1 200 OK
       summary: Delete a certificate.
       description: |
@@ -4619,8 +4619,8 @@ paths:
             - apim:ep_certificates_view
       produces:
         - application/json
-      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon\" -H  \"accept: application/json\""
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v1.0/certificates/wso2carbon\" -H  \"accept: application/json\""
+      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v1.0/certificates/wso2carbon Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK \nContent-Type: application/json\r\n {\n  \"status\":\"Active\",\n  \"validity\":{\n    \"from\":\"Fri May 04 19:01:01 IST 2018\",\n    \"to\":\"Thu Aug 02 19:01:01 IST 2018\"\n  }\n,  \"version\":\"3\",\n  \"subject\":\"CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK\"\n}"
       summary: Get the certificate information.
       description: |
@@ -4669,8 +4669,8 @@ paths:
       security:
         - OAuth2Security:
             - apim:ep_certificates_view
-      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content\" -H \"accept: application/json\""
-      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v0.14/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+      x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v1.0/certificates/wso2carbon/content\" -H \"accept: application/json\""
+      x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v1.0/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
       x-wso2-response: "HTTP/1.1 200 OK\r\n [content of the certificate]"
       summary: Download a certificate.
       description: |
@@ -5295,9 +5295,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v0.14/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents\""
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1.0/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents\""
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents
+        GET https://localhost:9443/api/am/publisher/v1.0/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"INLINE\",\n         \"sourceUrl\": null,\n         \"otherTypeName\": null,\n         \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n         \"summary\": \"This is a sample documentation for v1.0.0\",\n         \"name\": \"PhoneVerification API Documentation\",\n         \"type\": \"HOWTO\"\n      },\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"URL\",\n         \"sourceUrl\": \"http://wiki.cdyne.com/index.php/Phone_Verification\",\n         \"otherTypeName\": null,\n         \"documentId\": \"4145df31-04f1-440c-8d08-68952874622c\",\n         \"summary\": \"This is the URL for online documentation\",\n         \"name\": \"Online Documentation\",\n         \"type\": \"SAMPLES\"\n      }\n   ],\n   \"next\": \"\",\n   \"count\": 2\n}"
       summary: Get a list of documents of an API Product
@@ -5351,9 +5351,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/publisher/v0.14/api-products/96077508-fd01-4fae-bc64-5de0e2baf43c/documents\""
-      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v0.14/api-products/96077508-fd01-4fae-bc64-5de0e2baf43c/documents\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n    \"visibility\": \"API_LEVEL\",\n    \"sourceType\": \"INLINE\",\n    \"sourceUrl\": null,\n    \"otherTypeName\": null,\n    \"summary\": \"This is a sample documentation\",\n    \"name\": \"Introduction to PhoneVerification API\",\n    \"type\": \"HOWTO\"\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\",\n   \"summary\": \"This is a sample documentation\",\n   \"name\": \"Introduction to PhoneVerification API\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/publisher/v1.0/api-products/96077508-fd01-4fae-bc64-5de0e2baf43c/documents\""
+      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v1.0/api-products/96077508-fd01-4fae-bc64-5de0e2baf43c/documents\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n    \"visibility\": \"API_LEVEL\",\n    \"sourceType\": \"INLINE\",\n    \"sourceUrl\": null,\n    \"otherTypeName\": null,\n    \"summary\": \"This is a sample documentation\",\n    \"name\": \"Introduction to PhoneVerification API\",\n    \"type\": \"HOWTO\"\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\",\n   \"summary\": \"This is a sample documentation\",\n   \"name\": \"Introduction to PhoneVerification API\",\n   \"type\": \"HOWTO\"\n}"
       summary: Add a new document to an API Product
       description: |
         This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation.
@@ -5413,9 +5413,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
+        GET https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
       summary: Get a document of an API
@@ -5474,8 +5474,8 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" -H \"Content-Type: application/json\" -X PUT -d data.json \"https://localhost:9443/api/am/publisher/v0.14/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
-      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v0.14/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" -H \"Content-Type: application/json\" -X PUT -d data.json \"https://localhost:9443/api/am/publisher/v1.0/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
+      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1.0/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
       summary: Update a document of an API Product
       description: |
@@ -5545,9 +5545,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X DELETE https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X DELETE https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/publisher/v0.14/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058
+        DELETE https://localhost:9443/api/am/publisher/v1.0/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Delete a document of an API Product
@@ -5590,9 +5590,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" \"https://localhost:9443/api/am/publisher/v0.14/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content\" > sample.pdf"
+      x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" \"https://localhost:9443/api/am/publisher/v1.0/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content\" > sample.pdf"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content
+        GET https://localhost:9443/api/am/publisher/v1.0/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content
         Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Disposition: attachment; filename=\"sample.pdf\"\nContent-Type: application/octet-stream\nContent-Length: 7802\n\n%PDF-1.4\n%äüöß\n2 0 obj\n<</Length 3 0 R/Filter/FlateDecode>>\nstream\n..\n>>\nstartxref\n7279\n%%EOF"
       summary: Get the content of an API Product document
@@ -5604,7 +5604,7 @@ paths:
         1. **Inline type**:
            The content of the document will be retrieved in `text/plain` content type
 
-           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://localhost:9443/api/am/publisher/v0.14/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
+           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://localhost:9443/api/am/publisher/v1.0/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
         2. **FILE type**:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
@@ -5671,9 +5671,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
-      x-wso2-curl: "curl -k -H \"Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -F file=@\"sample.pdf\" -X POST \"https://localhost:9443/api/am/publisher/v0.14/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content\""
+      x-wso2-curl: "curl -k -H \"Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -F file=@\"sample.pdf\" -X POST \"https://localhost:9443/api/am/publisher/v1.0/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content\""
       x-wso2-request: |
-        POST https://localhost:9443/api/am/publisher/v0.14/api-products/8848faaa-7fd1-478a-baa2-48a4ebb92c98/documents/b3a79270-02bb-4e39-9ac1-90ce8f6c84af/content
+        POST https://localhost:9443/api/am/publisher/v1.0/api-products/8848faaa-7fd1-478a-baa2-48a4ebb92c98/documents/b3a79270-02bb-4e39-9ac1-90ce8f6c84af/content
         Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
         Content-Length: 8004
         Content-Type: multipart/form-data; boundary=------------------------7b9a53f1ffa452b9
@@ -5685,7 +5685,7 @@ paths:
         [file content]
 
         --------------------------7b9a53f1ffa452b9--
-      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/publisher/v0.14/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/documents/b3a79270-02bb-4e39-9ac1-90ce8f6c84af/content\nContent-Type: application/json\n\n{\n    \"visibility\":\"API_LEVEL\",\n    \"sourceType\":\"FILE\",\n    \"sourceUrl\":null,\n    \"otherTypeName\":null,\n    \"documentId\":\"daf732d3-bda2-46da-b381-2c39d901ea61\",\n    \"summary\":\"This is a sample documentation pdf\",\n    \"name\":\"Introduction to PhoneVerification API PDF\",\n    \"type\":\"HOWTO\"\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/publisher/v1.0/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/documents/b3a79270-02bb-4e39-9ac1-90ce8f6c84af/content\nContent-Type: application/json\n\n{\n    \"visibility\":\"API_LEVEL\",\n    \"sourceType\":\"FILE\",\n    \"sourceUrl\":null,\n    \"otherTypeName\":null,\n    \"documentId\":\"daf732d3-bda2-46da-b381-2c39d901ea61\",\n    \"summary\":\"This is a sample documentation pdf\",\n    \"name\":\"Introduction to PhoneVerification API PDF\",\n    \"type\":\"HOWTO\"\n}"
       summary: Upload the content of an API Product document
       description: |
         Thid operation can be used to upload a file or add inline content to an API Product document.
@@ -5889,9 +5889,9 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v0.14/environments\""
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1.0/environments\""
       x-wso2-request: |
-        GET https://localhost:9443/api/am/publisher/v0.14/environments
+        GET https://localhost:9443/api/am/publisher/v1.0/environments
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"list\": [   {\n      \"showInApiConsole\": true,\n      \"serverUrl\": \"https://localhost:9443/services/\",\n      \"endpoints\":       {\n         \"http\": \"http://localhost:8280\",\n         \"https\": \"https://localhost:8243\"\n      },\n      \"name\": \"Production and Sandbox\",\n      \"type\": \"hybrid\"\n   }],\n   \"count\": 1\n}"
       summary: Get all gateway environments
