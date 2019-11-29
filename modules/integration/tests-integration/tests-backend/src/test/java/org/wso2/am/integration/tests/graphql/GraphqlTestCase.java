@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -65,6 +67,7 @@ import static org.testng.Assert.assertEquals;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 public class GraphqlTestCase extends APIMIntegrationBaseTest {
+    private static final Log log = LogFactory.getLog(GraphqlTestCase.class);
 
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPI";
     private final String API_CONTEXT = "info";
@@ -254,6 +257,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testApiId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        log.info("Access Token response without scope: " + accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
@@ -272,6 +276,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
 
         response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
+        log.info("Access Token response with scope: " + response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
