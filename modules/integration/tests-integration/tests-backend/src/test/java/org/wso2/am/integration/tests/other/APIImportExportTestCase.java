@@ -707,9 +707,23 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private APIDTO getAPI(String apiName, String apiVersion, String provider, String apiId)
-            throws APIManagerIntegrationTestException, ApiException {
+            throws Exception {
         //get the imported file information
+        int retry = 10;
         APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+        if (apiListDTO == null) {
+            Thread.sleep(3000);
+            for (int i = 0; i < retry; i++) {
+                apiListDTO = restAPIPublisher.getAllAPIs();
+                if (apiListDTO == null) {
+                    retry++;
+                    Thread.sleep(3000);
+                    log.info("Waiting for the imported APIs");
+                } else {
+                    break;
+                }
+            }
+        }
         assertNotNull(apiListDTO, "No APIs found in API Publisher");
         for (APIInfoDTO apiInfoDTO : apiListDTO.getList()) {
             if (apiName.equals(apiInfoDTO.getName()) && apiVersion.equals(apiInfoDTO.getVersion()) && provider
