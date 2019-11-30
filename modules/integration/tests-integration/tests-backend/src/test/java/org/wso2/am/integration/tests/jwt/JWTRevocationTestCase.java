@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -122,14 +123,32 @@ public class JWTRevocationTestCase extends APIManagerLifecycleBaseTest {
         } catch (Exception e) {
             org.junit.Assert.fail("Should not throw any exceptions" + e);
         }
-        // Wait while the JMS message is received to the related JMS topic
-        Thread.sleep(1000L);
 
-        // Test JWT token validity after revocation
-        HttpResponse invocationResponseAfterRevoked =
-                HttpRequestUtil.doGet(apiInvocationUrl, apiInvocationRequestHeaders);
-        Assert.assertEquals(invocationResponseAfterRevoked.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
-                "Response code mismatched when invoke api after revoking the access token.");
+        // Test JWT token validity after sending the revoke request
+        boolean isTokenValid = true;
+        HttpResponse invocationResponseAfterRevoked;
+        int counter = 1;
+        do {
+            // Wait while the JMS message is received to the related JMS topic
+            Thread.sleep(1000L);
+            invocationResponseAfterRevoked = HttpRequestUtil.doGet(apiInvocationUrl,
+                    apiInvocationRequestHeaders);
+            int invocationResponseCodeAfterRevoked = invocationResponseAfterRevoked.getResponseCode();
+
+            if (invocationResponseCodeAfterRevoked == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+                isTokenValid = false;
+            } else if (invocationResponseCodeAfterRevoked == HTTP_RESPONSE_CODE_OK) {
+                isTokenValid = true;
+            } else {
+                throw new APIManagerIntegrationTestException("Unexpected response received when invoking the API. " +
+                        "Response received :" + invocationResponseAfterRevoked.getData() + ":" +
+                        invocationResponseAfterRevoked.getResponseMessage());
+            }
+            counter++;
+        } while (isTokenValid && counter < 20);
+
+        Assert.assertFalse(isTokenValid, "Access token revocation failed. API invocation response code is expected to" +
+                " be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED + ", but got " + invocationResponseAfterRevoked.getResponseCode());
     }
 
     @AfterClass(alwaysRun = true)
