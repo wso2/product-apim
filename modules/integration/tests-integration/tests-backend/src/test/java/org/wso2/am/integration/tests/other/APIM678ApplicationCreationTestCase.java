@@ -22,12 +22,14 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
@@ -226,9 +228,12 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertEquals(deleteApplicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response Code is mismatched get application " + applicationName);
 
-
-        ApplicationDTO deleteVerifyResponse = restAPIStore.getApplicationById(createApplicationResponse.getData());
-        assertNull(deleteVerifyResponse, "Error occur while deleting the application" + applicationName);
+        try {
+            restAPIStore.getApplicationById(createApplicationResponse.getData());
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
+                    "Application is not deleted: " + applicationName);
+        }
     }
 
 

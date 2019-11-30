@@ -27,9 +27,9 @@
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.MicroGWJWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
-            <class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>
         </classes>
     </test>
 
@@ -38,6 +38,12 @@
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
+        </classes>
+    </test>
+    
+    <test name="apim-integration-tests-api-product" preserve-order="true" parallel="none" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>
         </classes>
     </test>
 
@@ -241,7 +247,7 @@
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
-            <!--<class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <!--THis test will be enabled once the stats event streams are finalized  -->
             <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->

@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -65,6 +67,7 @@ import static org.testng.Assert.assertEquals;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 public class GraphqlTestCase extends APIMIntegrationBaseTest {
+    private static final Log log = LogFactory.getLog(GraphqlTestCase.class);
 
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPI";
     private final String API_CONTEXT = "info";
@@ -73,6 +76,9 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
     private final String RESPONSE_DATA = "[{\"name\":\"Afrikaans\",\"code\":\"af\"},{\"name\":\"Amharic\",\"code\":\"am\"}," +
             "{\"name\":\"Arabic\",\"code\":\"ar\"},{\"name\":\"Aymara\",\"code\":\"ay\"},{\"name\":\"Azerbaijani\"," +
             "\"code\":\"az\"},{\"name\":\"Belarusian\",\"code\":\"be\"}]";
+    private static final String GRAPHQL_TEST_USER = "graphqluser";
+    private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
+    private static final String GRAPHQL_ROLE = "graphqlrole";
 
     private String schemaDefinition;
     private String graphqlAPIId;
@@ -86,6 +92,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        userManagementClient.addUser(GRAPHQL_TEST_USER, GRAPHQL_TEST_USER_PASSWORD, new String[]{}, null);
+        userManagementClient.addRole(GRAPHQL_ROLE, new String[]{GRAPHQL_TEST_USER}, new String[]{});
         schemaDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator + "schema.graphql"),
                 "UTF-8");
@@ -205,7 +213,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = { "testInvokeGraphqlAPIUsingOAuthApplication","testInvokeGraphqlAPIUsingJWTApplication"})
     public void testOperationalLevelOAuthScopesForGraphql() throws Exception {
         ArrayList role = new ArrayList();
-        role.add("Internal/subscriber");
+        role.add(GRAPHQL_ROLE);
 
         ScopeDTO scopeObject = new ScopeDTO();
         ScopeBindingsDTO scopeBinding = new ScopeBindingsDTO();
@@ -254,6 +262,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testApiId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        log.info("Access Token response without scope: " + accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
@@ -265,13 +274,18 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         HttpResponse response;
         String requestBody;
         JSONObject accessTokenGenerationResponse;
-
+        String username = GRAPHQL_TEST_USER;
         //Obtain user access token for Admin
-        requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
+        if (userMode != TestUserMode.SUPER_TENANT_ADMIN){
+            username = username.concat("@").concat(user.getUserDomain());
+        }
+        requestBody =
+                "grant_type=password&username=" + username + "&password=" + GRAPHQL_TEST_USER_PASSWORD +
                 "&scope=subscriber";
 
         response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
+        log.info("Access Token response with scope: " + response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
@@ -348,6 +362,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        userManagementClient.deleteRole(GRAPHQL_ROLE);
+        userManagementClient.deleteUser(GRAPHQL_TEST_USER);
         super.cleanUp();
     }
 }
