@@ -168,14 +168,6 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         // create new user in tenant with only subscriber role and login to the Store
         userManagementClient2 = new UserManagementClient(
                 keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
-        if (userManagementClient2.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
-            userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
-        }
-
-        userManagementClient2.addInternalRole(ROLE_SUBSCRIBER,
-                                              new String[]{},
-                                              new String[]{"/permission/admin/login",
-                                                           "/permission/admin/manage/api/subscribe"});
 
         if (userManagementClient2.userNameExists(INTERNAL_ROLE_SUBSCRIBER, TENANT_SUBSCRIBER_USERNAME)) {
             userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
