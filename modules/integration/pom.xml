@@ -16,8 +16,6 @@
     <modules>
         <module>tests-common</module>
         <module>tests-integration</module>
-        <!--<module>tests-ui-integration</module>-->
-        <!--<module>tests-platform</module>-->
     </modules>
 
     <dependencies>

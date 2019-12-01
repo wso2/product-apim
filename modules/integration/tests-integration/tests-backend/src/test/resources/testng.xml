@@ -286,7 +286,15 @@
 
     <test name="apim-JWT-integration-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
+            <class name="org.wso2.am.integration.tests.jwt.JWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-urlsafe-JWT-integration-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.jwt.urlsafe.UrlSafeJWTTestSuite"/>
+            <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>
         </classes>
     </test>
 

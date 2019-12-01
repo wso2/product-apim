@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -90,6 +91,7 @@ public class APIMIntegrationBaseTest {
     protected RestAPIPublisherImpl restAPIPublisher;
     protected RestAPIStoreImpl restAPIStore;
     protected UserManagementClient userManagementClient;
+    protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
     protected String publisherURLHttps;
@@ -186,6 +188,9 @@ public class APIMIntegrationBaseTest {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
                 userManagementClient = new UserManagementClient(
                         keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+
                 tenantManagementServiceClient = new TenantManagementServiceClient(
                         superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
                         keymanagerSuperTenantSessionCookie);
