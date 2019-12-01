@@ -16,7 +16,7 @@
  *under the License.
  */
 
-package org.wso2.am.integration.tests.jwt;
+package org.wso2.am.integration.tests.jwt.urlsafe;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +25,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -34,52 +33,42 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.core.Response;
 
-import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-public class JWTTestCase extends APIManagerLifecycleBaseTest {
+public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final Log log = LogFactory.getLog(JWTTestCase.class);
+    private static final Log log = LogFactory.getLog(URLSafeJWTTestCase.class);
 
     private final String JWT_ASSERTION_HEADER = "X-JWT-Assertion";
     private final String DEFAULT_PROFILE = "default";
-    private String apiName = "JWTUserClaimAPI";
-    private String apiContext = "jwtTest";
+    private String apiName = "URLSafeJWTUserClaimAPI";
+    private String apiContext = "urlsafejwtTest";
     private String providerName;
     private String apiVersion = "1.0.0";
-    private String oauthApplicationName = "OauthAppForJWTTest";
-    private String jwtApplicationName = "JWTAppFOrJWTTest";
+    private String oauthApplicationName = "OauthAppForURLSafeJWTTest";
+    private String jwtApplicationName = "JWTAppFOrURLSafeJWTTest";
 
     private String endpointURL;
-    String enduserName = "subscriberUser2";
+    String enduserName = "subscriberUser3";
     String enduserPassword = "password@123";
     private String oauthApplicationId;
     private String jwtApplicationId;
@@ -147,15 +136,15 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
         //check the jwt header
-        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
+        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
         if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
             //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
             String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
             boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
             assertTrue("JWT signature verification failed", isSignatureValid);
@@ -204,15 +193,15 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
         //check the jwt header
-        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
+        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
         if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
             //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
             String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
             boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
             assertTrue("JWT signature verification failed", isSignatureValid);
@@ -277,7 +266,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Factory(dataProvider = "userModeDataProvider")
-    public JWTTestCase(TestUserMode userMode) {
+    public URLSafeJWTTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 

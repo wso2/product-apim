@@ -1628,6 +1628,14 @@ public class APIMTestCaseUtils {
         return Base64.decodeBase64(jwtTokenArray[2].getBytes());
     }
 
+    public static byte[] getDecodedURLSafeJWTSignature(String jwt) throws UnsupportedEncodingException {
+        //take first part
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
+        // decode  JWT part
+        return decode(jwtTokenArray[2]);
+    }
+
+
     /**
      * This method is used to base64Url-decode a base64Url-encoded string
      *
