@@ -52,7 +52,6 @@ import static org.testng.Assert.assertNotEquals;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
-    private ServerConfigurationManager serverConfigurationManager;
     private static String backEndEndpointUrl;
     private String apiId;
     private String tokenTestApiAppId;
@@ -77,24 +76,8 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
 
-        /*
-          If test run in external distributed deployment you need to copy following resources accordingly.
-          configFiles/hostobjecttest/api-manager.xml
-          configFiles/tokenTest/log4j.properties
-        */
-
-//            serverConfigurationManager.applyConfiguration(
-//                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-//                             "tokenTest" + File.separator + "api-manager.xml"));
-//            serverConfigurationManager.applyConfiguration(
-//                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-//                             "tokenTest" + File.separator + "log4j2.properties"));
-
         backEndEndpointUrl = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
 
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
     }
 
     @Test(groups = {"wso2.am"}, description = "Test Refresh token functionality")
