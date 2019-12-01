@@ -25,29 +25,8 @@ import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
-import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
-import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
-import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
-import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
-import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.store.api.v1.TagsApi;
-import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
-import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
+import org.wso2.am.integration.clients.store.api.v1.*;
+import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -74,6 +53,7 @@ public class RestAPIStoreImpl {
     public RatingsApi ratingsApi = new RatingsApi();
     public TagsApi tagsApi = new TagsApi();
     public SdKsApi sdKsApi = new SdKsApi();
+    public ApiKeysApi apiKeysApi = new ApiKeysApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
 
     ApiClient apiStoreClient = new ApiClient();
@@ -97,7 +77,7 @@ public class RestAPIStoreImpl {
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.15/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
-                + "apim:self-signup apim:dedicated_gateway apim:store_settings";
+                + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
         String accessToken = ClientAuthenticator
                 .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
@@ -113,6 +93,7 @@ public class RestAPIStoreImpl {
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
+        apiKeysApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -278,6 +259,17 @@ public class RestAPIStoreImpl {
 
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod) throws ApiException {
+        APIKeyGenerateRequestDTO keyGenerateRequestDTO = new APIKeyGenerateRequestDTO();
+        keyGenerateRequestDTO.setValidityPeriod(validityPeriod);
+        ApiResponse<APIKeyDTO> response = apiKeysApi
+                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType,
+                        keyGenerateRequestDTO, null);
+
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
     }

@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * This class tests the behaviour of API when there is choice of selection between oauth2 and mutual ssl in API Manager.
@@ -115,6 +117,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         List<String> securitySchemes2 = new ArrayList<>();
         securitySchemes2.add("mutualssl");
         securitySchemes2.add("oauth2");
+        securitySchemes2.add("api_key");
         apiRequest2.setSecurityScheme(securitySchemes2);
 
         HttpResponse response2 = restAPIPublisher.addAPI(apiRequest2);
@@ -165,6 +168,24 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API invocation failed for a test case with valid access token when the API is protected with "
                         + "both mutual sso and oauth2");
+    }
+
+    @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithApiKeys() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore
+                    .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1);
+
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("apikey", apiKeyDTO.getApikey());
+
+        HttpResponse apiResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders);
+        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "API invocation failed for a test case with valid api key when the API is protected with "
+                        + "API Keys");
     }
 
 //    @Test(description =  "This method tests the behaviour of APIs that are protected with mutual SSL and when the "
