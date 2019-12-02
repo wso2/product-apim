@@ -132,7 +132,6 @@
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
-
                         <configuration>
                             <outputDirectory>${basedir}/${is_folder_name}/repository/conf</outputDirectory>
                             <overwrite>true</overwrite>
@@ -141,6 +140,26 @@
                                     <directory>${basedir}</directory>
                                     <includes>
                                         <include>deployment.toml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resource-two</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+
+                        <configuration>
+                            <outputDirectory>${basedir}/${is_folder_name}/repository/resources/lifecycles</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/lifecycles/</directory>
+                                    <includes>
+                                        <include>APILifeCycle.xml</include>
                                     </includes>
                                 </resource>
                             </resources>
