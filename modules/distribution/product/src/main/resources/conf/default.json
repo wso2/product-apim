@@ -20,6 +20,7 @@
   "oauth.grant_type.client_credentials.grant_handler": "org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler",
   "oauth.grant_type.client_credentials.allow_refresh_tokens": false,
   "oauth.grant_type.client_credentials.allow_id_token": false,
+  "oauth.grant_type.account_switch.enable": false,
   "oauth.grant_type.saml_bearer.enable": true,
   "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler",
   "oauth.grant_type.iwa_ntlm.enable": true,
