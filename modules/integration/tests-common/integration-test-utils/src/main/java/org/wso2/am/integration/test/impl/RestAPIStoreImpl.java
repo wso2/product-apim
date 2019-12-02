@@ -108,7 +108,7 @@ public class RestAPIStoreImpl {
                         password, tenantDomain, tokenURL);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
