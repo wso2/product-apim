@@ -211,8 +211,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
             dependsOnMethods = "testSubscribeTheNewVersion")
     public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
         //Invoke  new version after subscription
-        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT,API_VERSION_2_0_0)
-                                                                      + API_END_POINT_METHOD, requestHeaders);
+        HttpResponse newVersionInvokeResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_2_0_0) + API_END_POINT_METHOD, requestHeaders);
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched when" +
                 " invoke new api after subscribe the new version");
         assertTrue(newVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched when invoke" +
