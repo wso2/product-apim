@@ -70,7 +70,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
         super.init(userMode);
         providerName = user.getUserName();
         String tenantDomain = storeContext.getContextTenant().getDomain();
-        restAPIPublisher = new RestAPIPublisherImpl(user.getUserName(), user.getPassword(), tenantDomain,
+        restAPIPublisher = new RestAPIPublisherImpl(user.getUserNameWithoutDomain(), user.getPassword(), tenantDomain,
                 publisherURLHttps);
     }
 

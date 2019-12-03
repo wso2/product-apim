@@ -156,11 +156,11 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to the API Publisher adn Store as Tenant admin
         apiStoreClientAdminOtherDomain = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
                 storeContext.getContextTenant().getContextUser().getUserDomain(), storeURLHttps);
         apiPublisherClientAdminOtherDomain = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
                 publisherContext.getContextTenant().getContextUser().getUserDomain(), storeURLHttps);
 
