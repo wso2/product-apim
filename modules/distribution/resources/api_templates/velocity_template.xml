@@ -170,6 +170,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
 #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
 #set( $resourceName = $!{resource.getAmznResourceName()} )
+#set( $resourceTimeout = $!{resource.getAmznResourceTimeout()} )
 <class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaMediator">
 #if($accessKey != '')
     <property name="accessKey" value="$accessKey"/>
@@ -179,6 +180,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 #if($resourceName != '')
     <property name="resourceName" value="$resourceName"/>
+#end
+#if($resourceTimeout != 0)
+    <property name="resourceTimeout" value="$resourceTimeout"/>
 #end
 </class>
 <loopback />
