@@ -1593,6 +1593,23 @@ public class RestAPIStoreImpl {
     }
 
     /**
+     * Generate SDK for a given programming language
+     *
+     * @param apiId The api id which the sdk should be downloaded.
+     * @param language  The required sdk language.
+     * @param tenantDomain The tenant domain of the sdk to be generated
+     * @return org.apache.http.HttpResponse for the SDK generation
+     * @throws APIManagerIntegrationTestException if failed to generate the SDK
+     */
+    public ApiResponse<byte[]> generateSDKUpdated(String apiId, String language, String tenantDomain)
+            throws ApiException, IOException {
+
+        sdKsApi.setApiClient(apiStoreClient);
+        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, tenantDomain);
+
+    }
+
+    /**
      * Change password of the user
      *
      * @param username        username of the user
