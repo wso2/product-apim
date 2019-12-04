@@ -81,8 +81,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
     public void testSetScopeToResourceTestCase() throws Exception {
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                keyManagerContext.getContextTenant().getContextUser().getPassword());
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
         // crating user john
         String userJohn;
         String gatewayUrl;

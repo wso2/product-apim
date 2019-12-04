@@ -150,6 +150,15 @@
                             <role>role1</role>
                         </roles>
                     </user>
+                    <user key="userStoreUser">
+                        <userName>secondary/secondaryuser</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                        </roles>
+                    </user>
                 </users>
             </tenant>
         </superTenant>
