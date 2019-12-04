@@ -1194,7 +1194,7 @@
         <carbon.governance.version>4.8.10</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.5.3</carbon.kernel.version>
+        <carbon.kernel.version>4.5.2</carbon.kernel.version>
         <apimserver.version>3.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
@@ -1228,7 +1228,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.9.14</carbon.deployment.version>
+        <carbon.deployment.version>4.9.13</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.2</carbon.analytics.version>
