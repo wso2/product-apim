@@ -1179,10 +1179,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.14</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.16</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.410</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.417</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1194,13 +1194,13 @@
         <carbon.governance.version>4.8.10</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.5.2</carbon.kernel.version>
+        <carbon.kernel.version>4.5.3</carbon.kernel.version>
         <apimserver.version>3.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
 	    <cipher.tool.version>1.1.6</cipher.tool.version>
 
-        <carbon.commons.version>4.7.17</carbon.commons.version>
+        <carbon.commons.version>4.7.18</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -1228,7 +1228,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.9.13</carbon.deployment.version>
+        <carbon.deployment.version>4.9.14</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.2</carbon.analytics.version>
@@ -1241,7 +1241,7 @@
 
         <siddhi.version>3.2.6</siddhi.version>
 
-        <axis2-transports.wso2.version>2.0.0-wso2v41</axis2-transports.wso2.version>
+        <axis2-transports.wso2.version>2.0.0-wso2v42</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
