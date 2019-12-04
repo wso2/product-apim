@@ -19,6 +19,7 @@
 
 package org.wso2.am.framework.extensions;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.Constants;
@@ -100,10 +101,32 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                     String customHandlerTargetPath =
                             serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
                                     "components" + File.separator + "lib";
+                    String userStorePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                            + "deployment" + File.separator + "server" + File.separator + "userstores";
+                    String databasePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                            + "database";
+
                     FileManager.copyFile(new File(resourcePath + File.separator + "configFiles" + File.separator +
                                     "originalFile" + File.separator + "deployment.toml")
                             , serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
                                     "conf" + File.separator + "deployment.toml");
+
+                    File userStoreFile = new File(userStorePath);
+                    if (!userStoreFile.exists() && !userStoreFile.mkdir()) {
+                        log.error("Error while creating the user store directory : "
+                                + userStorePath);
+                    }
+
+                    FileUtils.copyFile(new File(
+                                    resourcePath + File.separator + "configFiles" + File.separator + "userstores"
+                                            + File.separator + "database" + File.separator + "WSO2SEC_DB.mv.db"),
+                            new File(databasePath + File.separator + "WSO2SEC_DB.mv.db"));
+
+                    FileManager.copyFile(new File(
+                                    resourcePath + File.separator + "configFiles" + File.separator + "userstores"
+                                            + File.separator + "secondary.xml"),
+                            userStorePath + File.separator + "secondary.xml");
+
                     FileManager.copyJarFile(new File(getAMResourceLocation() + File.separator +
                                     "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"),
                             customHandlerTargetPath);
