@@ -256,7 +256,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
             "wso2.am" }, description = "Checking status of the imported API", dependsOnMethods = "testAPIImport")
     public void testAPIState() throws Exception {
         //get the imported API information
-        APIDTO apiObj = getAPI(API_NAME, API_VERSION, user.getUserName(), apiId);
+        APIDTO apiObj = getAPI(API_NAME, API_VERSION, user.getUserName());
         apiId = apiObj.getId();
 
         String state = apiObj.getLifeCycleStatus();
@@ -411,7 +411,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
             "wso2.am" }, description = "Checking newly imported API status", dependsOnMethods = "testNewAPIImport")
     public void testNewAPIState() throws Exception {
         //get the imported API information
-        APIDTO apiObj = getAPI(NEW_API_NAME, API_VERSION, user.getUserName(), newApiId);
+        APIDTO apiObj = getAPI(NEW_API_NAME, API_VERSION, user.getUserName());
         newApiId = apiObj.getId();
 
         String state = apiObj.getLifeCycleStatus();
@@ -507,7 +507,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeployment();
         //get the imported file information
 
-        APIDTO apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(), preservePublisherApiId);
+        log.info("API ID before import: " + preservePublisherApiId);
+        APIDTO apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
         preservePublisherApiId = apiObj.getId();
 
         String provider = apiObj.getProvider();
@@ -521,7 +522,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, publisherUser, PUBLISHER_USER_PASS);
         waitForAPIDeployment();
         //get the imported file information
-        apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(), preservePublisherApiId);
+        log.info("API ID  different publisher before import: " + preservePublisherApiId);
+        apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
         preservePublisherApiId = apiObj.getId();
         provider = apiObj.getProvider();
         assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
@@ -573,8 +575,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 user.getPassword().toCharArray());
         waitForAPIDeployment();
         //get the imported file information
-        APIDTO apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName(),
-                notPreservePublisherApiId);
+        log.info("API ID before import: " + notPreservePublisherApiId);
+        APIDTO apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
         notPreservePublisherApiId = apiObj.getId();
         String provider = apiObj.getProvider();
         assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
@@ -587,7 +589,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 PUBLISHER_USER_PASS);
         waitForAPIDeployment();
         //get the imported file information
-        apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, publisherUser, notPreservePublisherApiId);
+        log.info("API ID  different publisher before import: " + notPreservePublisherApiId);
+        apiObj = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, publisherUser);
         notPreservePublisherApiId = apiObj.getId();
         provider = apiObj.getProvider();
         assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
@@ -706,11 +709,13 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(status, HttpStatus.SC_OK, "Response code is not as expected : " + response);
     }
 
-    private APIDTO getAPI(String apiName, String apiVersion, String provider, String apiId)
+    private APIDTO getAPI(String apiName, String apiVersion, String provider)
             throws Exception {
         //get the imported file information
         int retry = 10;
+        String apiId = "";
         APIListDTO apiListDTO = restAPIPublisher.getAllAPIs();
+        log.info("Get All APIS after import: " + apiListDTO.toString());
         if (apiListDTO == null) {
             Thread.sleep(3000);
             for (int i = 0; i < retry; i++) {
@@ -729,8 +734,10 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
             if (apiName.equals(apiInfoDTO.getName()) && apiVersion.equals(apiInfoDTO.getVersion()) && provider
                     .equals(apiInfoDTO.getProvider())) {
                 apiId = apiInfoDTO.getId();
+                log.info("API Object after Import: " + apiInfoDTO.toString());
             }
         }
+        log.info("API ID after import: " + apiId);
         HttpResponse response = restAPIPublisher.getAPI(apiId);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API get failed");
         Gson g = new Gson();
