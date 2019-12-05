@@ -195,6 +195,8 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_UPPER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
+        watForTagsAvailableOnSearchApi(TAG_GROUP_UPPER_CASE);
+
         //create test api 2
         apiRequest = new APIRequest(API_NAME_CONTEXT_LOWER_CASE, API_NAME_CONTEXT_LOWER_CASE, new URL(endpointUrl));
         apiRequest.setTags(TAG_GROUP_LOWER_CASE);
@@ -217,6 +219,8 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_LOWER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
+        watForTagsAvailableOnSearchApi(TAG_GROUP_LOWER_CASE);
+
         //create test api 3
         apiRequest = new APIRequest(API_NAME_CONTEXT_WITH_SPACE, API_NAME_CONTEXT_WITH_SPACE, new URL(endpointUrl));
         apiRequest.setTags(TAG_GROUP_WITH_SPACE);
@@ -238,6 +242,8 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITH_SPACE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        watForTagsAvailableOnSearchApi(TAG_GROUP_WITH_SPACE);
 
         //create test api 4
         apiRequest = new APIRequest(API_NAME_CONTEXT_WITHOUT_SPACE, API_NAME_CONTEXT_WITHOUT_SPACE, new URL(endpointUrl));
@@ -265,6 +271,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         watForTagsAvailableOnSearchApi(TAG_GROUP_WITHOUT_SPACE);
 
         TagListDTO tagListDTO = restAPIStore.getAllTags();
+        log.info("All tags before assert: " + tagListDTO.toString());
         List<TagDTO> tagList = tagListDTO.getList();
         String[] tt = { TAG_GROUP_UPPER_CASE, TAG_GROUP_LOWER_CASE, TAG_GROUP_WITH_SPACE, TAG_GROUP_WITHOUT_SPACE };
         for (String t : tt) {
@@ -326,6 +333,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
     public void watForTagsAvailableOnSearchApi(String tag) throws Exception {
         long waitTime = System.currentTimeMillis() + WAIT_TIME;
         TagListDTO tagsList;
+        boolean found = false;
         while (waitTime > System.currentTimeMillis()) {
             tagsList = restAPIStore.getAllTags();
             log.info("WAIT for availability of tags : " + tag + " found on Store tag cloud");
@@ -333,6 +341,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
                 log.info("Data: " + tagsList.toString());
                 if (tagsList.toString().contains(tag)) {
                     log.info("Tag :" + tag + " found");
+                    found = true;
                     break;
                 } else {
                     try {
@@ -342,6 +351,8 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
                 }
             }
         }
+
+        Assert.assertTrue(found, tag + " :Tag was not found");
     }
 
     @DataProvider
