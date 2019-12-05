@@ -99,7 +99,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
 
         // check for publisher login with email user name
-        restAPIPublisher = new RestAPIPublisherImpl(fullUserName, password, domainName, "https://localhost:9943/");
+        restAPIPublisher = new RestAPIPublisherImpl(userNameWithEmail, password, domainName, "https://localhost:9943/");
         APIListDTO apiListDTO = null;
         try {
             apiListDTO = restAPIPublisher.apIsApi.apisGet(null, null, domainName, null, null, null, null);
@@ -108,7 +108,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
                     e.getMessage(), e);
         }
         // check for store login with email user name
-        restAPIStore = new RestAPIStoreImpl(fullUserName, password, domainName,"https://localhost:9943/");
+        restAPIStore = new RestAPIStoreImpl(userNameWithEmail, password, domainName,"https://localhost:9943/");
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
         // check for Admin Portal login with email user name

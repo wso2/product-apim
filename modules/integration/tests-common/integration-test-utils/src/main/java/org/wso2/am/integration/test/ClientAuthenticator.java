@@ -70,7 +70,7 @@ public class ClientAuthenticator {
             String clientEncoded = DatatypeConverter.printBase64Binary(
                     (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
-            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) && !username.contains(CHAR_AT)) {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) || username.contains(CHAR_AT)) {
                 username = username + CHAR_AT + tenantDomain;
             }
             String postParams;
@@ -137,15 +137,9 @@ public class ClientAuthenticator {
                         username) + ':' + System.getProperty("systemUserPwd", password))
                         .getBytes(StandardCharsets.UTF_8));
             } else {
-                if (username.contains(CHAR_AT)){
-                    json.addProperty("owner", username);
-                    clientEncoded = DatatypeConverter.printBase64Binary((username + ':' + password)
-                            .getBytes(StandardCharsets.UTF_8));
-                } else {
-                    json.addProperty("owner", username + CHAR_AT + tenantDomain);
-                    clientEncoded = DatatypeConverter.printBase64Binary((username + CHAR_AT + tenantDomain + ':' + password)
-                            .getBytes(StandardCharsets.UTF_8));
-                }
+                json.addProperty("owner", username + CHAR_AT + tenantDomain);
+                clientEncoded = DatatypeConverter.printBase64Binary((username + CHAR_AT + tenantDomain + ':' + password)
+                        .getBytes(StandardCharsets.UTF_8));
             }
 
             // Calling DCR endpoint

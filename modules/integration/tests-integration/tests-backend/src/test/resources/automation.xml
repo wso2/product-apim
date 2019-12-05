@@ -140,6 +140,25 @@
                         <userName>testu3</userName>
                         <password>testu3pass</password>
                     </user>
+                    <user key="emailUser">
+                        <userName>test@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                            <role>role1</role>
+                        </roles>
+                    </user>
+                    <user key="userStoreUser">
+                        <userName>secondary/secondaryuser</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                        </roles>
+                    </user>
                 </users>
             </tenant>
         </superTenant>
@@ -159,6 +178,16 @@
                     <user key="user2">
                         <userName>testuser21</userName>
                         <password>testuser21</password>
+                    </user>
+                    <user key="emailUser">
+                        <userName>test@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                            <role>role1</role>
+                        </roles>
                     </user>
                 </users>
             </tenant>

@@ -1179,10 +1179,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.14</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.16</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.5.410</carbon.apimgt.version>
+        <carbon.apimgt.version>6.5.423</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1200,7 +1200,7 @@
 
 	    <cipher.tool.version>1.1.6</cipher.tool.version>
 
-        <carbon.commons.version>4.7.17</carbon.commons.version>
+        <carbon.commons.version>4.7.18</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -1241,7 +1241,7 @@
 
         <siddhi.version>3.2.6</siddhi.version>
 
-        <axis2-transports.wso2.version>2.0.0-wso2v41</axis2-transports.wso2.version>
+        <axis2-transports.wso2.version>2.0.0-wso2v42</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
@@ -1288,8 +1288,8 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.3</carbon.automation.version>
-        <carbon.automationutils.version>4.5.1</carbon.automationutils.version>
+        <carbon.automation.version>4.4.6</carbon.automation.version>
+        <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.9.RELEASE</org.springframework.version>

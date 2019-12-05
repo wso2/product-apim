@@ -87,12 +87,12 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         restAPIPublisherCarbonSuperUser1 = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
+                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
+                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
@@ -101,12 +101,12 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to API Publisher and Store with CarbonSuper normal user2
         restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(
-                storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
+                storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
+                storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
@@ -116,23 +116,23 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to the API Publisher and Store as Tenant user
         restAPIPublisherOtherDomainUser = new RestAPIPublisherImpl(
-                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserName(),
+                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword(),
                 otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainUser = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserName(),
+                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword(),
                 otherDomain, storeURLHttps);
 
         //Login to the API Publisher adn Store as Tenant admin
         restAPIPublisherOtherDomainAdmin = new RestAPIPublisherImpl(
-                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
                 otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainAdmin = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
                 otherDomain, storeURLHttps);
     }

@@ -80,6 +80,6 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                         createSession(gatewayContextMgt));
 
         resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
-        serverConfigurationManager.restoreToLastConfiguration(false);
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 }
