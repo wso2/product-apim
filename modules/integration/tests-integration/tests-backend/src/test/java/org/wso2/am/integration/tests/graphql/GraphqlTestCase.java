@@ -79,6 +79,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
     private static final String GRAPHQL_TEST_USER = "graphqluser";
     private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
     private static final String GRAPHQL_ROLE = "graphqlrole";
+    private static final long WAIT_TIME = 45 * 1000;
 
     private String schemaDefinition;
     private String graphqlAPIId;
@@ -329,8 +330,22 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         // invoke api without security
         String accessToken = "";
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
+        boolean status = false;
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        HttpResponse serviceResponse = null;
+        while (waitTime > System.currentTimeMillis()) {
+            serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+            if (HttpStatus.SC_OK == serviceResponse.getResponseCode()) {
+                status = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        Assert.assertTrue(status,
                 "Response code is not as expected");
         Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
     }
