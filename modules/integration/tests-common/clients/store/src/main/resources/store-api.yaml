@@ -4073,8 +4073,8 @@ definitions:
       subscriptionScopes:
         type: array
         items:
-          type: string
-        example: ["admin"]
+          $ref: '#/definitions/ScopeInfo'
+        example: []
       owner:
         description: |
           Application created user
