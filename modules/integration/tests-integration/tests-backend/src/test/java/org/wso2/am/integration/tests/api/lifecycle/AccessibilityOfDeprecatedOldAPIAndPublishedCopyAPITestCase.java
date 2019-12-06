@@ -38,6 +38,7 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -164,7 +165,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in the store after API deprecate.",
             dependsOnMethods = "testDeprecateOldVersion")
     public void testVisibilityOfOldAPIInStoreAfterDeprecate()
-            throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException, XPathExpressionException {
         //Verify the API in API Store
 
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifierAPI1Version1.getApiName(),

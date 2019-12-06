@@ -47,6 +47,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -536,7 +537,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                                   APIPublisherRestClient publisherRestClient,
                                                   APIStoreRestClient storeRestClient, String applicationName)
-            throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException, XPathExpressionException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -563,7 +564,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             APICreationRequestBean apiCreationRequestBean, RestAPIPublisherImpl publisherRestClient,
             RestAPIStoreImpl storeRestClient, String applicationID, String tier)
             throws APIManagerIntegrationTestException, ApiException,
-            org.wso2.am.integration.clients.store.api.ApiException {
+            org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException {
         APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -585,7 +586,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected String createPublishAndSubscribeToAPIUsingRest(APIRequest apiRequest,
                                                              RestAPIPublisherImpl publisherRestClient, RestAPIStoreImpl storeRestClient, String applicationId,
                                                              String tier)
-            throws APIManagerIntegrationTestException, ApiException {
+            throws APIManagerIntegrationTestException, ApiException, XPathExpressionException {
         String apiId = createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
