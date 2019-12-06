@@ -532,11 +532,13 @@ public class APIMIntegrationBaseTest {
      */
     protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
                                             String expectedResponse)
-            throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException, XPathExpressionException {
 
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
-        String colonSeparatedHeader = user.getUserName()+":"+user.getPassword();
+        String colonSeparatedHeader =
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName() + ":" + keyManagerContext
+                        .getContextTenant().getTenantAdmin().getPassword();
         String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
         Map headerMap = new HashMap();
         headerMap.put("Authorization",authorizationHeader);
