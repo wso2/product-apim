@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ftpserver.command.impl.USER;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -52,7 +53,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "APIScopeTestAPI";
     private static final String API_VERSION = "1.0.0";
     private static final String APP_NAME = "NewApplication";
-    private static final String USER_JOHN = "john";
+    private String USER_SMITH = "smith";
+    private String ADMIN_ROLE = "admin";
     private static final String SUBSCRIBER_ROLE = "subscriber";
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String API_VERSION_WITH_SCOPE = "1.0.0";
@@ -61,6 +63,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     private final String API_CONTEXT_WITH_SCOPE = "APIScopeTestWithScopeContext";
     private final String SCOPE_NAME = "APIScopeUpdateCopyScope";
     private final String ALLOWED_ROLE = "admin";
+    private final String[] ADMIN_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
+            "/permission/admin/configure", "/permission/admin/monitor" };
     private String apiId;
     private String apiIdWithScope;
     private String copyApiId;
@@ -83,18 +87,27 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
-        // crating user john
-        String userJohn;
+        // crating user smith
+        String userSmith;
         String gatewayUrl;
+
+        if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            USER_SMITH = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + USER_SMITH;
+            ADMIN_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + ADMIN_ROLE;
+
+            userManagementClient1.addRole(ADMIN_ROLE, new String[]{user.getUserNameWithoutDomain()}, ADMIN_PERMISSIONS);
+        }
+
         if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
-            userJohn = USER_JOHN;
+            userSmith = USER_SMITH;
         } else {
             gatewayUrl =
                     gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
-            userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
+            userSmith = USER_SMITH + "@" + keyManagerContext.getContextTenant().getDomain();
         }
-        userManagementClient1.addUser(USER_JOHN, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_JOHN);
+
+        userManagementClient1.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
 
         // Adding API
         String apiContext = "testScopeAPI";
@@ -115,14 +128,17 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
-        String modifiedResource = "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                                  "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                                  "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                                  "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                                  "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
-                                  "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"}," +
-                                  "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
-                                  "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,Internal/subscriber\"}]}}}";
+        String modifiedResource =
+                "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\","
+                        + "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"},"
+                        + "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\""
+                        + ADMIN_ROLE + "\"},"
+                        + "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\""
+                        + ADMIN_ROLE + ",Internal/subscriber\"}]}}}";
 
 
         restAPIPublisher.updateSwagger(apiId, modifiedResource);
@@ -194,7 +210,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
 
 
         //Obtaining user access token for john
-        requestBody = "grant_type=password&username=" + userJohn + "&password=john123&scope=admin_scope user_scope";
+        requestBody = "grant_type=password&username=" + userSmith + "&password=john123&scope=admin_scope user_scope";
         accessTokenGenerationResponse = new JSONObject(
                 restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
                         .getData());
@@ -281,7 +297,10 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(copyApiId);
 
         if (userManagementClient1 != null) {
-            userManagementClient1.deleteUser(USER_JOHN);
+            if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+                userManagementClient1.deleteRole(ADMIN_ROLE);
+            }
+            userManagementClient1.deleteUser(USER_SMITH);
         }
         super.cleanUp();
     }
@@ -291,6 +310,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
         };
     }
 }
