@@ -2,7 +2,7 @@
 # main script to start the recommendation server
 
 cd ../
-source venv/bin/activate
+
 cd components
 if command -v python3; then
   python3 server.py 
