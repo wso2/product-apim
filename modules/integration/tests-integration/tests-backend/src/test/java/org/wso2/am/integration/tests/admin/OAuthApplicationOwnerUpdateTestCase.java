@@ -238,7 +238,11 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
      */
     private void updateOwner(String application, String userId, String owner) throws Exception {
         HttpResponse tenantApplications = adminDashboardRestClient.getapplicationsByTenantId(application,
-                "0", "0", "10", "1", "asc");
+                "0", "0", "20", "1", "asc");
+        log.info("Application: " + application);
+        log.info("Old User: " + owner);
+        log.info("New User: " + userId);
+        log.info("Data for getapplicationsByTenantId: " + tenantApplications.getData());
         JSONObject jsonObject = new JSONObject(tenantApplications.getData());
         JSONArray jsonArray = jsonObject.getJSONArray("response");
         int i;
@@ -250,6 +254,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 break;
             }
         }
+        log.info("Owner JSON Object before IF: " + ownerJsonObject);
         if (!ownerJsonObject.getBoolean("error")) {
             HttpResponse updatedApplications = adminDashboardRestClient.getapplicationsByTenantId(application,
                     "0", "0", "10", "1", "asc");
