@@ -87,7 +87,8 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     }
 
     @Test(groups = { "wso2.am" }, description = "Edit the API Information")
-    public void testEditAPIInformation() throws APIManagerIntegrationTestException, ApiException {
+    public void testEditAPIInformation()
+            throws APIManagerIntegrationTestException, ApiException, XPathExpressionException {
         //add api
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();

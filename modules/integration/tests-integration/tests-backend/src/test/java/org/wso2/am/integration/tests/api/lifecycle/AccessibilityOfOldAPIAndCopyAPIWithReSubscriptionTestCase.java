@@ -102,7 +102,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.")
-    public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException {
+    public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Create and publish API version 1.0.0
         // Subscribe old api version (1.0.0)
         waitForAPIDeploymentSync(apiRequest.getProvider(),

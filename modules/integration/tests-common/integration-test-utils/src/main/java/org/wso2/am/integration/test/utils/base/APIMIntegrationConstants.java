@@ -78,6 +78,8 @@ public class APIMIntegrationConstants {
 
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
 
+    public static final String SECONDARY_USER_STORE = "secondary";
+
     public static final class APPLICATION_TIER {
         public static final String UNLIMITED = "Unlimited";
         public static final String LARGE = "Large";
