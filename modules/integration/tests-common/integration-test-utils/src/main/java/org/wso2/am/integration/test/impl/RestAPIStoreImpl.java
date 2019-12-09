@@ -108,7 +108,7 @@ public class RestAPIStoreImpl {
                         password, tenantDomain, tokenURL);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.1");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
@@ -124,7 +124,7 @@ public class RestAPIStoreImpl {
 
 
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
@@ -1359,7 +1359,7 @@ public class RestAPIStoreImpl {
     public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/store/v1.1");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
