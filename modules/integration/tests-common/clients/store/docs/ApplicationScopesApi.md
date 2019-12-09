@@ -1,6 +1,6 @@
 # ApplicationScopesApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1.0*
+All URIs are relative to *https://apis.wso2.com/api/am/store/v1.1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

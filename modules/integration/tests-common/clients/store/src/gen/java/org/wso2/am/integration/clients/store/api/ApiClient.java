@@ -52,7 +52,7 @@ import org.wso2.am.integration.clients.store.api.auth.OAuth;
 
 public class ApiClient {
 
-    private String basePath = "https://apis.wso2.com/api/am/store/v1.0";
+    private String basePath = "https://apis.wso2.com/api/am/store/v1.1";
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
     private String tempFolderPath = null;
@@ -106,7 +106,7 @@ public class ApiClient {
     /**
      * Set base path
      *
-     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/store/v1.0
+     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/store/v1.1
      * @return An instance of OkHttpClient
      */
     public ApiClient setBasePath(String basePath) {
