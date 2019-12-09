@@ -28,6 +28,7 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -56,15 +57,17 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.15/register";
 
         //DCR call for publisher app
-        ClientAuthenticator.makeDCRRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+        DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
                 RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
                 RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
                 APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        ClientAuthenticator.makeDCRRequest(publisherParamRequest);
         //DCR call for dev portal app
-        ClientAuthenticator.makeDCRRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+        DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
                 RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
                 RestAPIStoreImpl.username, RestAPIStoreImpl.password,
                 APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
         super.init();
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
