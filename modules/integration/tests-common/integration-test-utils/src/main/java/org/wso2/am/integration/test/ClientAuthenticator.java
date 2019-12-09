@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.net.ssl.HostnameVerifier;
@@ -119,35 +120,36 @@ public class ClientAuthenticator {
 
 
 
-    public static void makeDCRRequest(String appName, String callBackURL, String tokenScope, String appOwner,
-                                       String grantType, String dcrEndpoint, String username, String password, String tenantDomain) {
-        String applicationName = appName;
+    public static void makeDCRRequest(DCRParamRequest dcrParamRequest) {
+        String applicationName = dcrParamRequest.getAppName();
         URL url;
         HttpURLConnection urlConn = null;
         try {
             //Create json payload for DCR endpoint
             JsonObject json = new JsonObject();
-            json.addProperty("callbackUrl", callBackURL);
+            json.addProperty("callbackUrl", dcrParamRequest.getCallBackURL());
             json.addProperty("clientName", applicationName);
-            json.addProperty("tokenScope", tokenScope);
-            json.addProperty("grantType", grantType);
+            json.addProperty("tokenScope", dcrParamRequest.getTokenScope());
+            json.addProperty("grantType", dcrParamRequest.getGrantType());
             json.addProperty("saasApp", true);
 
             String clientEncoded;
 
-            if (StringUtils.isEmpty(tenantDomain)) {
-                json.addProperty("owner", appOwner);
-                clientEncoded = DatatypeConverter.printBase64Binary((System.getProperty("systemUsername",
-                        username) + ':' + System.getProperty("systemUserPwd", password))
-                        .getBytes(StandardCharsets.UTF_8));
+            if (StringUtils.isEmpty(dcrParamRequest.getTenantDomain())) {
+                json.addProperty("owner", dcrParamRequest.getAppOwner());
+                clientEncoded = DatatypeConverter.printBase64Binary(
+                        (System.getProperty("systemUsername", dcrParamRequest.getUsername()) + ':' + System
+                                .getProperty("systemUserPwd", dcrParamRequest.getPassword()))
+                                .getBytes(StandardCharsets.UTF_8));
             } else {
-                json.addProperty("owner", username + CHAR_AT + tenantDomain);
-                clientEncoded = DatatypeConverter.printBase64Binary((username + CHAR_AT + tenantDomain + ':' + password)
-                        .getBytes(StandardCharsets.UTF_8));
+                json.addProperty("owner", dcrParamRequest.getUsername() + CHAR_AT + dcrParamRequest.getTenantDomain());
+                clientEncoded = DatatypeConverter.printBase64Binary(
+                        (dcrParamRequest.getUsername() + CHAR_AT + dcrParamRequest.getTenantDomain() + ':'
+                                + dcrParamRequest.getPassword()).getBytes(StandardCharsets.UTF_8));
             }
 
             // Calling DCR endpoint
-            url = new URL(dcrEndpoint);
+            url = new URL(dcrParamRequest.getDcrEndpoint());
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
@@ -163,7 +165,7 @@ public class ClientAuthenticator {
                 JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
                 applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
                 applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
-                applicationKeyMap.put(appName, applicationKeyBean);
+                applicationKeyMap.put(dcrParamRequest.getAppName(), applicationKeyBean);
             } else { //If DCR call fails
                 throw new RuntimeException("DCR call failed. Status code: " + responseCode);
             }
