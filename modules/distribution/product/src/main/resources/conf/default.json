@@ -60,18 +60,14 @@
   "message_builder.application_xml": "org.apache.axis2.builder.ApplicationXMLBuilder",
   "message_builder.multipart_form_data": "org.apache.axis2.builder.MultipartFormDataBuilder",
   "message_builder.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishOMBuilder",
-  "transport.passthru_http.listener.parameters": {
-    "port": "8280",
-    "non-blocking": true,
-    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor"
-  },
-  "transport.passthru_https.listener.parameters": {
-    "port": "8243",
-    "non-blocking": true,
-    "httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
-    "SSLVerifyClient": "optional",
-    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
-  },
+  "transport.passthru_http.listener.parameters.port": "8280",
+  "transport.passthru_http.listener.parameters.non-blocking": true,
+  "transport.passthru_http.listener.parameters.httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
+  "transport.passthru_https.listener.parameters.port": "8243",
+  "transport.passthru_https.listener.parameters.non-blocking": true,
+  "transport.passthru_https.listener.parameters.httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
+  "transport.passthru_https.listener.parameters.SSLVerifyClient": "optional",
+  "transport.passthru_https.listener.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2",
   "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.listener.key_store.type": "$ref{keystore.tls.type}",
   "transport.passthru_https.listener.key_store.password": "$ref{keystore.tls.password}",
@@ -81,14 +77,10 @@
   "transport.passthru_https.listener.trust_store.password": "$ref{truststore.password}",
   "transport.passthru_https.listener.ssl_profile.file_path": "repository/resources/security/listenerprofiles.xml",
   "transport.passthru_https.listener.ssl_profile_interval": "600000",
-  "transport.passthru_http.sender.parameters": {
-    "non-blocking": true
-  },
-  "transport.passthru_https.sender.parameters": {
-    "non-blocking": true,
-    "HostnameVerifier": "DefaultAndLocalhost",
-    "HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2"
-  },
+  "transport.passthru_http.sender.parameters.non-blocking": true,
+  "transport.passthru_https.sender.parameters.non-blocking": true,
+  "transport.passthru_https.sender.parameters.HostnameVerifier": "DefaultAndLocalhost",
+  "transport.passthru_https.sender.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2",
   "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
   "transport.passthru_https.sender.key_store.password": "$ref{keystore.tls.password}",
