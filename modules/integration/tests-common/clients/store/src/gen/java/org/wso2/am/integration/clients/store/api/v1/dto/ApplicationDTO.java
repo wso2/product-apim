@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
 
 /**
  * ApplicationDTO
@@ -112,7 +113,7 @@ public class ApplicationDTO {
   private Map<String, String> attributes = null;
 
   @SerializedName("subscriptionScopes")
-  private List<String> subscriptionScopes = null;
+  private List<ScopeInfoDTO> subscriptionScopes = null;
 
   @SerializedName("owner")
   private String owner = null;
@@ -324,12 +325,12 @@ public class ApplicationDTO {
     this.attributes = attributes;
   }
 
-  public ApplicationDTO subscriptionScopes(List<String> subscriptionScopes) {
+  public ApplicationDTO subscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
     this.subscriptionScopes = subscriptionScopes;
     return this;
   }
 
-  public ApplicationDTO addSubscriptionScopesItem(String subscriptionScopesItem) {
+  public ApplicationDTO addSubscriptionScopesItem(ScopeInfoDTO subscriptionScopesItem) {
     if (this.subscriptionScopes == null) {
       this.subscriptionScopes = new ArrayList<>();
     }
@@ -341,12 +342,12 @@ public class ApplicationDTO {
    * Get subscriptionScopes
    * @return subscriptionScopes
   **/
-  @ApiModelProperty(example = "[\"admin\"]", value = "")
-  public List<String> getSubscriptionScopes() {
+  @ApiModelProperty(example = "[]", value = "")
+  public List<ScopeInfoDTO> getSubscriptionScopes() {
     return subscriptionScopes;
   }
 
-  public void setSubscriptionScopes(List<String> subscriptionScopes) {
+  public void setSubscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
     this.subscriptionScopes = subscriptionScopes;
   }
 
