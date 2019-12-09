@@ -41,7 +41,7 @@ public class APISecurityAuditTestCase extends APIManagerLifecycleBaseTest {
     private final String AUDIT_API_NAME = "TestAuditAPI";
     private final String API_CONTEXT = "audit";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String ENDPOINT_URL = "https://localhost:9443/am-auditAPI-sample/api/auditapi/";
+    private final String ENDPOINT_URL = "https://localhost:9443/am-auditApi-sample/api/auditapi";
 
     private ServerConfigurationManager serverConfigurationManager;
     private String apiId;
@@ -66,10 +66,6 @@ public class APISecurityAuditTestCase extends APIManagerLifecycleBaseTest {
     }
     @Test(groups = {"wso2.am"}, description = "get security audit report for api")
     public void testGetAuditAPI() throws Exception {
-//        String apiName = "AuditAPI";
-//        String apiContext = "testAuditAPI";
-//        String apiVersion = "1.0";
-//        String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test for API Security Audit";
         APIRequest apiRequest = new APIRequest(AUDIT_API_NAME, API_CONTEXT, new URL(ENDPOINT_URL));
         apiRequest.setDescription(description);
@@ -82,6 +78,7 @@ public class APISecurityAuditTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse auditReportResponse = restAPIPublisher.getAuditApi(apiId);
         assertNotNull(auditReportResponse);
         assertEquals(auditReportResponse.getResponseCode(), 200);
+        // TODO - Add an assert for the sample JSON response of the Audit Report if needed
     }
     private void configureServer(String apiManagerXml) throws Exception {
         try {

@@ -226,5 +226,5 @@ sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
 [security_audit]
 api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
 collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
-base_url="https://localhost:9443/am-auditAPI-sample/api/auditapi/"
+base_url="https://localhost:9443/am-auditApi-sample/api/auditapi"
 global=true
