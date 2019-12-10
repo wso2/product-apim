@@ -234,7 +234,6 @@ public class RestAPIStoreImpl {
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
-            subscription.setType(SubscriptionDTO.TypeEnum.API);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
@@ -253,7 +252,7 @@ public class RestAPIStoreImpl {
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
             throws ApiException {
         ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
-                (apiId, applicationId, apiType, groupId, this.tenantDomain, null, null, null);
+                (apiId, applicationId, groupId, this.tenantDomain, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
         return suscriptionResponse.getData();
     }
@@ -977,7 +976,7 @@ public class RestAPIStoreImpl {
      */
     public SubscriptionListDTO getAllSubscriptionsOfApplication(String applicationId) throws ApiException {
 
-        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, this.tenantDomain, null, null, null);
+        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, this.tenantDomain, null, null, null);
         if (subscriptionListDTO.getCount() > 0) {
             return subscriptionListDTO;
         }
@@ -1325,7 +1324,6 @@ public class RestAPIStoreImpl {
         subscription.setApplicationId(appID);
         subscription.setApiId(apiID);
         subscription.setThrottlingPolicy(tier);
-        subscription.setType(SubscriptionDTO.TypeEnum.API);
         ApiResponse<SubscriptionDTO> subscriptionResponse =
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
