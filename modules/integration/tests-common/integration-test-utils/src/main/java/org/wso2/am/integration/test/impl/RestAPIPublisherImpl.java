@@ -127,7 +127,7 @@ public class RestAPIPublisherImpl {
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
+        apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1");
         apIsApi.setApiClient(apiPublisherClient);
 	    apiProductsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
