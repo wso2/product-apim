@@ -80,6 +80,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
 
     private String accessToken;
+    private String apiId;
+    private String applicationId;
 
     Log log = LogFactory.getLog(CORSAccessControlAllowCredentialsHeaderTestCase.class);
 
@@ -144,7 +146,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         //Add the API using the API publisher.
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        String apiId = apiResponse.getData();
+        apiId = apiResponse.getData();
 
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -154,7 +156,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         ApplicationDTO.TokenTypeEnum.JWT);
-        String applicationId = applicationResponse.getData();
+        applicationId = applicationResponse.getData();
 
         //Subscribe to api
         restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -173,6 +175,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
 
