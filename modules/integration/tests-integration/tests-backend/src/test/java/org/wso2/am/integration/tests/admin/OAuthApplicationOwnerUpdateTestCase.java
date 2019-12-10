@@ -135,7 +135,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         // create application in the store using tenant admin user's credentials
         restAPIStoreClient3 = new RestAPIStoreImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, storeURLHttps);
         ApplicationDTO appOfTenantAdminDTO = restAPIStoreClient3.addApplication(TENANT_ADMIN_APP,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of tenant admin");
+                APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant admin");
         appIdOfTenantAdminApp = appOfTenantAdminDTO.getApplicationId();
         restAPIStoreClient3.generateKeys(appIdOfTenantAdminApp,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",

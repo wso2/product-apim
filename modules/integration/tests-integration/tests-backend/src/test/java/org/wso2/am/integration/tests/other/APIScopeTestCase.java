@@ -65,6 +65,10 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     private final String ALLOWED_ROLE = "admin";
     private final String[] ADMIN_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
             "/permission/admin/configure", "/permission/admin/monitor" };
+    private final String[] NEW_ROLE_LIST = { "Internal/publisher", "Internal/creator",
+            "Internal/subscriber", "Internal/everyone", "admin" };
+    private final String[] OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
+            "Internal/subscriber", "Internal/everyone", "role1" };
     private String apiId;
     private String apiIdWithScope;
     private String copyApiId;
@@ -96,6 +100,11 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
             ADMIN_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + ADMIN_ROLE;
 
             userManagementClient1.addRole(ADMIN_ROLE, new String[]{user.getUserNameWithoutDomain()}, ADMIN_PERMISSIONS);
+        }
+
+        //Updating the email username with admin role
+        if (TestUserMode.SUPER_TENANT_EMAIL_USER.equals(userMode) || TestUserMode.TENANT_EMAIL_USER.equals(userMode)) {
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), NEW_ROLE_LIST);
         }
 
         if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
@@ -296,6 +305,11 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiIdWithScope);
         restAPIPublisher.deleteAPI(copyApiId);
 
+        //Reverting back the roles of email users
+        if (TestUserMode.SUPER_TENANT_EMAIL_USER.equals(userMode) || TestUserMode.TENANT_EMAIL_USER.equals(userMode)) {
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), OLD_ROLE_LIST);
+        }
+
         if (userManagementClient1 != null) {
             if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
                 userManagementClient1.deleteRole(ADMIN_ROLE);
@@ -311,6 +325,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
                 new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 }

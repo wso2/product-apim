@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.net.ssl.HostnameVerifier;
@@ -23,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.wso2.am.integration.test.Constants.CHAR_AT;
 
@@ -32,6 +36,7 @@ public class ClientAuthenticator {
     private static TrustManager trustAll;
     private static String consumerKey = null;
     private static String consumerSecret = null;
+    private static Map<String, ApplicationKeyBean> applicationKeyMap = new HashMap<>();
     private static final String TLS_PROTOCOL = "TLS";
     private static int count = 0;
     static {
@@ -55,9 +60,6 @@ public class ClientAuthenticator {
 
     public static String getAccessToken(String scopeList, String appName, String callBackURL, String tokenScope, String appOwner,
                                         String grantType, String dcrEndpoint, String username, String password, String tenantDomain, String tokenEndpoint) {
-       // if (consumerKey == null) {
-            makeDCRRequest(appName,  callBackURL,  tokenScope,  appOwner, grantType,  dcrEndpoint,  username,  password,  tenantDomain);
-       // }
         URL url;
         HttpsURLConnection urlConn = null;
         //calling token endpoint
@@ -67,8 +69,11 @@ public class ClientAuthenticator {
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+            ApplicationKeyBean applicationKeyBean = applicationKeyMap.get(appName);
             String clientEncoded = DatatypeConverter.printBase64Binary(
-                    (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+                    (applicationKeyBean.getConsumerKey()
+                            + ':' + applicationKeyBean.getConsumerSecret()).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) || username.contains(CHAR_AT)) {
                 username = username + CHAR_AT + tenantDomain;
@@ -115,35 +120,36 @@ public class ClientAuthenticator {
 
 
 
-    private static void makeDCRRequest(String appName, String callBackURL, String tokenScope, String appOwner,
-                                       String grantType, String dcrEndpoint, String username, String password, String tenantDomain) {
-        String applicationName = appName;
+    public static void makeDCRRequest(DCRParamRequest dcrParamRequest) {
+        String applicationName = dcrParamRequest.getAppName();
         URL url;
         HttpURLConnection urlConn = null;
         try {
             //Create json payload for DCR endpoint
             JsonObject json = new JsonObject();
-            json.addProperty("callbackUrl", callBackURL);
+            json.addProperty("callbackUrl", dcrParamRequest.getCallBackURL());
             json.addProperty("clientName", applicationName);
-            json.addProperty("tokenScope", tokenScope);
-            json.addProperty("grantType", grantType);
+            json.addProperty("tokenScope", dcrParamRequest.getTokenScope());
+            json.addProperty("grantType", dcrParamRequest.getGrantType());
             json.addProperty("saasApp", true);
 
             String clientEncoded;
 
-            if (StringUtils.isEmpty(tenantDomain)) {
-                json.addProperty("owner", appOwner);
-                clientEncoded = DatatypeConverter.printBase64Binary((System.getProperty("systemUsername",
-                        username) + ':' + System.getProperty("systemUserPwd", password))
-                        .getBytes(StandardCharsets.UTF_8));
+            if (StringUtils.isEmpty(dcrParamRequest.getTenantDomain())) {
+                json.addProperty("owner", dcrParamRequest.getAppOwner());
+                clientEncoded = DatatypeConverter.printBase64Binary(
+                        (System.getProperty("systemUsername", dcrParamRequest.getUsername()) + ':' + System
+                                .getProperty("systemUserPwd", dcrParamRequest.getPassword()))
+                                .getBytes(StandardCharsets.UTF_8));
             } else {
-                json.addProperty("owner", username + CHAR_AT + tenantDomain);
-                clientEncoded = DatatypeConverter.printBase64Binary((username + CHAR_AT + tenantDomain + ':' + password)
-                        .getBytes(StandardCharsets.UTF_8));
+                json.addProperty("owner", dcrParamRequest.getUsername() + CHAR_AT + dcrParamRequest.getTenantDomain());
+                clientEncoded = DatatypeConverter.printBase64Binary(
+                        (dcrParamRequest.getUsername() + CHAR_AT + dcrParamRequest.getTenantDomain() + ':'
+                                + dcrParamRequest.getPassword()).getBytes(StandardCharsets.UTF_8));
             }
 
             // Calling DCR endpoint
-            url = new URL(dcrEndpoint);
+            url = new URL(dcrParamRequest.getDcrEndpoint());
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
@@ -154,10 +160,12 @@ public class ClientAuthenticator {
             int responseCode = urlConn.getResponseCode();
             if (responseCode == 200) {  //If the DCR call is success
                 String responseStr = getResponseString(urlConn.getInputStream());
+                ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
                 JsonParser parser = new JsonParser();
                 JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
-                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
-                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
+                applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
+                applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
+                applicationKeyMap.put(dcrParamRequest.getAppName(), applicationKeyBean);
             } else { //If DCR call fails
                 throw new RuntimeException("DCR call failed. Status code: " + responseCode);
             }
