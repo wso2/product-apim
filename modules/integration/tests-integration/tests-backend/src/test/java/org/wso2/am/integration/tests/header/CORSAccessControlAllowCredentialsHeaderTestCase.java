@@ -80,22 +80,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
 
     private String accessToken;
-    private ServerConfigurationManager serverConfigurationManager;
 
     Log log = LogFactory.getLog(CORSAccessControlAllowCredentialsHeaderTestCase.class);
-
-    @BeforeTest(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-        serverConfigurationManager.applyConfiguration(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
-                        + File.separator + "deployment.toml"));
-
-    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
@@ -190,21 +176,13 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         super.cleanUp();
     }
 
-    @AfterTest(alwaysRun = true)
-    public void restore() throws Exception {
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
-                        + File.separator + "original" + File.separator + "deployment.toml"));
-    }
-
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN },
                 new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
