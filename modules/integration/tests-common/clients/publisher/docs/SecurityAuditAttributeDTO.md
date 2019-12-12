@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **overrideGlobal** | **Boolean** |  |  [optional]
 **apiToken** | **String** |  |  [optional]
 **collectionId** | **String** |  |  [optional]
+**baseUrl** | **String** |  |  [optional]
 
 
 

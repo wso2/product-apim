@@ -41,6 +41,9 @@ public class SecurityAuditAttributeDTO {
   @SerializedName("collectionId")
   private String collectionId = null;
 
+  @SerializedName("baseUrl")
+  private String baseUrl = null;
+
   public SecurityAuditAttributeDTO isGlobal(Boolean isGlobal) {
     this.isGlobal = isGlobal;
     return this;
@@ -113,6 +116,24 @@ public class SecurityAuditAttributeDTO {
     this.collectionId = collectionId;
   }
 
+  public SecurityAuditAttributeDTO baseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
+    return this;
+  }
+
+   /**
+   * Get baseUrl
+   * @return baseUrl
+  **/
+  @ApiModelProperty(value = "")
+  public String getBaseUrl() {
+    return baseUrl;
+  }
+
+  public void setBaseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -126,12 +147,13 @@ public class SecurityAuditAttributeDTO {
     return Objects.equals(this.isGlobal, securityAuditAttribute.isGlobal) &&
         Objects.equals(this.overrideGlobal, securityAuditAttribute.overrideGlobal) &&
         Objects.equals(this.apiToken, securityAuditAttribute.apiToken) &&
-        Objects.equals(this.collectionId, securityAuditAttribute.collectionId);
+        Objects.equals(this.collectionId, securityAuditAttribute.collectionId) &&
+        Objects.equals(this.baseUrl, securityAuditAttribute.baseUrl);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(isGlobal, overrideGlobal, apiToken, collectionId);
+    return Objects.hash(isGlobal, overrideGlobal, apiToken, collectionId, baseUrl);
   }
 
 
@@ -144,6 +166,7 @@ public class SecurityAuditAttributeDTO {
     sb.append("    overrideGlobal: ").append(toIndentedString(overrideGlobal)).append("\n");
     sb.append("    apiToken: ").append(toIndentedString(apiToken)).append("\n");
     sb.append("    collectionId: ").append(toIndentedString(collectionId)).append("\n");
+    sb.append("    baseUrl: ").append(toIndentedString(baseUrl)).append("\n");
     sb.append("}");
     return sb.toString();
   }

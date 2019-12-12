@@ -8950,6 +8950,8 @@ definitions:
       collectionId:
         type: string
         example: 456ef957-5a79-449f-83y3-9027945d3c60
+      baseUrl:
+        type: string
 
 
   #-----------------------------------------------------
