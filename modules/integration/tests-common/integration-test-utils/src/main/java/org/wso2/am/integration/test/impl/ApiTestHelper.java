@@ -210,7 +210,6 @@ public class ApiTestHelper {
         verifySubscriptionAppInfo(subscriptionDTO.getApplicationInfo(), applicationDTO);
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
         Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), subscriptionPolicy);
-        Assert.assertEquals(subscriptionDTO.getType(), SubscriptionDTO.TypeEnum.API_PRODUCT);
 
         return restAPIStore.getApplicationById(applicationDTO.getApplicationId());
     }

@@ -2345,7 +2345,6 @@ paths:
       parameters:
         - $ref: '#/parameters/apiId-Q'
         - $ref: '#/parameters/applicationId-Q'
-        - $ref: '#/parameters/apiType-Q'
         - $ref: '#/parameters/groupId'
         - $ref: '#/parameters/requestedTenant'
         - $ref: '#/parameters/offset'
@@ -4333,11 +4332,6 @@ definitions:
       throttlingPolicy:
         type: string
         example: Unlimited
-      type:
-        type: string
-        enum:
-          - API
-          - API_PRODUCT
       status:
         type: string
         enum:
