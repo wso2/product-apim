@@ -52,11 +52,7 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
     private static final String NO_ACCESS_CONTROL = "none";
     private final String[] OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
             "Internal/subscriber", "Internal/everyone", "role1" };
-    private final String[] ADMIN_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
-            "/permission/admin/configure", "/permission/admin/monitor" };
     private String contextUsername = "admin";
-    private String contextUserPassword = "admin";
-    private String ADMIN_ROLE = "admin";
     private String FIRST_USER = "pubu1";
     private String SECOND_USER = "pubu2";
     private String PUB_SUB_USER = "pubsu1";
@@ -112,7 +108,6 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
         contextUsername = keyManagerContext.getContextTenant().getContextUser().getUserName();
-        contextUserPassword = keyManagerContext.getContextTenant().getContextUser().getPassword();
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
