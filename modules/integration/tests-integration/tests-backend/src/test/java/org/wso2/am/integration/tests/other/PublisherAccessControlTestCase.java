@@ -22,6 +22,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -29,6 +31,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
@@ -47,21 +50,28 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
     private static final String RESTRICTED_ACCESS_CONTROL = "restricted";
     private static final String PUBLIC_VISIBILITY = "public";
     private static final String NO_ACCESS_CONTROL = "none";
+    private final String[] OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
+            "Internal/subscriber", "Internal/everyone", "role1" };
+    private final String[] ADMIN_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
+            "/permission/admin/configure", "/permission/admin/monitor" };
     private String contextUsername = "admin";
     private String contextUserPassword = "admin";
-    private final String FIRST_USER = "publisher_user";
-    private final String SECOND_USER = "publisher_user2";
-    private final String PUB_SUB_USER = "pub_sub_user1";
-    private final String FIRST_ROLE = "publisher_role1";
-    private final String SECOND_ROLE = "publisher_role2";
-    private final String SUBSCRIBER_ROLE = "subscriber_role1";
-    private final String PUB_SUB_ROLE = "pub_sub_role1";
+    private String ADMIN_ROLE = "admin";
+    private String FIRST_USER = "pubu1";
+    private String SECOND_USER = "pubu2";
+    private String PUB_SUB_USER = "pubsu1";
+    private String FIRST_ROLE = "publisher_role1";
+    private String SECOND_ROLE = "publisher_role2";
+    private String SUBSCRIBER_ROLE = "subscriber_role1";
+    private String PUB_SUB_ROLE = "pub_sub_role1";
     private final String USER_PASSWORD = "123123";
-    private final String SUBSCRIBER_USER = "subscriber_user1";
+    private String SUBSCRIBER_USER = "subu1";
     private final String INTERNAL_CREATOR = "Internal/creator";
     private final String INTERNAL_PUBLISHER = "Internal/publisher";
     private final String INTERNAL_SUBSCRIBER = "Internal/subscriber";
     private final String EP_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private final String EMAIL_DOMAIN = "@gmail.com";
+    private final String AT = "@";
     private String publisherAccessControlAPI = "PublisherAccessControl";
     private String publisherAccessControlAPI2 = "PublisherAccessControl2";
     private String publicAccessRestrictedVisibilityAPI = "PublicAccessRestrictedVisibility";
@@ -80,17 +90,54 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
 
     UserManagementClient userManagementClient1;
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN },
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+        };
+    }
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public PublisherAccessControlTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass
     public void initTestCase() throws APIManagerIntegrationTestException, XPathExpressionException, RemoteException,
             UserAdminUserAdminException {
-        super.init();
+        super.init(userMode);
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
         contextUsername = keyManagerContext.getContextTenant().getContextUser().getUserName();
         contextUserPassword = keyManagerContext.getContextTenant().getContextUser().getPassword();
-        userManagementClient1 = new UserManagementClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(), contextUsername, contextUserPassword);
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
+        if (TestUserMode.TENANT_EMAIL_USER.equals(userMode) || TestUserMode.SUPER_TENANT_EMAIL_USER.equals(userMode)) {
+            FIRST_USER = FIRST_USER + EMAIL_DOMAIN + AT + keyManagerContext.getContextTenant().getContextUser()
+                    .getUserDomain();
+            SECOND_USER = SECOND_USER + EMAIL_DOMAIN + AT + keyManagerContext.getContextTenant().getContextUser()
+                    .getUserDomain();
+            SUBSCRIBER_USER =
+                    SUBSCRIBER_USER + EMAIL_DOMAIN + AT + keyManagerContext.getContextTenant().getContextUser()
+                            .getUserDomain();
+            PUB_SUB_USER = PUB_SUB_USER + EMAIL_DOMAIN + AT + keyManagerContext.getContextTenant().getContextUser()
+                    .getUserDomain();
+        } else if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            FIRST_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + FIRST_USER;
+            SECOND_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + SECOND_USER;
+            SUBSCRIBER_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + SUBSCRIBER_USER;
+            PUB_SUB_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + PUB_SUB_USER;
+
+            FIRST_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + FIRST_ROLE;
+            SECOND_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + SECOND_ROLE;
+            SUBSCRIBER_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + SUBSCRIBER_ROLE;
+            PUB_SUB_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + PUB_SUB_ROLE;
+        }
         userManagementClient1
                 .addRole(FIRST_ROLE, new String[] {}, new String[] {});
         userManagementClient1
@@ -108,6 +155,13 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
                         SUBSCRIBER_USER);
         userManagementClient1.addUser(PUB_SUB_USER, USER_PASSWORD,
                 new String[] { INTERNAL_PUBLISHER, INTERNAL_SUBSCRIBER, PUB_SUB_ROLE }, PUB_SUB_USER);
+
+        if (TestUserMode.TENANT_EMAIL_USER.equals(userMode) || TestUserMode.SUPER_TENANT_EMAIL_USER.equals(userMode)
+                || TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            String[] newRoleList = { "Internal/publisher", "Internal/creator", "Internal/subscriber",
+                    "Internal/everyone", FIRST_ROLE};
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), newRoleList);
+        }
 
         apiPublisherFirstUser = new RestAPIPublisherImpl(FIRST_USER, USER_PASSWORD,
                 keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
@@ -156,7 +210,7 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test(groups = "wso2.am", description = "This test case tests the retrieval of API which was added without "
-            + "access control restriction.")
+            + "access control restriction.", dependsOnMethods = "testAPIAdditionWithAccessControlRestriction")
     public void testAPIAdditionWithoutAccessControlRestriction()
             throws Exception {
         APIRequest brokenApiRequest = new APIRequest(publisherAccessControlAPI2, publisherAccessControlAPI2,
@@ -169,25 +223,25 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
 
-        Assert.assertEquals(apidto.getProvider(), contextUsername,
+        Assert.assertEquals(apidto.getName(), publisherAccessControlAPI2,
                 "API is not visible to APIM admin" + " without access control restriction");
 
         response = apiPublisherFirstUser.getAPI(publisherAccessControlAPI2Id);
         apidto = g.fromJson(response.getData(), APIDTO.class);
-        Assert.assertEquals(apidto.getProvider(), contextUsername,
+        Assert.assertEquals(apidto.getName(), publisherAccessControlAPI2,
                 "API is not visible to creator" + " without access control restriction");
 
         response = apiPublisherSecondUser.getAPI(publisherAccessControlAPI2Id);
         apidto = g.fromJson(response.getData(), APIDTO.class);
-        Assert.assertEquals(apidto.getProvider(), contextUsername,
+        Assert.assertEquals(apidto.getName(), publisherAccessControlAPI2,
                 "API is not visible to creator" + " without access control restriction");
     }
 
     @Test (groups = "wso2.am", description = "This test case tests the retrieval of API which from store which was "
-            + "added without access control restriction and public visibility.")
+            + "added without access control restriction and public visibility.",
+            dependsOnMethods = "testAPIAdditionWithoutAccessControlRestriction")
     public void testGetPublicAPIFromStoreWithRestrictedPublisherAccess()
             throws Exception {
-        apiPublisher.login(contextUsername, contextUserPassword);
         APIRequest createAPIRequest = new APIRequest(accessControlledPublicVisibilityAPI,
                 accessControlledPublicVisibilityAPI, new URL(EP_URL));
         createAPIRequest.setVersion(VERSION);
@@ -195,7 +249,6 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         createAPIRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
         createAPIRequest.setAccessControlRoles(FIRST_ROLE);
         createAPIRequest.setVisibility(PUBLIC_VISIBILITY);
-        apiPublisher.addAPI(createAPIRequest);
 
         accessControlledPublicVisibilityAPIId = createAndPublishAPIUsingRest(createAPIRequest, restAPIPublisher, false);
 
@@ -209,7 +262,8 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test (groups = "wso2.am", description = "This test case add restricted visibility on store for role1, but user "
-            + "who can log into publisher should be able to view the api even though he does not have the role role1")
+            + "who can log into publisher should be able to view the api even though he does not have the role role1",
+            dependsOnMethods = "testGetPublicAPIFromStoreWithRestrictedPublisherAccess")
     public void testCheckPublisherRoleCanViewRestrictedVisibilityAPIs() throws Exception {
         APIRequest createAPIRequest = new APIRequest(publicAccessRestrictedVisibilityAPI,
                 publicAccessRestrictedVisibilityAPI, new URL(EP_URL));
@@ -232,7 +286,8 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test (groups = "wso2.am", description = "This test case add restricted access in publisher(role1) and restricted "
-            + "visibility in store(subscriber_role1). So check correct behaviour in publisher and store ")
+            + "visibility in store(subscriber_role1). So check correct behaviour in publisher and store ",
+            dependsOnMethods = "testCheckPublisherRoleCanViewRestrictedVisibilityAPIs")
     public void testPublisherAndStoreRestricted() throws Exception {
         APIRequest createAPIRequest = new APIRequest(restrictedAccessRestrictedVisibilityAPI,
                 restrictedAccessRestrictedVisibilityAPI, new URL(EP_URL));
@@ -283,6 +338,11 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         restAPIPublisher.deleteAPI(publisherAccessControlAPI2Id);
         restAPIPublisher.deleteAPI(restrictedAccessRestrictedVisibilityAPIId);
         restAPIPublisher.deleteAPI(accessControlledPublicVisibilityAPIId);
+
+        //Reverting back the roles of email users
+        if (TestUserMode.SUPER_TENANT_EMAIL_USER.equals(userMode) || TestUserMode.TENANT_EMAIL_USER.equals(userMode)) {
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), OLD_ROLE_LIST);
+        }
 
         userManagementClient1.deleteUser(FIRST_USER);
         userManagementClient1.deleteUser(SECOND_USER);

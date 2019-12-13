@@ -69,6 +69,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
             "Internal/subscriber", "Internal/everyone", "admin" };
     private final String[] OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
             "Internal/subscriber", "Internal/everyone", "role1" };
+    private final String[] SEC_OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
+            "Internal/subscriber", "Internal/everyone"};
     private String apiId;
     private String apiIdWithScope;
     private String copyApiId;
@@ -312,7 +314,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
 
         if (userManagementClient1 != null) {
             if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
-                userManagementClient1.deleteRole(ADMIN_ROLE);
+                userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), SEC_OLD_ROLE_LIST);
             }
             userManagementClient1.deleteUser(USER_SMITH);
         }
