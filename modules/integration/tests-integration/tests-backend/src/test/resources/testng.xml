@@ -98,6 +98,7 @@
 
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
+            <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
@@ -188,7 +189,6 @@
 
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>

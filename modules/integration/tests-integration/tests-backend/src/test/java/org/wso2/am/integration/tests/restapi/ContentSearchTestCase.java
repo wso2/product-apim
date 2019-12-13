@@ -34,11 +34,13 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.net.MalformedURLException;
@@ -65,6 +67,12 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     private RestAPIStoreImpl restAPIStoreFirstUser;
     private RestAPIPublisherImpl restAPIPublisherSecondUser;
     private RestAPIStoreImpl restAPIStoreSecondUser;
+    private UserManagementClient userManagementClient1;
+    private final String[] SEC_ROLE1_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
+            "/permission/admin/configure", "/permission/admin/monitor" };
+    private final String[] SEC_ROLE2_PERMISSIONS = { "/permission/admin/login", "/permission/admin/configure"};
+    private final String[] SEC_OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
+            "Internal/subscriber", "Internal/everyone"};
 
     @Factory(dataProvider = "userModeDataProvider")
     public ContentSearchTestCase(TestUserMode userMode) {
@@ -74,20 +82,41 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+                new Object[] { TestUserMode.TENANT_ADMIN },
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+        };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+
         APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
                 user.getUserName(), description);
 
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            user1 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + user1;
+            user2 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + user2;
 
-        userManagementClient
+            role1 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + role1;
+            role2 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + role2;
+
+            userManagementClient1.addRole(role1, new String[]{}, SEC_ROLE1_PERMISSIONS);
+            userManagementClient1.addRole(role2, new String[]{}, SEC_ROLE2_PERMISSIONS);
+
+            String[] newRoleList = { "Internal/publisher", "Internal/creator", "Internal/subscriber",
+                    "Internal/everyone", role1};
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), newRoleList);
+        }
+
+        userManagementClient1
                 .addUser(user1, password, new String[] { role1, "Internal/publisher", "Internal/subscriber" }, user1);
-        userManagementClient
+        userManagementClient1
                 .addUser(user2, password, new String[] { role2, "Internal/publisher", "Internal/subscriber" }, user2);
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
@@ -327,10 +356,13 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        userManagementClient.deleteRole(role1);
-        userManagementClient.deleteRole(role2);
-        userManagementClient.deleteUser(MultitenantUtils.getTenantAwareUsername(user1));
-        userManagementClient.deleteUser(MultitenantUtils.getTenantAwareUsername(user2));
+        if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            userManagementClient1.deleteRole(role1);
+            userManagementClient1.deleteRole(role2);
+            userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), SEC_OLD_ROLE_LIST);
+        }
+        userManagementClient1.deleteUser(user1);
+        userManagementClient1.deleteUser(user2);
         super.cleanUp();
     }
 
