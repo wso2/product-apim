@@ -16,12 +16,10 @@
   ~  specific language governing permissions and limitations
   ~  under the License.
   -->
-
-<parameter name="SSLProfiles" xmlns:svns="http://org.wso2.securevault/configuration">
-
-
-<profile>
-        <bindAddress>0.0.0.0</bindAddress>
+  
+<parameter name="customSSLProfiles" xmlns:svns="http://org.wso2.securevault/configuration">
+    <profile>
+        <servers>{{keystore.ssl_profile.default.servers}}</servers>
          <KeyStore>
             <Location>repository/resources/security/{{keystore.tls.file_name}}</Location>
             <Type>{{keystore.tls.type}}</Type>
@@ -33,7 +31,22 @@
             <Type>{{truststore.type}}</Type>
             <Password>{{truststore.password}}</Password>
         </TrustStore>
-        <SSLVerifyClient>optional</SSLVerifyClient>
     </profile>
+    {% for profile in keystore.ssl_profile.custom %}
+    <profile>
+        <servers>{{profile.servers}}</servers>
+        <KeyStore>
+            <Location>{{profile.keystore.location}}</Location>
+            <Type>{{profile.keystore.type}}</Type>
+            <Password>{{profile.keystore.password}}</Password>
+            <KeyPassword>{{profile.keystore.key_password}}</KeyPassword>
+        </KeyStore>
+        <TrustStore>
+            <Location>{{profile.truststore.location}}</Location>
+            <Type>{{profile.truststore.type}}</Type>
+            <Password>{{profile.truststore.password}}</Password>
+        </TrustStore>
+    </profile>
+    {% endfor %}
 </parameter>
 
