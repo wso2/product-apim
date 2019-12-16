@@ -258,7 +258,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 Collections.singletonList(SCOPE));
 
         // Step 8 : Invoke API Product
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, new InvocationStatusCodes());
+        invocationStatusCodes.addScopeSpecificStatusCode(SCOPE, HttpStatus.SC_OK);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
