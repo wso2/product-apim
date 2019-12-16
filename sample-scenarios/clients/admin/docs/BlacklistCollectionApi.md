@@ -1,6 +1,6 @@
 # BlacklistCollectionApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.15*
+All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.16*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/store/v0.15//applications",
+                    "url": "/api/am/store/v0.16//applications",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer",
