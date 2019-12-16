@@ -131,7 +131,7 @@ public class ApiClient {
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final String TLS_PROTOCOL = "TLS";
 
-    private String basePath = "https://127.0.0.1:9443/api/am/publisher/v0.15";
+    private String basePath = "https://127.0.0.1:9443/api/am/publisher/v0.16";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -245,7 +245,7 @@ public class ApiClient {
     /**
      * Set base path
      *
-     * @param basePath Base path of the URL (e.g https://127.0.0.1:9443/api/am/publisher/v0.15
+     * @param basePath Base path of the URL (e.g https://127.0.0.1:9443/api/am/publisher/v0.16
      * @return An instance of OkHttpClient
      */
     public ApiClient setBasePath(String basePath) {
