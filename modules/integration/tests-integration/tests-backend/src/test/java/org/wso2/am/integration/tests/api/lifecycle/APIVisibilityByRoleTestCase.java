@@ -54,6 +54,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String CARBON_SUPER_TENANT2_KEY = "userKey2";
+    private final String EMAIL_USER_KEY = "emailUser";
     private final String TENANT_DOMAIN_KEY = "wso2.com";
     private final String TENANT_DOMAIN_ADMIN_KEY = "admin";
     private final String USER_KEY_USER2 = "userKey1";
@@ -116,14 +117,14 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         //Login to API Publisher adn Store with CarbonSuper normal user2
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
 
-        User publisherUser2 = publisherContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY);
-        User storeUser2 = storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY);
+        User publisherUser2 = publisherContext.getContextTenant().getTenantUser(EMAIL_USER_KEY);
+        User storeUser2 = storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY);
 
-        apiStoreClientCarbonSuperUser2 = new RestAPIStoreImpl(storeUser2.getUserNameWithoutDomain(),
-                storeUser2.getPassword(), storeUser2.getUserDomain(), storeURLHttps);
+        apiStoreClientCarbonSuperUser2 = new RestAPIStoreImpl(storeUser2.getUserName(),
+                storeUser2.getPassword(), apiCreatorStoreDomain, storeURLHttps);
 
-        apiPublisherClientCarbonSuperUser2 = new RestAPIPublisherImpl(publisherUser2.getUserNameWithoutDomain(),
-                publisherUser2.getPassword(), publisherUser2.getUserDomain(), publisherURLHttps);
+        apiPublisherClientCarbonSuperUser2 = new RestAPIPublisherImpl(publisherUser2.getUserName(),
+                publisherUser2.getPassword(), apiCreatorStoreDomain, publisherURLHttps);
 
         // create new user in CarbonSuper with only subscriber role and login to the Store
         userManagementClient1 =
@@ -146,13 +147,13 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         otherDomain = storeContext.getContextTenant().getDomain();
         //Login to the API Publisher adn Store as Tenant user
         User otherTenantPublisherUser = publisherContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY);
-        User otherTenantStoreUser = storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY);
+        User otherTenantStoreUser = storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY);
         apiStoreClientAnotherUserOtherDomain = new RestAPIStoreImpl(otherTenantStoreUser.getUserNameWithoutDomain(),
-                otherTenantStoreUser.getPassword(), otherTenantStoreUser.getUserDomain(),
+                otherTenantStoreUser.getPassword(), otherDomain,
                 storeURLHttps);
         apiPublisherClientAnotherUserOtherDomain = new RestAPIPublisherImpl(
                 otherTenantPublisherUser.getUserNameWithoutDomain(), otherTenantPublisherUser.getPassword(),
-                otherTenantPublisherUser.getUserDomain(), publisherURLHttps);
+                otherDomain, publisherURLHttps);
 
         //Login to the API Publisher adn Store as Tenant admin
         apiStoreClientAdminOtherDomain = new RestAPIStoreImpl(
