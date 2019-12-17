@@ -147,7 +147,25 @@
                             <role>Internal/publisher</role>
                             <role>Internal/creator</role>
                             <role>Internal/subscriber</role>
-                            <role>role1</role>
+                            <role>admin</role>
+                        </roles>
+                    </user>
+                    <user key="emailUser2">
+                        <userName>test2@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                        </roles>
+                    </user>
+                    <user key="emailUser3">
+                        <userName>test3@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
                         </roles>
                     </user>
                     <user key="userStoreUser">
@@ -186,7 +204,25 @@
                             <role>Internal/publisher</role>
                             <role>Internal/creator</role>
                             <role>Internal/subscriber</role>
-                            <role>role1</role>
+                            <role>admin</role>
+                        </roles>
+                    </user>
+                    <user key="emailUser2">
+                        <userName>test2@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
+                        </roles>
+                    </user>
+                    <user key="emailUser3">
+                        <userName>test3@gmail.com</userName>
+                        <password>testuser31</password>
+                        <roles>
+                            <role>Internal/publisher</role>
+                            <role>Internal/creator</role>
+                            <role>Internal/subscriber</role>
                         </roles>
                     </user>
                 </users>
