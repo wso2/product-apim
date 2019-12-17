@@ -16,6 +16,7 @@
 
 package org.wso2.am.integration.tests.apiproduct;
 
+import org.apache.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -26,13 +27,16 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
+import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
@@ -114,8 +118,9 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, new ArrayList<>(), grantTypes);
 
         // Step 6 : Invoke API Product with Application Access tokens
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
-                sandboxAppKey.getToken().getAccessToken());
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes);
 
         // Step 7 : Generate Production and Sandbox User tokens without scopes
         String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
@@ -127,7 +132,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 Collections.emptyList());
 
         // Step 8 : Invoke API Product with User Access tokens
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
 
 
@@ -175,8 +180,9 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, new ArrayList<>(), grantTypes);
 
         // Step 6 : Invoke API Product with Application Access tokens
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
-                sandboxAppKey.getToken().getAccessToken());
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes);
 
         // Step 7 : Generate Production and Sandbox User tokens without scopes
         String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
@@ -188,7 +194,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 Collections.emptyList());
 
         // Step 8 : Invoke API Product with User Access tokens
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
@@ -236,7 +242,13 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
                 new ArrayList<>(), grantTypes);
 
-        // Step 6 : Generate Production and Sandbox tokens with scopes
+        // Step 6 : Invoke API Product with Application Access tokens and receive Forbidden response
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+        invocationStatusCodes.addScopeSpecificStatusCode(SCOPE, HttpStatus.SC_FORBIDDEN);
+        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes);
+
+        // Step 7 : Generate Production and Sandbox tokens with scopes
         String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
                 productionAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
                 Collections.singletonList(SCOPE));
@@ -245,8 +257,141 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 sandboxAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
                 Collections.singletonList(SCOPE));
 
-        // Step 7 : Invoke API Product
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken);
+        // Step 8 : Invoke API Product
+        invocationStatusCodes.addScopeSpecificStatusCode(SCOPE, HttpStatus.SC_OK);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
+            "on an API with an in mediation sequence")
+    public void testCreateAndInvokeApiProductWithInMediationApi() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+
+        apisToBeUsed.add(apiTestHelper.
+                createInMediationSequenceApi(getBackendEndServiceEndPointHttp("wildcard/resources")));
+
+        // Step 1 : Create APIProduct
+        final String provider = UUID.randomUUID().toString();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies);
+
+        waitForAPIDeployment();
+
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        // Step 3 : Verify APIProduct in dev portal
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
+                apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
+
+        // Step 4 : Subscribe to APIProduct
+        ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
+                TIER_UNLIMITED);
+
+        // Step 5 : Generate Production and Sandbox keys
+        List<String> grantTypes = Arrays.asList("client_credentials", "password");
+        ApplicationKeyDTO productionAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                new ArrayList<>(), grantTypes);
+
+        ApplicationKeyDTO sandboxAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
+                new ArrayList<>(), grantTypes);
+
+        // Step 6 : Invoke API Product with Application Access tokens
+        String requestBody = "{ \"foo\" : \"bar\" }";
+        String expectedResponse = "<jsonObject><foo>bar</foo></jsonObject>";
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+
+        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes, requestBody, expectedResponse, headers);
+
+        // Step 7 : Generate Production and Sandbox tokens with scopes
+        String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
+                productionAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        String sandboxToken = apiTestHelper.generateTokenPasswordGrant(sandboxAppKey.getConsumerKey(),
+                sandboxAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        // Step 8 : Invoke API Product
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
+                expectedResponse, headers);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
+            "on an API with an out mediation sequence")
+    public void testCreateAndInvokeApiProductWithOutMediationApi() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+
+        apisToBeUsed.add(apiTestHelper.
+                createOutMediationSequenceApi(getBackendEndServiceEndPointHttp("wildcard/resources")));
+
+        // Step 1 : Create APIProduct
+        final String provider = UUID.randomUUID().toString();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies);
+
+        waitForAPIDeployment();
+
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        // Step 3 : Verify APIProduct in dev portal
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
+                apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
+
+        // Step 4 : Subscribe to APIProduct
+        ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
+                TIER_UNLIMITED);
+
+        // Step 5 : Generate Production and Sandbox keys
+        List<String> grantTypes = Arrays.asList("client_credentials", "password");
+        ApplicationKeyDTO productionAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                new ArrayList<>(), grantTypes);
+
+        ApplicationKeyDTO sandboxAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
+                new ArrayList<>(), grantTypes);
+
+        // Step 6 : Invoke API Product with Application Access tokens
+        String requestBody = "<foo>bar</foo>";
+        String expectedResponse = "{\"text\":\"<foo>bar</foo>\"}";
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/xml");
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+
+        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes, requestBody, expectedResponse, headers);
+
+        // Step 7 : Generate Production and Sandbox tokens with scopes
+        String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
+                productionAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        String sandboxToken = apiTestHelper.generateTokenPasswordGrant(sandboxAppKey.getConsumerKey(),
+                sandboxAppKey.getConsumerSecret(), RESTRICTED_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        // Step 8 : Invoke API Product
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
+                expectedResponse, headers);
     }
 
     @AfterClass(alwaysRun = true)

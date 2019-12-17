@@ -1,0 +1,21 @@
+{
+  "name" : "one",
+  "context" : "/one",
+  "version" : "1.0.0",
+  "provider" : "admin",
+  "endpointConfig" : {
+    "endpoint_type" : "http",
+    "production_endpoints" : { "url" : "http://localhost" },
+    "sandbox_endpoints" : { "url" : "http://localhost" }
+  },
+  "mediationPolicies":[
+    {
+      "name": "json_to_xml_in_message",
+      "type": "in"
+    },
+    {
+      "name": "json_fault",
+      "type": "fault"
+    }
+  ]
+}

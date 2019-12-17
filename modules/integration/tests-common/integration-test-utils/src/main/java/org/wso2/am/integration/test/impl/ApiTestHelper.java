@@ -19,9 +19,9 @@
 package org.wso2.am.integration.test.impl;
 
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPatch;
@@ -32,6 +32,7 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -61,8 +62,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.wso2.am.integration.clients.store.api.v1.dto.WorkflowResponseDTO.WorkflowStatusEnum.APPROVED;
@@ -195,6 +198,48 @@ public class ApiTestHelper {
         return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
     }
 
+    public APIDTO createInMediationSequenceApi(String backendUrl) throws IOException, ApiException {
+        String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
+                File.separator + "customer-info-api.yaml";
+
+        String additionalPropertiesPath = resourceLocation + File.separator + ADDITIONAL_PROPERTIES_FOLDER +
+                File.separator + "in-mediation-api-properties.json";
+
+        File definition = new File(swaggerPath);
+
+        String content = new String(Files.readAllBytes(Paths.get(additionalPropertiesPath)));
+        JSONObject apiProperties = new JSONObject(content);
+
+        String uniqueName = UUID.randomUUID().toString();
+        apiProperties.put("name", uniqueName);
+        apiProperties.put("context", "/" + uniqueName);
+        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
+        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
+
+        return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+    }
+
+    public APIDTO createOutMediationSequenceApi(String backendUrl) throws IOException, ApiException {
+        String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
+                File.separator + "customer-info-api.yaml";
+
+        String additionalPropertiesPath = resourceLocation + File.separator + ADDITIONAL_PROPERTIES_FOLDER +
+                File.separator + "out-mediation-api-properties.json";
+
+        File definition = new File(swaggerPath);
+
+        String content = new String(Files.readAllBytes(Paths.get(additionalPropertiesPath)));
+        JSONObject apiProperties = new JSONObject(content);
+
+        String uniqueName = UUID.randomUUID().toString();
+        apiProperties.put("name", uniqueName);
+        apiProperties.put("context", "/" + uniqueName);
+        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
+        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
+
+        return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+    }
+
     public ApplicationDTO verifySubscription(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
                                              String applicationName, String subscriptionPolicy)
             throws org.wso2.am.integration.clients.store.api.ApiException {
@@ -272,7 +317,9 @@ public class ApiTestHelper {
     }
 
     public void verifyInvocation(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
-                                 String productionAccessToken, String sandboxAccessToken) throws IOException {
+                                 String productionAccessToken, String sandboxAccessToken,
+                                 InvocationStatusCodes expectedStatus)
+            throws IOException {
         List<APIEndpointURLsDTO> endpointURLs = apiDTO.getEndpointURLs();
         Assert.assertFalse(endpointURLs.isEmpty());
 
@@ -280,14 +327,14 @@ public class ApiTestHelper {
             String environmentType = endpointURL.getEnvironmentType();
             switch (environmentType) {
                 case "hybrid":
-                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken);
-                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken);
+                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken, expectedStatus);
+                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken, expectedStatus);
                     break;
                 case "production":
-                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken);
+                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken, expectedStatus);
                     break;
                 case "sandbox":
-                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken);
+                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken, expectedStatus);
                     break;
                 default:
                     Assert.assertTrue(Arrays.stream(new String[]{"hybrid", "production", "sandbox"}).
@@ -296,6 +343,36 @@ public class ApiTestHelper {
             }
         }
     }
+
+    public void verifyInvocation(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
+                                 String productionAccessToken, String sandboxAccessToken,
+                                 InvocationStatusCodes expectedStatus,
+                                 String requestBody, String expectedResponse, Map<String, String> headers)
+            throws IOException {
+        List<APIEndpointURLsDTO> endpointURLs = apiDTO.getEndpointURLs();
+        Assert.assertFalse(endpointURLs.isEmpty());
+
+        for (APIEndpointURLsDTO endpointURL : endpointURLs) {
+            String environmentType = endpointURL.getEnvironmentType();
+            switch (environmentType) {
+                case "hybrid":
+                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken, expectedStatus, requestBody, expectedResponse, headers);
+                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken, expectedStatus, requestBody, expectedResponse, headers);
+                    break;
+                case "production":
+                    sendRequest(endpointURL.getUrLs(), apiDTO, productionAccessToken, expectedStatus, requestBody, expectedResponse, headers);
+                    break;
+                case "sandbox":
+                    sendRequest(endpointURL.getUrLs(), apiDTO, sandboxAccessToken, expectedStatus, requestBody, expectedResponse, headers);
+                    break;
+                default:
+                    Assert.assertTrue(Arrays.stream(new String[]{"hybrid", "production", "sandbox"}).
+                            parallel().anyMatch(environmentType::contains));
+                    break;
+            }
+        }
+    }
+
     private HttpUriRequest constructRequest(String targetUrl, String httpMethod) throws IOException {
         // Detect and replace resource path parameters with fixed id
         targetUrl = targetUrl.replaceAll("\\{\\w+}", "123");
@@ -321,9 +398,28 @@ public class ApiTestHelper {
         }
     }
 
+    private HttpUriRequest constructRequest(String targetUrl, String httpMethod, String requestBody) throws IOException {
+        // Detect and replace resource path parameters with fixed id
+        targetUrl = targetUrl.replaceAll("\\{\\w+}", "123");
+        HttpEntityEnclosingRequestBase request;
+
+        if ("POST".equals(httpMethod)) {
+             request = new HttpPost(targetUrl);
+        } else if ("PUT".equals(httpMethod)) {
+            request = new HttpPut(targetUrl);
+        } else {
+            request = new HttpPatch(targetUrl);
+        }
+
+        request.setEntity(new StringEntity(requestBody));
+        return request;
+    }
+
     private void sendRequest(APIURLsDTO apiurLsDTO, org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
-                             String accessToken) throws IOException {
+                             String accessToken, InvocationStatusCodes expectedStatusCodes) throws IOException {
         List<org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO> operations = apiDTO.getOperations();
+
+        Map<String, String> pathScopeMapping = getPathScopeMapping(apiDTO);
 
         for (org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO operation : operations) {
             HttpUriRequest request = constructRequest(apiurLsDTO.getHttp() + operation.getTarget(),
@@ -334,9 +430,82 @@ public class ApiTestHelper {
             try (CloseableHttpClient httpClient = HttpClients.custom().
                     setHostnameVerifier(new AllowAllHostnameVerifier()).build();
                  CloseableHttpResponse response = httpClient.execute(request)) {
-                Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+                String key = operation.getTarget() + operation.getVerb().toLowerCase();;
+                int expectedCode;
+                if (pathScopeMapping.containsKey(key)) {
+                    String scope = pathScopeMapping.get(key);
+                    expectedCode = expectedStatusCodes.getStatusCodeForScope(scope);
+                } else {
+                    expectedCode = expectedStatusCodes.getDefaultStatusCode();
+                }
+
+                Assert.assertEquals(response.getStatusLine().getStatusCode(), expectedCode);
             }
         }
+    }
+
+    private void sendRequest(APIURLsDTO apiurLsDTO, org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
+                             String accessToken, InvocationStatusCodes expectedStatusCodes, String requestBody,
+                             String expectedResponse, Map<String, String> headers)
+            throws IOException {
+        List<org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO> operations = apiDTO.getOperations();
+
+        Map<String, String> pathScopeMapping = getPathScopeMapping(apiDTO);
+
+        for (org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO operation : operations) {
+            if (operation.getVerb().equals("GET") || operation.getVerb().equals("DELETE")) {
+                continue;
+            }
+
+            HttpUriRequest request = constructRequest(apiurLsDTO.getHttp() + operation.getTarget(),
+                    operation.getVerb(), requestBody);
+            // add request headers
+            request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                request.addHeader(entry.getKey(), entry.getValue());
+            }
+
+            try (CloseableHttpClient httpClient = HttpClients.custom().
+                    setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+                 CloseableHttpResponse response = httpClient.execute(request)) {
+                String key = operation.getTarget() + operation.getVerb().toLowerCase();
+                int expectedCode;
+                if (pathScopeMapping.containsKey(key)) {
+                    String scope = pathScopeMapping.get(key);
+                    expectedCode = expectedStatusCodes.getStatusCodeForScope(scope);
+                } else {
+                    expectedCode = expectedStatusCodes.getDefaultStatusCode();
+                }
+
+                Assert.assertEquals(response.getStatusLine().getStatusCode(), expectedCode);
+                Assert.assertEquals(EntityUtils.toString(response.getEntity()), expectedResponse);
+            }
+        }
+    }
+
+    private Map<String, String> getPathScopeMapping(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO) {
+        Map<String, String> pathScopeMapping = new HashMap<>();
+
+        JSONObject apiDefinition = new JSONObject(apiDTO.getApiDefinition());
+        JSONObject paths = (JSONObject) apiDefinition.get("paths");
+
+        paths.keys().forEachRemaining(pathKey -> {
+            JSONObject resources = (JSONObject) paths.get((String) pathKey);
+            resources.keys().forEachRemaining(verbKey -> {
+                JSONObject resource = (JSONObject) resources.get((String) verbKey);
+                JSONArray securities = (JSONArray) resource.get("security");
+                if (securities.length() == 1) {
+                    JSONObject security = (JSONObject) securities.get(0);
+                    JSONArray scopes = (JSONArray) security.get("default");
+                    if (scopes.length() == 1) {
+                        pathScopeMapping.put((String) pathKey + verbKey, (String) scopes.get(0));
+                    }
+                }
+            });
+        });
+
+        return pathScopeMapping;
     }
 
 
