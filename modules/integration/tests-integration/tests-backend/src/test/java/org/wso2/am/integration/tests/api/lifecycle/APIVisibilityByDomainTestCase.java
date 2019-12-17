@@ -21,6 +21,8 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -32,6 +34,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
@@ -51,11 +54,15 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String EMAIL_USER_KEY = "emailUser";
+    private final String EMAIL_USER2_KEY = "emailUser2";
+    private final String EMAIL_USER3_KEY = "emailUser3";
     private final String TENANT_DOMAIN_KEY = "wso2.com";
     private final String TENANT_DOMAIN_ADMIN_KEY = "admin";
     private final String USER_KEY_USER2 = "userKey1";
+    private final String CARBON_SUPER_TENANT2_KEY = "userKey2";
     private final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String AT = "@";
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private String providerName;
@@ -71,70 +78,97 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     private RestAPIPublisherImpl restAPIPublisherOtherDomainAdmin;
     private RestAPIStoreImpl restAPIStoreOtherDomainAdmin;
     private String apiID;
+    private String apiCreatorStoreDomain;
+    private User user2;
+    private User user3;
+    private User otherDomainUser2;
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+        };
+    }
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIVisibilityByDomainTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
+        String username2;
+        String username3;
         //Creating CarbonSuper context
-        super.init(TestUserMode.SUPER_TENANT_ADMIN);
+        super.init(userMode);
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
-        restAPIPublisherCarbonSuperAdmin = new RestAPIPublisherImpl("admin", "admin",
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
+        restAPIPublisherCarbonSuperAdmin = new RestAPIPublisherImpl(user.getUserNameWithoutDomain(), user.getPassword(),
+                user.getUserDomain(), publisherURLHttps);
 
-        restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl("admin", "admin",
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
+        restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl(user.getUserNameWithoutDomain(), user.getPassword(),
+                user.getUserDomain(), storeURLHttps);
+
+        apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
+
+        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
+            user2 = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2);
+            user3 = publisherContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY);
+            username2 = user2.getUserNameWithoutDomain();
+            username3 = user3.getUserNameWithoutDomain();
+            providerName = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
+
+        } else {
+            user2 = publisherContext.getContextTenant().getTenantUser(EMAIL_USER2_KEY);
+            user3 = publisherContext.getContextTenant().getTenantUser(EMAIL_USER3_KEY);
+            username2 = user2.getUserName();
+            username3 = user3.getUserName();
+
+            providerName = publisherContext.getContextTenant().getTenantUser(EMAIL_USER2_KEY).getUserName() + AT
+                    + apiCreatorStoreDomain;
+        }
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
-        restAPIPublisherCarbonSuperUser1 = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
+        restAPIPublisherCarbonSuperUser1 = new RestAPIPublisherImpl(username2, user2.getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
-        restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
+        restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(username2, user2.getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
-        providerName =
-                publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
-
         //Login to API Publisher and Store with CarbonSuper normal user2
-        restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getUserName(),
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getPassword(),
+        restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(username3, user3.getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
-        restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getUserName(),
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getPassword(),
+        restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(username3, user3.getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         //Creating Tenant contexts
-        init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
+        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
+            init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
+            otherDomainUser2 = storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY);
+        } else {
+            init(TENANT_DOMAIN_KEY, EMAIL_USER_KEY);
+            otherDomainUser2 = storeContext.getContextTenant().getTenantUser(EMAIL_USER2_KEY);
+        }
+
         otherDomain = storeContext.getContextTenant().getDomain();
 
         //Login to the API Publisher and Store as Tenant user
-        restAPIPublisherOtherDomainUser = new RestAPIPublisherImpl(
-                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword(),
-                otherDomain, publisherURLHttps);
+        restAPIPublisherOtherDomainUser = new RestAPIPublisherImpl(otherDomainUser2.getUserNameWithoutDomain(),
+                otherDomainUser2.getPassword(), otherDomain, publisherURLHttps);
 
-        restAPIStoreOtherDomainUser = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getTenantUser(EMAIL_USER_KEY).getPassword(),
-                otherDomain, storeURLHttps);
+        restAPIStoreOtherDomainUser = new RestAPIStoreImpl(otherDomainUser2.getUserNameWithoutDomain(),
+                otherDomainUser2.getPassword(), otherDomain, storeURLHttps);
 
         //Login to the API Publisher adn Store as Tenant admin
         restAPIPublisherOtherDomainAdmin = new RestAPIPublisherImpl(
                 storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                otherDomain, publisherURLHttps);
+                storeContext.getContextTenant().getContextUser().getPassword(), otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainAdmin = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                otherDomain, storeURLHttps);
+                storeContext.getContextTenant().getContextUser().getPassword(), otherDomain, storeURLHttps);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")
