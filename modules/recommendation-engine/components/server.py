@@ -9,6 +9,8 @@ import ssl
 import sys
 import atexit
 from apscheduler.scheduler import Scheduler
+import logging
+logging.basicConfig(level=logging.INFO)
 
 API_CRT = "utils/Certificates/server.crt"
 API_KEY = "utils/Certificates/server.key"
@@ -104,7 +106,7 @@ def add_application():
 def update_application():
     try:
         application_data = request.json
-        update_app_in_db(application_data)
+        update_application_in_db(application_data)
         response = Response(status=200)    
     except Exception as e:
         logging.error(e)
