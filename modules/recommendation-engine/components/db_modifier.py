@@ -1,7 +1,7 @@
 # from dictionary_processor import *
 from recommendation import *
 
-MIN_API_COUNT = 20
+MIN_API_COUNT = 1
 
 def add_api_to_db(API):
     update_API_dictionary(API)

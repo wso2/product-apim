@@ -1,5 +1,7 @@
 import pandas as pd
 from dictionary_processor import *
+import logging
+logging.basicConfig(level=logging.INFO)
 
 PROGRESSION_FACTOR = 1.2
 

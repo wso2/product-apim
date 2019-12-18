@@ -7,6 +7,7 @@ import pymongo
 import json
 import logging
 import yaml
+logging.basicConfig(level=logging.INFO)
 
 HIGH_WEIGHT = 4
 NORMAL_WEIGHT = 3
@@ -46,7 +47,7 @@ with open(CONFIG_FILE, 'r') as stream:
     config_properties = yaml.safe_load(stream)
 
 MONGO_URL = "mongodb://" + config_properties['mongodb_url']
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+client = pymongo.MongoClient(MONGO_URL)
 
 # Loading models
 nlp = spacy.load('en')
