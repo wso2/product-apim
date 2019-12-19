@@ -499,7 +499,12 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
-                <exclude>authenticationendpoint/includes/</exclude>
+                <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
+                <exclude>authenticationendpoint/includes/header.jsp</exclude>
+                <exclude>authenticationendpoint/includes/title.jsp</exclude>
+                <exclude>authenticationendpoint/includes/product-footer.jsp</exclude>
+                <exclude>authenticationendpoint/includes/product-title.jsp</exclude>
+                <exclude>authenticationendpoint/includes/privacy-policy-content.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -512,7 +517,8 @@
             <includes>
                 <include>title.jsp</include>
                 <include>header.jsp</include>
-                <include>footer.jsp</include>
+                <include>product-footer.jsp</include>
+                <include>product-title.jsp</include>
                 <include>cookie-policy-content.jsp</include>
                 <include>privacy-policy-content.jsp</include>
             </includes>
@@ -543,7 +549,10 @@
             <excludes>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
-                <exclude>accountrecoveryendpoint/includes/</exclude>
+                <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
+                <exclude>accountrecoveryendpoint/includes/title.jsp</exclude>
+                <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
+                <exclude>accountrecoveryendpoint/includes/product-title.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -556,7 +565,8 @@
             <includes>
                 <include>title.jsp</include>
                 <include>header.jsp</include>
-                <include>footer.jsp</include>
+                <include>product-footer.jsp</include>
+                <include>product-title.jsp</include>
             </includes>
         </fileSet>
 

@@ -19,26 +19,21 @@
 
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointConstants" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementEndpointUtil" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.IdentityManagementServiceUtil" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.ApiException" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.api.ReCaptchaApi" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.ReCaptchaProperties" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.client.model.User" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.User" %>
 <%@ page import="java.io.File" %>
-<%@ page import="java.util.Arrays" %>
-<%@ page import="java.util.HashMap" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.Map" %>
-<jsp:directive.include file="localize.jsp"/>
+<%@ page import="java.util.*" %>
+<jsp:directive.include file="includes/localize.jsp"/>
 
 <%
     boolean error = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("error"));
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));
     String username = request.getParameter("username");
     String tenantDomain = null;
-    
     if (StringUtils.isNotEmpty(username)) {
         User user = IdentityManagementServiceUtil.getInstance().getUser(username);
         tenantDomain = user.getTenantDomain();
@@ -47,7 +42,6 @@
     try {
         ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
                 "password-recovery");
-        
         if (reCaptchaProperties.getReCaptchaEnabled()) {
             Map<String, List<String>> headers = new HashMap<>();
             headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
@@ -61,11 +55,9 @@
         request.getRequestDispatcher("error.jsp").forward(request, response);
         return;
     }
-    
     boolean isEmailNotificationEnabled = false;
-
     isEmailNotificationEnabled = Boolean.parseBoolean(application.getInitParameter(
-                IdentityManagementEndpointConstants.ConfigConstants.ENABLE_EMAIL_NOTIFICATION));
+            IdentityManagementEndpointConstants.ConfigConstants.ENABLE_EMAIL_NOTIFICATION));
 %>
 <%
     boolean reCaptchaEnabled = true;
@@ -75,180 +67,156 @@
     }
 %>
 
-    <html>
-    <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- title -->
-        <%
-            File titleFile = new File(getServletContext().getRealPath("extensions/title.jsp"));
-            if (titleFile.exists()) {
-        %>
-                <jsp:include page="extensions/title.jsp"/>
-        <% } else { %>
-                <jsp:directive.include file="includes/title.jsp"/>
-        <% } %>
-
-        <link rel="icon" href="images/favicon.png" type="image/x-icon"/>
-        <link href="libs/bootstrap_3.4.1/css/bootstrap.min.css" rel="stylesheet">
-        <link href="css/Roboto.css" rel="stylesheet">
-        <link href="css/custom-common.css" rel="stylesheet">
-
-        <!--[if lt IE 9]>
-        <script src="js/html5shiv.min.js"></script>
-        <script src="js/respond.min.js"></script>
-        <![endif]-->
-        <%
-            if (reCaptchaEnabled) {
-        %>
-        <script src='<%=(request.getAttribute("reCaptchaAPI"))%>'></script>
-        <%
-            }
-        %>
-    </head>
-
-    <body>
-
-    <!-- header -->
+<!doctype html>
+<html>
+<head>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
     %>
-            <jsp:include page="extensions/header.jsp"/>
+    <jsp:include page="extensions/header.jsp"/>
     <% } else { %>
-            <jsp:directive.include file="includes/header.jsp"/>
+    <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
 
-    <!-- page content -->
-    <div class="container-fluid body-wrapper">
-
-        <div class="row">
-            <!-- content -->
-            <div class="col-xs-12 col-sm-10 col-md-8 col-lg-5 col-centered wr-login">
-                <h2 class="wr-title uppercase blue-bg padding-double white boarder-bottom-blue margin-none">
+    <%
+        if (reCaptchaEnabled) {
+    %>
+    <script src='<%=(request.getAttribute("reCaptchaAPI"))%>'></script>
+    <%
+        }
+    %>
+</head>
+<body>
+    <main class="center-segment">
+        <div class="ui container medium center aligned middle aligned">
+            <!-- product-title -->
+            <%
+                File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
+                if (productTitleFile.exists()) {
+            %>
+            <jsp:include page="extensions/product-title.jsp"/>
+            <% } else { %>
+            <jsp:directive.include file="includes/product-title.jsp"/>
+            <% } %>
+            <div class="ui segment">
+                <!-- page content -->
+                <h2>
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.password")%>
                 </h2>
+                <% if (error) { %>
+                <div class="ui visible negative message" id="server-error-msg">
+                    <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%>
+                </div>
+                <% } %>
+                <div class="ui negative message" id="error-msg" hidden="hidden"></div>
+                <p>
+                    <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.detail.to.recover.pwd")%>
+                </p>
+                <div class="ui divider hidden"></div>
+                <div class="segment-form">
+                    <form class="ui large form" method="post" action="verify.do" id="recoverDetailsForm">
+                        <%
+                            if (StringUtils.isNotEmpty(username) && !error) {
+                        %>
+                        <div class="field">
+                            <input type="hidden" name="username" value="<%=Encode.forHtmlAttribute(username)%>"/>
+                        </div>
+                        <%
+                        } else {
+                        %>
 
-                <div class="clearfix"></div>
-                <div class="boarder-all ">
+                        <div class="field">
+                            <input id="username" name="username" type="text" tabindex="0"
+                                   placeholder=
+                                       <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Username")%> required>
+                        </div>
 
-                    <% if (error) { %>
-                    <div class="alert alert-danger" id="server-error-msg">
-                        <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%>
-                    </div>
-                    <% } %>
-                    <div class="alert alert-danger" id="error-msg" hidden="hidden"></div>
-
-                    <div class="padding-double font-large">
-                        <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.detail.to.recover.pwd")%></div>
-                    <div class="padding-double">
-                        <form method="post" action="verify.do" id="recoverDetailsForm">
-    
-                            <%
-                                if (StringUtils.isNotEmpty(username) && !error) {
-                            %>
-                            <div>
-                                <input type="hidden" name="username" value="<%=Encode.forHtmlAttribute(username)%>"/>
-                            </div>
-                            <%
-                            } else {
-                            %>
-    
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group required">
-                                <input id="username" name="username" type="text" class="form-control" tabindex="0"
-                                       placeholder=
-                                           <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Username")%> required>
-                            </div>
-    
-                            <%
-                                }
-                            %>
-                            <div class="form-group">
-                                <input type="radio" name="recoveryOption" value="EMAIL" checked/>
-                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.mail")%>
-                            </div>
-                            <div class="form-group">
-                                <input type="radio" name="recoveryOption" value="SECURITY_QUESTIONS"/>
-                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.question")%>
-                            </div>
-
-                            <%
-                                String callback = request.getParameter("callback");
-                                if (callback != null) {
-                            %>
-                            <div>
-                                <input type="hidden" name="callback" value="<%=Encode.forHtmlAttribute(callback) %>"/>
-                            </div>
-                            <%
-                                }
-                            %>
-    
-                            <%
-                                if (reCaptchaEnabled) {
-                            %>
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
-                                <div class="g-recaptcha"
-                                     data-sitekey=
-                                             "<%=Encode.forHtmlContent((String)request.getAttribute("reCaptchaKey"))%>">
+                        <%
+                            }
+                        %>
+                        <div class="ui secondary segment" style="text-align: left;">
+                            <div class="field">
+                                <div class="ui radio checkbox">
+                                    <input type="radio" name="recoveryOption" value="EMAIL" checked/>
+                                    <label><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.mail")%>
+                                    </label>
                                 </div>
                             </div>
-                            <%
-                                }
-                            %>
-                            
-                            <div class="form-actions">
-                                <table width="100%" class="styledLeft">
-                                    <tbody>
-                                    <tr class="buttonRow">
-                                        <td>
-                                            <button id="recoverySubmit"
-                                                    class="wr-btn grey-bg col-xs-12 col-md-12 col-lg-12 uppercase font-extra-large"
-                                                    type="submit">
-                                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Submit")%>
-                                            </button>
-                                        </td>
-                                        <td>&nbsp;&nbsp;</td>
-                                        <td>
-                                            <button type="button" id="recoveryCancel" class="wr-btn grey-bg col-xs-12 col-md-12 col-lg-12 uppercase font-extra-large"
-                                                    onclick="location.href='<%=Encode.forJavaScript(IdentityManagementEndpointUtil.getURLEncodedCallback(callback))%>';">
-                                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Cancel")%>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            <div class="field">
+                                <div class="ui radio checkbox">
+                                    <input type="radio" name="recoveryOption" value="SECURITY_QUESTIONS"/>
+                                    <label><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.question")%>
+                                    </label>
+                                </div>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        <%
+                            String callback = request.getParameter("callback");
+                            if (callback != null) {
+                        %>
+                        <div>
+                            <input type="hidden" name="callback" value="<%=Encode.forHtmlAttribute(callback) %>"/>
+                        </div>
+                        <%
+                            }
+                        %>
+
+                        <%
+                            if (reCaptchaEnabled) {
+                        %>
+                        <div class="field">
+                            <div class="g-recaptcha"
+                                 data-sitekey=
+                                         "<%=Encode.forHtmlContent((String)request.getAttribute("reCaptchaKey"))%>">
+                            </div>
+                        </div>
+                        <%
+                            }
+                        %>
+                        <div class="ui divider hidden"></div>
+                        <div class="align-right buttons">
+                            <button type="button" id="recoveryCancel"
+                                    class="ui button"
+                                    onclick="location.href='<%=Encode.forJavaScript(IdentityManagementEndpointUtil.getURLEncodedCallback(callback))%>';">
+                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Cancel")%>
+                            </button>
+                            <button id="recoverySubmit"
+                                    class="ui primary button"
+                                    type="submit">
+                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Submit")%>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="clearfix"></div>
             </div>
-            <!-- /content/body -->
-
         </div>
-    </div>
-
+    </main>
+    <!-- /content/body -->
+    <!-- product-footer -->
+    <%
+        File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
+        if (productFooterFile.exists()) {
+    %>
+    <jsp:include page="extensions/product-footer.jsp"/>
+    <% } else { %>
+    <jsp:directive.include file="includes/product-footer.jsp"/>
+    <% } %>
     <!-- footer -->
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
     %>
-            <jsp:include page="extensions/footer.jsp"/>
+    <jsp:include page="extensions/footer.jsp"/>
     <% } else { %>
-            <jsp:directive.include file="includes/footer.jsp"/>
+    <jsp:directive.include file="includes/footer.jsp"/>
     <% } %>
 
-    <script src="libs/jquery_3.4.1/jquery-3.4.1.js"></script>
-    <script src="libs/bootstrap_3.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-
         $(document).ready(function () {
-
             $("#recoverDetailsForm").submit(function (e) {
                 var errorMessage = $("#error-msg");
                 errorMessage.hide();
-
                 var firstName = $("#username").val();
                 if (firstName == '') {
                     errorMessage.text("Please fill the first name.");
@@ -256,7 +224,6 @@
                     $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
                     return false;
                 }
-
                 <%
                 if (reCaptchaEnabled) {
                 %>
@@ -270,11 +237,9 @@
                 <%
                 }
                 %>
-
                 return true;
             });
         });
-
     </script>
-    </body>
-    </html>
+</body>
+</html>
