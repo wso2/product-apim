@@ -38,6 +38,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -60,6 +61,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -93,6 +95,7 @@ public class RestAPIPublisherImpl {
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
+    public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
 
     public ApiClient apiPublisherClient = new ApiClient();
@@ -139,6 +142,7 @@ public class RestAPIPublisherImpl {
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
         subscriptionsApi.setApiClient(apiPublisherClient);
+        apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
@@ -1081,5 +1085,21 @@ public class RestAPIPublisherImpl {
     public void deleteApiProduct(String apiProductId) throws ApiException {
         ApiResponse<Void> apiResponse = apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /**
+     * Method to retrieve the Audit Report of an API
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getAuditApi(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<AuditReportDTO> auditReportResponse = apiAuditApi
+                .apisApiIdAuditapiGetWithHttpInfo(apiId, "application/json");
+        if (auditReportResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully audited the report", 200);
+        }
+        return response;
     }
 }
