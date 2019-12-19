@@ -1731,6 +1731,10 @@
                                     <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
                                     <version>${carbon.identity.auth.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.email.mgt.feature.group</id>
+                                    <version>${carbon.identity.event.handler.notification.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
