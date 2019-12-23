@@ -10,16 +10,7 @@ Name | Type | Description | Notes
 **apiInfo** | [**APIInfoDTO**](APIInfoDTO.md) |  |  [optional]
 **applicationInfo** | [**ApplicationInfoDTO**](ApplicationInfoDTO.md) |  |  [optional]
 **throttlingPolicy** | **String** |  | 
-**type** | [**TypeEnum**](#TypeEnum) |  |  [optional]
 **status** | [**StatusEnum**](#StatusEnum) |  |  [optional]
-
-
-<a name="TypeEnum"></a>
-## Enum: TypeEnum
-Name | Value
----- | -----
-API | &quot;API&quot;
-API_PRODUCT | &quot;API_PRODUCT&quot;
 
 
 <a name="StatusEnum"></a>

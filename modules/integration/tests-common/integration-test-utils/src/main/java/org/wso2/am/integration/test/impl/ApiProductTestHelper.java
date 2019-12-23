@@ -59,7 +59,7 @@ public class ApiProductTestHelper {
                                                      List<APIDTO> apisToBeUsed, List<String> policies)
             throws ApiException {
         // Select resources from APIs to be used by APIProduct
-        List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apisToBeUsed, 2);
+        List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apisToBeUsed);
 
         // Generate APIProductDTO
         APIProductDTO apiProductDTO = DtoFactory.createApiProductDTO(provider, name, context,
@@ -135,46 +135,36 @@ public class ApiProductTestHelper {
 
     /**
      * Returns a collection of API resources which can be used by an APIProduct,
-     * by selecting a given number of resources from each available API provided
+     * by selecting all resources from each available API provided
      *
      * @param apiDTOs API List
-     * @param numberOfOperations Number of resources to select from a given API
      * @return Collection of API resources to be included in an APIProduct
      */
-    private List<ProductAPIDTO> getResourcesForProduct(List<APIDTO> apiDTOs, final int numberOfOperations) {
+    private List<ProductAPIDTO> getResourcesForProduct(List<APIDTO> apiDTOs) {
         Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping = new HashMap<>();
 
         // Pick two operations from each API to be used to create the APIProduct.
         for (APIDTO apiDto : apiDTOs) {
-            selectOperationsFromAPI(apiDto, numberOfOperations, selectedApiResourceMapping);
+            selectOperationsFromAPI(apiDto, selectedApiResourceMapping);
         }
 
         return convertToProductApiResources(selectedApiResourceMapping);
     }
 
     /**
-     * Select a specified number of resources from a given API. Resources will be picked sequentially, where the
+     * Select all resources from a given API. Resources will be picked sequentially, where the
      * resources itself will be unordered.
      *
      * @param apiDto API
-     * @param numberOfOperations Number of resources to select from the API
      * @param selectedApiResourceMapping Collection for storing the selected resources against the respective API
      */
-    private void selectOperationsFromAPI(APIDTO apiDto, final int numberOfOperations,
-                                         Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping) {
+    private void selectOperationsFromAPI(APIDTO apiDto, Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping) {
         List<APIOperationsDTO> operations = apiDto.getOperations();
 
         Set<APIOperationsDTO> selectedOperations = new HashSet<>();
         selectedApiResourceMapping.put(apiDto, selectedOperations);
 
-        for (APIOperationsDTO operation : operations) {
-            selectedOperations.add(operation);
-
-            // Only select upto the specified number of operations
-            if (selectedOperations.size() == numberOfOperations) {
-                break;
-            }
-        }
+        selectedOperations.addAll(operations);
     }
 
     /**

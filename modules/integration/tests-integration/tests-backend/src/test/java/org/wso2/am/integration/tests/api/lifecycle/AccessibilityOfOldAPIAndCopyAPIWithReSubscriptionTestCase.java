@@ -102,7 +102,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.")
-    public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException {
+    public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Create and publish API version 1.0.0
         // Subscribe old api version (1.0.0)
         waitForAPIDeploymentSync(apiRequest.getProvider(),
@@ -210,10 +210,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
             dependsOnMethods = "testSubscribeTheNewVersion")
     public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
-        Thread.sleep(30000);
         //Invoke  new version after subscription
-        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT,API_VERSION_2_0_0)
-                                                                      + API_END_POINT_METHOD, requestHeaders);
+        HttpResponse newVersionInvokeResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_2_0_0) + API_END_POINT_METHOD, requestHeaders);
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched when" +
                 " invoke new api after subscribe the new version");
         assertTrue(newVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched when invoke" +

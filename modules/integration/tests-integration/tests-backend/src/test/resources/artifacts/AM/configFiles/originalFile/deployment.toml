@@ -185,7 +185,7 @@ allow_credentials = false
 #service_url = "https://localhost:9445/bpmn"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
-#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.15/workflows/update-workflow-status"
+#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.16/workflows/update-workflow-status"
 #token_endpoint = "https://localhost:${https.nio.port}/token"
 #client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.15/register"
 #client_registration_username = "$ref{super_admin.username}"
@@ -230,3 +230,9 @@ subscriptions=["POST_ADD_USER"]
 
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+
+[security_audit]
+api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
+collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
+base_url="https://localhost:9943/am-auditApi-sample/api/auditapi"
+global=true

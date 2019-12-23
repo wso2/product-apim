@@ -23,8 +23,14 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
@@ -43,7 +49,26 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     WebAppAdminClient webAppAdminClient;
 
     @BeforeTest(alwaysRun = true)
-    public void startDeployingWebAPPs() throws Exception {
+    public void configureEnvironment() throws Exception {
+        gatewayContextMgt =
+                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                        APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
+        gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
+        String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.15/register";
+
+        //DCR call for publisher app
+        DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+                RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
+                RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+        //DCR call for dev portal app
+        DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+                RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                RestAPIStoreImpl.username, RestAPIStoreImpl.password,
+                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+
         super.init();
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
                                   File.separator + "AM" + File.separator;
@@ -55,6 +80,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         String GraphqlAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
                 APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war";
+
+        String AuditAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME + ".war";
 
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
 
@@ -71,6 +99,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
         webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
+        webAppAdminClient.uploadWarFile(AuditAPIWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
@@ -92,6 +121,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                gatewayMgtSessionId, APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
         String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
                 + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator

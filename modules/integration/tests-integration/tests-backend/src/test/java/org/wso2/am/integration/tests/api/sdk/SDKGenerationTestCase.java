@@ -24,16 +24,19 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.codehaus.plexus.util.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
@@ -42,10 +45,6 @@ import java.net.URL;
 public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(SDKGenerationTestCase.class);
-    //details of the first tenant
-    private final String firstTenantDomain = "tenant1.com";
-    private final String firstTenantAdminUserName = "firstAdmin";
-    private final String firstTenantAdminPassword = "password1";
     //details of the second tenant
     private final String secondTenantDomain = "tenant2.com";
     private final String secondTenantAdminUserName = "secondAdmin";
@@ -53,31 +52,30 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
     //details of the API to be created at the tenant space of first tenant
     private final String apiName = "TestAPI";
     private final String apiVersion = "1.0.0";
-    //API will be created by tenant admin of the first tenant domain
-    private final String apiProvider = firstTenantAdminUserName + "@" + firstTenantDomain;
-    private RestAPIPublisherImpl restAPIPublisher;
     private String testApiId;
     private String privateApiId;
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public SDKGenerationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] { TestUserMode.TENANT_ADMIN } };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        //create first tenant
-        tenantManagementServiceClient.addTenant(firstTenantDomain, firstTenantAdminPassword, firstTenantAdminUserName,
-                "demo");
+        super.init(userMode);
         //create second tenant
         tenantManagementServiceClient.addTenant(secondTenantDomain, secondTenantAdminPassword,
                 secondTenantAdminUserName, "demo");
+
     }
 
     @Test(groups = {"wso2.am"}, description = "SDK Generation test case")
     public void testSDKGeneration() throws Exception {
-        //login to API publisher as first tenant admin to create the API
-        restAPIPublisher = new RestAPIPublisherImpl(apiProvider, firstTenantAdminPassword, firstTenantDomain,
-                publisherURLHttps);
-        //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
-        //login, if not api creation fails since Unlimited resource tier is not available in database.
-        waitForAPIDeployment();
         //prepare API to create and publish
         String apiContext = "testContext";
         String url = "https://localhost:9443/test";
@@ -89,7 +87,7 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(apiVersion);
         apiRequest.setSandbox(url);
         apiRequest.setResourceMethod("GET");
-        apiRequest.setProvider(apiProvider);
+        apiRequest.setProvider(user.getUserName());
         //set API visibility to public hence this API should be visible to all tenants
         apiRequest.setVisibility("public");
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
@@ -108,22 +106,19 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         //(i.e - tenant admin of first tenant logs into the API store)
         //we can use the apiProvider as the user name hence this is a login to the same tenant domain
         String sdkLanguage = "java";
-        boolean isSDKGenerationSuccessfulInSameTenant = generateSDK(apiProvider, firstTenantAdminPassword,
-                testApiId, sdkLanguage, firstTenantDomain);
+        boolean isSDKGenerationSuccessfulInSameTenant = generateSDK(restAPIStore, user.getUserNameWithoutDomain(),
+                user.getPassword(), testApiId, sdkLanguage, user.getUserDomain(), null);
 
         //check for SDK generation across tenant domains
         //(i.e - tenant admin of second tenant should log into the API store)
         boolean isSDKGenerationSuccessfulAcrossTenants = generateSDK
-                (secondTenantAdminUserName + "@" + secondTenantDomain, secondTenantAdminPassword,
-                        testApiId, sdkLanguage, firstTenantDomain);
+                (null, secondTenantAdminUserName, secondTenantAdminPassword,
+                        testApiId, sdkLanguage, secondTenantDomain, user.getUserDomain());
         Assert.assertTrue(isSDKGenerationSuccessfulInSameTenant && !isSDKGenerationSuccessfulAcrossTenants);
     }
 
     @Test(groups = {"wso2.am"}, description = "SDK Generation test case for private apis")
     public void testSDKGenerationForPrivateAPIs() throws Exception {
-        //login to API publisher as first tenant admin to create the API
-        restAPIPublisher = new RestAPIPublisherImpl(apiProvider, firstTenantAdminPassword, firstTenantDomain,
-                publisherURLHttps);
         //prepare API to create and publish
         String apiName = "PrivateAPI";
         String apiContext = "privateContext";
@@ -136,7 +131,7 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(apiVersion);
         apiRequest.setSandbox(url);
         apiRequest.setResourceMethod("GET");
-        apiRequest.setProvider(apiProvider);
+        apiRequest.setProvider(user.getUserName());
         //set API visibility to private hence this API should be visible within domain
         apiRequest.setVisibility("private");
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
@@ -155,14 +150,13 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         //(i.e - tenant admin of first tenant logs into the API store)
         //we can use the apiProvider as the user name hence this is a login to the same tenant domain
         String sdkLanguage = "java";
-        boolean isSDKGenerationSuccessfulInSameTenant = generateSDK(apiProvider, firstTenantAdminPassword, privateApiId,
-                sdkLanguage, firstTenantDomain);
+        boolean isSDKGenerationSuccessfulInSameTenant = generateSDK(restAPIStore, user.getUserNameWithoutDomain(),
+                user.getPassword(), privateApiId, sdkLanguage, user.getUserDomain(), null);
 
         //check for SDK generation when API is private
         //(i.e - tenant admin of second tenant should log into the API store)
-        boolean isSDKGenerationSuccessfulForPrivateAPIs = generateSDK
-                (secondTenantAdminUserName + "@" + secondTenantDomain, secondTenantAdminPassword,
-                        privateApiId, sdkLanguage, firstTenantDomain);
+        boolean isSDKGenerationSuccessfulForPrivateAPIs = generateSDK(null, secondTenantAdminUserName,
+                secondTenantAdminPassword, privateApiId, sdkLanguage, secondTenantDomain, user.getUserDomain());
         Assert.assertTrue(isSDKGenerationSuccessfulInSameTenant && !isSDKGenerationSuccessfulForPrivateAPIs);
     }
 
@@ -175,21 +169,29 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
      * @return true if SDK generation is successful and the SDK is non empty
      * @throws Exception if SDK generation failed
      */
-    private boolean generateSDK(String tenantAwareUserName, String password, String apiId, String language,
-            String tenant) throws Exception {
+    private boolean generateSDK(RestAPIStoreImpl restAPIStore, String tenantAwareUserName, String password,
+            String apiId, String language, String tenant, String crossTenant) throws Exception {
 
-        RestAPIStoreImpl restAPIStore = new RestAPIStoreImpl(tenantAwareUserName, password, tenant, storeURLHttps);
+        if (restAPIStore == null) {
+            restAPIStore = new RestAPIStoreImpl(tenantAwareUserName, password, tenant, storeURLHttps);
+        }
         try {
             restAPIStore.getAPI(apiId);
         } catch (ApiException e) {
             return false;
         }
 
-        ApiResponse<byte[]> sdkGenerationResponse = restAPIStore.generateSDKUpdated(apiId, language);
+        String crossTenantLocal;
+        if (StringUtils.isEmpty(crossTenant)) {
+            crossTenantLocal = tenant;
+        } else {
+            crossTenantLocal = crossTenant;
+        }
+        ApiResponse<byte[]> sdkGenerationResponse = restAPIStore.generateSDKUpdated(apiId, language, crossTenantLocal);
 
         if (!sdkGenerationResponse.getHeaders().containsKey("Content-Disposition")) {
-            log.error("SDK generation failed for API : " + apiName + " " + apiVersion + " User : " +
-                    tenantAwareUserName);
+            log.error(
+                    "SDK generation failed for API : " + apiName + " " + apiVersion + " User : " + tenantAwareUserName);
             return false;
         }
 
@@ -202,8 +204,8 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
 
         //SDK archive file should not be empty
         if (FileUtils.sizeOf(sdkArchive) > 0.0) {
-            log.info("SDK generated successfully for API : " + apiName + " " + apiVersion +
-                    " User : " + tenantAwareUserName);
+            log.info("SDK generated successfully for API : " + apiName + " " + apiVersion + " User : "
+                    + tenantAwareUserName);
             return true;
         }
         log.error("SDK generation failed for API : " + apiName + " " + apiVersion + " User : " + tenantAwareUserName);
@@ -218,7 +220,6 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         if (testApiId != null) {
             restAPIPublisher.deleteAPI(testApiId);
         }
-        tenantManagementServiceClient.deleteTenant(firstTenantDomain);
         tenantManagementServiceClient.deleteTenant(secondTenantDomain);
     }
 }

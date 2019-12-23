@@ -33,6 +33,5 @@ under the License.
     <modules>
         <module>tests-backend</module>
         <!--module>tests-config</module-->
-        <!--<module>tests-jmeter</module>-->
     </modules>
 </project>

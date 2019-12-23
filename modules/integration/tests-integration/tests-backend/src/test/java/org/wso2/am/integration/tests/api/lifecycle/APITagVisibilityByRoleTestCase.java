@@ -25,6 +25,7 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -71,6 +72,9 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
@@ -80,7 +84,15 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                createSession(keyManagerContext));
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+
+        if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + ROLE;
+            ALLOWED_USER =
+                    APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + ALLOWED_USER;
+        }
+
         //add a role for which API tags should be visible
         userManagementClient.addRole(ROLE, null, PERMISSIONS);
         // add new user with the above role

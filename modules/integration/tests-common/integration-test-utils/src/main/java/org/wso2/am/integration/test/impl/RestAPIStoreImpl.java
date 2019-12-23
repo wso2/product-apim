@@ -26,6 +26,7 @@ import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.store.api.v1.ApiKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
@@ -37,6 +38,8 @@ import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
@@ -74,6 +77,7 @@ public class RestAPIStoreImpl {
     public RatingsApi ratingsApi = new RatingsApi();
     public TagsApi tagsApi = new TagsApi();
     public SdKsApi sdKsApi = new SdKsApi();
+    public ApiKeysApi apiKeysApi = new ApiKeysApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
 
     ApiClient apiStoreClient = new ApiClient();
@@ -81,7 +85,7 @@ public class RestAPIStoreImpl {
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
-    public static final String grantType = "password client_credentials";
+    public static final String grantType = "password";
     public static final String username = "admin";
     public static final String password = "admin";
     public String storeURL;
@@ -97,14 +101,14 @@ public class RestAPIStoreImpl {
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.15/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
-                + "apim:self-signup apim:dedicated_gateway apim:store_settings";
+                + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
         String accessToken = ClientAuthenticator
                 .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
                         password, tenantDomain, tokenURL);
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
@@ -113,13 +117,14 @@ public class RestAPIStoreImpl {
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
+        apiKeysApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
 
 
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
@@ -229,7 +234,6 @@ public class RestAPIStoreImpl {
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
-            subscription.setType(SubscriptionDTO.TypeEnum.API);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
@@ -248,7 +252,7 @@ public class RestAPIStoreImpl {
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
             throws ApiException {
         ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
-                (apiId, applicationId, apiType, groupId, this.tenantDomain, null, null, null);
+                (apiId, applicationId, groupId, this.tenantDomain, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
         return suscriptionResponse.getData();
     }
@@ -278,6 +282,17 @@ public class RestAPIStoreImpl {
 
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod) throws ApiException {
+        APIKeyGenerateRequestDTO keyGenerateRequestDTO = new APIKeyGenerateRequestDTO();
+        keyGenerateRequestDTO.setValidityPeriod(validityPeriod);
+        ApiResponse<APIKeyDTO> response = apiKeysApi
+                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType,
+                        keyGenerateRequestDTO, null);
+
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
     }
@@ -961,7 +976,7 @@ public class RestAPIStoreImpl {
      */
     public SubscriptionListDTO getAllSubscriptionsOfApplication(String applicationId) throws ApiException {
 
-        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, null, this.tenantDomain, null, null, null);
+        SubscriptionListDTO subscriptionListDTO = subscriptionIndividualApi.subscriptionsGet(null, applicationId, null, this.tenantDomain, null, null, null);
         if (subscriptionListDTO.getCount() > 0) {
             return subscriptionListDTO;
         }
@@ -1309,7 +1324,6 @@ public class RestAPIStoreImpl {
         subscription.setApplicationId(appID);
         subscription.setApiId(apiID);
         subscription.setThrottlingPolicy(tier);
-        subscription.setType(SubscriptionDTO.TypeEnum.API);
         ApiResponse<SubscriptionDTO> subscriptionResponse =
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
@@ -1343,7 +1357,7 @@ public class RestAPIStoreImpl {
     public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
@@ -1573,6 +1587,23 @@ public class RestAPIStoreImpl {
 
         sdKsApi.setApiClient(apiStoreClient);
         return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, this.tenantDomain);
+
+    }
+
+    /**
+     * Generate SDK for a given programming language
+     *
+     * @param apiId The api id which the sdk should be downloaded.
+     * @param language  The required sdk language.
+     * @param tenantDomain The tenant domain of the sdk to be generated
+     * @return org.apache.http.HttpResponse for the SDK generation
+     * @throws APIManagerIntegrationTestException if failed to generate the SDK
+     */
+    public ApiResponse<byte[]> generateSDKUpdated(String apiId, String language, String tenantDomain)
+            throws ApiException, IOException {
+
+        sdKsApi.setApiClient(apiStoreClient);
+        return sdKsApi.apisApiIdSdksLanguageGetWithHttpInfo(apiId, language, tenantDomain);
 
     }
 

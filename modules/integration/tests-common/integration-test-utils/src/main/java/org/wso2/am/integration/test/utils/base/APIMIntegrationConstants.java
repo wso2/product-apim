@@ -30,7 +30,7 @@ public class APIMIntegrationConstants {
     public static final String AM_GATEWAY_WRK_INSTANCE = "gateway-wrk";
     public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
     public static final String BACKEND_SERVER_INSTANCE = "backend-server";
-    public static final String REST_API_VERSION = "v0.15";
+    public static final String REST_API_VERSION = "v0.16";
 
     //Response element names
     public static final String API_RESPONSE_ELEMENT_NAME_ERROR = "error";
@@ -51,6 +51,7 @@ public class APIMIntegrationConstants {
     public static final String JAXRS_BASIC_WEB_APP_NAME = "jaxrs_basic";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
     public static final String GRAPHQL_API_WEB_APP_NAME = "am-graphQL-sample";
+    public static final String AUDIT_API_WEB_APP_NAME = "am-auditApi-sample";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";
@@ -76,6 +77,8 @@ public class APIMIntegrationConstants {
     public static final String APPLICATION_JSON_MEDIA_TYPE = "application/json";
 
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
+
+    public static final String SECONDARY_USER_STORE = "secondary";
 
     public static final class APPLICATION_TIER {
         public static final String UNLIMITED = "Unlimited";
@@ -126,7 +129,7 @@ public class APIMIntegrationConstants {
     }
 
     public static final String REST_API_ADMIN_CONTEXT = "api/am/admin/";
-    public static final String REST_API_ADMIN_VERSION = "v0.15";
+    public static final String REST_API_ADMIN_VERSION = "v0.16";
     public static final String REST_API_ADMIN_CONTEXT_FULL_0 = REST_API_ADMIN_CONTEXT + REST_API_ADMIN_VERSION;
     public static final String REST_API_ADMIN_IMPORT_API_RESOURCE = "/import/api";
     public static final String REST_API_ADMIN_EXPORT_API_RESOURCE = "/export/api";

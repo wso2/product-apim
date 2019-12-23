@@ -1,6 +1,6 @@
 # SubscriptionsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1.0*
+All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -13,11 +13,11 @@ Method | HTTP request | Description
 
 <a name="subscriptionsGet"></a>
 # **subscriptionsGet**
-> SubscriptionListDTO subscriptionsGet(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch)
+> SubscriptionListDTO subscriptionsGet(apiId, applicationId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch)
 
 Get all subscriptions 
 
-This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1.0/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
+This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of  1. Retrieving applications which are subscibed to a specific API. &#x60;GET https://localhost:9443/api/am/store/v1/subscriptions?apiId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  2. Retrieving APIs which are subscribed by a specific application. &#x60;GET https://localhost:9443/api/am/store/v1/subscriptions?applicationId&#x3D;c43a325c-260b-4302-81cb-768eafaa3aed&#x60;  **IMPORTANT:** * It is mandatory to provide either **apiId** or **applicationId**. 
 
 ### Example
 ```java
@@ -37,14 +37,13 @@ OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 SubscriptionsApi apiInstance = new SubscriptionsApi();
 String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
 String applicationId = "applicationId_example"; // String | **Application Identifier** consisting of the UUID of the Application. 
-String apiType = "apiType_example"; // String | **API TYPE** Identifies the type API(API or API_PRODUCT). 
 String groupId = "groupId_example"; // String | Application Group Id 
 String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
 Integer limit = 25; // Integer | Maximum size of resource array to return. 
 String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
 try {
-    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, apiType, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
+    SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, applicationId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SubscriptionsApi#subscriptionsGet");
@@ -58,7 +57,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  | [optional]
  **applicationId** | **String**| **Application Identifier** consisting of the UUID of the Application.  | [optional]
- **apiType** | **String**| **API TYPE** Identifies the type API(API or API_PRODUCT).  | [optional]
  **groupId** | **String**| Application Group Id  | [optional]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]

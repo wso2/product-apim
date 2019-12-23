@@ -19,6 +19,7 @@
 
 package org.wso2.am.framework.extensions;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.Constants;
@@ -33,6 +34,7 @@ import org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerEx
 import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.FileManager;
+
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
@@ -47,10 +49,11 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
 
     @Override
     public void initiate() {
+
         configureProduct();
 
         try {
-            if(getParameters().get(ExtensionConstants.SERVER_STARTUP_PORT_OFFSET_COMMAND) == null) {
+            if (getParameters().get(ExtensionConstants.SERVER_STARTUP_PORT_OFFSET_COMMAND) == null) {
                 getParameters().put(ExtensionConstants.SERVER_STARTUP_PORT_OFFSET_COMMAND, "0");
             }
             executionEnvironment =
@@ -62,6 +65,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
 
     @Override
     public void onExecutionStart() throws AutomationFrameworkException {
+
         try {
             if (executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
                 String carbonHome = serverManager.startServer();
@@ -74,6 +78,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
 
     @Override
     public void onExecutionFinish() throws AutomationFrameworkException {
+
         try {
             if (executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
                 serverManager.stopServer();
@@ -93,11 +98,47 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                 String resourcePath = getAMResourceLocation();
 
                 try {
+                    String customHandlerTargetPath =
+                            serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
+                                    "components" + File.separator + "lib";
+                    String userStorePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                            + "deployment" + File.separator + "server" + File.separator + "userstores";
+                    String databasePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                            + "database";
+
                     FileManager.copyFile(new File(resourcePath + File.separator + "configFiles" + File.separator +
                                     "originalFile" + File.separator + "deployment.toml")
                             , serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
-                                    "conf" + File.separator +"deployment.toml");
+                                    "conf" + File.separator + "deployment.toml");
 
+                    File userStoreFile = new File(userStorePath);
+                    if (!userStoreFile.exists() && !userStoreFile.mkdir()) {
+                        log.error("Error while creating the user store directory : "
+                                + userStorePath);
+                    }
+
+                    FileUtils.copyFile(new File(
+                                    resourcePath + File.separator + "configFiles" + File.separator + "userstores"
+                                            + File.separator + "database" + File.separator + "WSO2SEC_DB.mv.db"),
+                            new File(databasePath + File.separator + "WSO2SEC_DB.mv.db"));
+
+                    FileManager.copyFile(new File(
+                                    resourcePath + File.separator + "configFiles" + File.separator + "userstores"
+                                            + File.separator + "secondary.xml"),
+                            userStorePath + File.separator + "secondary.xml");
+
+                    FileManager.copyJarFile(new File(getAMResourceLocation() + File.separator +
+                                    "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"),
+                            customHandlerTargetPath);
+                    String customHandlerSourcePath = getAMResourceLocation() + File.separator + "lifecycletest"
+                            + File.separator + CUSTOM_AUTH_HANDLER_JAR;
+                    FileManager.copyJarFile(new File(customHandlerSourcePath), customHandlerTargetPath);
+                    String log4jPropertiesFile = getAMResourceLocation() + File.separator + "lifecycletest" +
+                            File.separator + "log4j2.properties";
+                    String log4jPropertiesTargetLocation =
+                            serverManager.getCarbonHome() + File.separator + "repository" + File.separator + "conf"
+                                    + File.separator + "log4j2.properties";
+                    FileManager.copyFile(new File(log4jPropertiesFile), log4jPropertiesTargetLocation);
                 } catch (IOException e) {
                     throw new AutomationFrameworkException(e.getMessage(), e);
                 }
@@ -107,10 +148,12 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
     }
 
     private String getAMResourceLocation() {
+
         return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" + File.separator + "AM";
     }
 
     private static void handleException(String msg, Exception e) {
+
         log.error(msg, e);
         throw new RuntimeException(msg, e);
     }

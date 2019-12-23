@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -53,12 +54,12 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     private final String description = "This is test API create by API manager integration test";
     private final String APIVersion = "1.0.0";
 
-    private final String CARBON_SUPER_SUBSCRIBER_USERNAME = "directUrlUser";
+    private String CARBON_SUPER_SUBSCRIBER_USERNAME = "directUrlUser";
     private final char[] CARBON_SUPER_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
-    private final String CARBON_SUPER_SUBSCRIBER_1_USERNAME = "directUrlUser1";
+    private String CARBON_SUPER_SUBSCRIBER_1_USERNAME = "directUrlUser1";
     private final char[] CARBON_SUPER_SUBSCRIBER_1_PASSWORD = "password@123".toCharArray();
-    private final String INTERNAL_ROLE_SUBSCRIBER = "directUrlRole";
-    private final String INTERNAL_ROLE_SUBSCRIBER_1 = "directUrlRole1";
+    private String INTERNAL_ROLE_SUBSCRIBER = "directUrlRole";
+    private String INTERNAL_ROLE_SUBSCRIBER_1 = "directUrlRole1";
     private final String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
 
     private APIRequest apiRequest;
@@ -78,9 +79,20 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
 
         //adding new role and two users
-        userManagementClient =
-                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), user.getUserName(),
-                        user.getPassword());
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+
+        if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
+            INTERNAL_ROLE_SUBSCRIBER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + INTERNAL_ROLE_SUBSCRIBER;
+            INTERNAL_ROLE_SUBSCRIBER_1 =
+                    APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + INTERNAL_ROLE_SUBSCRIBER_1;
+            CARBON_SUPER_SUBSCRIBER_USERNAME =
+                    APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + CARBON_SUPER_SUBSCRIBER_USERNAME;
+            CARBON_SUPER_SUBSCRIBER_1_USERNAME =
+                    APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + CARBON_SUPER_SUBSCRIBER_1_USERNAME;
+        }
+
         userManagementClient.addRole(INTERNAL_ROLE_SUBSCRIBER, null, permissions);
         userManagementClient.addRole(INTERNAL_ROLE_SUBSCRIBER_1, null, permissions);
         userManagementClient.addUser(CARBON_SUPER_SUBSCRIBER_USERNAME, String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD),
@@ -151,7 +163,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        if(apiID !=null) {
+        if (apiID != null) {
             restAPIPublisher.deleteAPIByID(apiID);
         }
         userManagementClient.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
@@ -163,7 +175,11 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+                new Object[] { TestUserMode.TENANT_ADMIN },
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+        };
     }
 
 }

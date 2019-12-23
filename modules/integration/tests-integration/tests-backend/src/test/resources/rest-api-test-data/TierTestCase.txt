@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "GET",
-                    "url": "api/am/admin/v0.15/throttling/policies/subscription",
+                    "url": "api/am/admin/v0.16/throttling/policies/subscription",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -29,7 +29,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/admin/v0.15/throttling/policies/subscription",
+                    "url": "api/am/admin/v0.16/throttling/policies/subscription",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -62,7 +62,7 @@
                 },
                 "data": {
                     "method": "PUT",
-                    "url": "api/am/admin/v0.15/throttling/policies/subscription/{policyId}",
+                    "url": "api/am/admin/v0.16/throttling/policies/subscription/{policyId}",
                     "query-parameters": {
                         "tierName": "NewTier",
                         "Content-Type": "application/json"
@@ -93,7 +93,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/admin/v0.15/throttling/policies/subscription/{policyId}",
+                    "url": "api/am/admin/v0.16/throttling/policies/subscription/{policyId}",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"

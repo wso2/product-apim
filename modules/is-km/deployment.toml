@@ -33,7 +33,6 @@ url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=T
 username = "wso2carbon"
 password = "wso2carbon"
 
-
 [keystore.primary]
 name = "wso2carbon.jks"
 password = "wso2carbon"
@@ -86,3 +85,5 @@ enable_data_publishing = false
 enable_policy_deploy = false
 enable_blacklist_condition = false
 enable_decision_connection = false
+receiver_auth_url = "tcp://localhost:9711"
+receiver_url = "tcp://localhost:9611"

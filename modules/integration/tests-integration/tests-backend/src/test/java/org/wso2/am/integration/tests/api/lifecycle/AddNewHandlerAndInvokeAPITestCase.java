@@ -68,7 +68,6 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private static final String API_GET_ENDPOINT_METHOD = "/handler";
     private static final String CUSTOM_AUTHORIZATION = "CustomAuthKey 123456789";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String CUSTOM_AUTH_HANDLER_JAR = "CustomAPIAuthenticationHandler-1.0.0.jar";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
@@ -77,8 +76,10 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private SynapseConfigAdminClient synapseConfigAdminClient;
     private String gatewaySession;
     private String apiEndPointUrl;
-    private ServerConfigurationManager serverConfigurationManager;
-    private String customHandlerTargetPath;
+
+    public AddNewHandlerAndInvokeAPITestCase() {
+
+    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
@@ -88,23 +89,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "synapseconfig.xml";
         newSynapseConfig = readFile(synapseConfigArtifactsPath);
-        String customHandlerSourcePath =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
-                        File.separator + "lifecycletest" + File.separator + "CustomAPIAuthenticationHandler-1.0.0.jar";
-        customHandlerTargetPath =
-                CARBON_HOME + File.separator + "repository" + File.separator + "components" + File.separator + "lib";
-        FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath, CUSTOM_AUTH_HANDLER_JAR);
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        String log4jPropertiesFile =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "lifecycletest" + File.separator + "log4j2.properties";
-        String log4jPropertiesTargetLocation =
-                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "log4j2.properties";
-        serverConfigurationManager.applyConfigurationWithoutRestart
-                (new File(log4jPropertiesFile), new File(log4jPropertiesTargetLocation), true);
-        serverConfigurationManager.restartGracefully();
-        super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -190,7 +175,6 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
             RemoteException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        FileManager.deleteFile(customHandlerTargetPath + File.separator + CUSTOM_AUTH_HANDLER_JAR);
 
     }
 

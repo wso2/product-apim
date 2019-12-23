@@ -36,6 +36,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,8 +97,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.")
-    public void testSubscriptionOfOldAPI()
-            throws APIManagerIntegrationTestException {
+    public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException, XPathExpressionException {
         // Subscribe old api version (1.0.0)
         waitForAPIDeploymentSync(apiRequest.getProvider(),
                 apiRequest.getName(),
