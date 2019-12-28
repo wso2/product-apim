@@ -115,6 +115,10 @@ under the License.
                                     <name>usedefaultlisteners</name>
                                     <value>false</value>
                                 </property>
+                                <property>
+                                    <name>org.apache.commons.logging.Log</name>
+                                    <value>org.apache.commons.logging.impl.Log4JLogger</value>
+                                </property>
                                 <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
                                 <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
@@ -514,6 +518,16 @@ under the License.
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-log4j2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
@@ -526,6 +540,22 @@ under the License.
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-log4j2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -652,16 +682,6 @@ under the License.
             <version>1.7.28</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.28</version>
-        </dependency>
-        <dependency>
             <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
             <version>2.0.0.wso2v1</version>
@@ -674,7 +694,6 @@ under the License.
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
@@ -700,6 +719,11 @@ under the License.
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.orbit.com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

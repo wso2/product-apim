@@ -309,4 +309,11 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
         </classes>
     </test>
+    <test name="apim-integration-tests-external-idp" preserve-order="true" parallel="false"
+          group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestSuite"/>
+            <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
+        </classes>
+    </test>
 </suite>
