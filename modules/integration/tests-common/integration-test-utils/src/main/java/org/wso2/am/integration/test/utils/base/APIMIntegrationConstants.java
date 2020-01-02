@@ -133,6 +133,7 @@ public class APIMIntegrationConstants {
     public static final String REST_API_ADMIN_CONTEXT_FULL_0 = REST_API_ADMIN_CONTEXT + REST_API_ADMIN_VERSION;
     public static final String REST_API_ADMIN_IMPORT_API_RESOURCE = "/import/api";
     public static final String REST_API_ADMIN_EXPORT_API_RESOURCE = "/export/api";
+    public static final String REST_API_ADMIN_API_CATEGORIES_RESOURCE = "/api-categories";
 
     public enum ResourceAuthTypes {
         APPLICATION_USER("Application_User"), NONE("None"), APPLICATION("Application"),

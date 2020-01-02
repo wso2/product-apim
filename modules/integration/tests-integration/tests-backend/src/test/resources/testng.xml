@@ -157,6 +157,7 @@
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
         </classes>
     </test>
 
