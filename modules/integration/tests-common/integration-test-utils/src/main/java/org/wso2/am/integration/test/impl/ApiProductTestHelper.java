@@ -70,7 +70,7 @@ public class ApiProductTestHelper {
 
         // Validate that APIProduct resources returned in response data are same as originally selected API resources
         List<ProductAPIDTO> responseResources = responseData.getApis();
-        Assert.assertEquals(new HashSet<>(responseResources), new HashSet<>(resourcesForProduct));
+        verifyAPIProductDto(responseResources,resourcesForProduct);
 
         // Validate mandatory fields returned in response data
         Assert.assertEquals(responseData.getProvider(), provider);
@@ -79,6 +79,41 @@ public class ApiProductTestHelper {
 
 
         return responseData;
+    }
+
+    private void verifyAPIProductDto(List<ProductAPIDTO> expectedProduct, List<ProductAPIDTO> actualProduct) {
+
+        for (ProductAPIDTO expectedAPI : expectedProduct) {
+            ProductAPIDTO actual = null;
+            for (ProductAPIDTO actualAPI : actualProduct) {
+                if (expectedAPI.getName().equals(actualAPI.getName())) {
+                    actual = actualAPI;
+                    break;
+                }
+            }
+            Assert.assertNotNull(actual);
+            Assert.assertNotNull(expectedAPI.getOperations());
+            Assert.assertNotNull(actual.getOperations());
+            Assert.assertEquals(actual.getOperations().size(), expectedAPI.getOperations().size());
+            for (APIOperationsDTO actualOperation : actual.getOperations()) {
+                APIOperationsDTO matchedOperation = null;
+                for (APIOperationsDTO expectedOperation : expectedAPI.getOperations()) {
+                    if (actualOperation.getTarget().equals(expectedOperation.getTarget()) &&
+                            actualOperation.getVerb().equals(expectedOperation.getVerb())) {
+                        matchedOperation = expectedOperation;
+                        break;
+                    }
+                }
+                Assert.assertNotNull(matchedOperation);
+                Assert.assertEquals(actualOperation.getAuthType(), matchedOperation.getAuthType());
+                Assert.assertEquals(new HashSet(actualOperation.getScopes()),
+                        new HashSet(matchedOperation.getScopes()));
+                Assert.assertEquals(new HashSet(actualOperation.getUsedProductIds()),
+                        new HashSet(matchedOperation.getUsedProductIds()));
+                Assert.assertEquals(actualOperation.getThrottlingPolicy(),
+                        matchedOperation.getThrottlingPolicy());
+            }
+        }
     }
 
     public void verfiyApiProductInPublisher(APIProductDTO responseData) throws ApiException {
