@@ -46,7 +46,12 @@
       "system.parameter.profile": "traffic-manager"
     },
     "default": {
-      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
+      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
+      "enabled_global_handlers": [
+        "external_call_logger"
+      ],
+      "synapse_handlers.external_call_logger.name": "externalCallLogger",
+      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
     }
   },
   "apim.jwt.encoding": {
