@@ -149,13 +149,32 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
     @Test(groups = {"wso2.am"}, description = "Test the API tag visibility as a authorised user",
             dependsOnMethods = "testAPITagVisibilityAnonymousUser")
     public void testAPITagVisibilityAuthorisedUser() throws Exception {
-        List<TagDTO> tagDto = apiStoreClientAllowedUser.getAllTags().getList();
+        List<TagDTO> tagDtoList = apiStoreClientAllowedUser.getAllTags().getList();
         List<String> tagList = new ArrayList<>();
-        tagDto.forEach((tempDto) -> {
-            tagList.add(tempDto.getValue());
-        });
+        for (TagDTO tempTagDTO : tagDtoList) {
+            tagList.add(tempTagDTO.getValue());
+        }
         Assert.assertTrue(tagList.contains(TAGS_PUBLIC_API),
                 "Public visibility tag is not available for authorised user");
+        int retry = 10;
+        if (!tagList.contains(TAGS_RESTRICTED_API)) {
+            Thread.sleep(3000);
+            for (int i = 0; i < retry; i++) {
+                tagDtoList = apiStoreClientAllowedUser.getAllTags().getList();
+                tagList = new ArrayList<>();
+                for (TagDTO tempTagDTO : tagDtoList) {
+                    tagList.add(tempTagDTO.getValue());
+                }
+
+                if (!tagList.contains(TAGS_RESTRICTED_API)) {
+                    Thread.sleep(3000);
+                    log.info("Waiting for the API Tags");
+                } else {
+                    break;
+                }
+            }
+        }
+
         Assert.assertTrue(tagList.contains(TAGS_RESTRICTED_API),
                 "Restricted visibility tag is not available for authorised user");
     }
