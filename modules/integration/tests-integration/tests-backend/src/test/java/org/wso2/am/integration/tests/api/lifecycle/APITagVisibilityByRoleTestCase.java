@@ -167,7 +167,6 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
                 }
 
                 if (!tagList.contains(TAGS_RESTRICTED_API)) {
-                    retry++;
                     Thread.sleep(3000);
                     log.info("Waiting for the API Tags");
                 } else {
