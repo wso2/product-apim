@@ -36,7 +36,7 @@
 <%@ page import="org.wso2.carbon.base.ServerConfiguration" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.EndpointConfigManager" %>
 
-<jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
+<jsp:directive.include file="init-loginform-action-url.jsp"/>
 
 <script>
     function goBack() {
