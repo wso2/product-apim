@@ -94,25 +94,7 @@ public class ApiProductTestHelper {
             Assert.assertNotNull(actual);
             Assert.assertNotNull(expectedAPI.getOperations());
             Assert.assertNotNull(actual.getOperations());
-            Assert.assertEquals(actual.getOperations().size(), expectedAPI.getOperations().size());
-            for (APIOperationsDTO actualOperation : actual.getOperations()) {
-                APIOperationsDTO matchedOperation = null;
-                for (APIOperationsDTO expectedOperation : expectedAPI.getOperations()) {
-                    if (actualOperation.getTarget().equals(expectedOperation.getTarget()) &&
-                            actualOperation.getVerb().equals(expectedOperation.getVerb())) {
-                        matchedOperation = expectedOperation;
-                        break;
-                    }
-                }
-                Assert.assertNotNull(matchedOperation);
-                Assert.assertEquals(actualOperation.getAuthType(), matchedOperation.getAuthType());
-                Assert.assertEquals(new HashSet(actualOperation.getScopes()),
-                        new HashSet(matchedOperation.getScopes()));
-                Assert.assertEquals(new HashSet(actualOperation.getUsedProductIds()),
-                        new HashSet(matchedOperation.getUsedProductIds()));
-                Assert.assertEquals(actualOperation.getThrottlingPolicy(),
-                        matchedOperation.getThrottlingPolicy());
-            }
+            verifyOperations(actual.getOperations(), expectedAPI.getOperations());
         }
     }
 
@@ -137,8 +119,84 @@ public class ApiProductTestHelper {
 
         // Validate APIProduct by Id
         APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(responseData.getId());
-
+        verifyAPIProductDTOFromPublisher(returnedProduct,responseData);
         Assert.assertEquals(returnedProduct, responseData);
+    }
+
+    private void verifyAPIProductDTOFromPublisher(APIProductDTO returnedProduct, APIProductDTO responseData) {
+        Assert.assertEquals(returnedProduct.getId(), responseData.getId());
+        Assert.assertEquals(returnedProduct.getName(), responseData.getName());
+        Assert.assertEquals(returnedProduct.getContext(), responseData.getContext());
+        Assert.assertEquals(returnedProduct.getDescription(), responseData.getDescription());
+        Assert.assertEquals(returnedProduct.getProvider(), responseData.getProvider());
+        Assert.assertEquals(returnedProduct.isHasThumbnail(), responseData.isHasThumbnail());
+        Assert.assertEquals(returnedProduct.getState(), responseData.getState());
+        Assert.assertEquals(returnedProduct.isEnableSchemaValidation(), responseData.isEnableSchemaValidation());
+        Assert.assertEquals(returnedProduct.isResponseCachingEnabled(), responseData.isResponseCachingEnabled());
+        Assert.assertEquals(returnedProduct.getCacheTimeout(), responseData.getCacheTimeout());
+        Assert.assertEquals(returnedProduct.getVisibility(), responseData.getVisibility());
+        Assert.assertEquals(returnedProduct.getVisibleRoles(), responseData.getVisibleRoles());
+        Assert.assertEquals(returnedProduct.getVisibleTenants(), responseData.getVisibleTenants());
+        Assert.assertEquals(returnedProduct.getAccessControl(), responseData.getAccessControl());
+        Assert.assertEquals(returnedProduct.getAccessControlRoles(), responseData.getAccessControlRoles());
+        Assert.assertEquals(returnedProduct.getGatewayEnvironments(), responseData.getGatewayEnvironments());
+        Assert.assertEquals(returnedProduct.getApiType(), responseData.getApiType());
+        Assert.assertEquals(returnedProduct.getTransport(), responseData.getTransport());
+        Assert.assertEquals(returnedProduct.getTags(), responseData.getTags());
+        Assert.assertEquals(returnedProduct.getPolicies(), responseData.getPolicies());
+        Assert.assertEquals(returnedProduct.getApiThrottlingPolicy(), responseData.getApiThrottlingPolicy());
+        Assert.assertEquals(returnedProduct.getAuthorizationHeader(), responseData.getAuthorizationHeader());
+        Assert.assertEquals(returnedProduct.getSecurityScheme(), responseData.getSecurityScheme());
+        Assert.assertEquals(returnedProduct.getSubscriptionAvailability(), responseData.getSubscriptionAvailability());
+        Assert.assertEquals(returnedProduct.getSubscriptionAvailableTenants(),
+                responseData.getSubscriptionAvailableTenants());
+        Assert.assertEquals(returnedProduct.getAdditionalProperties(), responseData.getAdditionalProperties());
+        Assert.assertEquals(returnedProduct.getMonetization(), responseData.getMonetization());
+        Assert.assertEquals(returnedProduct.getBusinessInformation(), responseData.getBusinessInformation());
+        Assert.assertEquals(returnedProduct.getCorsConfiguration(), responseData.getCorsConfiguration());
+        Assert.assertEquals(returnedProduct.getCreatedTime(), responseData.getCreatedTime());
+        Assert.assertEquals(returnedProduct.getLastUpdatedTime(), responseData.getLastUpdatedTime());
+        Assert.assertEquals(returnedProduct.getScopes(), responseData.getScopes());
+        verifyProductAPIDto(returnedProduct.getApis(),responseData.getApis());
+    }
+
+    private void verifyProductAPIDto(List<ProductAPIDTO> actual, List<ProductAPIDTO> expected) {
+
+        for (ProductAPIDTO actualAPI : actual) {
+            ProductAPIDTO matchedAPI = null;
+            for (ProductAPIDTO expectedAPI : expected) {
+                if (actualAPI.getName().equals(expectedAPI.getName())) {
+                    matchedAPI = expectedAPI;
+                    break;
+                }
+            }
+            Assert.assertNotNull(matchedAPI);
+            verifyOperations(actualAPI.getOperations(),matchedAPI.getOperations());
+        }
+
+    }
+
+    private void verifyOperations(List<APIOperationsDTO> actual, List<APIOperationsDTO> expected) {
+        Assert.assertEquals(actual.size(), expected.size());
+        for (APIOperationsDTO actualOperation : actual) {
+            APIOperationsDTO matchedOperation = null;
+            for (APIOperationsDTO expectedOperation : expected) {
+                if (actualOperation.getTarget().equals(expectedOperation.getTarget()) &&
+                        actualOperation.getVerb().equals(expectedOperation.getVerb())) {
+                    matchedOperation = expectedOperation;
+                    break;
+                }
+            }
+            Assert.assertNotNull(matchedOperation);
+            Assert.assertEquals(actualOperation.getAuthType(), matchedOperation.getAuthType());
+            Assert.assertEquals(new HashSet(actualOperation.getScopes()),
+                    new HashSet(matchedOperation.getScopes()));
+            Assert.assertEquals(new HashSet(actualOperation.getUsedProductIds()),
+                    new HashSet(matchedOperation.getUsedProductIds()));
+            Assert.assertEquals(actualOperation.getThrottlingPolicy(),
+                    matchedOperation.getThrottlingPolicy());
+        }
+
     }
 
     public org.wso2.am.integration.clients.store.api.v1.dto.APIDTO verifyApiProductInPortal(APIProductDTO apiProductDTO)
