@@ -6,6 +6,9 @@ mode = "single" #single or ha
 base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
 server_role = "default"
 
+[user_store]
+type = "database_unique_id"
+
 [super_admin]
 username = "admin"
 password = "admin"
