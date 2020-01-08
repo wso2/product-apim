@@ -549,12 +549,6 @@
             <excludes>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
-                <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
-                <exclude>accountrecoveryendpoint/username-recovery-complete.jsp</exclude>
-                <exclude>accountrecoveryendpoint/self-registration-process.jsp</exclude>
-                <exclude>accountrecoveryendpoint/password-reset.jsp</exclude>
-                <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
-                <exclude>accountrecoveryendpoint/password-recovery-notify.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
@@ -586,12 +580,6 @@
             <includes>
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
-                <include>self-registration-username-request.jsp</include>
-                <include>username-recovery-complete.jsp</include>
-                <include>self-registration-process.jsp</include>
-                <include>password-reset.jsp</include>
-                <include>self-registration-with-verification.jsp</include>
-                <include>password-recovery-notify.jsp</include>
             </includes>
         </fileSet>
 
