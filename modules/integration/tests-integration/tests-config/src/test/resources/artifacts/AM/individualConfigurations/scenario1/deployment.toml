@@ -12,7 +12,7 @@ password = "admin"
 create_admin_account = true
 
 [user_store]
-type = "database"
+type = "database_unique_id"
 
 [database.apim_db]
 type = "h2"

@@ -12,7 +12,7 @@ password = "admin"
 create_admin_account = true
 
 [user_store]
-type = "database"
+type = "database_unique_id"
 user_store.properties.IsEmailUserName = true
 
 
