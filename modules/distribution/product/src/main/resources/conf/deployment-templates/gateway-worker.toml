@@ -4,7 +4,7 @@ node_ip = "127.0.0.1"
 server_role = "gateway-worker"
 
 [user_store]
-type = "database"
+type = "database_unique_id"
 
 [super_admin]
 username = "admin"
