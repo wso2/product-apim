@@ -80,6 +80,17 @@
             </button>
         </div>
     </div>
+</div>
+
+<!-- footer -->
+<%
+    File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
+    if (footerFile.exists()) {
+%>
+<jsp:include page="extensions/footer.jsp"/>
+<% } else { %>
+<jsp:directive.include file="includes/footer.jsp"/>
+<% } %>
 
     <script type="application/javascript">
         $(document).ready(function () {
