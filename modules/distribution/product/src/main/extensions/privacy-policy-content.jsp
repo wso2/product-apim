@@ -6,7 +6,7 @@
   ~ in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
-  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~    http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing,
   ~ software distributed under the License is distributed on an
@@ -14,23 +14,23 @@
   ~ KIND, either express or implied.  See the License for the
   ~ specific language governing permissions and limitations
   ~ under the License.
-  --%>
+--%>
 
 <!-- page content -->
-<div class="row">
-    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
-        <div id="toc"></div>
-    </div>
-    <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
-        <!-- content -->
-        <div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 col-centered wr-content wr-login col-centered padding-bottom-100">
+<div class="ui grid">
+    <div class="two column row"></div>
+        <div class="four wide computer four wide tablet column">
+            <div id="toc" class="ui segment toc"></div>
+        </div>
+        <div class="twelve wide computer twelve wide tablet column">
+            <!-- content -->
             <div>
-                <h2 class="wr-title uppercase blue-bg padding-double white boarder-bottom-blue margin-none">
-                    WSO2 API Manager - Privacy Policy
-                </h2>
-            </div>
-            <div class="boarder-all ">
-                <div class="clearfix"></div>
+                <div>
+                    <h1>
+                        WSO2 API Manager - Privacy Policy
+                    </h1>
+                </div>
+                <div>
                 <%-- Customizable content. Due to this nature, i18n is not implemented for this section --%>
                 <div id="privacyPolicy" class="padding-double">
                     <h4><a href="https://wso2.com/api-management/"><strong>About WSO2 API Manager</strong></a></h4>
@@ -39,7 +39,7 @@
                     <h2 id="privacy-policy"><strong>Privacy Policy</strong></h2>
                     <p>This section explains how API-M captures your personal information, purpose of capturing, and the retention of your personal information.</p>
                     <p>Please note that this policy is for reference only, and is applicable for the software as a product. WSO2 Inc., or its developers have no access to the information held within API-M. Please refer &ldquo;Disclaimer&rdquo; for more information.</p>
-                    <p>Entities, organisations or individuals controlling the use and administration of API-M should create their own privacy policies setting out the manner in which data is controlled or processed by the respective entity, organisation or individual.</p>                    
+                    <p>Entities, organisations or individuals controlling the use and administration of API-M should create their own privacy policies setting out the manner in which data is controlled or processed by the respective entity, organisation or individual.</p>
                     <div class="margin-bottom-double"></div>
                     <h2 id="what-are-the-personal-information">What are the personal information &quest;</h2>
                     <p>API-M considers anything related to you as your personal information. This includes, but is not limited to,</p>
@@ -138,10 +138,9 @@
                     </ol>
                 </div>
                 <%-- /Customizable content --%>
-                <div class="clearfix"></div>
             </div>
         </div>
         <!-- /content -->
-    </div>
+      </div>
+   </div>
 </div>
-

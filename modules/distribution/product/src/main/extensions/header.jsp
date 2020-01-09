@@ -122,3 +122,5 @@
         color: #ff5000;
     }
 </style>
+
+<script src="libs/jquery_3.4.1/jquery-3.4.1.js"></script>
