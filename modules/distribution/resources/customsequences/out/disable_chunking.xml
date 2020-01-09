@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse"
+          name="disable_chunking">
+        <property name="DISABLE_CHUNKING" value="true" scope="axis2" />
+</sequence>
