@@ -165,7 +165,11 @@
                     <h2 id="disclaimer">Disclaimer</h2>
                     <p>This cookie policy is only for illustrative purposes of the API-M product. The content in this policy is technically correct at the time of product shipment.
                       The organization which runs this API-M instance has the full authority and responsibility of the effective Cookie Policy.</p>
-                    <p>WSO2, its employees, partners, and affiliates do not have access to and do not require, store, process or control any of the data, including personal data contained in WSO2 IS. All data, including personal data is controlled and processed by the entity or individual running WSO2 IS.  WSO2, its employees partners and affiliates are not a data processor or a data controller within the meaning of any data privacy regulations.  WSO2 does not provide any warranties or undertake any responsibility or liability in connection with the lawfulness or the manner and purposes for which WSO2 IS is used by such entities or persons. </p>
+                    <p>WSO2, its employees, partners, and affiliates do not have access to and do not require, store, process or control any of the data,
+                    including personal data contained in WSO2 API-M. All data, including personal data is controlled and processed by the entity or individual
+                    running WSO2 API-M. WSO2, its employees partners and affiliates are not a data processor or a data controller within the meaning of any data privacy
+                    regulations. WSO2 does not provide any warranties or undertake any responsibility or liability in connection with the lawfulness or the manner and purposes for
+                    which WSO2 API-M is used by such entities or persons.</p>
                 </div>
                 <%-- /Customizable content --%>
             </div>
