@@ -120,7 +120,6 @@ public class ApiProductTestHelper {
         // Validate APIProduct by Id
         APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(responseData.getId());
         verifyAPIProductDTOFromPublisher(returnedProduct,responseData);
-        Assert.assertEquals(returnedProduct, responseData);
     }
 
     private void verifyAPIProductDTOFromPublisher(APIProductDTO returnedProduct, APIProductDTO responseData) {
