@@ -140,8 +140,8 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test delete API category",
-            dependsOnMethods = { "testAddAPICategory" })
+    @Test(groups = { "wso2.am" }, description = "Test get API categories",
+            dependsOnMethods = { "testUpdateAPICategory" })
     public void testGetAPICategoriesFromAdminAPI() throws Exception {
         try (CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();) {
             HttpGet get = new HttpGet(categoriesAdminAPIURL);
@@ -158,7 +158,8 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test delete API category")
+    @Test(groups = { "wso2.am" }, description = "Test delete API category", dependsOnMethods = {
+            "testGetAPICategoriesFromAdminAPI" })
     public void testDeleteAPICategory() throws Exception {
         try (CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();) {
             HttpDelete delete = new HttpDelete(categoriesAdminAPIURL + "/" + categoryId);
