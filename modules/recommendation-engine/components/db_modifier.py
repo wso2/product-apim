@@ -1,7 +1,9 @@
 # from dictionary_processor import *
 from recommendation import *
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-MIN_API_COUNT = 20
+MIN_API_COUNT = 1
 
 def add_api_to_db(API):
     update_API_dictionary(API)
@@ -10,24 +12,28 @@ def add_api_to_db(API):
 def delete_API_from_db(tenant,API_name):
     delete_API_dictionary(tenant, API_name)
     delete_api_id_db(tenant, API_name)
+    logging.debug("api " + API_name + " belongs to "+ tenant + " deleted from db")
 
 def add_application_to_db(application):
     time_stamp = get_current_time()
     application[TIME_STAMP] = time_stamp
     db_table = connect_db(APPLICATION_DETAILS)
     result = db_table.insert(application,check_keys=False)
+    logging.debug(str(application) + " was added to database")
 
-def update_application_in_db(app):
+def update_application_in_db(application):
     time_stamp = get_current_time()
     db_table = connect_db(APPLICATION_DETAILS)
-    app_identifier = { APPLICATION_ID: app[APPLICATION_ID] }
-    updated_values = { "$set": { APPLICATION_NAME: app[APPLICATION_NAME],
-                     APPLICATION_DESCRIPTION: app[APPLICATION_DESCRIPTION], TIME_STAMP: time_stamp } }
+    app_identifier = { APPLICATION_ID: application[APPLICATION_ID] }
+    updated_values = { "$set": { APPLICATION_NAME: application[APPLICATION_NAME],
+                     APPLICATION_DESCRIPTION: application[APPLICATION_DESCRIPTION], TIME_STAMP: time_stamp } }
     db_table.update_one(app_identifier, updated_values)
+    logging.debug(str(application) + " was updated in the database")
 
 def delete_application_from_db(app_ID):
     db_table = connect_db(APPLICATION_DETAILS)
     result = db_table.delete_one({APPLICATION_ID:app_ID})
+    logging.debug ("Application with ID " + str(app_ID) + " was deleted from the db")
 
 def add_search_query_to_db(search_query):
     """
@@ -40,6 +46,7 @@ def add_search_query_to_db(search_query):
     user = search_query[USER]
     update_user_list_db(user)
     result = db_table.insert(search_query,check_keys=False)
+    logging.debug (str(search_query) + " was added to db")
   
 def get_user_recommendations(user, tenant, recommendations_count):
     """
@@ -100,6 +107,7 @@ def update_API_id_db(API):
     else:
         entry = { TENANT : tenant, API_IDS: {API_name:API_id}}
         result = api_id_db.insert(entry,check_keys=False)  
+    print("update_API_id_db successfull")
 
 def delete_api_id_db(tenant, API_name):
     """
@@ -136,6 +144,7 @@ def update_API_dictionary(API):
     else:
         tenant_entry = { TENANT: tenant, API_DICTIONARIES: {API_name: API_dictionary}}
         result = dictionary_table.insert(tenant_entry,check_keys=False)
+    print("update_API_dictionary successfull")
     
 def delete_API_dictionary(tenant, API_name):
     """

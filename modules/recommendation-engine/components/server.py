@@ -10,7 +10,7 @@ import sys
 import atexit
 from apscheduler.scheduler import Scheduler
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 API_CRT = "utils/Certificates/server.crt"
 API_KEY = "utils/Certificates/server.key"
@@ -64,24 +64,49 @@ def recommend_apis():
         response = jsonify({'user': user, 'requestedTenantDomain': requested_tenant, 'userRecommendations':[]})
     return response
 
-@app.route('/addapi', methods=['POST']) 
+@app.route('/events', methods=['POST']) 
 @basic_auth.required
-def add_API():
+def receive_events():
+
+    data = request.data
+    jsonData = json.loads(data[36:-4].decode("utf-8"))
+
     try:
-        API_data = request.json
+        action = jsonData["action"]
+        payload = jsonData["payload"]
+        logging.debug("Event action: " + str(action) + " and payload: " + str(payload))
+        if (action == 'ADD_API'):
+            response = add_API(payload)
+        elif(action == 'DELETE_API'):
+            response = delete_API(payload)
+        elif(action == 'ADD_NEW_APPLICATION'):
+            response = add_application(payload)
+        elif(action == 'UPDATED_APPLICATION'):
+            response = update_application(payload)
+        elif(action == 'DELETE_APPLICATION'):
+            response = delete_application(payload)
+        elif(action == 'ADD_USER_SEARCHED_QUERY'):
+            response = add_search_query(payload)
+        elif(action == 'ADD_USER_CLICKED_API'):
+            response = add_clicked_API(payload)   
+    except Exception as e:
+        logging.error(e)
+        response = Response(status=500)
+    return response
+
+def add_API(API_data):
+    try:
         add_api_to_db(API_data)
         response = Response(status=200)    
     except Exception as e:
         logging.error(e)
         response = Response(status=500)
-    return Response()
+    return response
     
-@app.route('/deleteapi', methods=['DELETE'])
-@basic_auth.required
-def delete_API():
+def delete_API(payload):
     try:
-        tenant = request.args.get('tenant')
-        api = request.args.get('api')
+        tenant = payload['tenant']
+        api = payload['api_name']
         delete_API_from_db(tenant,api)
         response = Response(status=200)    
     except Exception as e:
@@ -89,11 +114,8 @@ def delete_API():
         response = Response(status=500)
     return response
 
-@app.route('/addapplication', methods=['POST']) 
-@basic_auth.required
-def add_application():
+def add_application(application_data):
     try:
-        application_data = request.json
         add_application_to_db(application_data)
         response = Response(status=200)    
     except Exception as e:
@@ -101,11 +123,8 @@ def add_application():
         response = Response(status=500)
     return response
 
-@app.route('/updateapplication', methods=['POST']) 
-@basic_auth.required
-def update_application():
+def update_application(application_data):
     try:
-        application_data = request.json
         update_application_in_db(application_data)
         response = Response(status=200)    
     except Exception as e:
@@ -113,11 +132,9 @@ def update_application():
         response = Response(status=500)
     return response
 
-@app.route('/deleteapplication', methods=['DELETE'])
-@basic_auth.required
-def delete_application():
+def delete_application(payload):
     try:
-        app_id = request.args.get('appid')
+        app_id = payload["appid"]
         delete_application_from_db(app_id)
         response = Response(status=200)    
     except Exception as e:
@@ -125,23 +142,17 @@ def delete_application():
         response = Response(status=500)
     return response
 
-@app.route('/addsearchquery', methods=['POST']) 
-@basic_auth.required
-def add_search_query():
+def add_search_query(search_query):
     try:
-        search_query = request.json
         add_search_query_to_db(search_query)
         response = Response(status=200)    
     except Exception as e:
         logging.error(e)
         response = Response(status=500)
-    return Response()
+    return response
 
-@app.route('/addclickedapi', methods=['POST']) 
-@basic_auth.required
-def add_clicked_API():
+def add_clicked_API(clicked_API):
     try:
-        clicked_API = request.json
         add_search_query_to_db(clicked_API)
         response = Response(status=200)
     except Exception as e:
