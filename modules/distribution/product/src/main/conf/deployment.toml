@@ -105,6 +105,10 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_type = "custom"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
+#[apim.idp]
+#authorize_endpoint = "https://localhost:${mgt.transport.https.port}/oauth2/authorize"
+#oidc_logout_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/logout"
+
 #[apim.jwt]
 #enable = true
 #encoding = "base64" # base64,base64url
