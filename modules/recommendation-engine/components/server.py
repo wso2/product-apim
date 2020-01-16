@@ -22,6 +22,7 @@ API_HOST = config_properties['host']
 API_PORT = config_properties['port']
 
 RECOMMENDATION_COUNT = config_properties['recommendations_count']
+MIN_API_COUNT = config_properties['minimum_APIs_to_start_recommendations']
 SEARCH_DETAILS_VALID_TIME = config_properties['search_details_valid_months']
 MINIMUM_SEARCH_QUERIES = config_properties['minimum_search_queries']
 MONGODB_URL = config_properties['mongodb_url']
@@ -54,7 +55,7 @@ def recommend_apis():
     try:
         requested_tenant = request.headers['Account']
         user = request.headers['User']
-        recommendations = get_user_recommendations(user, requested_tenant, RECOMMENDATION_COUNT)
+        recommendations = get_user_recommendations(user, requested_tenant, RECOMMENDATION_COUNT, MIN_API_COUNT)
         if recommendations:
             response = jsonify({'user': user, 'requestedTenantDomain': requested_tenant, 'userRecommendations': recommendations})
         else:

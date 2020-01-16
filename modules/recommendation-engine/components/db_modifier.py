@@ -3,8 +3,6 @@ from recommendation import *
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-MIN_API_COUNT = 1
-
 def add_api_to_db(API):
     update_API_dictionary(API)
     update_API_id_db(API)
@@ -48,7 +46,7 @@ def add_search_query_to_db(search_query):
     result = db_table.insert(search_query,check_keys=False)
     logging.debug (str(search_query) + " was added to db")
   
-def get_user_recommendations(user, tenant, recommendations_count):
+def get_user_recommendations(user, tenant, recommendations_count, min_api_count):
     """
     Get the recommendations as a list of api names. The no. of apis recommended is configurable.
     """
@@ -58,7 +56,7 @@ def get_user_recommendations(user, tenant, recommendations_count):
     if api_list.count()>0:
         API_ids = api_list[0][API_IDS]
         apis_count = len(API_ids.keys())
-        if apis_count>MIN_API_COUNT:
+        if apis_count>min_api_count:
             recommendations = generate_final_recommendation(user, tenant)
             recommended_api_list = []
             for api in recommendations[:int(recommendations_count)]:
