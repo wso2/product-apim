@@ -74,7 +74,7 @@ def receive_events():
     try:
         action = jsonData["action"]
         payload = jsonData["payload"]
-        logging.debug("Event action: " + str(action) + " and payload: " + str(payload))
+        print("Event action: " + str(action) + " and payload: " + str(payload))
         if (action == 'ADD_API'):
             response = add_API(payload)
         elif(action == 'DELETE_API'):
