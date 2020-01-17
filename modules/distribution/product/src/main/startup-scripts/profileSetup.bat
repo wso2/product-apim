@@ -93,7 +93,7 @@ call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -126,7 +126,7 @@ call :disableTransportSenderWSS
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war api#am#store.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
