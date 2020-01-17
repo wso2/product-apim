@@ -655,7 +655,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.15.war</include>
+                <include>client-registration#v0.16.war</include>
             </includes>
         </fileSet>
 

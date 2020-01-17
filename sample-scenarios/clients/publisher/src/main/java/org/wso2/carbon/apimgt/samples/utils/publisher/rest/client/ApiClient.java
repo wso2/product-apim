@@ -1503,7 +1503,7 @@ public class ApiClient {
             json.addProperty("owner", "admin");
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.15/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.16/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
@@ -1548,7 +1548,7 @@ public class ApiClient {
             json.addProperty("owner", adminUsername+ '@' + tenantDomain);
             json.addProperty("grantType", "client_credentials");
             // Calling DCR endpoint
-            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.15/register";
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.16/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
