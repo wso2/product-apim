@@ -56,10 +56,12 @@
   },
   "apim.jwt.encoding": {
     "base64": {
-      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayJWTGeneratorImpl"
     },
     "base64url": {
-      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator"
+      "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImplImpl"
     }
   },
   "apim.jwt.enable_user_claims": {
