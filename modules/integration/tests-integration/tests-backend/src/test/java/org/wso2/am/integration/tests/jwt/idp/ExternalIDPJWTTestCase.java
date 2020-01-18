@@ -155,7 +155,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(givenName,"first");
         Object firstName = jsonObject.get("http://wso2.org/claims/firstname");
         Assert.assertNotNull(firstName);
-        Assert.assertEquals(givenName,"last");
+        Assert.assertEquals(firstName,"last");
         Object email = jsonObject.get("http://wso2.org/claims/email");
         Assert.assertNotNull(email);
         Assert.assertEquals(givenName,"first@gmail.com");
