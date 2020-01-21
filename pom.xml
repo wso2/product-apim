@@ -1193,7 +1193,7 @@
         <carbon.analytics.common.version>5.2.20</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.11</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.12</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1243,7 +1243,7 @@
         <carbon.deployment.version>4.9.17</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.4.4</carbon.analytics.version>
+        <carbon.analytics.version>1.4.5</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.14.12</org.jaggery.version>
