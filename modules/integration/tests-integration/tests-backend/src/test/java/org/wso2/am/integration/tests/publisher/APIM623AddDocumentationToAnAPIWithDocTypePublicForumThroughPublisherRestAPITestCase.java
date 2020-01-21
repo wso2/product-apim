@@ -124,10 +124,11 @@ public class APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublishe
         documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
         documentDTO.setSourceUrl(docUrl);
         HttpResponse documentationResponse = restAPIPublisher.addDocument(apiId, documentDTO);
-        assertEquals(documentationResponse.getResponseCode(), 200, "Error while add documentation to API");
+        assertEquals(documentationResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error while add" +
+                "documentation to API");
         forumTypeDocumentId = documentationResponse.getData();
         HttpResponse docRemoveResponse = restAPIPublisher.removeDocumentation(apiId, forumTypeDocumentId);
-        assertEquals(Response.Status.OK.getStatusCode(), docRemoveResponse.getResponseCode(), "Error when removing" +
+        assertEquals(docRemoveResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error when removing" +
                 "documentation");
     }
 
