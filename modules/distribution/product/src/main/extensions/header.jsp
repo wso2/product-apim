@@ -19,14 +19,80 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
+<%@ page import="java.io.FileReader" %>
+<%@ page import="org.json.simple.parser.JSONParser"%>
+<%@ page import="org.json.simple.JSONObject"%>
+<%@ page import="java.net.URI"%>
+
+<%
+    String tenant = request.getParameter("tenantDomain");
+    if (tenant == null) {
+        String cb = request.getParameter("callback");
+        if (cb != null) {
+            URI uri = new URI(cb);
+            String decodedValue = uri.getQuery();
+            String[] params = decodedValue.split("&");
+            for (String param : params) {
+                if (param.startsWith("tenantDomain=")) {
+                    String[] keyVal = param.split("=");
+                    tenant = keyVal[1];
+                }
+            }
+        }
+    }
+
+    String headerTitle = "API Manager";
+    String pageTitle = "WSO2 API Manager";
+    String footerText = "WSO2 API Manager";
+    String faviconSrc = "libs/theme/assets/images/favicon.ico";
+
+    if (tenant != null) {
+        String current = new File(".").getCanonicalPath();
+        String tenantConfLocation = "/repository/deployment/server/jaggeryapps/devportal/site/public/tenant_themes";
+        String tenantThemeDirectoryName = tenant;
+        String tenantThemeFile =  current + tenantConfLocation + "/" + tenantThemeDirectoryName + "/" + "loginTheme.json";
+        File directory = new File(current + tenantConfLocation + "/" + tenantThemeDirectoryName);
+        if (directory != null && directory.exists() && directory.isDirectory()) {
+            File themeFile = new File(tenantThemeFile);
+            if (themeFile != null && themeFile.exists() && themeFile.isFile()) {
+                FileReader fr = new FileReader(themeFile);
+                JSONParser parser = new JSONParser();
+                Object obj = parser.parse(fr);
+                JSONObject jsonObject = (JSONObject) obj;
+
+                pageTitle = (String)jsonObject.get("title") != null ? (String)jsonObject.get("title") : "WSO2 API Manager";
+
+                JSONObject headerThemeObj = (JSONObject)jsonObject.get("header");
+                if (headerThemeObj != null) {
+                    headerTitle = (String)(headerThemeObj.get("title")) != null ? (String)(headerThemeObj.get("title")) : "API Manager";
+                }
+
+                JSONObject footerThemeObj = (JSONObject)jsonObject.get("footer");
+                if (footerThemeObj != null) {
+                    footerText = (String)(footerThemeObj.get("name"));
+                }
+
+                JSONObject faviconThemeObj = (JSONObject)jsonObject.get("favicon");
+                if (faviconThemeObj != null) {
+                    faviconSrc = (String)(faviconThemeObj.get("src"));
+                }
+            }
+        }
+    }
+    request.setAttribute("headerTitle", headerTitle);
+    request.setAttribute("pageTitle", pageTitle);
+    request.setAttribute("footerText", footerText);
+    request.setAttribute("faviconSrc", faviconSrc);
+%>
+
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="icon" href="libs/theme/assets/images/favicon.ico" type="image/x-icon"/>
+<link rel="icon" href=<%=request.getAttribute("faviconSrc")%> type="image/x-icon"/>
 <link href="libs/theme/wso2-default.min.css" rel="stylesheet">
 
-<title>WSO2 API Manager</title>
+<title><%=request.getAttribute("pageTitle")%></title>
 
 <style>
     html, body {

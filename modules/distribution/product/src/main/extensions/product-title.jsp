@@ -18,6 +18,7 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
+<% if ("API Manager".equals(request.getAttribute("headerTitle"))) { %>
 <div class="product-title">
     <div class="theme-icon inline auto transparent product-logo">
       <svg viewBox="29 -6.639 72 27.639">
@@ -29,3 +30,8 @@
       </div>
       <h1 class="product-title-text">API Manager</h1>
 </div>
+<% } else { %>
+<div class="product-title">
+    <h1 class="product-title-text"><%=request.getAttribute("headerTitle")%></h1>
+</div>
+<% } %>
