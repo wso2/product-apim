@@ -286,7 +286,7 @@
         <div class="column align-left buttons">
             <%
             String sp = request.getParameter("sp");
-            if (!"admin_apim_publisher".equals(sp) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
+            if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
                 type="submit"
                 onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL)%>';"
