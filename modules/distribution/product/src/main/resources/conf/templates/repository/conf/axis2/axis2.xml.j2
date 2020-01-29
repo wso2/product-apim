@@ -259,7 +259,7 @@
     <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
 
     <!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)-->
-{% if transport.jms.listener_enable is defined %}
+    {% if transport.jms.listener_enable is defined %}
         {% if transport.jms.listener_enable and transport.jms.listener|length==0 %}
     <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener"/>
         {% elif transport.jms.listener_enable %}
