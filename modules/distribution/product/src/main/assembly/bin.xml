@@ -1163,6 +1163,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>src/main/conf/sec.policy</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>sec.policy</destName>
+        </file>
+        <file>
             <source>src/main/conf/passthru-http.properties</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>passthru-http.properties</destName>
