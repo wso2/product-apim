@@ -248,3 +248,9 @@ global=true
 
 [apim.jwt_authenitcation]
 subscription_validation_via_km = true
+
+[apimgt.mutual_ssl]
+enable_client_validation = false
+
+[apim.certificate_reloader]
+period = "1m"
