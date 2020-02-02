@@ -69,6 +69,7 @@
 	    </outSequence>
 	</resource>
         <handlers>
+			<handler class="org.wso2.carbon.apimgt.gateway.handlers.common.MutualSSLCertificateHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
                   <property name="apiImplementationType" value="ENDPOINT"/>
