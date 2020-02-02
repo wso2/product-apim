@@ -774,7 +774,7 @@ public class RestAPIStoreImpl {
      * @param callbackUrl - callback url
      * @param description - description of app
      * @param tokenType   - token type of app (JWT ot DEFAULT)
-     * @return - http response of add application
+     * @return - ApplicationDTO of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,

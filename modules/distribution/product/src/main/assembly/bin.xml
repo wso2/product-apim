@@ -631,6 +631,15 @@
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
             </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>api#identity#oauth2#dcr#v1.1.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
@@ -1152,6 +1161,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>nhttp.properties</destName>
             <filtered>true</filtered>
+        </file>
+        <file>
+            <source>src/main/conf/sec.policy</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>sec.policy</destName>
         </file>
         <file>
             <source>src/main/conf/passthru-http.properties</source>

@@ -170,12 +170,9 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                    org.wso2.carbon.commons:org.wso2.carbon.system.statistics.feature:${carbon.commons.version}
+                                    org.wso2.carbon.commons:org.wso2.carbon.system.statistics.server.feature:${carbon.commons.version}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>
-                                    org.wso2.carbon.commons:org.wso2.carbon.soaptracer.feature:${carbon.commons.version}
-                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.security.mgt.feature:${carbon.identity.version}
@@ -190,9 +187,6 @@
                                 </featureArtifactDef>
 
                            
-                                <featureArtifactDef>
-                                    org.wso2.carbon.commons:org.wso2.carbon.message.flows.feature:${carbon.commons.version}
-                                </featureArtifactDef>
 
                               
                                 <featureArtifactDef>
@@ -577,9 +571,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.event.template.manager.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.event-processing:org.wso2.carbon.siddhi.tryit.feature:${carbon.event-processing.version}
-                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.websocket.feature:${carbon.mediation.version}
@@ -924,11 +915,7 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
+                                    <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -959,11 +946,7 @@
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
-                              
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
+
                             
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
@@ -1290,10 +1273,6 @@
                                     <version>${carbon.event-processing.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.siddhi.tryit.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.event.statistics.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
@@ -1454,7 +1433,7 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
+                                    <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -1513,11 +1492,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
-                                </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 
                                 <feature>
@@ -1972,11 +1946,7 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
+                                    <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -1992,12 +1962,6 @@
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
                                 
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-
-                               
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2486,11 +2450,7 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
+                                    <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -2505,12 +2465,7 @@
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                             
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2966,11 +2921,7 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
+                                    <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -2986,11 +2937,7 @@
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
                               
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                            
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -3323,10 +3270,6 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.soaptracer.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3346,12 +3289,7 @@
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
-                              
-                                <feature>
-                                    <id>org.wso2.carbon.message.flows.feature.group</id>
-                                    <version>${carbon.commons.version}</version>
-                                </feature>
-                            
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -3514,10 +3452,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.flow.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.siddhi.tryit.feature.group</id>
                                     <version>${carbon.event-processing.version}</version>
                                 </feature>
                                 <feature>

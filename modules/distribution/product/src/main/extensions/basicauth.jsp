@@ -284,7 +284,9 @@
 
     <div class="ui two column stackable grid">
         <div class="column align-left buttons">
-            <% if (isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
+            <%
+            String sp = request.getParameter("sp");
+            if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
                 type="submit"
                 onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL)%>';"
