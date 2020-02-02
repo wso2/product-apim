@@ -19,6 +19,7 @@ STOP_WORDS = "utils/stopList.txt"
 TIME_STAMP = 'time_stamp'
 USER = 'user'
 TENANT = 'tenant'
+ORG = 'org'
 
 API_LIST = 'api_list'
 USER_LIST = 'user_list'

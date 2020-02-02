@@ -38,7 +38,7 @@ def get_pearson_correlation(user,matrix):
     most_similar = correlation.sort_values(ascending=False)
     return most_similar
 
-def generate_recommendations(user, tenant, time_limit):
+def generate_recommendations(user, tenant, organization, time_limit):
     """
     @type  user: String
     @type   tenant: String
@@ -47,7 +47,7 @@ def generate_recommendations(user, tenant, time_limit):
     """
     API_dictionary_collection = connect_db(API_DICTIONARIES)
     user_dictionary = {}
-    tenant_entry = API_dictionary_collection.find({TENANT : tenant})
+    tenant_entry = API_dictionary_collection.find({ ORG:organization, TENANT : tenant })
     if tenant_entry.count()>0:
         API_dictionaries = tenant_entry[0][API_DICTIONARIES]
         user_dictionary = create_user_dictionary(user,time_limit)
@@ -68,7 +68,7 @@ def generate_recommendations(user, tenant, time_limit):
     else:
         return {}
 
-def get_recommendations_from_db(user, tenant):
+def get_recommendations_from_db(user, tenant, organization):
     """
     Get pre-processed recommendations stored in the db, for the given user for the requested tenant domain
 
@@ -78,7 +78,7 @@ def get_recommendations_from_db(user, tenant):
     @rtype  time_limit:   int
     """
     table_recommendations = connect_db(USER_RECOMMENDATIONS)
-    user_entry = table_recommendations.find({USER:user, TENANT: tenant})
+    user_entry = table_recommendations.find({USER:user, TENANT: tenant, ORG: organization})
     if user_entry.count()>0:
         try:
             time_limit = user_entry[0][TIME_STAMP]
@@ -118,14 +118,15 @@ def combine_recommendations(old_recommendations, new_recommendations):
         logging.error(e)
         return {}
 
-def generate_final_recommendation(user, tenant):
+def generate_final_recommendation(user, tenant, organization):
     """
     @type   user: String
     @type   tenant: String
+    @type   organization: String
     @rtype  list
     """
-    older_recommendations, time_limit = get_recommendations_from_db(user, tenant)
-    new_recommendations = generate_recommendations(user, tenant, time_limit)
+    older_recommendations, time_limit = get_recommendations_from_db(user, tenant, organization)
+    new_recommendations = generate_recommendations(user, tenant, organization, time_limit)
     if not older_recommendations:
         final_recommendations = new_recommendations
     elif not new_recommendations:
