@@ -52,109 +52,6 @@ timeStamp() {
 	timestamp=`date '+%Y-%m-%d %H:%M:%S' | sed 's/\(:[0-9][0-9][0-9]\)[0-9]*$/\1/' `
 }
 
-disableDataPublisher(){
-	value=`xmllint --xpath '//DataPublisher/Enabled/text()' $pathToApiManagerXML`
-	kernel=$(uname -s)
-	if [ "$value" = "true" ]
-	then
-		if [ "$kernel" = "Darwin" ]
-		then
-			sed -i '' -e "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		else
-			sed -i "/<DataPublisher>/,/<\/DataPublisher>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		fi
-		timeStamp
-		echo "[${timestamp}] INFO - Disabled the <DataPublisher> from api-manager.xml file"
-	fi
-}
-disableBlockConditionRetriever(){
-	value=`xmllint --xpath '//BlockCondition/Enabled/text()' $pathToApiManagerXML`
-	kernel=$(uname -s)
-	if [ "$value" = "true" ]
-	then
-		if [ "$kernel" = "Darwin" ]
-		then
-			sed -i '' -e "/<BlockCondition>/,/<\/BlockCondition>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		else
-			sed -i "/<BlockCondition>/,/<\/BlockCondition>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		fi
-		timeStamp
-		echo "[${timestamp}] INFO - Disabled the <BlockCondition> from api-manager.xml file"
-	fi
-}
-
-disableJMSConnectionDetails(){
-	value=`xmllint --xpath '//JMSConnectionDetails/Enabled/text()' $pathToApiManagerXML`
-	kernel=$(uname -s)
-	if [ "$value" = "true" ]
-	then
-		if [ "$kernel" = "Darwin" ]
-		then
-			sed -i '' -e "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		else
-			sed -i "/<JMSConnectionDetails>/,/<\/JMSConnectionDetails>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML	
-		fi
-		timeStamp
-  	    	echo "[${timestamp}] INFO - Disabled the <JMSConnectionDetails> from api-manager.xml file"
-	fi
-}
-
-disablePolicyDeployer(){
-	value=`xmllint --xpath '//PolicyDeployer/Enabled/text()' $pathToApiManagerXML`
-	kernel=$(uname -s)
-	if [ "$value" = "true" ]
-	then
-		if [ "$kernel" = "Darwin" ]
-		then
-			sed -i '' -e "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML
-		else
-			sed -i "/<PolicyDeployer>/,/<\/PolicyDeployer>/ s/<Enabled>true<\/Enabled>/<Enabled>false<\/Enabled>/g;" $pathToApiManagerXML	
-		fi
-		timeStamp
-		echo "[${timestamp}] INFO - Disabled the <PolicyDeployer> from api-manager.xml file"
-	fi
-}
-
-disableTransportSenderWS(){
-	value=`grep -E '"ws"' $pathToAxis2XML`
-	kernel=$(uname -s)
-	if [ -n "$value" ]
-	then
-		value=`grep -E '<!--.*"ws"' $pathToAxis2XML`
-		if [ -z "$value" ]
-		then
-			if [ "$kernel" = "Darwin" ]
-			then
-				sed -i '' -e '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
-			else
-				sed -i '/<transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML	
-			fi
-			timeStamp
-			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"ws\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
-		fi
-	fi
-}
-
-disableTransportSenderWSS(){
-	value=`grep -E '"wss"' $pathToAxis2XML`
-	kernel=$(uname -s)
-	if [ -n "$value" ]
-	then
-		value=`grep -E '<!--.*"wss"' $pathToAxis2XML`
-		if [ -z "$value" ]
-		then
-			if [ "$kernel" = "Darwin" ]
-			then
-				sed -i '' -e '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
-			else
-				sed -i '/<transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">/,/<\/transportSender>/s/\(.*\)/<!--\1-->/' $pathToAxis2XML
-			fi
-			timeStamp
-			echo "[${timestamp}] INFO - Disabled the <transportSender name=\"wss\" class=\"org.wso2.carbon.websocket.transport.WebsocketTransportSender\"> from axis2.xml file"
-		fi
-	fi
-}
-
 removeWebSocketInboundEndpoint(){
 	if [ -e ${pathToInboundEndpoints}WebSocketInboundEndpoint.xml ]
 	then
@@ -170,22 +67,6 @@ removeSecureWebSocketInboundEndpoint(){
 		rm -r ${pathToInboundEndpoints}SecureWebSocketInboundEndpoint.xml
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
-	fi
-}
-
-disableIndexingConfiguration(){
-	value=`xmllint --xpath 'wso2registry/indexingConfiguration/startIndexing/text()' $pathToRegistry`
-	if [ "$value" = "true" ]
-	kernel=$(uname -s)
-	then
-		if [ "$kernel" = "Darwin" ]
-		then
-			sed -i '' -e "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry
-		else
-			sed -i "/<indexingConfiguration>/,/<\/indexingConfiguration>/ s/<startIndexing>true<\/startIndexing>/<startIndexing>false<\/startIndexing>/g;" $pathToRegistry	
-		fi
-		timeStamp
-		echo "[${timestamp}] INFO - Disabled the <indexingConfiguration> from registry.xml file"
 	fi
 }
 
@@ -340,12 +221,6 @@ case $1 in
 		removeAxis2BlockingClientXMLTemplateFile
 		replaceAxis2TemplateFile $pathToAxis2KMXmlTemplate
 		replaceTenantAxis2TemplateFile $pathToTenantAxis2KMXmlTemplate
-		disableDataPublisher
-		disableJMSConnectionDetails
-		disablePolicyDeployer
-		disableTransportSenderWS
-		disableTransportSenderWSS
-		disableBlockConditionRetriever
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
@@ -375,10 +250,6 @@ case $1 in
 	-Dprofile=api-publisher)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the API Publisher profile"
-		disableJMSConnectionDetails
-		disableTransportSenderWS
-		disableTransportSenderWSS
-		disableBlockConditionRetriever
 		replaceDeploymentConfiguration api-publisher $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
@@ -407,12 +278,6 @@ case $1 in
 	-Dprofile=api-devportal)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Developer Portal profile"
-		disableDataPublisher
-		disableJMSConnectionDetails
-		disablePolicyDeployer
-		disableTransportSenderWS
-		disableTransportSenderWSS
-		disableBlockConditionRetriever
 		replaceDeploymentConfiguration api-devportal $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
@@ -445,7 +310,6 @@ case $1 in
 		replaceRegistryXMLFile
 		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
-		disableIndexingConfiguration
 		replaceDeploymentConfiguration traffic-manager $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
