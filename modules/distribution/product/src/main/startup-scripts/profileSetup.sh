@@ -31,7 +31,7 @@ pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
 pathToAxis2TMXml='../repository/conf/axis2/axis2_TM.xml'
 pathToAxis2TMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_TM.xml.j2'
-pathToAxis2KMXml='../repository/conf/axis2/axis2_KM.xml'
+    pathToAxis2KMXml='../repository/conf/axis2/axis2_KM.xml'
 pathToAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_KM.xml.j2'
 pathToTenantAxis2KMXml='../repository/conf/axis2/tenant-axis2_KM.xml'
 pathToTenantAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_KM.xml.j2'
@@ -300,22 +300,40 @@ replaceRegistryXMLTemplateFile(){
 }
 
 replaceDeploymentConfiguration(){
-    profileConfiguration=$pathToDeploymentTemplates/$1.toml
-    if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ]
-    then
-        mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
-        timeStamp
-        echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
-        cp "$profileConfiguration" "$pathToDeploymentConfiguration"
-        timeStamp
-        echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+    if [ "$passedSkipConfigOptimizationOption" = true ]; then
+       timeStamp
+       echo "[${timestamp}] INFO - Config optimizations in deployment.toml skipped since the option --skipConfigOptimization is passed"
+    else
+        echo "[${timestamp}] INFO - Starting to optimize configs in deployment.toml"
+        profileConfiguration=$pathToDeploymentTemplates/$1.toml
+        if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ];then
+            mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
+            timeStamp
+            echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml
+            .backup"
+            cp "$profileConfiguration" "$pathToDeploymentConfiguration"
+            timeStamp
+            echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+        fi
     fi
 }
+
+passedSkipConfigOptimizationOption=false
+for option in $*
+do
+  if [ "$option" = "--skipConfigOptimization" ] || [ "$option" = "-skipConfigOptimization" ] ||   [ "$option" = "skipConfigOptimization" ]
+  then
+    passedSkipConfigOptimizationOption=true
+    timeStamp
+    echo "[${timestamp}] INFO - Passed 'skipConfigOptimization' Option: $passedSkipConfigOptimizationOption"
+  fi
+done
 
 #main
 case $1 in
 	-Dprofile=api-key-manager)
-		echo "Starting to optimize API Manager for the Key Manager profile"
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Key Manager profile"
 		replaceAxis2File $pathToAxis2KMXml
 		replaceTenantAxis2File $pathToTenantAxis2KMXml
 		removeAxis2BlockingClientXMLFile
@@ -331,7 +349,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
-		replaceDeploymentConfiguration api-key-manager
+		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
@@ -355,12 +373,13 @@ case $1 in
 		done
 		;;
 	-Dprofile=api-publisher)
-		echo "Starting to optimize API Manager for the API Publisher profile"
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the API Publisher profile"
 		disableJMSConnectionDetails
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableBlockConditionRetriever
-		replaceDeploymentConfiguration api-publisher
+		replaceDeploymentConfiguration api-publisher $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
@@ -386,14 +405,15 @@ case $1 in
 		done
 		;;
 	-Dprofile=api-devportal)
-		echo "Starting to optimize API Manager for the Developer Portal profile"
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Developer Portal profile"
 		disableDataPublisher
 		disableJMSConnectionDetails
 		disablePolicyDeployer
 		disableTransportSenderWS
 		disableTransportSenderWSS
 		disableBlockConditionRetriever
-		replaceDeploymentConfiguration api-devportal
+		replaceDeploymentConfiguration api-devportal $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
@@ -419,13 +439,14 @@ case $1 in
 		done
         ;;
 	-Dprofile=traffic-manager)
-		echo "Starting to optimize API Manager for the Traffic Manager profile"
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Traffic Manager profile"
 		replaceAxis2File $pathToAxis2TMXml
 		replaceRegistryXMLFile
 		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
 		disableIndexingConfiguration
-		replaceDeploymentConfiguration traffic-manager
+		replaceDeploymentConfiguration traffic-manager $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
@@ -452,10 +473,11 @@ case $1 in
 		done
 		;;
 	-Dprofile=gateway-worker)
-		echo "Starting to optimize API Manager for the Gateway worker profile"
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Gateway worker profile"
 		disablePolicyDeployer
 		disableIndexingConfiguration
-     	replaceDeploymentConfiguration gateway-worker
+     	replaceDeploymentConfiguration gateway-worker $2
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'am#sample#pizzashack#v*.war'); do
 			rm -r $i

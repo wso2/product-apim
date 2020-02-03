@@ -157,16 +157,29 @@ do
     elif [ "$c" = "--test" ] || [ "$c" = "-test" ] || [ "$c" = "test" ]; then
           CMD="test"
     elif [ "$c" = "--optimize" ] || [ "$c" = "-optimize" ] || [ "$c" = "optimize" ]; then
-          for profile in $*
-          do
-            case "$profile" in
-              *Dprofile=*)
-                cd $(dirname "$0")
-                sh profileSetup.sh $profile
-                echo "Starting the server..."
-                ;;
-            esac
-          done
+      for option in $*; do
+        if [ "$option" = "--skipConfigOptimization" ] || [ "$option" = "-skipConfigOptimization" ] ||
+        [ "$option" = "skipConfigOptimization" ]; then
+          passedSkipConfigOptimizationOption=true
+          echo "Passed skipConfigOptimization Option: $passedSkipConfigOptimizationOption"
+        fi
+      done
+
+      for profile in $*; do
+        case "$profile" in
+          *Dprofile=*)
+            cd $(dirname "$0")
+            if [ "$passedSkipConfigOptimizationOption" = true ]; then
+              echo "Going to run Profile Optimization with the option '--skipConfigOptimization'"
+              sh profileSetup.sh $profile --skipConfigOptimization
+            else
+              echo "Going to run Profile Optimization without the option '--skipConfigOptimization'"
+              sh profileSetup.sh $profile
+            fi
+            echo "Starting the server..."
+            ;;
+        esac
+      done
     else
         args="$args $c"
     fi
