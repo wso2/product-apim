@@ -22,7 +22,7 @@
 <!-- footer -->
 <footer class="footer" style="text-align: center">
     <div class="container-fluid">
-        <p>WSO2 API Manager | &copy;
+        <p><%=request.getAttribute("footerText")%> | &copy;
             <script>document.write(new Date().getFullYear());</script>
         </p>
     </div>
