@@ -86,32 +86,6 @@ removeSynapseConfigs(){
 	done
 }
 
-replaceAxis2File(){
-  pathToNewAxis2Xml=$1
-  if [ -e $pathToAxis2XML ] && [ -e $pathToNewAxis2Xml ]
-  then
-    mv $pathToAxis2XML $pathToAxis2XMLBackup
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToAxis2XML file as axis2.xml.backup"
-		mv $pathToNewAxis2Xml $pathToAxis2XML
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2Xml file as axis2.xml"
-	fi
-}
-
-replaceTenantAxis2File(){
-  pathToNewAxis2Xml=$1
-  if [ -e $pathToTenantAxis2XML ] && [ -e $pathToNewAxis2Xml ]
-	then
-		mv $pathToTenantAxis2XML $pathToTenantAxis2XMLBackup
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToTenantAxis2XML file as tenant-axis2.xml.backup"
-		mv $pathToNewAxis2Xml $pathToTenantAxis2XML
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2Xml file as tenant-axis2.xml"
-	fi
-}
-
 removeAxis2BlockingClientXMLFile(){
   if [ -e $pathToAxis2BlockingClientXML ]
 	then
@@ -127,18 +101,6 @@ removeAxis2BlockingClientXMLTemplateFile(){
 		rm -r $pathToAxis2BlockingClientXMLTemplate
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml.j2 file from $pathToAxis2BlockingClientXMLTemplate"
-	fi
-}
-
-replaceRegistryXMLFile(){
-    if [ -e $pathToRegistry ] && [ -e $pathToRegistryTM ]
-	then
-		mv $pathToRegistry $pathToRegistryBackup
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistry file as registryBackup.xml"
-		mv $pathToRegistryTM $pathToRegistry
-		timeStamp
-		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTM file as registry.xml"
 	fi
 }
 
@@ -215,8 +177,6 @@ case $1 in
 	-Dprofile=api-key-manager)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Key Manager profile"
-		replaceAxis2File $pathToAxis2KMXml
-		replaceTenantAxis2File $pathToTenantAxis2KMXml
 		removeAxis2BlockingClientXMLFile
 		removeAxis2BlockingClientXMLTemplateFile
 		replaceAxis2TemplateFile $pathToAxis2KMXmlTemplate
@@ -306,8 +266,6 @@ case $1 in
 	-Dprofile=traffic-manager)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Traffic Manager profile"
-		replaceAxis2File $pathToAxis2TMXml
-		replaceRegistryXMLFile
 		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
 		replaceDeploymentConfiguration traffic-manager $passedSkipConfigOptimizationOption
@@ -339,8 +297,6 @@ case $1 in
 	-Dprofile=gateway-worker)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Gateway worker profile"
-		disablePolicyDeployer
-		disableIndexingConfiguration
      	replaceDeploymentConfiguration gateway-worker $2
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'am#sample#pizzashack#v*.war'); do
