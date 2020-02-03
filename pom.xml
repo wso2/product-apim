@@ -1231,7 +1231,7 @@
         <carbon.identity-metadata-saml2.version>1.3.5</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.3.10</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.25</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.4.6</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.carbon.auth.saml2.version>5.4.8</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.3.17</carbon.identity.auth.version>
         <identity.apps.version>0.9.10</identity.apps.version>
 
