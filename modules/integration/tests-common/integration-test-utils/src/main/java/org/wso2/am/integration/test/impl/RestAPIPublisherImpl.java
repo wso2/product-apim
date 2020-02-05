@@ -116,7 +116,7 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";
-        String dcrURL = publisherURL + "client-registration/v0.15/register";
+        String dcrURL = publisherURL + "client-registration/v0.16/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +

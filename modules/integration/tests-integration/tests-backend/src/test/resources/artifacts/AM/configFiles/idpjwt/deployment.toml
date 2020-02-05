@@ -12,7 +12,7 @@ password = "admin"
 create_admin_account = true
 
 [user_store]
-type = "database"
+type = "database_unique_id"
 
 [database.apim_db]
 driver = "$env{API_MANAGER_DATABASE_DRIVER}"
@@ -106,15 +106,24 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_type = "custom"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
-#[apim.jwt]
-#enable = true
-#encoding = "base64" # base64,base64url
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
-#claim_dialect = "http://wso2.org/claims"
+claim_dialect = "http://wso2.org/claims"
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+[[apim.jwt.gateway_generator.claims]]
+remote_claim = "http://idp.org/claims/givenname"
+local_claim = "http://wso2.org/claims/givenname"
+[[apim.jwt.gateway_generator.claims]]
+remote_claim = "http://idp.org/claims/firstname"
+local_claim = "http://wso2.org/claims/firstname"
+[[apim.jwt.gateway_generator.claims]]
+remote_claim = "http://idp.org/claims/email"
+local_claim = "http://wso2.org/claims/email"
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
@@ -187,7 +196,7 @@ allow_credentials = false
 #password = "$ref{super_admin.password}"
 #callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/publisher/v0.16/workflows/update-workflow-status"
 #token_endpoint = "https://localhost:${https.nio.port}/token"
-#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.15/register"
+#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.16/register"
 #client_registration_username = "$ref{super_admin.username}"
 #client_registration_password = "$ref{super_admin.password}"
 

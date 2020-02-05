@@ -54,7 +54,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                         APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
         gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
-        String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.15/register";
+        String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
 
         //DCR call for publisher app
         DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
