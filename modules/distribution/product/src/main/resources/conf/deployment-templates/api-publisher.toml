@@ -4,7 +4,7 @@ node_ip = "127.0.0.1"
 server_role = "api-publisher"
 
 [user_store]
-type = "database"
+type = "database_unique_id"
 
 [super_admin]
 username = "admin"
@@ -93,6 +93,6 @@ username = "$ref{super_admin.username}"
 password = "$ref{super_admin.password}"
 callback_endpoint = "https://localhost:9443/api/am/publisher/v0.16/workflows/update-workflow-status"
 token_endpoint = "https://localhost:8243/token"
-client_registration_endpoint = "https://localhost:9443/client-registration/v0.15/register"
+client_registration_endpoint = "https://localhost:9443/client-registration/v0.16/register"
 client_registration_username = "$ref{super_admin.username}"
 client_registration_password = "$ref{super_admin.password}"

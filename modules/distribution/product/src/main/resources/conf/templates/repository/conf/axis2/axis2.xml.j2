@@ -176,6 +176,10 @@
 
         <messageFormatter contentType="application/octet-stream"
                           class="{{message_formatter.octet_stream}}"/>
+   {% for message_formatter in custom_message_formatters %}
+        <messageFormatter contentType="{{message_formatter.content_type}}"
+                          class="{{message_formatter.class}}"/>
+     {% endfor %}
 
     </messageFormatters>
 
@@ -206,6 +210,10 @@
                         class="{{message_builder.text_plain}}"/>
         <messageBuilder contentType="application/octet-stream"
                         class="{{message_builder.octet_stream}}"/>
+   {% for message_builder in custom_message_builders %}
+    <messageFormatter contentType="{{message_builder.content_type}}"
+                          class="{{message_builder.class}}"/>
+     {% endfor %}
     </messageBuilders>
 
     <!-- ================================================= -->
@@ -251,13 +259,27 @@
     <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
 
     <!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)-->
-    {% if transport.jms.listener.connection_factories is defined %}
+    {% if transport.jms.listener_enable is defined %}
+        {% if transport.jms.listener_enable and transport.jms.listener|length==0 %}
+    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener"/>
+        {% elif transport.jms.listener_enable %}
     <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener">
-    {% for connection_factory in transport.jms.listener.connection_factories %}
-        <parameter name="{{transport.jms.listener[connection_factory].name}}" locked="false">
-        {% for name,value in transport.jms.listener[connection_factory].parameters.items() %}
-                <parameter name="{{name}}" locked="false">{{value}}</parameter>
-         {% endfor %}
+            {% for listener in transport.jms.listener %}
+        <parameter name="{{listener.name}}" locked="false">
+                {% for name,value in listener.parameter.items() %}
+            <parameter name="{{name}}" locked="false">{{value}}</parameter>
+                {% endfor %}
+        </parameter>
+            {% endfor %}
+    </transportReceiver>
+        {% endif %}
+    {% elif transport.jms.listener|length>0 %}
+    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener">
+        {% for listener in transport.jms.listener %}
+        <parameter name="{{listener.name}}" locked="false">
+            {% for name,value in listener.parameter.items() %}
+            <parameter name="{{name}}" locked="false">{{value}}</parameter>
+            {% endfor %}
         </parameter>
         {% endfor %}
     </transportReceiver>

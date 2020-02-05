@@ -73,6 +73,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private String jwtApplicationId;
     private String apiId;
     URL tokenEndpointURL;
+    private final String JWT_ASSERTION_HEADER = "X-JWT-Assertion";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -111,15 +112,59 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         File keyStoreFile = Paths.get(getAMResourceLocation(), "configFiles", "idpjwt", "keystore.jks").toFile();
         Map attributes = new HashMap();
         attributes.put("azp", applicationKeyDTO.getConsumerKey());
+        attributes.put("http://idp.org/claims/givenname","first");
+        attributes.put("http://idp.org/claims/firstname","last");
+        attributes.put("http://idp.org/claims/email","first@gmail.com");
+        attributes.put("http://idp.org/claims/mobileno","424479772294778");
+
         String generatedJWT =
                 JWTGeneratorUtil.generatedJWT(keyStoreFile, "idptest", "wso2carbon", "wso2carbon", "userexternal",
                         attributes);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        log.info("External IDP JWT Generated: " + generatedJWT);
         get.addHeader("Authorization", "Bearer " + generatedJWT);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
+        log.debug("Decoded JWTString = " + decodedJWTString);
+
+        if (userMode == TestUserMode.SUPER_TENANT_ADMIN || userMode == TestUserMode.SUPER_TENANT_USER ||
+                userMode == TestUserMode.SUPER_TENANT_EMAIL_USER) {
+            //Do the signature verification for super tenant as tenant key store not there accessible
+            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+            assertTrue("JWT signature verification failed", isSignatureValid);
+        }
+        log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
+        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
+        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
+        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+        JSONObject jsonObject = new JSONObject(decodedJWTString);
+        log.info("JWT Received ==" + jsonObject.toString());
+        Object givenName = jsonObject.get("http://wso2.org/claims/givenname");
+        Assert.assertNotNull(givenName);
+        Assert.assertEquals(givenName,"first");
+        Object firstName = jsonObject.get("http://wso2.org/claims/firstname");
+        Assert.assertNotNull(firstName);
+        Assert.assertEquals(firstName,"last");
+        Object email = jsonObject.get("http://wso2.org/claims/email");
+        Assert.assertNotNull(email);
+        Assert.assertEquals(email,"first@gmail.com");
+        try{
+            Object mobileno = jsonObject.get("http://idp.org/claims/mobileno");
+            Assert.assertNull(mobileno);
+        }catch (JSONException e){
+            Assert.assertTrue(true,"Claim not in jwt");
+        }
     }
     @Test(groups = {"wso2.am"}, description = "invoking From ExternalIDP Generated JWT Consumer key is invalid")
     public void testInvokeExternalIDPGeneratedJWTNegative1() throws Exception {

@@ -99,7 +99,7 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
-        String dcrURL = storeURL + "client-registration/v0.15/register";
+        String dcrURL = storeURL + "client-registration/v0.16/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
@@ -774,7 +774,7 @@ public class RestAPIStoreImpl {
      * @param callbackUrl - callback url
      * @param description - description of app
      * @param tokenType   - token type of app (JWT ot DEFAULT)
-     * @return - http response of add application
+     * @return - ApplicationDTO of add application
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,

@@ -216,17 +216,6 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         checkDefaultUserClaims(jsonObject, jwtApplicationName);
         // check user profile info claims
         log.info("JWT Received ==" + jsonObject.toString());
-        String claim = jsonObject.getString("http://wso2.org/claims/givenname");
-        assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name"));
-        claim = jsonObject.getString("http://wso2.org/claims/lastname");
-        assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name"));
-        boolean bExceptionOccured = false;
-        try {
-            jsonObject.getString("http://wso2.org/claims/wrongclaim");
-        } catch (JSONException e) {
-            bExceptionOccured = true;
-        }
-        assertTrue("JWT claim received is invalid", bExceptionOccured);
     }
 
     @AfterClass(alwaysRun = true)
