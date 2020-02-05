@@ -168,7 +168,8 @@ do
   then
     passedSkipConfigOptimizationOption=true
     timeStamp
-    echo "[${timestamp}] INFO - Passed 'skipConfigOptimization' Option: $passedSkipConfigOptimizationOption"
+    echo "[${timestamp}] INFO - Passed 'skipConfigOptimization' Option: $passedSkipConfigOptimizationOption. So going \
+to run Profile Optimization without doing the config optimizations"
   fi
 done
 

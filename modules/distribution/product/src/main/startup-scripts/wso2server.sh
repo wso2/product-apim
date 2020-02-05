@@ -170,10 +170,8 @@ do
           *Dprofile=*)
             cd $(dirname "$0")
             if [ "$passedSkipConfigOptimizationOption" = true ]; then
-              echo "Going to run Profile Optimization with the option '--skipConfigOptimization'"
               sh profileSetup.sh $profile --skipConfigOptimization
             else
-              echo "Going to run Profile Optimization without the option '--skipConfigOptimization'"
               sh profileSetup.sh $profile
             fi
             echo "Starting the server..."
