@@ -26,7 +26,7 @@
     <packaging>pom</packaging>
     <version>3.1.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
-    <url>http://wso2.com/products/api-manager</url>
+    <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
 
     <parent>
@@ -38,7 +38,7 @@
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
 
@@ -65,7 +65,7 @@
 	<repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
@@ -81,7 +81,7 @@
         </pluginRepository>
         <pluginRepository>
             <id>wso2-nexus</id>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -208,23 +208,23 @@
 
     <organization>
         <name>WSO2 Inc</name>
-        <url>http://wso2.com</url>
+        <url>https://wso2.com</url>
     </organization>
 
     <issueManagement>
         <system>JIRA</system>
-        <url>http://wso2.org/jira/browse/APIMANAGER</url>
+        <url>https://wso2.org/jira/browse/APIMANAGER</url>
     </issueManagement>
 
     <mailingLists>
         <mailingList>
             <name>WSO2 API Manager Users' list</name>
-            <post>http://stackoverflow.com/questions/tagged/wso2</post>
+            <post>https://stackoverflow.com/questions/tagged/wso2</post>
         </mailingList>
         <mailingList>
             <name>WSO2 API Manager Developers' List</name>
             <post>mailto:dev@wso2.org</post>
-            <archive>http://mail.wso2.org/mailarchive/dev/</archive>
+            <archive>https://mail.wso2.org/mailarchive/dev/</archive>
             <subscribe>mailto:dev-request@wso2.org?subject=subscribe</subscribe>
             <unsubscribe>mailto:dev-request@wso2.org?subject=unsubscribe</unsubscribe>
         </mailingList>
