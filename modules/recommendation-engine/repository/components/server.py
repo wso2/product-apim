@@ -8,10 +8,10 @@ from werkzeug import serving
 import ssl
 import sys
 import atexit
-import jwt
-from jwt.contrib.algorithms.pycrypto import RSAAlgorithm
 from apscheduler.scheduler import Scheduler
 from log import logger
+import base64
+import json
 
 API_CRT = "../resources/Certificates/server.crt"
 API_KEY = "../resources/Certificates/server.key"
@@ -33,9 +33,6 @@ app = flask.Flask(__name__)
 app.config['BASIC_AUTH_USERNAME'] = config_properties['username']
 app.config['BASIC_AUTH_PASSWORD'] = config_properties['password']
 basic_auth = BasicAuth(app)
-
-jwt.unregister_algorithm('RS256')
-jwt.register_algorithm('RS256', RSAAlgorithm(RSAAlgorithm.SHA256))
 
 pemfile = open("../resources/public_key.pem", 'r')
 keystring = pemfile.read()
@@ -179,8 +176,12 @@ def add_clicked_API(clicked_API, organization):
     return response      
 
 def get_company_from_jwt(encoded_jwt):
-    decoded_message = jwt.decode(encoded_jwt, keystring, algorithms=['RS256'])
-    company = decoded_message["http://wso2.org/claims/applicationname"]
+    content = encoded_jwt.split(".")
+    base64_bytes = content[1].encode('ascii')
+    un_encoded_bytes = base64.b64decode(base64_bytes)
+    message = un_encoded_bytes.decode('ascii')
+    messageJson = json.loads(message)
+    company = messageJson["http://wso2.org/claims/applicationname"]
     return company 
 
 def main():

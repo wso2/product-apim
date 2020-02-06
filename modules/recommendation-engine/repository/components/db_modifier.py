@@ -46,7 +46,7 @@ def add_search_query_to_db(search_query, organization):
     search_query[USER] = user
     update_user_list_db(user)
     result = db_table.insert(search_query,check_keys=False)
-    logger.debug ("Search query " + search_query["search_query"] + " was added to db")
+    logger.debug ("Search query " + str(search_query) + " was added to db")
   
 def get_user_recommendations(user, tenant, organization, min_api_count):
     """
