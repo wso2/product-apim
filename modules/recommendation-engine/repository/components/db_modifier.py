@@ -1,7 +1,6 @@
 # from dictionary_processor import *
 from recommendation import *
-import logging
-logging.basicConfig(level=logging.DEBUG)
+from log import logger
 
 def add_api_to_db(API, organization):
     update_API_dictionary(API,organization)
@@ -10,7 +9,7 @@ def add_api_to_db(API, organization):
 def delete_API_from_db(tenant,API_name, organization):
     delete_API_dictionary(tenant, API_name, organization)
     delete_api_id_db(tenant, API_name, organization)
-    logging.debug("api " + API_name + " belongs to "+ tenant + " deleted from db")
+    logger.debug("api " + API_name + " belongs to "+ tenant + " deleted from db")
 
 def add_application_to_db(application, organization):
     time_stamp = get_current_time()
@@ -20,7 +19,7 @@ def add_application_to_db(application, organization):
     application[ORG] = organization
     db_table = connect_db(APPLICATION_DETAILS)
     result = db_table.insert(application,check_keys=False)
-    logging.debug(str(application) + " was added to database")
+    logger.debug("Application " + application["application_name"] + " was added to database")
 
 def update_application_in_db(application, organization):
     time_stamp = get_current_time()
@@ -29,12 +28,12 @@ def update_application_in_db(application, organization):
     updated_values = { "$set": { APPLICATION_NAME: application[APPLICATION_NAME],
                      APPLICATION_DESCRIPTION: application[APPLICATION_DESCRIPTION], TIME_STAMP: time_stamp } }
     db_table.update_one(app_identifier, updated_values)
-    logging.debug(str(application) + " was updated in the database")
+    logger.debug("Application " + application["application_name"] + " was updated in the database")
 
 def delete_application_from_db(app_ID, organization):
     db_table = connect_db(APPLICATION_DETAILS)
     result = db_table.delete_one({ ORG : organization, APPLICATION_ID:app_ID })
-    logging.debug ("Application with ID " + str(app_ID) + " was deleted from the db")
+    logger.debug ("Application with ID " + str(app_ID) + " of " + organization + " was deleted from the db")
 
 def add_search_query_to_db(search_query, organization):
     """
@@ -47,9 +46,9 @@ def add_search_query_to_db(search_query, organization):
     search_query[USER] = user
     update_user_list_db(user)
     result = db_table.insert(search_query,check_keys=False)
-    logging.debug (str(search_query) + " was added to db")
+    logger.debug ("Search query " + search_query["search_query"] + " was added to db")
   
-def get_user_recommendations(user, tenant, organization, recommendations_count, min_api_count):
+def get_user_recommendations(user, tenant, organization, min_api_count):
     """
     Get the recommendations as a list of api names. The no. of apis recommended is configurable.
     """
@@ -107,8 +106,7 @@ def update_API_id_db(API, organization):
         api_id_db.update_one(entry_identifier, updated_entry)
     else:
         entry = {ORG: organization, TENANT : tenant, API_IDS: {API_name:API_id}}
-        result = api_id_db.insert(entry,check_keys=False)  
-    print("update_API_id_db successfull")
+        result = api_id_db.insert(entry,check_keys=False)
 
 def delete_api_id_db(tenant, API_name, organization):
     """
@@ -145,7 +143,7 @@ def update_API_dictionary(API, organization):
     else:
         tenant_entry = { ORG:organization, TENANT: tenant, API_DICTIONARIES: {API_name: API_dictionary}}
         result = dictionary_table.insert(tenant_entry,check_keys=False)
-    print("update_API_dictionary successfull")
+    logger.debug("API dictionary was successfull updated for API " + API_name)
     
 def delete_API_dictionary(tenant, API_name, organization):
     """
@@ -159,6 +157,8 @@ def delete_API_dictionary(tenant, API_name, organization):
         entry_identifier = {ORG:organization, TENANT : tenant }
         updated_dictionary = {"$set": { API_DICTIONARIES: API_dictionaries}}
         dictionary_table.update_one(entry_identifier, updated_dictionary)
+        logger.debug("API dictionary was deleted for API " + API_name)
+    
 
 def modify_search_db(user, months, min_entries):
     """

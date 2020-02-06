@@ -13,8 +13,8 @@ HIGH_WEIGHT = 4
 NORMAL_WEIGHT = 3
 LOW_WEIGHT = 1
 
-WORD2VEC_MODEL = "utils/word2vec_model.model"
-STOP_WORDS = "utils/stopList.txt"
+WORD2VEC_MODEL = "../resources/word2vec_model.model"
+STOP_WORDS = "../resources/stopList.txt"
 
 TIME_STAMP = 'time_stamp'
 USER = 'user'
@@ -43,7 +43,7 @@ RESOURCES = 'resources'
 DESCRIPTION = 'description'
 SEARCH_QUERY = 'search_query'
 
-CONFIG_FILE = 'config/config.yaml'
+CONFIG_FILE = '../conf/config.yaml'
 with open(CONFIG_FILE, 'r') as stream:
     config_properties = yaml.safe_load(stream)
 

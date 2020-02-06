@@ -3,7 +3,7 @@
 
 cd ../
 
-cd components
+cd repository/components
 if command -v python3; then
   python3 server.py 
 elif command -v python; then
