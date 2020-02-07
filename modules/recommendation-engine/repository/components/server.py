@@ -109,6 +109,15 @@ def receive_events():
         response = Response(status=500)
     return response
 
+@app.route('/health', methods=['GET'])
+@basic_auth.required
+def health_check():
+    """
+    Health check resource.
+    """
+    response = jsonify({'status': 'healthy'})
+    return response
+
 def add_API(API_data, organization):
     try:
         add_api_to_db(API_data, organization)
