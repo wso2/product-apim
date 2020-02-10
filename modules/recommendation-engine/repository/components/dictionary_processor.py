@@ -5,9 +5,8 @@ import gensim
 import datetime
 import pymongo
 import json
-import logging
 import yaml
-logging.basicConfig(level=logging.INFO)
+from log import logger
 
 HIGH_WEIGHT = 4
 NORMAL_WEIGHT = 3
@@ -81,8 +80,8 @@ def get_lemma(words):
                 else:
                     if word_lemma not in lemmas:
                         lemmas[word_lemma]=1
-    except Exception as e:
-        logging.error(e)
+    except Exception:
+        logger.exception("Error when getting lemma for words")
         return words
     return lemmas
 
@@ -126,8 +125,9 @@ def create_API_dictionary(API_document):
         else:
             name_API = API_document[API_NAME] 
             API_keyword_dictionary = add_API_name(name_API,API_keyword_dictionary)
-    except Exception as e:
-        logging.error(e)
+            logger.debug("Name of" + name_API + " added to API keyword dictionary")
+    except Exception:
+        logger.exception("Error adding name of " + name_API + " to api dictionary")
         return API_keyword_dictionary
    
     # add the tags of the API
@@ -135,35 +135,40 @@ def create_API_dictionary(API_document):
         if TAGS in API_document.keys():
             tags_API = API_document[TAGS]
             API_keyword_dictionary = add_tags(tags_API,API_keyword_dictionary)
-    except Exception as e:
-        logging.error(e)
+            logger.debug("Tags added to API keyword dictionary")
+    except Exception:
+        logger.exception("Error adding tag to API keyword dictionary")
     
     # add the context of each API
     try:
         if CONTEXT in API_document.keys():
             context_API = API_document[CONTEXT]
             API_keyword_dictionary = add_context(context_API,API_keyword_dictionary)
-    except Exception as e:
-        logging.error(e)
+            logger.debug("Context added to API keyword dictionary")
+    except Exception:
+        logger.exception("Error adding context to API keyword dictionary")
     
     # add the resource names of each API
     try:
         if RESOURCES in API_document.keys():
             swagger_API = API_document[RESOURCES]
             API_keyword_dictionary = add_resources(swagger_API,API_keyword_dictionary)
-    except Exception as e:
-        logging.error(e)
+            logger.debug("Resource added to API keyword dictionary")
+    except Exception:
+        logger.exception("Error adding Resource to API keyword dictionary")
     
     # Add keywords from the API description
     try:
         if DESCRIPTION in API_document.keys():
             API_description = API_document[DESCRIPTION]
             API_keyword_dictionary = add_API_description(API_description,API_keyword_dictionary)
-    except Exception as e:
-        logging.error(e)
+            logger.debug("Description added to API keyword dictionary")
+    except Exception:
+        logger.exception("Error adding Description to API keyword dictionary")
     
     # Get lemmas of the keywords
     API_keyword_dictionary = get_lemma(API_keyword_dictionary)
+    logger.debug("API dictionary successfully created for API")
     return API_keyword_dictionary 
 
 def add_API_name(name,keyword_dictionary):
@@ -252,8 +257,8 @@ def create_user_dictionary(user_name, time_limit):
     # Getting User Details from the 'User_details' collection
     try:
         search_result = get_user_db_entries(SEARCH_DETAILS, user_name, time_limit)
-    except Exception as e:
-        logging.error(e)
+    except Exception:
+        logger.exception("Error getting user search details for the user" + user_name + " from db")
         search_result = []
 
     # Add the names of the APIs clicked by the user to the dictionary
@@ -262,8 +267,8 @@ def create_user_dictionary(user_name, time_limit):
             if API_NAME in query.keys():
                 clicked_API = query[API_NAME]
                 user_keyword_dictionary = add_clicked_APIs(clicked_API,user_keyword_dictionary)
-        except Exception as e:
-            logging.error(e)
+        except Exception:
+            logger.exception("Error adding clicked api to User Keyword dictionary")
         
     # Add the queries searched by the user
         try:
@@ -273,15 +278,15 @@ def create_user_dictionary(user_name, time_limit):
                 if TAGS in search_query:
                     search_query = search_query.split("=")[1]
                     user_keyword_dictionary = add_clicked_tag(search_query, user_keyword_dictionary)
-        except Exception as e:
-            logging.error(e)
+        except Exception:
+            logger.exception("Error adding clicked tag to User Keyword dictionary")
             continue
 
     # add Application Details
     try:
         app_result = get_user_db_entries(APPLICATION_DETAILS, user_name, time_limit)
-    except Exception as e:
-        logging.error(e)
+    except Exception:
+        logger.exception("Error getting application details for the user " + user_name)
         app_result = []
 
     for app in app_result:
@@ -290,26 +295,27 @@ def create_user_dictionary(user_name, time_limit):
             application_name = app[APPLICATION_NAME]
             user_keyword_dictionary, application_keywords = add_app_name(application_name, 
             application_keywords, user_keyword_dictionary) 
-        except Exception as e:
-            logging.error(e)
+            logger.debug("Application "+ application_name+ " was added to User Keyword dictionary")
+        except Exception:
+            logger.exception("Error adding application name to User Keyword dictionary")
         try:
             application_description = app[APPLICATION_DESCRIPTION]
             user_keyword_dictionary, application_keywords = add_app_description(application_description, 
             application_keywords, user_keyword_dictionary)
-        except Exception as e:
-            logging.error(e)            
-        continue
+        except Exception:
+            logger.exception("Error adding description for application")        
+            continue
 
         try:
             synonyms = get_synonyms(application_keywords,word2vec_model)
             user_keyword_dictionary = {key: user_keyword_dictionary.get(key, 0) + synonyms.get(key, 0)
                                     for key in set(user_keyword_dictionary) | set(synonyms)}
-        except Exception as e:
-            logging.error(e)
-            continue
+        except Exception:
+            logger.exception("Error creating synonyms for app")
 
     # Getting the lemmas of the keywords    
     user_keyword_dictionary = get_lemma(user_keyword_dictionary)
+    logger.debug("User dictionary created for user "+ user_name) 
     return user_keyword_dictionary
 
 def get_user_db_entries(table_name, user, time_limit):
@@ -374,4 +380,5 @@ def add_app_description(app_description, app_words, keyword_dictionary):
 def connect_db(table_name):
     database = client["RecommendationSystemDB"]
     table = database[table_name]
+    logger.debug("mongodb connection created")
     return table

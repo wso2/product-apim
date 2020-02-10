@@ -1,7 +1,6 @@
 import pandas as pd
 from dictionary_processor import *
-import logging
-logging.basicConfig(level=logging.INFO)
+from log import logger
 
 PROGRESSION_FACTOR = 1.2
 
@@ -13,7 +12,6 @@ def create_matrix(tenant_dictionary):
     @type  tenant_dictionary: dictionary
     @rtype:   pandas dataframe
     """
-    API_ids = {}
     matrix = pd.DataFrame()
     for API_name in tenant_dictionary:
         API_dictionary = tenant_dictionary[API_name]
@@ -52,7 +50,7 @@ def generate_recommendations(user, tenant, organization, time_limit):
         API_dictionaries = tenant_entry[0][API_DICTIONARIES]
         user_dictionary = create_user_dictionary(user,time_limit)
     else:
-        API_dictionary = {}
+        API_dictionaries = {}
     if bool(user_dictionary) and bool(API_dictionaries):
 
         # Adding the keywords from the user dictionary to the API-keyword matrix as a new row
@@ -64,6 +62,7 @@ def generate_recommendations(user, tenant, organization, time_limit):
 
         recommendations = dict(get_pearson_correlation(USER,overall_matrix))
         recommendations.pop(USER, None)
+        logger.debug('Initial recommendations generated for user ' + user + " are " +str(recommendations))
         return recommendations
     else:
         return {}
@@ -83,13 +82,14 @@ def get_recommendations_from_db(user, tenant, organization):
         try:
             time_limit = user_entry[0][TIME_STAMP]
             older_recommendations = user_entry[0][RECOMMENDATIONS]
-        except Exception as e:
-            logging.error(e)
+        except Exception:
+            logger.exception("Error getting preprocessed recomendations from db for user " + user + " for tenant " + tenant)
             time_limit = -1
             older_recommendations = {}
     else:
         older_recommendations = {}
         time_limit = -1
+     logger.debug('Older recommendations got for user ' + user + str(older_recommendations))
     return older_recommendations, time_limit
 
 def combine_recommendations(old_recommendations, new_recommendations):
@@ -113,9 +113,10 @@ def combine_recommendations(old_recommendations, new_recommendations):
                 final_weight = weight
             combined_recommendations[API] = final_weight
         combined_recommendations = dict(sorted(combined_recommendations.items() , reverse=True, key=lambda x: x[1]))
+        logger.debug("Recommendations combined")
         return combined_recommendations
-    except Exception as e:
-        logging.error(e)
+    except Exception:
+        logger.exception("Error combining recommendations")
         return {}
 
 def generate_final_recommendation(user, tenant, organization):
