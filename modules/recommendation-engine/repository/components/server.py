@@ -38,7 +38,7 @@ pemfile = open("../resources/public_key.pem", 'r')
 keystring = pemfile.read()
 pemfile.close()
 
-@cron.interval_schedule(minutes=10) 
+@cron.interval_schedule(hours=24) 
 def update_user_recommendations_db():
     """
     Processing recommendations periodically with a time interval of 24 hours and 
@@ -86,6 +86,7 @@ def receive_events():
     try:
         action = jsonData["action"]
         payload = jsonData["payload"]
+        logger.debug("Recommendation event received with Action " + action)
         if (action == 'ADD_API'):
             response = add_API(payload, organization)
         elif(action == 'DELETE_API'):
@@ -103,7 +104,6 @@ def receive_events():
         else:
             logger.error("Incorrect action " + action + " used for recommendation event")
             response = Response(status=500)
-        logger.debug("Recommendation event received with Action " + action)
     except Exception:
         logger.exception("Error occurred when adding the" + action + " event")
         response = Response(status=500)

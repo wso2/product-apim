@@ -380,5 +380,4 @@ def add_app_description(app_description, app_words, keyword_dictionary):
 def connect_db(table_name):
     database = client["RecommendationSystemDB"]
     table = database[table_name]
-    logger.debug("mongodb connection created")
     return table

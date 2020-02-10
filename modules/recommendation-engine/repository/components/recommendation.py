@@ -89,7 +89,7 @@ def get_recommendations_from_db(user, tenant, organization):
     else:
         older_recommendations = {}
         time_limit = -1
-     logger.debug('Older recommendations got for user ' + user + str(older_recommendations))
+    logger.debug("Older recommendations got for user " + user + str(older_recommendations))
     return older_recommendations, time_limit
 
 def combine_recommendations(old_recommendations, new_recommendations):
