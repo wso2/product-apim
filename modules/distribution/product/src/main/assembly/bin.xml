@@ -41,6 +41,7 @@
                 <exclude>**/conf/tomcat/web.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
                 <exclude>**/log4j2.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
@@ -205,6 +206,8 @@
                 <exclude>**/cipher-text.properties.j2</exclude>
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/catalina-server.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+
             </excludes>
         </fileSet>
         <fileSet>
