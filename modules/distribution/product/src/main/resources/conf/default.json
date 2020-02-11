@@ -208,5 +208,11 @@
   "broker.transport.amqp.allow_strict_name_validation" : true,
   "http_access_log.prefix": "http_access_",
   "http_access_log.suffix": ".log",
-  "http_access_log.pattern": "%h %l %u %t %r %s %b %{Referer}i %{User-Agent}i %T"
+  "http_access_log.pattern": "%h %l %u %t %r %s %b %{Referer}i %{User-Agent}i %T",
+  "server.hide_menu_items": [
+    "claim_mgt_menu",
+    "identity_mgt_emailtemplate_menu",
+    "identity_security_questions_menu",
+    "metrics_menu"
+  ]
 }
