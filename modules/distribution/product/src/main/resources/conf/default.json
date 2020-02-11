@@ -214,5 +214,17 @@
     "identity_mgt_emailtemplate_menu",
     "identity_security_questions_menu",
     "metrics_menu"
-  ]
+  ],
+    "error_page.code_400.location": "/carbon/errors/error_400.html",
+    "error_page.code_401.location": "/carbon/errors/error_401.html",
+    "error_page.code_403.location": "/carbon/errors/error_403.html",
+    "error_page.code_404.location": "/carbon/errors/error_404.html",
+    "error_page.code_405.location": "/carbon/errors/error_405.html",
+    "error_page.code_408.location": "/carbon/errors/error_408.html",
+    "error_page.code_410.location": "/carbon/errors/error_410.html",
+    "error_page.code_500.location": "/carbon/errors/error_500.html",
+    "error_page.code_502.location": "/carbon/errors/error_401.html",
+    "error_page.code_503.location": "/carbon/errors/error_503.html",
+    "error_page.code_504.location": "/carbon/errors/error_504.html",
+    "error_page.code_general.location": "/carbon/errors/error.html"
 }
