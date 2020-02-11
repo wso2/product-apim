@@ -17,21 +17,21 @@ rem  limitations under the License.
 set userLocation=%cd%
 set pathToApiManagerXML=..\repository\conf\api-manager.xml
 set pathToAxis2XML=..\repository\conf\axis2\axis2.xml
-set pathToAxis2XMLTemplate=..\repository\resources\conf\template\repository\conf\axis2\axis2.xml.j2
-set pathToRegistry=..\repository\resources\conf\template\repository\conf\registry.xml.j2
-set pathToRegistryTemplate=..\repository\conf\registry.xml
+set pathToAxis2XMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2.xml.j2
+set pathToRegistryTemplate=..\repository\resources\conf\templates\repository\conf\registry.xml.j2
+set pathToRegistry=..\repository\conf\registry.xml
 set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
 set pathToAxis2TMXml=..\repository\conf\axis2\axis2_TM.xml
-set pathToAxis2TMXmlTemplate=..\repository\resources\conf\template\repository\conf\axis2\axis2_TM.xml.j2
+set pathToAxis2TMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_TM.xml.j2
 set pathToRegistryTM=..\repository\conf\registry_TM.xml
-set pathToRegistryTMTemplate=..\repository\resources\conf\template\repository\conf\registry_TM.xml.j2
+set pathToRegistryTMTemplate=..\repository\resources\conf\templates\repository\conf\registry_TM.xml.j2
 set axis2XMLBackup=axis2backup.xml
-set axis2XMLBackupTemplate=axis2.backup
+set axis2XMLBackupTemplate=axis2.xml.j2.backup
 set registryBackup=registryBackup.xml
-set registryBackupTemplate=registry.backup
+set registryBackupTemplate=registry.xml.j2.backup
 set axis2XML=axis2.xml
 set axis2XMLTemplate=axis2.xml.j2
 set registryXML=registry.xml
@@ -340,7 +340,7 @@ if exist %pathToAxis2XMLTemplate% (
 	if exist %pathToAxis2TMXmlTemplate% (
 		ren %pathToAxis2XMLTemplate% %axis2XMLBackupTemplate%
 		call :Timestamp value
-		echo %value% INFO - Rename the existing %pathToAxis2XML% file as %axis2XMLBackupTemplate%
+		echo %value% INFO - Rename the existing %pathToAxis2XMLTemplate% file as %axis2XMLBackupTemplate%
 		ren %pathToAxis2TMXmlTemplate% %pathToAxis2XMLTemplate%
 		call :Timestamp value
 		echo %value% INFO - Rename the existing %pathToAxis2TMXmlTemplate% file as %axis2XMLTemplate%
