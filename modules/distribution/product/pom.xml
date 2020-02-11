@@ -264,14 +264,6 @@
                                         <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
-                                <copy file="${basedir}/../../distribution/product/src/main/kernel-db-scripts/oracle.sql"
-                                      tofile="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/oracle.sql"
-                                      overwrite="true">
-                                </copy>
-                                <copy file="${basedir}/../../distribution/product/src/main/kernel-db-scripts/oracle_rac.sql"
-                                      tofile="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/oracle_rac.sql"
-                                      overwrite="true">
-                                </copy>
                                 <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/" />
                                 <zip destfile="target/site/store-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/" />
                                 <zip destfile="target/site/admin-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.admin*/api-docs/" />
