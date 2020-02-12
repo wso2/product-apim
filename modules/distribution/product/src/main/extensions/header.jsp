@@ -23,6 +23,7 @@
 <%@ page import="org.json.simple.parser.JSONParser"%>
 <%@ page import="org.json.simple.JSONObject"%>
 <%@ page import="java.net.URI"%>
+<%@ page import="org.apache.commons.lang.StringUtils"%>
 
 <%
     String tenant = request.getParameter("tenantDomain");
@@ -45,15 +46,20 @@
     String pageTitle = "WSO2 API Manager";
     String footerText = "WSO2 API Manager";
     String faviconSrc = "libs/theme/assets/images/favicon.ico";
+    File customCSSFile = null;
+    String customCSS = "";
+    String tenantThemeDirectoryName = "";
 
     if (tenant != null) {
         String current = new File(".").getCanonicalPath();
         String tenantConfLocation = "/repository/deployment/server/jaggeryapps/devportal/site/public/tenant_themes";
-        String tenantThemeDirectoryName = tenant;
+        tenantThemeDirectoryName = tenant;
         String tenantThemeFile =  current + tenantConfLocation + "/" + tenantThemeDirectoryName + "/" + "loginTheme.json";
+        customCSS = current + tenantConfLocation + "/" + tenantThemeDirectoryName + "/" + "loginTheme.css";
         File directory = new File(current + tenantConfLocation + "/" + tenantThemeDirectoryName);
         if (directory != null && directory.exists() && directory.isDirectory()) {
             File themeFile = new File(tenantThemeFile);
+            customCSSFile = new File(customCSS);
             if (themeFile != null && themeFile.exists() && themeFile.isFile()) {
                 FileReader fr = new FileReader(themeFile);
                 JSONParser parser = new JSONParser();
@@ -83,6 +89,14 @@
     request.setAttribute("pageTitle", pageTitle);
     request.setAttribute("footerText", footerText);
     request.setAttribute("faviconSrc", faviconSrc);
+
+    if (customCSSFile != null && customCSSFile.exists() && customCSSFile.isFile()) {
+	String cssRelativePath = "/devportal/site/public/tenant_themes/" + tenantThemeDirectoryName + "/" + "loginTheme.css";
+        request.setAttribute("customCSS", cssRelativePath);
+    } else {
+        request.setAttribute("customCSS", "");
+    }
+
 %>
 
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -188,5 +202,13 @@
         color: #ff5000;
     }
 </style>
+
+<%
+	String cssPath = request.getAttribute("customCSS") + "";
+	if (!StringUtils.isEmpty(cssPath)) {
+%>
+		<link href=<%=cssPath%> rel="stylesheet" type="text/css">
+<%	}
+%>
 
 <script src="libs/jquery_3.4.1/jquery-3.4.1.js"></script>
