@@ -1322,6 +1322,13 @@
         </file>
         <file>
             <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/sms/sms-templates-admin-config.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/sms</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
