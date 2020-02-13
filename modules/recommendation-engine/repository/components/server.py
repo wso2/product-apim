@@ -38,7 +38,7 @@ pemfile = open("../resources/public_key.pem", 'r')
 keystring = pemfile.read()
 pemfile.close()
 
-@cron.interval_schedule(hours=24) 
+@cron.interval_schedule(minutes=10) 
 def update_user_recommendations_db():
     """
     Processing recommendations periodically with a time interval of 24 hours and 
@@ -59,8 +59,12 @@ def recommend_apis():
     """
     try:
         requested_tenant = request.headers['Account']
-        jwt_token = request.headers['X-JWT-Assertion']
-        organization = get_company_from_jwt(jwt_token)
+        try:
+            jwt_token = request.headers['X-JWT-Assertion']
+            organization = get_company_from_jwt(jwt_token)
+        except Exception:
+            logger.debug("Error when extracting company details from JWT, default Company selected")
+            organization = "Company"
         user = organization + "_" + request.headers['User']
         recommendations = get_user_recommendations(user, requested_tenant, organization, MIN_API_COUNT)
         if recommendations:
@@ -81,8 +85,12 @@ def receive_events():
     """
     data = request.data
     jsonData = json.loads(data[36:-4].decode("utf-8"))
-    jwt_token = request.headers['X-JWT-Assertion']
-    organization = get_company_from_jwt(jwt_token)
+    try:
+        jwt_token = request.headers['X-JWT-Assertion']
+        organization = get_company_from_jwt(jwt_token)
+    except Exception:
+        logger.debug("Error when extracting company details from JWT, default Company selected")
+        organization = "Company"
     try:
         action = jsonData["action"]
         payload = jsonData["payload"]

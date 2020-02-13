@@ -44,7 +44,7 @@ def add_search_query_to_db(search_query, organization):
     search_query[TIME_STAMP] = time_stamp
     user = organization + "_" + search_query[USER]
     search_query[USER] = user
-    update_user_list_db(user)
+    update_user_list_db(user, organization)
     result = db_table.insert(search_query,check_keys=False)
     logger.debug ("Search query " + str(search_query) + " was added to db")
   
@@ -52,7 +52,7 @@ def get_user_recommendations(user, tenant, organization, min_api_count):
     """
     Get the recommendations as a list of api names. The no. of apis recommended is configurable.
     """
-    update_user_list_db(user)
+    update_user_list_db(user, organization)
     api_list_db = connect_db(API_LIST)
     api_list = api_list_db.find({ ORG:organization, TENANT : tenant })
     if api_list.count()>0:
@@ -76,15 +76,14 @@ def get_current_time():
     time_stamp = str(datetime.datetime.today())
     return time_stamp
     
-def update_user_list_db(user_name):
+def update_user_list_db(user_name, organization):
     """
     'User_List' collection contains a list of all the users
     """
-    if user_name!="wso2.anonymous.user":
-        user_db = connect_db(USER_LIST)
-        entry = {USER : user_name}
-        if user_db.find(entry).count()==0:
-            user_db.insert(entry,check_keys=False)
+    user_db = connect_db(USER_LIST)
+    entry = {USER : user_name, ORG: organization}
+    if user_db.find(entry).count()==0:
+        user_db.insert(entry,check_keys=False)
 
 def update_API_id_db(API, organization):
     """
@@ -201,8 +200,9 @@ def process_user_info(months, min_entries):
     if users.count()>0:
         for user in users:
             user_name = user[USER]
+            user_organization = user[ORG]
             modify_search_db(user_name, months, min_entries)
-            tenant_dictionaries = api_dictionaries_table.find()
+            tenant_dictionaries = api_dictionaries_table.find({ORG:user_organization})
             if tenant_dictionaries.count()>0:
                 for tenant in tenant_dictionaries:
                     tenant_name = tenant[TENANT]
