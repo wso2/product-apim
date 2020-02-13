@@ -124,6 +124,12 @@
          </filter>
     </handler>
 
+    <!--This handler clears the caches when tenant-config is updated.-->
+   <handler class="org.wso2.carbon.apimgt.impl.handlers.TenantConfigMediaTypeHandler" methods="PUT,DELETE">
+      <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
+        <property name="mediaType">tenant-config</property>
+    </filter>
+   </handler>
 
     <!-- This handler processes the links for the lifecycle -->
 
