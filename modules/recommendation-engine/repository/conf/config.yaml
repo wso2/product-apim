@@ -8,9 +8,8 @@ port: 8082
 username: admin
 password: admin 
 
-recommendations_count: 5                  # Maximum no. of recommendations displayed at the API store
 search_details_valid_months: 3            # Search queries before the valid period will be removed
-minimum_search_queries: 20                # Search queries are deleted after the validity period only if this minimum no. is available.
+minimum_search_queries: 5                # Search queries are deleted after the validity period only if this minimum no. is available.
 minimum_APIs_to_start_recommendations: 20 #Minimum number of APIs needs to be published in devportal to start giving recommendations
 
 # URL to connect to the Mongodb
