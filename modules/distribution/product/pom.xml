@@ -64,6 +64,10 @@
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-inflector</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
