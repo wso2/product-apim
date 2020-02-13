@@ -267,19 +267,44 @@
 
     <div class="ui divider hidden"></div>
 
-    <div class="ui visible warning message">
-        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
-        <a href="cookie_policy.do" target="policy-pane">
-            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
-        </a>
-        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
-    </div>
-    <div class="ui visible warning message">
-        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
-        <a href="privacy_policy.do" target="policy-pane">
-            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
-        </a>
-    </div>
+    <%
+    boolean showCookiePolicy = (Boolean)request.getAttribute("showCookiePolicy");
+    if (showCookiePolicy) {
+    %>
+        <div class="ui visible warning message">
+            <%
+            String cookiePolicyText = (String)request.getAttribute("cookiePolicyText");
+            if (!StringUtils.isEmpty(cookiePolicyText)) {
+            %>
+                <%=cookiePolicyText%>
+            <% } else { %>
+                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
+            <% } %>
+            <a href="cookie_policy.do" target="policy-pane">
+                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
+            </a>
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
+        </div>
+    <% } %>
+
+    <%
+    boolean showPrivacyPolicy = (Boolean)request.getAttribute("showPrivacyPolicy");
+    if (showPrivacyPolicy) {
+    %>
+        <div class="ui visible warning message">
+            <%
+            String privacyPolicyText = (String)request.getAttribute("privacyPolicyText");
+            if (!StringUtils.isEmpty(privacyPolicyText)) {
+            %>
+                <%=privacyPolicyText%>
+            <% } else { %>
+                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
+            <% } %>
+            <a href="privacy_policy.do" target="policy-pane">
+                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
+            </a>
+        </div>
+    <% } %>
     <div class="ui divider hidden"></div>
 
     <div class="ui two column stackable grid">
