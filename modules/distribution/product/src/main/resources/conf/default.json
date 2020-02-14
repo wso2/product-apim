@@ -226,5 +226,8 @@
     "error_page.code_502.location": "/carbon/errors/error_401.html",
     "error_page.code_503.location": "/carbon/errors/error_503.html",
     "error_page.code_504.location": "/carbon/errors/error_504.html",
-    "error_page.code_general.location": "/carbon/errors/error.html"
+    "error_page.code_general.location": "/carbon/errors/error.html",
+  "xml_input_factory.properties.'javax.xml.stream.isCoalescing'": true,
+  "xml_input_factory.properties.'javax.xml.stream.isSupportingExternalEntities'": false,
+  "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false
 }
