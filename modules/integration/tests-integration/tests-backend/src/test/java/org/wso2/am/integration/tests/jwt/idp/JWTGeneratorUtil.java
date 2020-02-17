@@ -24,22 +24,29 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.PasswordLookup;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -47,14 +54,14 @@ import java.util.UUID;
 public class JWTGeneratorUtil {
 
 
-    public static String generatedJWT(File privateKeyFile, String keyAlias, String keyStorePassword,
+    public static String generatedJWT(File privateKeyFile,String kid,String keyAlias, String keyStorePassword,
                                       String keyPassword,
-                                      String subject, Map<String, String> attributes)
+                                      String subject,String issuer, Map<String, String> attributes)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
             UnrecoverableKeyException, JOSEException {
 
-        JWSHeader header = buildHeader(privateKeyFile, keyAlias, keyStorePassword);
-        JWTClaimsSet jwtClaimsSet = buildBody(subject, attributes);
+        JWSHeader header = buildHeader(privateKeyFile,kid ,keyAlias, keyStorePassword);
+        JWTClaimsSet jwtClaimsSet = buildBody(issuer, subject, attributes);
         return signJWT(header, jwtClaimsSet, privateKeyFile, keyAlias, keyStorePassword, keyPassword);
     }
 
@@ -74,10 +81,10 @@ public class JWTGeneratorUtil {
         return signedJWT.serialize();
     }
 
-    private static JWTClaimsSet buildBody(String subject, Map<String, String> attributes) {
+    private static JWTClaimsSet buildBody(String issuer,String subject, Map<String, String> attributes) {
 
         JWTClaimsSet.Builder jwtClaimSetBuilder = new JWTClaimsSet.Builder();
-        jwtClaimSetBuilder.issuer("https://test.apim.integration");
+        jwtClaimSetBuilder.issuer(issuer);
         jwtClaimSetBuilder.issueTime(new Date(System.currentTimeMillis()));
         jwtClaimSetBuilder.jwtID(UUID.randomUUID().toString());
         jwtClaimSetBuilder.subject(subject);
@@ -89,7 +96,7 @@ public class JWTGeneratorUtil {
         return jwtClaimSetBuilder.build();
     }
 
-    private static JWSHeader buildHeader(File privateKeyFile, String keyAlias, String keyStorePassword)
+    private static JWSHeader buildHeader(File privateKeyFile, String kid, String keyAlias, String keyStorePassword)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
 
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -105,7 +112,7 @@ public class JWTGeneratorUtil {
         JWSHeader.Builder jwsHeaderBuilder = new JWSHeader.Builder(JWSAlgorithm.RS256);
         jwsHeaderBuilder.type(JOSEObjectType.JWT);
         jwsHeaderBuilder.x509CertThumbprint(new Base64URL(publicCertThumbprint));
-        jwsHeaderBuilder.keyID(getKID(publicCertThumbprint, JWSAlgorithm.RS256));
+        jwsHeaderBuilder.keyID(kid);
         return jwsHeaderBuilder.build();
     }
 
@@ -128,15 +135,4 @@ public class JWTGeneratorUtil {
         return buf.toString();
     }
 
-    /**
-     * Helper method to add algo into to JWT_HEADER to signature verification.
-     *
-     * @param certThumbprint
-     * @param signatureAlgorithm
-     * @return
-     */
-    private static String getKID(String certThumbprint, JWSAlgorithm signatureAlgorithm) {
-
-        return certThumbprint + "_" + signatureAlgorithm.toString();
-    }
 }
