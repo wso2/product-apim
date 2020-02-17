@@ -46,7 +46,7 @@
         <module>modules/styles</module>
         <module>modules/org.wso2.am.multitenancy.dashboard.ui</module>
         <module>modules/features</module>
-        <module>sample-scenarios</module>
+        <!--module>sample-scenarios</module-->
         <module>modules/p2-profile</module>
         <module>modules/oauth2-grant-types</module>
         <module>modules/authenticators</module>
@@ -1199,7 +1199,7 @@
         <carbon.analytics.common.version>5.2.21</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.66</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.68-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->

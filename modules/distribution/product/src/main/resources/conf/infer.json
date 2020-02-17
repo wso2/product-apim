@@ -61,7 +61,7 @@
     },
     "base64url": {
       "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
-      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImplImpl"
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImpl"
     }
   },
   "apim.jwt.enable_user_claims": {
