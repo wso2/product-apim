@@ -6,34 +6,36 @@ def add_api_to_db(API, organization):
     update_API_dictionary(API,organization)
     update_API_id_db(API, organization)
 
-def delete_API_from_db(tenant,API_name, organization):
+def delete_API_from_db(tenant, API_name, organization):
     delete_API_dictionary(tenant, API_name, organization)
     delete_api_id_db(tenant, API_name, organization)
     logger.debug("api " + API_name + " belongs to "+ tenant + " deleted from db")
-
-def add_application_to_db(application, organization):
-    time_stamp = get_current_time()
-    user = organization + "_" + application[USER]
-    application[USER] = user
-    application[TIME_STAMP] = time_stamp
-    application[ORG] = organization
-    db_table = connect_db(APPLICATION_DETAILS)
-    result = db_table.insert(application,check_keys=False)
-    logger.debug("Application " + application["application_name"] + " was added to database")
 
 def update_application_in_db(application, organization):
     time_stamp = get_current_time()
     db_table = connect_db(APPLICATION_DETAILS)
     app_identifier = { ORG : organization, APPLICATION_ID : application[APPLICATION_ID] }
-    updated_values = { "$set": { APPLICATION_NAME: application[APPLICATION_NAME],
-                     APPLICATION_DESCRIPTION: application[APPLICATION_DESCRIPTION], TIME_STAMP: time_stamp } }
-    db_table.update_one(app_identifier, updated_values)
-    logger.debug("Application " + application["application_name"] + " was updated in the database")
-
+    entry = db_table.find(app_identifier)
+    if entry.count()>0:
+        updated_values = { "$set": { APPLICATION_NAME: application[APPLICATION_NAME],
+                    APPLICATION_DESCRIPTION: application[APPLICATION_DESCRIPTION], TIME_STAMP: time_stamp } }
+        db_table.update_one(app_identifier, updated_values)
+        logger.debug("Application " + application["application_name"] + " was updated in the database")
+    else:
+        user = organization + "_" + application[USER]
+        application[USER] = user
+        application[TIME_STAMP] = time_stamp
+        application[ORG] = organization
+        result = db_table.insert(application,check_keys=False)
+        logger.debug("Application " + application["application_name"] + " was added to database")
+    
 def delete_application_from_db(app_ID, organization):
     db_table = connect_db(APPLICATION_DETAILS)
-    result = db_table.delete_one({ ORG : organization, APPLICATION_ID:app_ID })
-    logger.debug ("Application with ID " + str(app_ID) + " of " + organization + " was deleted from the db")
+    app_identifier = { ORG : organization, APPLICATION_ID : app_ID }
+    entry = db_table.find(app_identifier)
+    if entry.count()>0:
+        result = db_table.delete_one({ ORG : organization, APPLICATION_ID:app_ID })
+        logger.debug ("Application with ID " + str(app_ID) + " of " + organization + " was deleted from the db")
 
 def add_search_query_to_db(search_query, organization):
     """

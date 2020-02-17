@@ -25,6 +25,7 @@ API_PORT = config_properties['port']
 MIN_API_COUNT = config_properties['minimum_APIs_to_start_recommendations']
 SEARCH_DETAILS_VALID_TIME = config_properties['search_details_valid_months']
 MINIMUM_SEARCH_QUERIES = config_properties['minimum_search_queries']
+CRON_INTERVAL = config_properties['cron_job_interval_in_hours']
 MONGODB_URL = config_properties['mongodb_url']
 
 cron = Scheduler(daemon=True)
@@ -34,11 +35,7 @@ app.config['BASIC_AUTH_USERNAME'] = config_properties['username']
 app.config['BASIC_AUTH_PASSWORD'] = config_properties['password']
 basic_auth = BasicAuth(app)
 
-pemfile = open("../resources/public_key.pem", 'r')
-keystring = pemfile.read()
-pemfile.close()
-
-@cron.interval_schedule(minutes=10) 
+@cron.interval_schedule(hours=CRON_INTERVAL)
 def update_user_recommendations_db():
     """
     Processing recommendations periodically with a time interval of 24 hours and 
@@ -101,8 +98,6 @@ def receive_events():
             response = delete_API(payload, organization)
         elif(action == 'ADD_NEW_APPLICATION'):
             response = add_application(payload, organization)
-        elif(action == 'UPDATED_APPLICATION'):
-            response = update_application(payload, organization)
         elif(action == 'DELETE_APPLICATION'):
             response = delete_application(payload, organization)
         elif(action == 'ADD_USER_SEARCHED_QUERY'):
@@ -118,7 +113,6 @@ def receive_events():
     return response
 
 @app.route('/health', methods=['GET'])
-@basic_auth.required
 def health_check():
     """
     Health check resource.
@@ -148,19 +142,10 @@ def delete_API(payload, organization):
 
 def add_application(application_data, organization):
     try:
-        add_application_to_db(application_data, organization)
-        response = Response(status=200)    
-    except Exception:
-        logger.exception("Error occurred when adding an application")
-        response = Response(status=500)
-    return response
-
-def update_application(application_data, organization):
-    try:
         update_application_in_db(application_data, organization)
         response = Response(status=200)    
     except Exception:
-        logger.exception("Error occurred when updating an application")
+        logger.exception("Error occurred when adding an application")
         response = Response(status=500)
     return response
 
