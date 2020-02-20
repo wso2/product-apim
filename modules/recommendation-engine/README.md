@@ -29,8 +29,8 @@ WSO2 API Manager Store Portal is a marketplace for APIs. Developers can login to
     $ python3 -m spacy link en_core_web_lg en
     ```
 5. Create a mongodb instance with the port: 27017
-9. Change the configurations at the `<project-home-directory>/config/config.yaml` file as needed.
-10. To start the recommendation server, run `<project-home-directory>/bin/recommendation-server.sh`
+9. Change the configurations at the `<project-home-directory>/resources/conf/config.yaml` file as needed.
+10. To start the recommendation server, run `<project-home-directory>/bin/wso2server.sh`
     
 
    
