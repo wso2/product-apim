@@ -96,7 +96,7 @@ def receive_events():
             response = add_API(payload, organization)
         elif(action == 'DELETE_API'):
             response = delete_API(payload, organization)
-        elif(action == 'ADD_NEW_APPLICATION'):
+        elif(action == 'ADD_APPLICATION'):
             response = add_application(payload, organization)
         elif(action == 'DELETE_APPLICATION'):
             response = delete_application(payload, organization)
