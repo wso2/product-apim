@@ -727,6 +727,15 @@
                 <include>**/tenant-conf.json</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/workflowextensions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/default-workflow-extensions.xml</include>
+            </includes>
+        </fileSet>
 
         <!--copying runtimes-->
         <fileSet>
