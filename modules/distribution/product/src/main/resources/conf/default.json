@@ -162,6 +162,7 @@
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
   "identity_mgt.password_reset_email.enable_password_reset_email": true,
+  "resource_access_control.default_access_allow": true,
   "oauth.prompt_consent": true,
   "transport.binary.receiver.sslEnabledProtocols": [
     "TLSv1",
