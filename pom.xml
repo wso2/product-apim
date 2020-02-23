@@ -1199,7 +1199,7 @@
         <carbon.analytics.common.version>5.2.21</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.81</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.82</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1224,11 +1224,11 @@
         <carbon.mediation.version>4.7.34</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.16.83</carbon.identity.version>
-        <carbon.identity.governance.version>1.3.49</carbon.identity.governance.version>
+        <carbon.identity.version>5.16.92</carbon.identity.version>
+        <carbon.identity.governance.version>1.3.50</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.3.9</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.2.21</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.2.129</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.2.131</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.2.11</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.3.6</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.4.6</carbon.identity-inbound-auth-openid.version>
@@ -1238,8 +1238,8 @@
         <carbon.identity-data-publisher-application-authentication.version>5.3.10</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.26</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.4.9</carbon.identity.carbon.auth.saml2.version>
-        <carbon.identity.auth.version>1.3.21</carbon.identity.auth.version>
-        <identity.apps.version>1.0.20</identity.apps.version>
+        <carbon.identity.auth.version>1.3.22</carbon.identity.auth.version>
+        <identity.apps.version>1.0.41</identity.apps.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.0.4</saml.common.util.version>
