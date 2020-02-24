@@ -1,8 +1,8 @@
 ---
-name: "✅ Feature Request"
-about: If you need to suggest new functionality.
+name: "✅ Improvement Request"
+about: If you saw a place we can improve.
 title: ''
-labels: Priority/Normal, Type/New Feature
+labels: Priority/Normal, Type/Improvement
 assignees: ''
 
 ---
