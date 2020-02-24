@@ -80,7 +80,7 @@ removeAxis2BlockingClientXMLFile(){
 	then
 		rm -r $pathToAxis2BlockingClientXML
 		timeStamp
-		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml file from $pathToAxis2BlockingClientXML"
+		echo "[${timestamp}] INFO - Removed the file $pathToAxis2BlockingClientXML"
 	fi
 }
 
@@ -89,7 +89,7 @@ removeAxis2BlockingClientXMLTemplateFile(){
 	then
 		rm -r $pathToAxis2BlockingClientXMLTemplate
 		timeStamp
-		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml.j2 file from $pathToAxis2BlockingClientXMLTemplate"
+		echo "[${timestamp}] INFO - Removed the file $pathToAxis2BlockingClientXMLTemplate"
 	fi
 }
 
@@ -141,11 +141,10 @@ replaceDeploymentConfiguration(){
         if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ];then
             mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
             timeStamp
-            echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml
-            .backup"
+            echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
             cp "$profileConfiguration" "$pathToDeploymentConfiguration"
             timeStamp
-            echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+            echo "[${timestamp}] INFO - Copied the existing $profileConfiguration file as $pathToDeploymentConfiguration"
         fi
     fi
 }
