@@ -1349,7 +1349,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.9.9</jackson-version>
+        <jackson-version>2.9.10</jackson-version>
         <jodatime-version>2.10.4</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
