@@ -1224,7 +1224,7 @@
         <carbon.mediation.version>4.7.34</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.16.92</carbon.identity.version>
+        <carbon.identity.version>5.16.99</carbon.identity.version>
         <carbon.identity.governance.version>1.3.50</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.3.9</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.2.21</carbon.identity.event.handler.notification.version>
