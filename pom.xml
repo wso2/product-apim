@@ -1211,7 +1211,7 @@
         <carbon.governance.version>4.8.14</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.0-beta2</carbon.kernel.version>
+        <carbon.kernel.version>4.6.0-m1</carbon.kernel.version>
         <apimserver.version>3.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
