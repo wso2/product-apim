@@ -1306,7 +1306,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.6</carbon.automation.version>
+        <carbon.automation.version>4.4.7</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
