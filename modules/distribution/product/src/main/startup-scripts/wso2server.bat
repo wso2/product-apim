@@ -138,7 +138,24 @@ for %%a in (!originalArgs!) do (
 	if %%a==-Dprofile ( set found=true
 	)
 )
-call bin\profileSetup.bat %profile%
+
+for %%a in (!originalArgs!) do (
+	if %%a==--skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+	    goto runProfileSetup
+	)
+	if %%a==-skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+        goto runProfileSetup
+    )
+    if %%a==skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+        goto runProfileSetup
+    )
+)
+
+:runProfileSetup
+call bin\profileSetup.bat %profile% %skipConfigOptimizationOption%
 endlocal
 goto findJdk
 

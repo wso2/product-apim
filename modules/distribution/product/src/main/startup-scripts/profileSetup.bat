@@ -22,13 +22,29 @@ set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
 set pathToAxis2TMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_TM.xml.j2
+set pathToAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_KM.xml.j2
 set pathToRegistryTMTemplate=..\repository\resources\conf\templates\repository\conf\registry_TM.xml.j2
 set axis2XMLBackupTemplate=axis2.xml.j2.backup
 set registryBackupTemplate=registry.xml.j2.backup
 set axis2XMLTemplate=axis2.xml.j2
 set registryXMLTemplate=registry.xml.j2
+set pathToDeploymentTemplates=..\repository\resources\conf\deployment-templates
+set pathToDeploymentConfiguration=..\repository\conf\deployment.toml
+set deploymentConfigurationBackup=deployment.toml.backup
+set passedSkipConfigOptimizationOption=false
+set pathToAxis2BlockingClientXML=..\repository\conf\axis2\axis2_blocking_client.xml
+set pathToAxis2BlockingClientXMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_blocking_client.xml.j2
+set tenantAxis2TXmlTemplateBackup=tenant-axis2.xml.j2.backup
+set pathToTenantAxis2XMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2.xml.j2
+set tenantAxis2XMLTemplate=tenant-axis2.xml.j2
+set pathToTenantAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_KM.xml.j2
 
 cd /d %~dp0
+
+set profileConfigurationToml=%pathToDeploymentTemplates%\%2.toml
+if "%3"=="--skipConfigOptimization" set passedSkipConfigOptimizationOption=true
+if "%3"=="-skipConfigOptimization" set passedSkipConfigOptimizationOption=true
+if "%3"=="skipConfigOptimization" set passedSkipConfigOptimizationOption=true
 
 rem ----- Process the input commands (two args only)-------------------------------------------
 if ""%1""==""-Dprofile"" (
@@ -43,9 +59,15 @@ goto end
 
 :keyManager
 echo Starting to optimize API Manager for the Key Manager profile
+call :removeAxis2BlockingClientXMLFile
+call :removeAxis2BlockingClientXMLTemplateFile
+call :replaceAxis2TemplateFile %pathToAxis2KMXmlTemplate%
+call :replaceTenantAxis2TemplateFile %pathToTenantAxis2KMXmlTemplate%
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
+call :replaceDeploymentConfiguration
+
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war throttle#data#v.*war api#identity#consent-mgt#v.*war"') do (
 	del /f %pathToWebapps%\%%i
@@ -73,6 +95,7 @@ goto finishOptimization
 echo Starting to optimize API Manager for the API Publisher profile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
+call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
 	del /f %pathToWebapps%\%%i
@@ -100,6 +123,7 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Developer Portal profile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
+call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war api#am#store.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
 	del /f %pathToWebapps%\%%i
@@ -125,11 +149,12 @@ goto finishOptimization
 
 :trafficManager
 echo Starting to optimize API Manager for the Traffic Manager profile
-call :replaceAxis2TemplateFile
+call :replaceAxis2TemplateFile %pathToAxis2TMXmlTemplate%
 call :replaceRegistryXMLTemplateFile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
+call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b') do (
 	del /f %pathToWebapps%\%%i
@@ -155,6 +180,7 @@ goto finishOptimization
 
 :gatewayWorker
 echo Starting to optimize API Manager for the Gateway worker profile
+call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "am#sample#pizzashack#v.*war"') do (
 	del /f %pathToWebapps%\%%i
@@ -210,12 +236,13 @@ for /f %%i in ('dir "%pathToSynapseConfigs%" /A:-D /b ^| find /v "synapse.xml"')
 EXIT /B 0
 
 :replaceAxis2TemplateFile
+set pathToNewAxis2TemplateXml=%~1
 if exist %pathToAxis2XMLTemplate% (
-	if exist %pathToAxis2TMXmlTemplate% (
+	if exist %pathToNewAxis2TemplateXml% (
 		ren %pathToAxis2XMLTemplate% %axis2XMLBackupTemplate%
 		call :Timestamp value
 		echo %value% INFO - Rename the existing %pathToAxis2XMLTemplate% file as %axis2XMLBackupTemplate%
-		ren %pathToAxis2TMXmlTemplate% %pathToAxis2XMLTemplate%
+		ren %pathToNewAxis2TemplateXml% %axis2XMLTemplate%
 		call :Timestamp value
 		echo %value% INFO - Rename the existing %pathToAxis2TMXmlTemplate% file as %axis2XMLTemplate%
 	)
@@ -235,6 +262,55 @@ if exist %pathToRegistryTemplate% (
 )
 EXIT /B 0
 
+:replaceDeploymentConfiguration
+if %passedSkipConfigOptimizationOption%==true (
+    call :Timestamp value
+    echo %value% INFO - Config optimizations in deployment.toml skipped since the option 'skipConfigOptimization' is passed
+) else (
+    if exist %pathToDeploymentConfiguration% (
+        if exist %profileConfigurationToml% (
+            ren %pathToDeploymentConfiguration% %deploymentConfigurationBackup%
+            call :Timestamp value
+            echo %value% INFO - Renamed the existing %pathToDeploymentConfiguration% file as %deploymentConfigurationBackup%
+            copy %profileConfigurationToml% %pathToDeploymentConfiguration%
+            call :Timestamp value
+            echo %value% INFO - Copied the existing %profileConfigurationToml% file as %pathToDeploymentConfiguration%
+        )
+    )
+)
+EXIT /B 0
+
+:removeAxis2BlockingClientXMLFile
+    if exist %pathToAxis2BlockingClientXML% (
+        del /f %pathToAxis2BlockingClientXML%
+        call :Timestamp value
+        echo %value% INFO - Removed the file %pathToAxis2BlockingClientXML%
+    )
+)
+EXIT /B 0
+
+:removeAxis2BlockingClientXMLTemplateFile
+    if exist %pathToAxis2BlockingClientXMLTemplate% (
+        del /f %pathToAxis2BlockingClientXMLTemplate%
+        call :Timestamp value
+        echo %value% INFO - Removed the file %pathToAxis2BlockingClientXMLTemplate% file.
+    )
+)
+EXIT /B 0
+
+:replaceTenantAxis2TemplateFile
+set pathToNewTenantAxis2TemplateXml=%~1
+if exist %pathToTenantAxis2XMLTemplate% (
+	if exist %pathToNewTenantAxis2TemplateXml% (
+		ren %pathToTenantAxis2XMLTemplate% %tenantAxis2TXmlTemplateBackup%
+		call :Timestamp value
+		echo %value% INFO - Renamed the existing %pathToTenantAxis2XMLTemplate% file as %tenantAxis2TXmlTemplateBackup%
+		ren %pathToNewTenantAxis2TemplateXml% %tenantAxis2XMLTemplate%
+		call :Timestamp value
+		echo %value% INFO - Renamed the existing %pathToNewTenantAxis2TemplateXml% file as %tenantAxis2XMLTemplate%
+	)
+)
+EXIT /B 0
 
 :Timestamp
 set "%~1=[%date:~10,14%-%date:~4,2%-%date:~7,2% %time%]"
