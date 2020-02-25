@@ -26,7 +26,7 @@
     <packaging>pom</packaging>
     <version>3.1.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
-    <url>http://wso2.com/products/api-manager</url>
+    <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
 
     <parent>
@@ -38,7 +38,7 @@
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
 
@@ -65,7 +65,7 @@
 	<repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
@@ -77,11 +77,11 @@
     <pluginRepositories>
         <pluginRepository>
             <id>wso2-maven2-repository</id>
-            <url>http://dist.wso2.org/maven2</url>
+            <url>https://dist.wso2.org/maven2</url>
         </pluginRepository>
         <pluginRepository>
             <id>wso2-nexus</id>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -208,23 +208,23 @@
 
     <organization>
         <name>WSO2 Inc</name>
-        <url>http://wso2.com</url>
+        <url>https://wso2.com</url>
     </organization>
 
     <issueManagement>
         <system>JIRA</system>
-        <url>http://wso2.org/jira/browse/APIMANAGER</url>
+        <url>https://wso2.org/jira/browse/APIMANAGER</url>
     </issueManagement>
 
     <mailingLists>
         <mailingList>
             <name>WSO2 API Manager Users' list</name>
-            <post>http://stackoverflow.com/questions/tagged/wso2</post>
+            <post>https://stackoverflow.com/questions/tagged/wso2</post>
         </mailingList>
         <mailingList>
             <name>WSO2 API Manager Developers' List</name>
             <post>mailto:dev@wso2.org</post>
-            <archive>http://mail.wso2.org/mailarchive/dev/</archive>
+            <archive>https://mail.wso2.org/mailarchive/dev/</archive>
             <subscribe>mailto:dev-request@wso2.org?subject=subscribe</subscribe>
             <unsubscribe>mailto:dev-request@wso2.org?subject=unsubscribe</unsubscribe>
         </mailingList>
@@ -1171,7 +1171,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity.outbound.auth.oidc</groupId>
                 <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
-                <version>${identity.outbound.auth.oidc.version`}</version>
+                <version>${identity.outbound.auth.oidc.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger.parser.v3</groupId>
@@ -1179,10 +1179,16 @@
                 <version>${swagger-parser-version}</version>
             </dependency>
             <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-inflector</artifactId>
+                <version>${swagger.inflector.oas3.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.orbit.com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${nimbus.jwt.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -1193,48 +1199,48 @@
         <carbon.analytics.common.version>5.2.21</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.38-SNAPSHOT</carbon.apimgt.version>
 
+        <carbon.apimgt.version>6.6.93-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.29</carbon.registry.version>
+        <carbon.registry.version>4.7.32</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.12</carbon.governance.version>
+        <carbon.governance.version>4.8.14</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.0-alpha3</carbon.kernel.version>
+        <carbon.kernel.version>4.6.0-beta2</carbon.kernel.version>
         <apimserver.version>3.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
-	    <cipher.tool.version>1.1.6</cipher.tool.version>
+	    <cipher.tool.version>1.1.7</cipher.tool.version>
 
         <carbon.commons.version>4.7.23</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.33</carbon.mediation.version>
+        <carbon.mediation.version>4.7.34</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.16.39</carbon.identity.version>
-        <carbon.identity.governance.version>1.3.40</carbon.identity.governance.version>
-        <carbon.identity.event.handler.account.lock.version>1.3.8</carbon.identity.event.handler.account.lock.version>
-        <carbon.identity.event.handler.notification.version>1.2.18</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.2.112</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.16.92</carbon.identity.version>
+        <carbon.identity.governance.version>1.3.50</carbon.identity.governance.version>
+        <carbon.identity.event.handler.account.lock.version>1.3.9</carbon.identity.event.handler.account.lock.version>
+        <carbon.identity.event.handler.notification.version>1.2.21</carbon.identity.event.handler.notification.version>
+        <carbon.identity-inbound-auth-oauth.version>6.2.131</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.2.11</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.3.6</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-openid.version>5.4.5</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-inbound-auth-openid.version>5.4.6</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.2.8</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.3.4</carbon.identity-outbound-auth-samlsso.version>
-        <carbon.identity-metadata-saml2.version>1.3.5</carbon.identity-metadata-saml2.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.3.6</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-metadata-saml2.version>1.3.6</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.3.10</carbon.identity-data-publisher-application-authentication.version>
-        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.25</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.4.8</carbon.identity.carbon.auth.saml2.version>
-        <carbon.identity.auth.version>1.3.17</carbon.identity.auth.version>
-        <identity.apps.version>0.9.10</identity.apps.version>
+        <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.26</carbon.extension.identity.oauth2.grantType.jwt.version>
+        <carbon.identity.carbon.auth.saml2.version>5.4.9</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.auth.version>1.3.22</carbon.identity.auth.version>
+        <identity.apps.version>1.0.41</identity.apps.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.0.4</saml.common.util.version>
@@ -1250,7 +1256,7 @@
         <org.jaggery.version>0.14.12</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.7.17</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.8.1</carbon.multitenancy.version>
 
         <siddhi.version>3.2.6</siddhi.version>
 
@@ -1263,9 +1269,9 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v143</synapse.version>
+        <synapse.version>2.1.7-wso2v146</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v40</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
@@ -1361,7 +1367,7 @@
         <forgetme.tool.version>1.2.1</forgetme.tool.version>
         <!--Concent Management dependencies-->
         <carbon.consent.mgt.version>2.2.8</carbon.consent.mgt.version>
-        <carbon.database.utils.version>2.0.10</carbon.database.utils.version>
+        <carbon.database.utils.version>2.0.11</carbon.database.utils.version>
 
         <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
         <!-- xml testing library -->
@@ -1377,6 +1383,7 @@
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.4.1</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
+        <swagger.inflector.oas3.version>2.0.5</swagger.inflector.oas3.version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
     </properties>
 

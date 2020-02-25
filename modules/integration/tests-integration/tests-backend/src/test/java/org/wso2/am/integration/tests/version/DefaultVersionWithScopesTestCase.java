@@ -23,8 +23,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.annotations.*;
-import org.wso2.am.integration.clients.store.api.v1.dto.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -170,11 +178,11 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
                             + response.getData());
 
             //Obtaining user access token for mike, request scope 'user_scope'
-            requestBody = "grant_type=password&username=" + USER_MIKE + "@" + storeContext.getContextTenant().getDomain()
+            requestBody = "grant_type=password&username=" + USER_MIKE + "@"
+                    + storeContext.getContextTenant().getDomain()
                     + "&password=" + user_mike_password + "&scope=" + user_scope;
-            accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
-                    requestBody, tokenEndpointURL)
-                    .getData());
+            accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(
+                    consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
             userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
             requestHeaders = new HashMap<>();

@@ -63,3 +63,6 @@ name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+
+[apim.certificate_reloader]
+period = "1m"

@@ -365,6 +365,7 @@ regarding
 regardless
 regards
 relatively
+resource
 respectively
 right
 s

@@ -18,8 +18,12 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -34,21 +38,28 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -59,10 +70,12 @@ import static org.testng.Assert.assertNotNull;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
-    private final String API_NAME = "mutualsslAPI";
-    private final String API_NAME_2 = "mutualsslAPI2";
-    private final String API_CONTEXT = "mutualsslAPI";
-    private final String API_CONTEXT_2 = "mutualsslAPI2";
+    private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
+    private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
+    private final String mutualSSLandOauthMandatoryAPI = "mutualSSLandOAuthMandatoryAPI";
+    private final String mutualSSLOnlyAPIContext = "mutualsslOnlyAPI";
+    private final String mutualSSLWithOAuthAPIContext = "mutualSSLWithOAuthAPI";
+    private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -71,14 +84,17 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiEndPointUrl;
     private String applicationId;
     private String apiId1, apiId2;
+    private String apiId3;
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
-            throws APIManagerIntegrationTestException, IOException, ApiException, org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException {
+            throws APIManagerIntegrationTestException, IOException, ApiException,
+            org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException,
+            InterruptedException {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
-        APIRequest apiRequest1 = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+        APIRequest apiRequest1 = new APIRequest(mutualSSLOnlyAPIName, mutualSSLOnlyAPIContext, new URL(apiEndPointUrl));
         apiRequest1.setVersion(API_VERSION_1_0_0);
         apiRequest1.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest1.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -97,8 +113,12 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         List<String> securitySchemes = new ArrayList<>();
         securitySchemes.add("mutualssl");
+        securitySchemes.add("mutualssl_mandatory");
         apiRequest1.setSecurityScheme(securitySchemes);
-
+        apiRequest1.setDefault_version("true");
+        apiRequest1.setHttps_checked("https");
+        apiRequest1.setHttp_checked(null);
+        apiRequest1.setDefault_version_checked("true");
         HttpResponse response1 = restAPIPublisher.addAPI(apiRequest1);
         apiId1 = response1.getData();
 
@@ -106,35 +126,68 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        APIRequest apiRequest2 = new APIRequest(API_NAME_2, API_CONTEXT_2, new URL(apiEndPointUrl));
+        APIRequest apiRequest2 = new APIRequest(mutualSSLWithOAuthAPI, mutualSSLWithOAuthAPIContext, new URL(apiEndPointUrl));
         apiRequest2.setVersion(API_VERSION_1_0_0);
         apiRequest2.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest2.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest2.setTags(API_TAGS);
         apiRequest2.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         apiRequest2.setOperationsDTOS(operationsDTOS);
-
+        apiRequest2.setDefault_version("true");
+        apiRequest2.setHttps_checked("https");
+        apiRequest2.setHttp_checked(null);
+        apiRequest2.setDefault_version_checked("true");
         List<String> securitySchemes2 = new ArrayList<>();
         securitySchemes2.add("mutualssl");
         securitySchemes2.add("oauth2");
         securitySchemes2.add("api_key");
+        securitySchemes2.add("oauth_basic_auth_api_key_mandatory");
         apiRequest2.setSecurityScheme(securitySchemes2);
 
         HttpResponse response2 = restAPIPublisher.addAPI(apiRequest2);
         apiId2 = response2.getData();
 
         String certTwo = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                + File.separator + "abcde.crt";
+                + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
         restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+
+        APIRequest apiRequest3 = new APIRequest(mutualSSLandOauthMandatoryAPI, mutualSSLandOAuthMandatoryAPIContext,
+                new URL(apiEndPointUrl));
+        apiRequest3.setVersion(API_VERSION_1_0_0);
+        apiRequest3.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest3.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest3.setTags(API_TAGS);
+        apiRequest3.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest3.setOperationsDTOS(operationsDTOS);
+
+        List<String> securitySchemes3 = new ArrayList<>();
+        securitySchemes3.add("mutualssl");
+        securitySchemes3.add("oauth2");
+        securitySchemes3.add("api_key");
+        securitySchemes3.add("mutualssl_mandatory");
+        securitySchemes3.add("oauth_basic_auth_api_key_mandatory");
+        apiRequest3.setSecurityScheme(securitySchemes3);
+        apiRequest3.setDefault_version("true");
+        apiRequest3.setHttps_checked("https");
+        apiRequest3.setHttp_checked(null);
+        apiRequest3.setDefault_version_checked("true");
+        HttpResponse response3 = restAPIPublisher.addAPI(apiRequest3);
+        apiId3 = response3.getData();
+        String certThree = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "example.crt";
+        restAPIPublisher
+                .uploadCertificate(new File(certThree), "abcdef", apiId3, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationId = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(apiId3, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
         ArrayList grantTypes = new ArrayList();
@@ -144,8 +197,12 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
+
+
+
         //get access token
         accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Thread.sleep(120000);
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
@@ -157,13 +214,14 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         HttpResponse apiResponse = HttpRequestUtil
-                .doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+                .doGet(getAPIInvocationURLHttps(mutualSSLOnlyAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders);
         JSONObject response = new JSONObject(apiResponse.getData());
         //fix test failure due to error code changes introduced in product-apim pull #7106
         assertEquals(response.getJSONObject("fault").getInt("code"), 900901,
                 "API invocation succeeded with the access token without need for mutual ssl");
         apiResponse = HttpRequestUtil
-                .doGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API invocation failed for a test case with valid access token when the API is protected with "
@@ -177,70 +235,241 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         assertNotNull(apiKeyDTO, "API Key generation failed");
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("accept", "application/json");
-        requestHeaders.put("apikey", apiKeyDTO.getApikey());
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK);
 
-        HttpResponse apiResponse = HttpRequestUtil
-                .doGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD,
-                        requestHeaders);
-        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API invocation failed for a test case with valid api key when the API is protected with "
-                        + "API Keys");
     }
 
-//    @Test(description =  "This method tests the behaviour of APIs that are protected with mutual SSL and when the "
-//            + "authentication is done using mutual SSL", dependsOnMethods = "testCreateAndPublishAPIWithOAuth2")
-//    public void testAPIInvocationWithMutualSSL()
-//            throws IOException, XPathExpressionException, InterruptedException,
-//            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
-//        String expectedResponseData = "<id>123</id><name>John</name></Customer>";
-//        // We need to wait till the relevant listener reloads.
-//        Thread.sleep(60000);
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put("accept", "text/xml");
-//        // Check with the correct client certificate for an API that is only protected with mutual ssl.
-//        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
-//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-//                        + File.separator + "new-keystore.jks",
-//                getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
-//        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-//                "Mutual SSL Authentication has not succeeded");
-//        Assert.assertTrue(response.getData().contains(expectedResponseData), "Expected payload did not match");
-//        /* Check with the wrong client certificate for an API that is protected with mutual ssl and oauth2, without
-//         an access token.*/
-//        response = HTTPSClientUtils.doMutulSSLGet(
-//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-//                        + File.separator + "new-keystore.jks",
-//                getAPIInvocationURLHttps(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
-//        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
-//                "Mutual SSL Authentication has succeeded for a different certificate");
-//        /* Check with the correct client certificate for an API that is protected with mutual ssl and oauth2, without
-//         an access token.*/
-//        response = HTTPSClientUtils.doMutulSSLGet(
-//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-//                        + File.separator + "test.jks",
-//                getAPIInvocationURLHttps(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
-//        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-//                "Mutual SSL Authentication has not succeeded");
-//        Assert.assertTrue(response.getData().contains(expectedResponseData), "Expected payload did not match");
-//
-//         /* Check with the wrong client certificate for an API that is protected with mutual ssl and oauth2, with a
-//         correct access token.*/
-//        requestHeaders.put("Authorization", "Bearer " + accessToken);
-//        response = HTTPSClientUtils.doMutulSSLGet(
-//                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-//                        + File.separator + "new-keystore.jks",
-//                getAPIInvocationURLHttps(API_CONTEXT_2, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
-//        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-//                "OAuth2 authentication was not checked in the event of mutual SSL failure");
-//        Assert.assertTrue(response.getData().contains(expectedResponseData), "Expected payload did not match");
-//    }
+    @Test(description = "Invoke mutual SSL only API with not supported certificate", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLOnlyAPINegative()
+            throws IOException, XPathExpressionException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "test.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "test.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName) + API_END_POINT_METHOD,
+                requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
+    @Test(description = "This method test to validate how application security mandatory and mutual ssl optional api " +
+            "behaviour in success scenario",
+            dependsOnMethods = "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLWithOauthMandatory() throws IOException, XPathExpressionException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext) + API_END_POINT_METHOD,
+                requestHeaders);
+
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+    }
+
+    @Test(description = "Test with no application security header with valid cert", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLWithOauthMandatoryNegative1() throws IOException,
+            XPathExpressionException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual authentication success for oauth mandatory scenario");
+    }
+
+    @Test(description = "This method test to validate how application security mandatory and mutual ssl optional api " +
+            "behaviour in success scenario",
+            dependsOnMethods = "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLWithOauthMandatoryNegative2() throws IOException,
+            XPathExpressionException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "test.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "test.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext) + API_END_POINT_METHOD,
+                requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual authentication success for oauth mandatory scenario");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual authentication success for oauth mandatory scenario");
+    }
+
+
+    @Test(description = "This method test to validate how application security mandatory and mutual ssl optional api " +
+            "behaviour in success scenario",
+            dependsOnMethods = "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLWithOauthMandatoryNegative3() throws IOException,
+            XPathExpressionException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + UUID.randomUUID().toString());
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext) + API_END_POINT_METHOD,
+                requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual authentication success for oauth mandatory scenario");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual authentication success for oauth mandatory scenario");
+    }
+
+    @Test(description = "API invocation with mutual ssl and oauth mandatory", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLMandatory() throws IOException, XPathExpressionException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext) + API_END_POINT_METHOD,
+                requestHeaders);
+
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual SSL Authentication has not succeed");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Mutual SSL Authentication has not succeed");
+    }
+
+    @Test(description = "API invocation with mutual ssl and oauth mandatory", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLMandatoryNeagative1() throws IOException, XPathExpressionException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext) + API_END_POINT_METHOD,
+                requestHeaders);
+
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+    }
+
+    @Test(description = "API invocation with mutual ssl and oauth mandatory", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLMandatoryNegative2() throws IOException, XPathExpressionException {
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse response = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                                API_END_POINT_METHOD,
+                        requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext) + API_END_POINT_METHOD,
+                        requestHeaders);
+
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+    }
+
+    @Test(description = "API invocation with mutual ssl and oauth mandatory", dependsOnMethods =
+            "testCreateAndPublishAPIWithOAuth2")
+    public void testAPIInvocationWithMutualSSLHeader() throws IOException, XPathExpressionException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("X-WSO2-CLIENT-CERTIFICATE", generateBase64EncodedCertificate());
+        HttpResponse response = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                                API_END_POINT_METHOD,
+                        requestHeaders);
+        HttpResponse defaultResponse = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext) + API_END_POINT_METHOD,
+                        requestHeaders);
+
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Mutual SSL Authentication has succeeded for a different certificate");
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
+        restAPIPublisher.deleteAPI(apiId3);
     }
 
+    public String generateBase64EncodedCertificate() throws IOException {
+
+        String certOne = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "example.crt";
+        String base64EncodedString = IOUtils.toString(new FileInputStream(certOne));
+        base64EncodedString = Base64.encodeBase64URLSafeString(base64EncodedString.getBytes());
+        return base64EncodedString;
+    }
 }

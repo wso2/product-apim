@@ -64,6 +64,10 @@
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-inflector</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -208,6 +212,7 @@
                             <tasks>
                                 <property name="tempdir" value="target/docs-temp" />
                                 <property name="hideMenu" value="&lt;/Security&gt;${line.separator} ${line.separator} &lt;!--Hide unnecessary menu Items--&gt; ${line.separator} &lt;HideMenuItemIds&gt; ${line.separator} &lt;HideMenuItemId&gt;claim_mgt_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_mgt_emailtemplate_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_security_questions_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;/HideMenuItemIds&gt;" />
+                                <property name="hideMenuTemplate" value="&lt;/Security&gt;${line.separator}&lt;HideMenuItemIds&gt;${line.separator}{% for item in server.hide_menu_items %}${line.separator}&lt;HideMenuItemId&gt;{{item}}&lt;/HideMenuItemId&gt;${line.separator}{% endfor %}${line.separator}&lt;/HideMenuItemIds&gt;" />
 
                                 <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
@@ -216,6 +221,7 @@
                                     </fileset>
                                 </unzip>
                                 <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml" token="&lt;/Security&gt;" value="${hideMenu}" />
+                                <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/carbon.xml.j2" token="&lt;/Security&gt;" value="${hideMenuTemplate}" />
                                 <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/" overwrite="false">
                                     <fileset dir="${tempdir}/wso2am-${project.version}/repository/components/">
                                     </fileset>
@@ -263,14 +269,6 @@
                                     <fileset dir="src/site/xdoc/">
                                         <include name="**/images/*.*" />
                                     </fileset>
-                                </copy>
-                                <copy file="${basedir}/../../distribution/product/src/main/kernel-db-scripts/oracle.sql"
-                                      tofile="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/oracle.sql"
-                                      overwrite="true">
-                                </copy>
-                                <copy file="${basedir}/../../distribution/product/src/main/kernel-db-scripts/oracle_rac.sql"
-                                      tofile="target/wso2carbon-core-${carbon.kernel.version}/dbscripts/oracle_rac.sql"
-                                      overwrite="true">
                                 </copy>
                                 <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/" />
                                 <zip destfile="target/site/store-api-docs.zip" basedir="target/features/" includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/" />
@@ -834,7 +832,10 @@
                                             ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.default.json
                                         </param>
                                         <param>
-                                            ${basedir}/../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.default.json
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.tenant.common.server.default.json
                                         </param>
                                     </include>
                                     <target>

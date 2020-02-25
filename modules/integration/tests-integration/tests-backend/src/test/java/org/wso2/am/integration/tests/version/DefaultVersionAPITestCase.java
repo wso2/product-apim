@@ -91,7 +91,8 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
         //Add an Application in the Store.
         HttpResponse applicationResponse = restAPIStore
-                .createApplication("DefaultVersionAPP", "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
+                .createApplication("DefaultVersionAPP", "Default version testing application",
+                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
 
         applicationID = applicationResponse.getData();
 
@@ -102,7 +103,8 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         //Generate production token and invoke with that
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext);

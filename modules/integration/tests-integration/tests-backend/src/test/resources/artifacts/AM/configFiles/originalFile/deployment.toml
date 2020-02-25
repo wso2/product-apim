@@ -236,3 +236,6 @@ api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
 collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
 base_url="https://localhost:9943/am-auditApi-sample/api/auditapi"
 global=true
+
+[apim.certificate_reloader]
+period = "1m"

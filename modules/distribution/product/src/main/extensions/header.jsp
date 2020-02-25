@@ -23,6 +23,7 @@
 <%@ page import="org.json.simple.parser.JSONParser"%>
 <%@ page import="org.json.simple.JSONObject"%>
 <%@ page import="java.net.URI"%>
+<%@ page import="org.apache.commons.lang.StringUtils"%>
 
 <%
     String tenant = request.getParameter("tenantDomain");
@@ -45,15 +46,28 @@
     String pageTitle = "WSO2 API Manager";
     String footerText = "WSO2 API Manager";
     String faviconSrc = "libs/theme/assets/images/favicon.ico";
+    String logoSrc = null;
+    String logoHeight = "50";
+    String logoWidth = "50";
+    String logoAltText = "";
+    File customCSSFile = null;
+    String customCSS = "";
+    String tenantThemeDirectoryName = "";
+    boolean showCookiePolicy = true;
+    boolean showPrivacyPolicy = true;
+    String cookiePolicyText = null;
+    String privacyPolicyText = null;
 
     if (tenant != null) {
         String current = new File(".").getCanonicalPath();
-        String tenantConfLocation = "/repository/deployment/server/jaggeryapps/devportal/site/public/tenant_themes";
-        String tenantThemeDirectoryName = tenant;
-        String tenantThemeFile =  current + tenantConfLocation + "/" + tenantThemeDirectoryName + "/" + "loginTheme.json";
-        File directory = new File(current + tenantConfLocation + "/" + tenantThemeDirectoryName);
+        String tenantConfLocation = "/repository/deployment/server/jaggeryapps/devportal/site/public/tenant_themes/";
+        tenantThemeDirectoryName = tenant;
+        String tenantThemeFile =  current + tenantConfLocation + tenantThemeDirectoryName + "/login/" + "loginTheme.json";
+        customCSS = current + tenantConfLocation + tenantThemeDirectoryName + "/login/css/" + "loginTheme.css";
+        File directory = new File(current + tenantConfLocation + tenantThemeDirectoryName);
         if (directory != null && directory.exists() && directory.isDirectory()) {
             File themeFile = new File(tenantThemeFile);
+            customCSSFile = new File(customCSS);
             if (themeFile != null && themeFile.exists() && themeFile.isFile()) {
                 FileReader fr = new FileReader(themeFile);
                 JSONParser parser = new JSONParser();
@@ -74,7 +88,35 @@
 
                 JSONObject faviconThemeObj = (JSONObject)jsonObject.get("favicon");
                 if (faviconThemeObj != null) {
-                    faviconSrc = (String)(faviconThemeObj.get("src"));
+                    String fileName = (String)(faviconThemeObj.get("src"));
+                    if (!StringUtils.isEmpty(fileName)) {
+                        faviconSrc = "/devportal/site/public/tenant_themes/" + tenantThemeDirectoryName + "/login/images/"
+                                  + fileName;
+                    }
+                }
+
+                JSONObject logoThemeObj = (JSONObject)jsonObject.get("logo");
+                if (logoThemeObj != null) {
+                    String fileName = (String)(logoThemeObj.get("src"));
+                    if (!StringUtils.isEmpty(fileName)) {
+                        logoSrc = "/devportal/site/public/tenant_themes/" + tenantThemeDirectoryName + "/login/images/"
+                                  + fileName;
+                    }
+                    logoHeight = (String)(logoThemeObj.get("height")) != null ? (String)(logoThemeObj.get("height")) : logoHeight;
+                    logoWidth = (String)(logoThemeObj.get("width")) != null ? (String)(logoThemeObj.get("width")) : logoWidth;
+                    logoAltText = (String)(logoThemeObj.get("alt"));
+                }
+
+                JSONObject cookiePolicyThemeObj = (JSONObject)jsonObject.get("cookie-policy");
+                if (cookiePolicyThemeObj != null) {
+                    showCookiePolicy = (Boolean)(cookiePolicyThemeObj.get("visible"));
+                    cookiePolicyText = (String)cookiePolicyThemeObj.get("text");
+                }
+
+                JSONObject privacyPolicyThemeObj = (JSONObject)jsonObject.get("privacy-policy");
+                if (privacyPolicyThemeObj != null) {
+                    showPrivacyPolicy = (Boolean)(privacyPolicyThemeObj.get("visible"));
+                    privacyPolicyText = (String)privacyPolicyThemeObj.get("text");
                 }
             }
         }
@@ -83,6 +125,22 @@
     request.setAttribute("pageTitle", pageTitle);
     request.setAttribute("footerText", footerText);
     request.setAttribute("faviconSrc", faviconSrc);
+    request.setAttribute("showCookiePolicy", showCookiePolicy);
+    request.setAttribute("showPrivacyPolicy", showPrivacyPolicy);
+    request.setAttribute("cookiePolicyText", cookiePolicyText);
+    request.setAttribute("privacyPolicyText", privacyPolicyText);
+    request.setAttribute("logoSrc", logoSrc);
+    request.setAttribute("logoHeight", logoHeight);
+    request.setAttribute("logoWidth", logoWidth);
+    request.setAttribute("logoAltText", logoAltText);
+
+    if (customCSSFile != null && customCSSFile.exists() && customCSSFile.isFile()) {
+	String cssRelativePath = "/devportal/site/public/tenant_themes/" + tenantThemeDirectoryName + "/login/css/" + "loginTheme.css";
+        request.setAttribute("customCSS", cssRelativePath);
+    } else {
+        request.setAttribute("customCSS", "");
+    }
+
 %>
 
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -188,5 +246,13 @@
         color: #ff5000;
     }
 </style>
+
+<%
+	String cssPath = request.getAttribute("customCSS") + "";
+	if (!StringUtils.isEmpty(cssPath)) {
+%>
+		<link href=<%=cssPath%> rel="stylesheet" type="text/css">
+<%	}
+%>
 
 <script src="libs/jquery_3.4.1/jquery-3.4.1.js"></script>
