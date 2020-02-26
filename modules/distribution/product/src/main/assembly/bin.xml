@@ -276,6 +276,16 @@
                 <include>**/**.sql</include>
             </includes>
         </fileSet>
+	 <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/multi-dc/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/multi-dc</outputDirectory>
+            <includes>
+                <include>**/**.sql</include>
+                <include>**/**.txt</include>
+            </includes>
+        </fileSet>
         <fileSet>
             <directory>
                 ../resources/migration-1.0.0_to_1.2.0/
