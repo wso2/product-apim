@@ -73,7 +73,7 @@ rem ----- Process the input command -------------------------------------------
 
 rem Slurp the command line arguments. This loop allows for an unlimited number
 rem of arguments (up to the command line limit, anyway).
-
+set originalArgs=%*
 
 :setupArgs
 if ""%1""=="""" goto doneStart
@@ -138,7 +138,24 @@ for %%a in (!originalArgs!) do (
 	if %%a==-Dprofile ( set found=true
 	)
 )
-call bin\profileSetup.bat %profile%
+
+for %%a in (!originalArgs!) do (
+	if %%a==--skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+	    goto runProfileSetup
+	)
+	if %%a==-skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+        goto runProfileSetup
+    )
+    if %%a==skipConfigOptimization (
+	    set skipConfigOptimizationOption=%%a
+        goto runProfileSetup
+    )
+)
+
+:runProfileSetup
+call bin\profileSetup.bat %profile% %skipConfigOptimizationOption%
 endlocal
 goto findJdk
 
