@@ -1,4 +1,5 @@
-from db_modifier import * 
+#!/usr/bin/python3
+from db_modifier import *
 import flask
 from flask import request, current_app
 from flask import jsonify, Response
@@ -12,9 +13,11 @@ from apscheduler.scheduler import Scheduler
 from log import logger
 import base64
 import json
+import os
+dirname = os.path.dirname(__file__)
 
-API_CRT = "../resources/Certificates/server.crt"
-API_KEY = "../resources/Certificates/server.key"
+API_CRT = os.path.join(dirname, "../resources/Certificates/server.crt")
+API_KEY = os.path.join(dirname, "../resources/Certificates/server.key")
 
 HTTPS_ENABLED = True
 VERIFY_USER = True

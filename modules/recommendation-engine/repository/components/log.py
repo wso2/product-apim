@@ -1,7 +1,9 @@
 import logging
 import logging.handlers
+import os
+dirname = os.path.dirname(__file__)
 
-LOG_FILENAME = '../log/wso2carbon.log'
+LOG_FILENAME = filename = os.path.join(dirname, '../log/wso2carbon.log')
 logger = logging.getLogger()
 
 def set_logger():
