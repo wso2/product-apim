@@ -7,6 +7,8 @@
         <property name="http.url">{{apim.devportal.recommendations.recommendations_api}}/publishEvents</property>
         {% if apim.devportal.recommendations.oauth_endpoint is defined %}
         <property name="oauth.url">{{apim.devportal.recommendations.oauth_endpoint}}</property>
+        {% endif %}
+        {% if apim.devportal.recommendations.consumer_key is defined %}
         <property name="oauth.consumer.key">{{apim.devportal.recommendations.consumer_key}}</property>
         <property name="oauth.consumer.secret">{{apim.devportal.recommendations.consumer_secret}}</property>
         {% endif %}
