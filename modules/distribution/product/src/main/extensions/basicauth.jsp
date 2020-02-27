@@ -313,7 +313,7 @@
             String sp = request.getParameter("sp");
             if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
-                type="submit"
+                type="button"
                 onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL)%>';"
                 class="ui large button link-button"
                 id="registerLink"
