@@ -105,6 +105,47 @@ public class AdminDashboardRestClient {
             throw new APIManagerIntegrationTestException("Add new policy failed", e);
         }
     }
+    
+    public HttpResponse addApplicationPolicyWithBandwidthType(String name, int bandwidth, String bandwidthUnit,
+            int defaultUnitTime, String defaultTimeUnit) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/policy/app/edit/ajax/app-policy-edit.jag"),
+                    "action=add&policyName=" + name
+                            + "&description=&defaultQuotaPolicy=bandwidthVolume&defaultRequestCount=&defaultBandwidth="
+                            + bandwidth + "&defaultBandwidthUnit=" + bandwidthUnit + "&defaultUnitTime="
+                            + defaultUnitTime + "&defaultTimeUnit=" + defaultTimeUnit
+                            + "&stopOnQuotaReach=false&attributes=%5B%5D",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Add new policy failed", e);
+        }
+    }
+    
+    public HttpResponse addSubscriptionPolicyWithBandwidthType(String name, int bandwidth, String bandwidthUnit,
+            int defaultUnitTime, String defaultTimeUnit, boolean stopOnQuotaReach, int rateLimit,
+            String rateLimitTimeUnit) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/policy/subscription/edit/ajax/subscription-policy-edit.jag"),
+                    "action=add&policyName=" + name
+                            + "&description=&defaultQuotaPolicy=bandwidthVolume&defaultRequestCount=&defaultBandwidth="
+                            + bandwidth + "&defaultBandwidthUnit=" + bandwidthUnit + "&defaultUnitTime="
+                            + defaultUnitTime + "&defaultTimeUnit=" + defaultTimeUnit + "&rateLimitCount=" + rateLimit
+                            + "&rateLimitTimeUnit=" + rateLimitTimeUnit + "&stopOnQuotaReach=" + stopOnQuotaReach
+                            + "&tierPlan=FREE&monetizationPlan=FixedRate&fixedRate=&billingCycle=week&pricePerRequest=&currencyType=&permissionType=allow&roles=Internal%2Feveryone&attributes=%5B%5D",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Add new policy failed", e);
+        }
+    }
 
     /**
      * Delete tier
