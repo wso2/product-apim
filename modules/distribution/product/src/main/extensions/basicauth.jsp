@@ -162,7 +162,7 @@
                     id="username"
                     value=""
                     name="username"
-                    tabindex="0"
+                    tabindex="1"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "username")%>"
                     required>
                 <i aria-hidden="true" class="user icon"></i>
@@ -179,6 +179,7 @@
                     name="password"
                     value=""
                     autocomplete="off"
+                    tabindex="2"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "password")%>">
                 <i aria-hidden="true" class="lock icon"></i>
             </div>
@@ -233,12 +234,12 @@
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
             <% if (!isIdentifierFirstLogin(inputType)) { %>
-                <a id="usernameRecoverLink" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true)%>">
+                <a id="usernameRecoverLink" tabindex="5" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true)%>">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username")%>
                 </a>
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password.or")%>
             <% } %>
-            <a id="passwordRecoverLink" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false)%>">
+            <a id="passwordRecoverLink" tabindex="6" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false)%>">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.password")%>
             </a>
             ?
@@ -247,7 +248,7 @@
 
         <% if (isIdentifierFirstLogin(inputType)) { %>
         <div class="field">
-            <a id="backLink" onclick="goBack()">
+            <a id="backLink" tabindex="7" onclick="goBack()">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.different.account")%>
             </a>
         </div>
@@ -258,7 +259,7 @@
 
     <div class="field">
         <div class="ui checkbox">
-            <input type="checkbox" id="chkRemember" name="chkRemember">
+            <input tabindex="3" type="checkbox" id="chkRemember" name="chkRemember">
             <label><%=AuthenticationEndpointUtil.i18n(resourceBundle, "remember.me")%></label>
         </div>
     </div>
@@ -267,48 +268,22 @@
 
     <div class="ui divider hidden"></div>
 
-    <%
-    boolean showCookiePolicy = (Boolean)request.getAttribute("showCookiePolicy");
-    if (showCookiePolicy) {
-    %>
-        <div class="ui visible warning message">
-            <%
-            String cookiePolicyText = (String)request.getAttribute("cookiePolicyText");
-            if (!StringUtils.isEmpty(cookiePolicyText)) {
-            %>
-                <%=cookiePolicyText%>
-            <% } else { %>
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
-            <% } %>
-            <a href="cookie_policy.do" target="policy-pane">
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
-            </a>
-            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
-        </div>
-    <% } %>
-
-    <%
-    boolean showPrivacyPolicy = (Boolean)request.getAttribute("showPrivacyPolicy");
-    if (showPrivacyPolicy) {
-    %>
-        <div class="ui visible warning message">
-            <%
-            String privacyPolicyText = (String)request.getAttribute("privacyPolicyText");
-            if (!StringUtils.isEmpty(privacyPolicyText)) {
-            %>
-                <%=privacyPolicyText%>
-            <% } else { %>
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
-            <% } %>
-            <a href="privacy_policy.do" target="policy-pane">
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
-            </a>
-        </div>
-    <% } %>
+    <div class="cookie-policy-message">
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
+        <a href="cookie_policy.do" target="policy-pane">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
+        </a>
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
+        <br><br>
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
+        <a href="privacy_policy.do" target="policy-pane">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
+        </a>
+    </div>
     <div class="ui divider hidden"></div>
 
     <div class="ui two column stackable grid">
-        <div class="column align-left buttons">
+        <div class="column mobile center aligned tablet left aligned computer left aligned buttons tablet no-padding-left-first-child computer no-padding-left-first-child">
             <%
             String sp = request.getParameter("sp");
             if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
@@ -317,16 +292,18 @@
                 onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL)%>';"
                 class="ui large button link-button"
                 id="registerLink"
+                tabindex="8"
                 role="button">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "create.account")%>
             </button>
             <% } %>
         </div>
-        <div class="column align-right buttons">
+        <div class="column mobile center aligned tablet right aligned computer right aligned buttons tablet no-margin-right-last-child computer no-margin-right-last-child">
             <button
                 type="submit"
                 onclick="submitCredentials(event)"
                 class="ui primary large button"
+                tabindex="4"
                 role="button">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "continue")%>
             </button>
@@ -334,6 +311,7 @@
     </div>
 
     <% if (Boolean.parseBoolean(loginFailed) && errorCode.equals(IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE) && request.getParameter("resend_username") == null) { %>
+    <div class="ui divider hidden"></div>
     <div class="field">
         <div class="form-actions">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "no.confirmation.mail")%>
