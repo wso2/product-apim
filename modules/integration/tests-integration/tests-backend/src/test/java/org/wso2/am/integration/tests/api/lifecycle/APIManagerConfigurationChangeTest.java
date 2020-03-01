@@ -196,6 +196,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
                     + File.separator + "jwks-backend.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "backend_security.xml", gatewayContextMgt, gatewaySessionCookie);
         }
     }
 }
