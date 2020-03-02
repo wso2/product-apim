@@ -263,5 +263,8 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(app2Id);
         restAPIStore.deleteApplication(app3Id);
         restAPIPublisher.deleteAPI(apiId);
+        adminDashboardRestClient.deleteAPIPolicy(apiPolicyName);
+        adminDashboardRestClient.deleteApplicationPolicy(appPolicyName);
+        adminDashboardRestClient.deleteSubscriptionPolicy(subPolicyName);
     }
 }
