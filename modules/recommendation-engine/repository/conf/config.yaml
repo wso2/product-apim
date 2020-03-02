@@ -18,3 +18,5 @@ cron_job_interval_in_hours: 24            # Cron job interval in hours to update
 
 # URL to connect to the Mongodb
 mongodb_url: localhost:27017/
+
+log_level: DEBUG

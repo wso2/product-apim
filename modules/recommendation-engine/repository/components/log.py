@@ -1,13 +1,21 @@
 import logging
 import logging.handlers
 import os
+from config import config_properties
+
 dirname = os.path.dirname(__file__)
 
 LOG_FILENAME = filename = os.path.join(dirname, '../log/wso2carbon.log')
 logger = logging.getLogger()
+LOG_LEVEL = config_properties['log_level']
+
+if LOG_LEVEL == "INFO":
+    log_level = logging.INFO
+elif LOG_LEVEL == "DEBUG":
+    log_level = logging.DEBUG
 
 def set_logger():
-    logger.setLevel(logging.INFO)
+    logger.setLevel(log_level)
     formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
 
     console_handler = logging.StreamHandler()
