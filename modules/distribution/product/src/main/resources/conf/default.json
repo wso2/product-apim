@@ -230,5 +230,18 @@
     "error_page.code_general.location": "/carbon/errors/error.html",
   "xml_input_factory.properties.'javax.xml.stream.isCoalescing'": true,
   "xml_input_factory.properties.'javax.xml.stream.isSupportingExternalEntities'": false,
-  "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false
+  "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false,
+  "transport.client.default_max_connection_per_host": "500",
+  "transport.client.max_total_connections":"15000",
+  "transport.client.http_content_negotiation": false,
+  "transport.client.send_stacktrace_details_with_fault":true,
+  "transport.client.drilldown_to_root_cause_for_fault_reason": false,
+  "transport.client.http.properties.PROTOCOL": "HTTP/1.1",
+  "transport.client.http.properties.Transfer-Encoding": "chunked",
+  "transport.client.http.properties.SO_TIMEOUT": "60000",
+  "transport.client.http.properties.CONNECTION_TIMEOUT": "60000",
+  "transport.client.https.properties.PROTOCOL": "HTTP/1.1",
+  "transport.client.https.properties.Transfer-Encoding": "chunked",
+  "transport.client.https.properties.SO_TIMEOUT": "60000",
+  "transport.client.https.properties.CONNECTION_TIMEOUT": "60000"
 }
