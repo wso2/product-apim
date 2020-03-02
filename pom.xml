@@ -1104,6 +1104,11 @@
                 <version>${carbon.identity.governance.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.tenant.resource.manager</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.event.handler.accountlock</groupId>
                 <artifactId>org.wso2.carbon.identity.handler.event.account.lock.feature</artifactId>
                 <version>${carbon.identity.event.handler.account.lock.version}</version>
@@ -1121,6 +1126,11 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.functions.library.mgt</artifactId>
+                <version>${carbon.identity.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.configuration.mgt.core</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
