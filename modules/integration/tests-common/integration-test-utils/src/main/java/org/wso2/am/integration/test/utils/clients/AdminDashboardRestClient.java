@@ -147,6 +147,47 @@ public class AdminDashboardRestClient {
         }
     }
 
+    public HttpResponse deleteSubscriptionPolicy(String name) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/policy/subscription/manage/ajax/subscription-policy-manage.jag"),
+                    "action=deleteSubscriptionPolicy&policy=" + name, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Delete subscription policy failed", e);
+        }
+    }
+    
+    public HttpResponse deleteAPIPolicy(String name) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/policy/resource/policy-list/ajax/api-policy-manage.jag"),
+                    "action=deleteAPIPolicy&policy=" + name, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Delete subscription policy failed", e);
+        }
+    }
+    
+    public HttpResponse deleteApplicationPolicy(String name) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/policy/app/manage/ajax/app-policy-manage.jag"),
+                    "action=deleteAppPolicy&policy=" + name, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Delete subscription policy failed", e);
+        }
+    }
     /**
      * Delete tier
      * @param tierName
