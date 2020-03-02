@@ -8,6 +8,7 @@ import json
 import yaml
 from log import logger
 import os
+from config import config_properties
 
 dirname = os.path.dirname(__file__)
 
@@ -46,10 +47,6 @@ RESOURCE = 'resource'
 SUMMARY = 'summary'
 DESCRIPTION = 'description'
 SEARCH_QUERY = 'search_query'
-
-CONFIG_FILE = os.path.join(dirname,'../conf/config.yaml')
-with open(CONFIG_FILE, 'r') as stream:
-    config_properties = yaml.safe_load(stream)
 
 MONGO_URL = "mongodb://" + config_properties['mongodb_url']
 client = pymongo.MongoClient(MONGO_URL)

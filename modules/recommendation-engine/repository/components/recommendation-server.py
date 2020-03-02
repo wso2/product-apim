@@ -14,6 +14,8 @@ from log import logger
 import base64
 import json
 import os
+from config import config_properties
+
 dirname = os.path.dirname(__file__)
 
 API_HOST = config_properties['host']
