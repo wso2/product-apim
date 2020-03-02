@@ -145,6 +145,7 @@
   "indexing.frequency": "3",
   "indexing.bach_size": "40",
   "indexing.pool_size": "40",
+  "indexing.location": "../../../../solr/data",
   "realm_manager": {
     "data_source": "SHARED_DB",
     "properties": {
