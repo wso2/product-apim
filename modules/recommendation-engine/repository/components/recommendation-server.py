@@ -14,17 +14,14 @@ from log import logger
 import base64
 import json
 import os
+from config import config_properties
+
 dirname = os.path.dirname(__file__)
-
-API_CRT = os.path.join(dirname, "../resources/Certificates/server.crt")
-API_KEY = os.path.join(dirname, "../resources/Certificates/server.key")
-
-HTTPS_ENABLED = True
-VERIFY_USER = True
 
 API_HOST = config_properties['host']
 API_PORT = config_properties['port']
 
+HTTPS_ENABLED = config_properties['https_enabled']
 MIN_API_COUNT = config_properties['minimum_APIs_to_start_recommendations']
 SEARCH_DETAILS_VALID_TIME = config_properties['search_details_valid_months']
 MINIMUM_SEARCH_QUERIES = config_properties['minimum_search_queries']
@@ -193,6 +190,8 @@ def main():
     cron.start()
     context = None
     if HTTPS_ENABLED:
+        API_CRT = os.path.join(dirname, "../resources/Certificates/server.crt")
+        API_KEY = os.path.join(dirname, "../resources/Certificates/server.key")
         try:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.load_cert_chain(API_CRT, API_KEY)
