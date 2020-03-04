@@ -128,7 +128,6 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.login.APIMANAGER2611oginTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
@@ -317,6 +316,12 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-integration-emailusername-login" preserve-order="true" parallel="false"
+          group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
         </classes>
     </test>
 </suite>
