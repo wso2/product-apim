@@ -88,11 +88,13 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+       return new Object[][] {
+//                new Object[] {
+//                TestUserMode.SUPER_TENANT_ADMIN },
+//              new Object[] { TestUserMode.TENANT_ADMIN },
+//                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+              new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+//                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
@@ -174,6 +176,14 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
                 keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
 
+        restAPIPublisher = new RestAPIPublisherImpl(
+                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                publisherContext.getContextTenant().getContextUser().getPassword(),
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIStore =
+                new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                        storeContext.getContextTenant().getContextUser().getPassword(),
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
     }
 
     @Test(groups = "wso2.am", description = "This test case tests the retrieval of API which was added with a access "
