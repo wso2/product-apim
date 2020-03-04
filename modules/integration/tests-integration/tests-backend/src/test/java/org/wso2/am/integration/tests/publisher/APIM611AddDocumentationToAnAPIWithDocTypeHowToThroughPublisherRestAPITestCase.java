@@ -37,6 +37,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Add Documentation To An API with doc Type How To and different Source types
@@ -149,9 +150,14 @@ public class APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestA
         String documentId = response1.getData();
 
         DocumentListDTO documentListDTO = restAPIPublisher.getDocuments(apiId);
-        DocumentDTO documentOne = documentListDTO.getList().get(1);
-
-        assertEquals(documentId, documentOne.getDocumentId(), "Document addition failed.");
+        boolean available = false;
+        for (DocumentDTO documentDTO1 : documentListDTO.getList()){
+            if (documentId.equals(documentDTO1.getDocumentId())){
+                available = true;
+                break;
+            }
+        }
+        assertTrue(available, "Document addition failed.");
     }
 
 
