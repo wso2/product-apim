@@ -316,6 +316,7 @@
                         <phase>install</phase>
                         <configuration>
                             <tasks>
+                                <delete file="${basedir}/${is_folder_name}/repository/components/plugins/wsdl4j.wso2_${wsdl4j.version}.jar"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json"/>
