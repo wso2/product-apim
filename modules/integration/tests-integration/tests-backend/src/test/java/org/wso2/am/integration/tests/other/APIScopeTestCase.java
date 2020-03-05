@@ -28,6 +28,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -119,6 +121,14 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         }
 
         userManagementClient1.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
+        restAPIPublisher = new RestAPIPublisherImpl(
+                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                publisherContext.getContextTenant().getContextUser().getPassword(),
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIStore =
+                new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                        storeContext.getContextTenant().getContextUser().getPassword(),
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
 
         // Adding API
         String apiContext = "testScopeAPI";
