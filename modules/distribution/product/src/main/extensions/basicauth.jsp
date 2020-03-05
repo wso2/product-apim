@@ -30,6 +30,7 @@
 <%@ page import="javax.ws.rs.core.Response" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isSelfSignUpEPAvailable" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isRecoveryEPAvailable" %>
+<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameEnabled" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.apache.commons.codec.binary.Base64" %>
 <%@ page import="java.nio.charset.Charset" %>
@@ -37,6 +38,17 @@
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.EndpointConfigManager" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
+
+<%
+    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
+    Boolean isEmailUsernameEnabled = false;
+
+    if (StringUtils.isNotBlank(emailUsernameEnable)) {
+        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
+    } else {
+        isEmailUsernameEnabled = isEmailUsernameEnabled();
+    }
+%>
 
 <script>
     function goBack() {
@@ -54,12 +66,32 @@
                     console.warn("Prevented a possible double submit event");
                 } else {
                     e.preventDefault();
+                    var isEmailUsernameEnabled = JSON.parse("<%= isEmailUsernameEnabled %>");
+                    var tenantName = getParameterByName("tenantDomain");
                     var userName = document.getElementById("username");
-                    userName.value = userName.value.trim();
-                    if(userName.value){
+                    var usernameUserInput = document.getElementById("usernameUserInput");
+                    if (usernameUserInput) {
+                        var usernameUserInputValue = usernameUserInput.value.trim();
+
+                        if (getParameterByName("isSaaSApp") === "false") {
+
+                            if ((!isEmailUsernameEnabled) && (usernameUserInputValue.split("@").length > 1)) {
+                                userName.value = usernameUserInputValue;
+                            }
+                            else {
+                                userName.value = usernameUserInputValue + "@" + tenantName;
+                            }
+                        }
+                        else {
+                            userName.value = usernameUserInputValue;
+                        }
+                    }
+
+                    if (userName.value) {
                         $.ajax({
                             type: "GET",
-                            url: "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") + "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + getParameterByName("tenantDomain"),
+                            url: "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") +
+                                                            "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + tenantName,
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
                                     window.location.href = data.redirectUrl;
@@ -159,13 +191,14 @@
             <div class="ui fluid left icon input">
                 <input
                     type="text"
-                    id="username"
+                    id="usernameUserInput"
                     value=""
-                    name="username"
-                    tabindex="0"
+                    name="usernameUserInput"
+                    tabindex="1"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "username")%>"
                     required>
                 <i aria-hidden="true" class="user icon"></i>
+                <input id="username" name="username" type="hidden" value="<%=username%>">
             </div>
         </div>
     <% } else { %>
@@ -179,6 +212,7 @@
                     name="password"
                     value=""
                     autocomplete="off"
+                    tabindex="2"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "password")%>">
                 <i aria-hidden="true" class="lock icon"></i>
             </div>
@@ -202,6 +236,7 @@
         Boolean isSelfSignUpEPAvailable = false;
         String identityMgtEndpointContext = "";
         String urlEncodedURL = "";
+        String urlParameters = "";
         if (StringUtils.isNotBlank(recoveryEPAvailable)) {
             isRecoveryEPAvailable = Boolean.valueOf(recoveryEPAvailable);
         } else {
@@ -217,7 +252,7 @@
             String serverName = request.getServerName();
             int serverPort = request.getServerPort();
             String uri = (String) request.getAttribute(JAVAX_SERVLET_FORWARD_REQUEST_URI);
-            String prmstr = (String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING);
+            String prmstr = URLDecoder.decode(((String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING)), UTF_8);
             String urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
             urlEncodedURL = URLEncoder.encode(urlWithoutEncoding, UTF_8);
             identityMgtEndpointContext =
@@ -233,12 +268,12 @@
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
             <% if (!isIdentifierFirstLogin(inputType)) { %>
-                <a id="usernameRecoverLink" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true)%>">
+                <a id="usernameRecoverLink" tabindex="5" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true, urlParameters)%>">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username")%>
                 </a>
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password.or")%>
             <% } %>
-            <a id="passwordRecoverLink" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false)%>">
+            <a id="passwordRecoverLink" tabindex="6" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false, urlParameters)%>">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.password")%>
             </a>
             ?
@@ -247,7 +282,7 @@
 
         <% if (isIdentifierFirstLogin(inputType)) { %>
         <div class="field">
-            <a id="backLink" onclick="goBack()">
+            <a id="backLink" tabindex="7" onclick="goBack()">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.different.account")%>
             </a>
         </div>
@@ -258,7 +293,7 @@
 
     <div class="field">
         <div class="ui checkbox">
-            <input type="checkbox" id="chkRemember" name="chkRemember">
+            <input tabindex="3" type="checkbox" id="chkRemember" name="chkRemember">
             <label><%=AuthenticationEndpointUtil.i18n(resourceBundle, "remember.me")%></label>
         </div>
     </div>
@@ -267,66 +302,42 @@
 
     <div class="ui divider hidden"></div>
 
-    <%
-    boolean showCookiePolicy = (Boolean)request.getAttribute("showCookiePolicy");
-    if (showCookiePolicy) {
-    %>
-        <div class="ui visible warning message">
-            <%
-            String cookiePolicyText = (String)request.getAttribute("cookiePolicyText");
-            if (!StringUtils.isEmpty(cookiePolicyText)) {
-            %>
-                <%=cookiePolicyText%>
-            <% } else { %>
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
-            <% } %>
-            <a href="cookie_policy.do" target="policy-pane">
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
-            </a>
-            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
-        </div>
-    <% } %>
-
-    <%
-    boolean showPrivacyPolicy = (Boolean)request.getAttribute("showPrivacyPolicy");
-    if (showPrivacyPolicy) {
-    %>
-        <div class="ui visible warning message">
-            <%
-            String privacyPolicyText = (String)request.getAttribute("privacyPolicyText");
-            if (!StringUtils.isEmpty(privacyPolicyText)) {
-            %>
-                <%=privacyPolicyText%>
-            <% } else { %>
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
-            <% } %>
-            <a href="privacy_policy.do" target="policy-pane">
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
-            </a>
-        </div>
-    <% } %>
+    <div class="cookie-policy-message">
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies.short.description")%>
+        <a href="cookie_policy.do" target="policy-pane">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.cookies")%>
+        </a>
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.for.more.details")%>
+        <br><br>
+        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.privacy.short.description")%>
+        <a href="privacy_policy.do" target="policy-pane">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "privacy.policy.general")%>
+        </a>
+    </div>
     <div class="ui divider hidden"></div>
 
     <div class="ui two column stackable grid">
-        <div class="column align-left buttons">
+        <div class="column mobile center aligned tablet left aligned computer left aligned buttons tablet no-padding-left-first-child computer no-padding-left-first-child">
             <%
             String sp = request.getParameter("sp");
             if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
-                type="submit"
-                onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL)%>';"
+                type="button"
+                onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL, urlParameters)%>';"
                 class="ui large button link-button"
                 id="registerLink"
+                tabindex="8"
                 role="button">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "create.account")%>
             </button>
             <% } %>
         </div>
-        <div class="column align-right buttons">
+        <div class="column mobile center aligned tablet right aligned computer right aligned buttons tablet no-margin-right-last-child computer no-margin-right-last-child">
             <button
                 type="submit"
                 onclick="submitCredentials(event)"
                 class="ui primary large button"
+                tabindex="4"
                 role="button">
                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "continue")%>
             </button>
@@ -334,6 +345,7 @@
     </div>
 
     <% if (Boolean.parseBoolean(loginFailed) && errorCode.equals(IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE) && request.getParameter("resend_username") == null) { %>
+    <div class="ui divider hidden"></div>
     <div class="field">
         <div class="form-actions">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "no.confirmation.mail")%>
@@ -344,16 +356,24 @@
         </div>
     </div>
     <% } %>
-    <%!
-        private String getRecoverAccountUrl(String identityMgtEndpointContext, String urlEncodedURL, boolean isUsernameRecovery) {
+   <%!
+           private String getRecoverAccountUrl (
+               String identityMgtEndpointContext,
+               String urlEncodedURL,
+               boolean isUsernameRecovery,
+               String urlParameters) {
 
-            return identityMgtEndpointContext + "/recoveraccountrouter.do?callback=" +
-                    Encode.forHtmlAttribute(urlEncodedURL) + "&isUsernameRecovery=" + isUsernameRecovery;
-        }
+               return identityMgtEndpointContext + "/recoveraccountrouter.do?" + urlParameters +
+                   "&isUsernameRecovery=" + isUsernameRecovery + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+           }
 
-        private String getRegistrationUrl(String identityMgtEndpointContext, String urlEncodedURL) {
+           private String getRegistrationUrl (
+               String identityMgtEndpointContext,
+               String urlEncodedURL,
+               String urlParameters) {
 
-            return identityMgtEndpointContext + "/register.do?callback=" + Encode.forHtmlAttribute(urlEncodedURL);
-        }
-    %>
+               return identityMgtEndpointContext + "/register.do?" + urlParameters +
+                   "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+           }
+       %>
 </form>
