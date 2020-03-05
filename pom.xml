@@ -1280,7 +1280,7 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>2.1.7-wso2v146</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v42</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
