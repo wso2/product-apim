@@ -960,13 +960,6 @@
                 <include>**/rxt.xsd</include>
             </includes>
         </fileSet>
-
-        <!-- Copying the in-place update tools-->
-        <fileSet>
-            <directory>target/update/</directory>
-            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
-            <fileMode>744</fileMode>
-        </fileSet>
     </fileSets>
 
     <dependencySets>
