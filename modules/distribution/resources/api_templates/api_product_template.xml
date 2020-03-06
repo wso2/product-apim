@@ -26,22 +26,23 @@
         #end
         #end
 
-        #macro ( draw_endpoint $type $endpoint_config )
+        #macro ( draw_endpoint $type $endpoint_config $endpoint_security)
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #set( $endpointsecurity = $endpoint_security.get("${type}"))
 
         ## IF endpoint secured
-        #if($isEndpointSecured)
+        #if($endpointsecurity.enabled)
         #if($isSecureVaultEnabled)
-<property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$securevault_alias')"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
-        #if($isEndpointAuthDigest)
+        #if($endpointsecurity.type == "digest" || $endpointsecurity.type == "DIGEST")
 
-<property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($base64unpw)" type="STRING"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($endpointsecurity.base64EncodedPassword)" type="STRING"/>
 <property name="BACKEND_URL" value="$util.escapeXml($endpoints.get("url"))"/>
 <property name="POSTFIX" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
 <property name="HTTP_METHOD" expression="get-property('axis2', 'HTTP_METHOD')"/>
@@ -49,12 +50,12 @@
 <property name="MessageType" expression="get-property('axis2', 'messageType')"/>
 
 <enrich>
-    <source type="body" clone="true"/>
-    <target type="property" property="MessageBody"/>
+<source type="body" clone="true"/>
+<target type="property" property="MessageBody"/>
 </enrich>
 
 <call>
-    <endpoint key="$ep_key"/>
+<endpoint key="$ep_key"/>
 </call>
 
 <class name="org.wso2.carbon.apimgt.gateway.mediators.DigestAuthMediator"/>
@@ -66,32 +67,33 @@
 <property name="POST_TO_URI" value="true" scope="axis2"/>
 
 <enrich>
-    <source type="property" property="MessageBody" clone="true"/>
-    <target type="body"/>
+<source type="property" property="MessageBody" clone="true"/>
+<target type="body"/>
 </enrich>
 
         #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$base64unpw')" scope="transport"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$endpointsecurity.base64EncodedPassword')" scope="transport"/>
         #end
         #end
         #end
 <send>
+
 
 ## If endpoint is http
 #if ($endpointClass == "http")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 #elseif ($endpointClass == "address")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
-        #elseif ($endpointClass == "wsdl")
+#elseif ($endpointClass == "wsdl")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-#if (${type} == "production")
-<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
+    #if (${type} == "production")
+    <wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
+    #timeout()
+</wsdl>
+#else
+<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
 #timeout()
 </wsdl>
-        #else
-<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
-        #timeout()
-        </wsdl>
         #end
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
         </endpoint>
@@ -100,7 +102,7 @@
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
         #elseif ($endpointClass == "load_balance")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
-#elseif ($endpointClass == "default")
+        #elseif ($endpointClass == "default")
 <endpoint key="$ep_key"/>
         #end
         </send>
@@ -133,8 +135,10 @@
         #else
         ## api not blocked
         #set ($resourceNo = 0)
-	    #foreach($aggregate in $aggregates)
-	    #set($resource = $aggregate.getUriTemplate())
+        #foreach($aggregate in $aggregates)
+        #set($resource = $aggregate.getUriTemplate())
+        #set($apiId = $aggregate.getApiId())
+        #set($endpointSecurity = $endpoint_security.get("${apiId}"))
 
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
@@ -178,9 +182,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
     <then>
         #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_json.get("production_endpoints") ))
-        #draw_endpoint( "sandbox" $endpoint_json )
+        #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
         #else
-        #draw_endpoint( "production" $endpoint_json )
+        #draw_endpoint( "production" $endpoint_json $endpointSecurity)
         #end
         #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
     </then>
@@ -205,7 +209,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         <send/>
         #else
         #if($endpoint_json.get("production_endpoints") && $endpoint_json.get("sandbox_endpoints"))
-        #draw_endpoint( "sandbox" $endpoint_json )
+        #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
         #elseif($endpoint_json.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
         #elseif($endpoint_json.get("sandbox_endpoints"))
@@ -258,9 +262,9 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
         #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
-         <handlers>
-      <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
-         <property name="inline" value="INLINE"/>
-      </handler>
-       </handlers>
+<handlers>
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
+    <property name="inline" value="INLINE"/>
+</handler>
+</handlers>
         </api>

@@ -18,6 +18,8 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
+<%@ page import="org.apache.commons.lang.StringUtils"%>
+
 <% if ("API Manager".equals(request.getAttribute("headerTitle"))) { %>
 <div class="product-title">
     <div class="theme-icon inline auto transparent product-logo">
@@ -30,8 +32,20 @@
       </div>
       <h1 class="product-title-text">API Manager</h1>
 </div>
-<% } else { %>
-<div class="product-title">
-    <h1 class="product-title-text"><%=request.getAttribute("headerTitle")%></h1>
-</div>
+<% } else {
+
+    String logoSrc = (String)request.getAttribute("logoSrc");
+    String logoHeight = (String)request.getAttribute("logoHeight");
+    String logoWidth = (String)request.getAttribute("logoWidth");
+    String logoAltText = (String)request.getAttribute("logoAltText");
+    if (!StringUtils.isEmpty(logoSrc)) {
+%>
+        <div class="product-title box">
+            <img src=<%=logoSrc%> alt=<%=logoAltText%> height=<%=logoHeight%> width=<%=logoWidth%>>
+        </div>
+<%  } else { %>
+        <div class="product-title box">
+            <h1 class="product-title-text" vertical-align="middle"><%=request.getAttribute("headerTitle")%></h1>
+        </div>
+<%  } %>
 <% } %>

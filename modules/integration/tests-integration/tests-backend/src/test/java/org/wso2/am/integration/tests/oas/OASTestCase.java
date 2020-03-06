@@ -94,10 +94,13 @@ public class OASTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "API definition update", dependsOnMethods = "testAPIUpdate")
     public void testAPIDefinitionUpdate() throws Exception {
-        String originalDefinition = IOUtils.toString(
+        String originalStoreDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "oas.json"),
                 "UTF-8");
-        String responseDefinition = restAPIPublisher.updateSwagger(apiId, originalDefinition);
+        String originalPublisherDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_publisher.json"),
+                "UTF-8");
+        String responseDefinition = restAPIPublisher.updateSwagger(apiId, originalPublisherDefinition);
 
         APIDTO apidto = restAPIPublisher.getAPIByID(apiId, user.getUserDomain());
         Assert.assertNotNull(apidto);
@@ -114,19 +117,19 @@ public class OASTestCase extends APIMIntegrationBaseTest {
             OAS2Utils.validateSwaggerDataInPublisher(apidto, publisherDefinition);
             OAS2Utils.validateSwaggerDataInStore(storeDefinition);
 
-            OAS2Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
-            OAS2Utils.validateUpdatedDefinition(originalDefinition, responseDefinition);
-            OAS2Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
-            OAS2Utils.validateUpdatedDefinition(originalDefinition, apidto);
+            OAS2Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
+            OAS2Utils.validateUpdatedDefinition(originalPublisherDefinition, responseDefinition);
+            OAS2Utils.validateUpdatedDefinition(originalStoreDefinition, storeDefinition);
+            OAS2Utils.validateUpdatedDefinition(originalPublisherDefinition, apidto);
         } else {
             OAS3Utils.validateSwaggerDataInPublisher(apidto, responseDefinition);
             OAS3Utils.validateSwaggerDataInPublisher(apidto, publisherDefinition);
             OAS3Utils.validateSwaggerDataInStore(storeDefinition);
 
-            OAS3Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
-            OAS3Utils.validateUpdatedDefinition(originalDefinition, responseDefinition);
-            OAS3Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
-            OAS3Utils.validateUpdatedDefinition(originalDefinition, apidto);
+            OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
+            OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, responseDefinition);
+            OAS3Utils.validateUpdatedDefinition(originalStoreDefinition, storeDefinition);
+            OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, apidto);
         }
     }
 
@@ -134,6 +137,9 @@ public class OASTestCase extends APIMIntegrationBaseTest {
     public void testAPIDefinitionImport() throws Exception {
         String originalDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_import.json"),
+                "UTF-8");
+        String originalPublisherDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_import_publisher.json"),
                 "UTF-8");
         String additionalProperties = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "additionalProperties.json"),
@@ -157,14 +163,14 @@ public class OASTestCase extends APIMIntegrationBaseTest {
             OAS2Utils.validateSwaggerDataInPublisher(apidto, publisherDefinition);
             OAS2Utils.validateSwaggerDataInStore(storeDefinition);
 
-            OAS2Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
+            OAS2Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
             OAS2Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
             OAS2Utils.validateUpdatedDefinition(originalDefinition, apidto);
         } else {
             OAS3Utils.validateSwaggerDataInPublisher(apidto, publisherDefinition);
             OAS3Utils.validateSwaggerDataInStore(storeDefinition);
 
-            OAS3Utils.validateUpdatedDefinition(originalDefinition, publisherDefinition);
+            OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, apidto);
         }

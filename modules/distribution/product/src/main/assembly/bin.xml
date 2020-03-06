@@ -41,6 +41,7 @@
                 <exclude>**/conf/tomcat/web.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
                 <exclude>**/log4j2.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
@@ -205,6 +206,8 @@
                 <exclude>**/cipher-text.properties.j2</exclude>
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/catalina-server.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+
             </excludes>
         </fileSet>
         <fileSet>
@@ -271,6 +274,16 @@
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/multi-dc/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/multi-dc</outputDirectory>
+            <includes>
+                <include>**/**.sql</include>
+                <include>**/**.txt</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -553,6 +566,7 @@
                 <exclude>accountrecoveryendpoint/includes/title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-title.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -580,6 +594,7 @@
             <includes>
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
+                <include>self-registration-username-request.jsp</include>
             </includes>
         </fileSet>
 
@@ -722,6 +737,15 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
             <includes>
                 <include>**/tenant-conf.json</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/workflowextensions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/default-workflow-extensions.xml</include>
             </includes>
         </fileSet>
 
@@ -1319,6 +1343,13 @@
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/sms/sms-templates-admin-config.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/sms</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>

@@ -178,7 +178,7 @@
                         <div class="ui divider hidden"></div>
                         <div class="align-right buttons">
                             <button type="button" id="recoveryCancel"
-                                    class="ui button"
+                                    class="ui button link-button"
                                     onclick="location.href='<%=Encode.forJavaScript(IdentityManagementEndpointUtil.getURLEncodedCallback(callback))%>';">
                                 <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Cancel")%>
                             </button>
