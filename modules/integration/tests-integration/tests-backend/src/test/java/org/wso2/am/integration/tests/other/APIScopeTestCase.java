@@ -121,14 +121,6 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         }
 
         userManagementClient1.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
-        restAPIPublisher = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
-        restAPIStore =
-                new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                        storeContext.getContextTenant().getContextUser().getPassword(),
-                        storeContext.getContextTenant().getDomain(), storeURLHttps);
 
         // Adding API
         String apiContext = "testScopeAPI";
