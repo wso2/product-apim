@@ -1210,7 +1210,7 @@
         <carbon.analytics.common.version>5.2.24</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.125</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.128</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1235,7 +1235,7 @@
         <carbon.mediation.version>4.7.34</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.17.3</carbon.identity.version>
+        <carbon.identity.version>5.17.5</carbon.identity.version>
         <carbon.identity.governance.version>1.4.1</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.4.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.3.0</carbon.identity.event.handler.notification.version>
@@ -1250,7 +1250,7 @@
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.26</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.5.0</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.4.0</carbon.identity.auth.version>
-        <identity.apps.version>1.0.70</identity.apps.version>
+        <identity.apps.version>1.0.72</identity.apps.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.0.4</saml.common.util.version>

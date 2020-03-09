@@ -255,6 +255,7 @@
             String prmstr = URLDecoder.decode(((String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING)), UTF_8);
             String urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
             urlEncodedURL = URLEncoder.encode(urlWithoutEncoding, UTF_8);
+            urlParameters = prmstr;
             identityMgtEndpointContext =
                     application.getInitParameter("IdentityManagementEndpointContextURL");
             if (StringUtils.isBlank(identityMgtEndpointContext)) {
