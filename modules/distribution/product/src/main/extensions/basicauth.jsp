@@ -255,6 +255,7 @@
             String prmstr = URLDecoder.decode(((String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING)), UTF_8);
             String urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
             urlEncodedURL = URLEncoder.encode(urlWithoutEncoding, UTF_8);
+            urlParameters = prmstr;
             identityMgtEndpointContext =
                     application.getInitParameter("IdentityManagementEndpointContextURL");
             if (StringUtils.isBlank(identityMgtEndpointContext)) {
@@ -320,7 +321,7 @@
         <div class="column mobile center aligned tablet left aligned computer left aligned buttons tablet no-padding-left-first-child computer no-padding-left-first-child">
             <%
             String sp = request.getParameter("sp");
-            if ( (sp != null && !sp.endsWith("_apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
+            if ( (sp != null && !sp.endsWith("apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
                 type="button"
                 onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL, urlParameters)%>';"

@@ -479,6 +479,12 @@
             </includes>
         </fileSet>
 
+        <!--copy the callhome jar -->
+        <fileSet>
+            <directory>../../callhome/target/callhomeCopied/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+        </fileSet>
+
         <!--copy web app for OAuth feature-->
         <fileSet>
             <directory>
@@ -959,13 +965,6 @@
             <includes>
                 <include>**/rxt.xsd</include>
             </includes>
-        </fileSet>
-
-        <!-- Copying the in-place update tools-->
-        <fileSet>
-            <directory>target/update/</directory>
-            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
-            <fileMode>744</fileMode>
         </fileSet>
     </fileSets>
 
