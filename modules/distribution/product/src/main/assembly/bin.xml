@@ -1027,7 +1027,6 @@
                 <include>org.wso2.securevault:org.wso2.securevault:jar</include>
                 <include>org.wso2.andes.wso2:andes-client:jar</include>
                 <include>javax.jms:javax.jms-api:jar</include>
-                <include>io.swagger:swagger-inflector:jar</include>
             </includes>
         </dependencySet>
         <dependencySet>
