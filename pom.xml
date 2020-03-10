@@ -1355,7 +1355,7 @@
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
-        <version.snake.yaml>1.25</version.snake.yaml>
+        <version.snake.yaml>1.26</version.snake.yaml>
 
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
