@@ -1189,16 +1189,10 @@
                 <version>${swagger-parser-version}</version>
             </dependency>
             <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-inflector</artifactId>
-                <version>${swagger.inflector.oas3.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.orbit.com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${nimbus.jwt.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -1209,7 +1203,7 @@
         <carbon.analytics.common.version>5.2.24</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.125</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.126-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1392,7 +1386,6 @@
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.5.0</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
-        <swagger.inflector.oas3.version>2.0.5</swagger.inflector.oas3.version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
 
         <!-- WSDL4J dependencies -->
