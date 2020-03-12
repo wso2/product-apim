@@ -58,11 +58,11 @@
         <registryRoot>/</registryRoot>
     </remoteInstance>
 
-    <mount path="/_system/governance" overwrite="true">
+    <mount path="/_system/governance" overwrite="{{governance_data.overwrite}}">
         <instanceId>gov</instanceId>
         <targetPath>{{governance_data.path}}</targetPath>
     </mount>
-    <mount path="/_system/config" overwrite="true">
+    <mount path="/_system/config" overwrite="{{config_data.overwrite}}">
         <instanceId>conf</instanceId>
         <targetPath>{{config_data.path}}</targetPath>
     </mount>
