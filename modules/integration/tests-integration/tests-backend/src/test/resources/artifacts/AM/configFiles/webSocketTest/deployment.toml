@@ -58,3 +58,6 @@ passthru_https.listener.ssl_profile_interval = 6000
 
 [apim.certificate_reloader]
 period = "1m"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"

@@ -118,3 +118,6 @@ period = "1m"
 [[event_handler]]
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
