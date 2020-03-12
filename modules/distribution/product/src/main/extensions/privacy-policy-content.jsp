@@ -71,6 +71,7 @@
                         <li>Tracking your IP address with HTTP request, HTTP headers, and TCP/IP</li>
                         <li>Tracking your geographic information with the IP address</li>
                         <li>Your login history with browser cookies. Please refer our <strong>cookie policy</strong> for more information</li>
+                        <li>If the recommendations feature is enabled, the APIs and the Tags that you click in the developer portal</li>
                     </ul>
                     <div class="margin-bottom-double"></div>
                     <h2 id="user-of-your-personal-information">Use of your personal information</h2>
