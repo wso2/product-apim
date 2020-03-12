@@ -51,8 +51,8 @@ public class CORSAccessControlAllowCredentialsHeaderSetup extends APIManagerLife
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
+        serverConfigurationManager.applyConfiguration(
+                new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator + "corsACACTest"
                         + File.separator + "original" + File.separator + "deployment.toml"));
     }
 }
