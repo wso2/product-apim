@@ -240,3 +240,6 @@ subscriptions=["POST_ADD_USER"]
 
 [service_provider]
 sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
