@@ -71,8 +71,8 @@
                         <li>Tracking your IP address with HTTP request, HTTP headers, and TCP/IP</li>
                         <li>Tracking your geographic information with the IP address</li>
                         <li>Your login history with browser cookies. Please refer our <strong>cookie policy</strong> for more information</li>
-                        <li>If the recommendations feature is enabled, the APIs and the Tags that you click in the developer portal</li>
                     </ul>
+                    <p>API-M will also provide recommendation if the user wishes to enable that option in the feature which by default will be switched off. WSO2 shall use a randomised identifier to track the behaviour and will not have access to any personal information of the user.</p>
                     <div class="margin-bottom-double"></div>
                     <h2 id="user-of-your-personal-information">Use of your personal information</h2>
                     <p>API-M will use your personal information only for the purposes for which it was collected (or for a use identified as consistent with that purpose).</p>
