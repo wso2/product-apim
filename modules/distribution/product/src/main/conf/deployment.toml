@@ -151,6 +151,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #enable_comments = true
 #enable_ratings = true
 #enable_forum = true
+#enable_anonymous_mode=true
 
 [apim.cors]
 allow_origins = "*"
