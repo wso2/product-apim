@@ -244,5 +244,7 @@
   "transport.client.https.properties.PROTOCOL": "HTTP/1.1",
   "transport.client.https.properties.Transfer-Encoding": "chunked",
   "transport.client.https.properties.SO_TIMEOUT": "60000",
-  "transport.client.https.properties.CONNECTION_TIMEOUT": "60000"
+  "transport.client.https.properties.CONNECTION_TIMEOUT": "60000",
+  "config_data.overwrite": "true",
+  "governance_data.overwrite": "true"
 }

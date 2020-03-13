@@ -23,7 +23,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v3.1.0 - 11th March 2020</title>
+    <title>WSO2 API Manager v3.1.0 - 12th March 2020</title>
 </head>
 <body>
 <div id="main-content">
@@ -61,7 +61,7 @@
 <p>
     For more information on WSO2 API Manager please visit <a href="https://wso2.com/api-management/">
     https://wso2.com/api-management/</a>. Also take a look at the online product
-    <a href="https://apim.docs.wso2.com/">documentation</a>.
+    <a href="https://apim.docs.wso2.com/en/3.1.0/">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
