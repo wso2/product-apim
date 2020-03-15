@@ -27,6 +27,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.admin.clients.application.ApplicationManagementClient;
+import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
+import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
@@ -92,6 +95,9 @@ public class APIMIntegrationBaseTest {
     protected RestAPIStoreImpl restAPIStore;
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
+    protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
+    protected OAuthAdminServiceClient oAuthAdminServiceClient;
+    protected ApplicationManagementClient applicationManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
     protected String publisherURLHttps;
@@ -194,6 +200,15 @@ public class APIMIntegrationBaseTest {
                 tenantManagementServiceClient = new TenantManagementServiceClient(
                         superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
                         keymanagerSuperTenantSessionCookie);
+                remoteClaimMetaDataMgtAdminClient =
+                        new ClaimMetaDataMgtAdminClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
+                oAuthAdminServiceClient =
+                        new OAuthAdminServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
+                applicationManagementClient =
+                        new ApplicationManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
             }

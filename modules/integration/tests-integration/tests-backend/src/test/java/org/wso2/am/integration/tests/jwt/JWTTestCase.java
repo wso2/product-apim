@@ -42,8 +42,18 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.andes.util.Strings;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.carbon.identity.application.common.model.xsd.Claim;
+import org.wso2.carbon.identity.application.common.model.xsd.ClaimConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.ClaimMapping;
+import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.application.mgt.stub.IdentityApplicationManagementServiceIdentityApplicationManagementException;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceClaimMetadataException;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ExternalClaimDTO;
+import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
+import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
@@ -51,6 +61,7 @@ import org.wso2.carbon.user.core.UserStoreException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+
 import javax.ws.rs.core.Response;
 
 import static org.testng.AssertJUnit.assertEquals;
@@ -113,6 +124,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
+        createClaimMapping();
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for Oauth Based App")
@@ -124,7 +136,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword,user);
+                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"default"});
             log.info("Acess Token Generated in oauth ==" + accessToken);
 
             HttpClient httpclient = HttpClientBuilder.create().build();
@@ -163,9 +175,14 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             checkDefaultUserClaims(jsonObject, oauthApplicationName);
             // check user profile info claims
             String claim = jsonObject.getString("http://wso2.org/claims/givenname");
-            assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name"));
+            assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
             claim = jsonObject.getString("http://wso2.org/claims/lastname");
-            assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name"));
+            assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
+            claim = jsonObject.getString("http://wso2.org/claims/mobile");
+            assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
+            claim = jsonObject.getString("http://wso2.org/claims/organization");
+            assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
+
             boolean bExceptionOccured = false;
             try {
                 jsonObject.getString("http://wso2.org/claims/wrongclaim");
@@ -183,9 +200,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.getApplicationKeysByKeyType(jwtApplicationId,
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
+        updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user);
+                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"openid"});
             log.info("Acess Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -222,6 +240,23 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             checkDefaultUserClaims(jsonObject, jwtApplicationName);
             // check user profile info claims
             log.info("JWT Received ==" + jsonObject.toString());
+            String claim = jsonObject.getString("given_name");
+            assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
+            claim = jsonObject.getString("family_name");
+            assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
+            claim = jsonObject.getString("mobile");
+            assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
+            claim = jsonObject.getString("organization");
+            assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
+
+            boolean bExceptionOccured = false;
+            try {
+                jsonObject.getString("http://wso2.org/claims/wrongclaim");
+            } catch (JSONException e) {
+                bExceptionOccured = true;
+            }
+            assertTrue("JWT claim received is invalid", bExceptionOccured);
+
         }
     }
 
@@ -231,6 +266,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         for (String user : users) {
             userManagementClient.deleteUser(user);
         }
+        removeClaimMapping();
         super.cleanUp();
 
     }
@@ -276,18 +312,68 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             remoteUserStoreManagerServiceClient.addUser(user, enduserPassword, new String[]{}, new ClaimValue[]{},
                     DEFAULT_PROFILE, false);
             remoteUserStoreManagerServiceClient.setUserClaimValue(user,
-                    "http://wso2.org/claims/givenname", "first name", DEFAULT_PROFILE);
+                    "http://wso2.org/claims/givenname", "first name".concat(user), DEFAULT_PROFILE);
             remoteUserStoreManagerServiceClient.setUserClaimValue(user,
-                    "http://wso2.org/claims/lastname", "last name", DEFAULT_PROFILE);
+                    "http://wso2.org/claims/lastname", "last name".concat(user), DEFAULT_PROFILE);
+            remoteUserStoreManagerServiceClient.setUserClaimValue(user,
+                    "http://wso2.org/claims/organization", "ABC".concat(user), DEFAULT_PROFILE);
+            remoteUserStoreManagerServiceClient.setUserClaimValue(user,
+                    "http://wso2.org/claims/mobile", "94123456987", DEFAULT_PROFILE);
         }
 
     }
 
+    private void createClaimMapping() throws RemoteException, ClaimMetadataManagementServiceClaimMetadataException,
+            OAuthAdminServiceIdentityOAuthAdminException {
+
+        remoteClaimMetaDataMgtAdminClient
+                .addExternalClaim("http://wso2.org/oidc/claim", "mobile", "http://wso2.org/claims/mobile");
+        remoteClaimMetaDataMgtAdminClient
+                .addExternalClaim("http://wso2.org/oidc/claim", "organization", "http://wso2.org/claims/organization");
+        oAuthAdminServiceClient.updateScope("openid", new String[]{"mobile", "organization"}, new String[0]);
+    }
+
+    private void updateServiceProviderWithRequiredClaims(String consumerKey)
+            throws OAuthAdminServiceIdentityOAuthAdminException, RemoteException,
+            IdentityApplicationManagementServiceIdentityApplicationManagementException {
+        String[] requestedClaims = {"http://wso2.org/claims/givenname","http://wso2.org/claims/lastname","http://wso2" +
+                ".org/claims/organization","http://wso2.org/claims/mobile"};
+        OAuthConsumerAppDTO oAuthApplicationData = oAuthAdminServiceClient.getOAuthApplicationData(consumerKey);
+        String applicationName = oAuthApplicationData.getApplicationName();
+        ServiceProvider application = applicationManagementClient.getApplication(applicationName);
+        ClaimConfig claimConfig = new ClaimConfig();
+        for (String claimUri : requestedClaims){
+            ClaimMapping claimMapping = new ClaimMapping();
+            Claim claim = new Claim();
+            claim.setClaimUri(claimUri);
+            claimMapping.setLocalClaim(claim);
+            claimMapping.setRemoteClaim(claim);
+            claimMapping.setRequested(true);
+            claimMapping.setMandatory(true);
+            claimConfig.addClaimMappings(claimMapping);
+        }
+        application.setClaimConfig(claimConfig);
+        applicationManagementClient.updateApplication(application);
+    }
+
+    private void removeClaimMapping() throws RemoteException, ClaimMetadataManagementServiceClaimMetadataException,
+            OAuthAdminServiceIdentityOAuthAdminException {
+
+        oAuthAdminServiceClient.updateScope("openid", new String[0], new String[]{"mobile", "organization"});
+        remoteClaimMetaDataMgtAdminClient
+                .removeExternalClaim("http://wso2.org/oidc/claim", "http://wso2.org/oidc/claim/mobile");
+        remoteClaimMetaDataMgtAdminClient
+                .removeExternalClaim("http://wso2.org/oidc/claim", "http://wso2.org/oidc/claim/organization");
+    }
+
     private String generateUserToken(String consumerKey, String consumerSecret, String enduserName,
-                                     String enduserPassword, User user) throws APIManagerIntegrationTestException, JSONException {
+                                     String enduserPassword, User user, String[] scopes)
+            throws APIManagerIntegrationTestException,
+            JSONException {
 
         String username = enduserName.concat("@").concat(user.getUserDomain());
-        String requestBody = "grant_type=password&username=" + username + "&password=" + enduserPassword;
+        String requestBody = "grant_type=password&username=" + username + "&password=" + enduserPassword + "&scope=" +
+                Strings.join(" ", scopes);
 
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
                 restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
