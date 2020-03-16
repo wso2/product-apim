@@ -268,12 +268,6 @@
         <% if (isRecoveryEPAvailable) { %>
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
-            <% if (!isIdentifierFirstLogin(inputType)) { %>
-                <a id="usernameRecoverLink" tabindex="5" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true, urlParameters)%>">
-                    <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username")%>
-                </a>
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password.or")%>
-            <% } %>
             <a id="passwordRecoverLink" tabindex="6" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false, urlParameters)%>">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.password")%>
             </a>
