@@ -151,7 +151,6 @@
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
   "identity_mgt.password_reset_email.enable_password_reset_email": true,
-  "identity_mgt.recovery.callback_url": "${carbon.protocol}://${carbon.host}:${carbon.management.port}/authenticationendpoint/login.do",
   "resource_access_control.default_access_allow": true,
   "oauth.prompt_consent": true,
   "transport.binary.receiver.sslEnabledProtocols": [
@@ -235,5 +234,10 @@
   "transport.client.https.properties.SO_TIMEOUT": "60000",
   "transport.client.https.properties.CONNECTION_TIMEOUT": "60000",
   "config_data.overwrite": "true",
-  "governance_data.overwrite": "true"
+  "governance_data.overwrite": "true",
+  "static_configuration.versioning_properties.enable": false,
+  "static_configuration.versioning_comments.enable": false,
+  "static_configuration.versioning_tags.enable": false,
+  "static_configuration.versioning_ratings.enable": false,
+  "version_resources.on_change": false
 }
