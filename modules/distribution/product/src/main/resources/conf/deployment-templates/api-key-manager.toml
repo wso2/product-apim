@@ -77,3 +77,7 @@ traffic_manager_auth_urls=["ssl://tm1.local:9711"]
 [[apim.throttling.url_group]]
 traffic_manager_urls=["tcp://tm2.local:9611"]
 traffic_manager_auth_urls=["ssl://tm2.local:9711"]
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]

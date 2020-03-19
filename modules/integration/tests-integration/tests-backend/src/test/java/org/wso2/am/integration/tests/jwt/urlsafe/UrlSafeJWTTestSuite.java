@@ -39,7 +39,7 @@ public class UrlSafeJWTTestSuite extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator
                 + "urlSafeTokenTest" + File.separator + "deployment.toml"));
     }

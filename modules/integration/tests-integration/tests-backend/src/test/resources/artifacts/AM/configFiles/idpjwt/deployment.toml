@@ -116,7 +116,7 @@ claim_dialect = "http://wso2.org/claims"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 [apim.jwt.gateway_generator]
-claims = ["http://wso2.org/claims/givenname","http://wso2.org/claims/firstname","http://wso2.org/claims/email"]
+excluded_claims = ["http://idp.org/claims/mobileno"]
 
 [[apim.jwt.issuer]]
 name = "https://test.apim.integration"
@@ -272,3 +272,6 @@ enable_client_validation = false
 
 [apim.certificate_reloader]
 period = "1m"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"

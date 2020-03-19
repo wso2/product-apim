@@ -29,6 +29,7 @@
     String tenant = request.getParameter("tenantDomain");
     if (tenant == null) {
         String cb = request.getParameter("callback");
+        cb = StringUtils.replace(cb, " ", "");
         if (cb != null) {
             URI uri = new URI(cb);
             String decodedValue = uri.getQuery();

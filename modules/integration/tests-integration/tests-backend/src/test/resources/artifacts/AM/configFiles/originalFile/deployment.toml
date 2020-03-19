@@ -239,3 +239,6 @@ global=true
 
 [apim.certificate_reloader]
 period = "1m"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
