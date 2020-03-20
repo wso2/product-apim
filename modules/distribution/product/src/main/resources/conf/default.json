@@ -178,6 +178,7 @@
   "apim.wss.keystore.password" : "$ref{keystore.tls.password}",
   "apim.wss.keystore.key_password" : "$ref{keystore.tls.key_password}",
   "apim.wss.ssl_enabled_protocols" : "TLSv1.1,TLSv1.2",
+  "apim.oauth_config.revoke_endpoint": "https://localhost:${mgt.transport.https.port}/oauth2/revoke",
   "keystore.ssl_profile.default.servers": "*",
   "keystore.listener_profile.ssl_verify_client" : "optional",
   "broker.transport.amqp.enabled" : true,
