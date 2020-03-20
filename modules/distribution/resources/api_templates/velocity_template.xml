@@ -234,7 +234,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 #end
+#if($apiStatus != 'PROTOTYPED')
 <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
+#end
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>
