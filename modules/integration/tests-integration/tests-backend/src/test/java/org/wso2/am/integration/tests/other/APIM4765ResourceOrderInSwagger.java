@@ -64,6 +64,7 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
         String APIVersion = "1.0.0";
+        String lineSeparator = System.getProperty("line.separator");
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url), new URL(url));
         apiRequest.setTags(tags);
@@ -87,19 +88,18 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
                 + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
                 + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}}";*/
 
-        String resourceOrder = "\"paths\" : {\n" + "    \"/*\" : {\n" + "      \"get\" : {\n"
-                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
-                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
-                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
-                + "      }\n" + "    },\n" + "    \"/post\" : {\n" + "      \"get\" : {\n"
-                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
-                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
-                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
-                + "      }\n" + "    },\n" + "    \"/list\" : {\n" + "      \"get\" : {\n"
-                + "        \"parameters\" : [ ],\n" + "        \"responses\" : {\n" + "          \"200\" : { }\n"
-                + "        },\n" + "        \"security\" : [ {\n" + "          \"default\" : [ ]\n" + "        } ],\n"
-                + "        \"x-auth-type\" : \"Application \",\n" + "        \"x-throttling-tier\" : \"10KPerMin\"\n"
-                + "      }\n" + "    }\n" + "  }";
+        String resourceOrder = "\"paths\" : {"+ lineSeparator + "    \"/*\" : {"+ lineSeparator + "      \"get\" : {" + lineSeparator
+               + "        \"parameters\" : [ ],"+ lineSeparator + "        \"responses\" : {"+ lineSeparator + "          \"200\" : { }" + lineSeparator
+               + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]" + lineSeparator + "        } ]," + lineSeparator + "        \"x-auth-type\" : \"Application \"," + lineSeparator + "        \"x-throttling-tier\" : \"10KPerMin\"" + lineSeparator
+               + "      }"+ lineSeparator + "    },"+ lineSeparator + "    \"/post\" : {"+ lineSeparator + "      \"get\" : {"+ lineSeparator
+               + "        \"parameters\" : [ ],"+ lineSeparator + "        \"responses\" : {"+ lineSeparator + "          \"200\" : { }"+ lineSeparator
+               + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]"+ lineSeparator + "        } ],"+ lineSeparator
+               + "        \"x-auth-type\" : \"Application \","+ lineSeparator + "        \"x-throttling-tier\" : \"10KPerMin\""+ lineSeparator
+               + "      }"+ lineSeparator + "    },"+ lineSeparator + "    \"/list\" : {"+ lineSeparator + "      \"get\" : {"+ lineSeparator
+               + "        \"parameters\" : [ ],"+ lineSeparator + "        \"responses\" : {"+ lineSeparator + "          \"200\" : { }"+ lineSeparator
+               + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]"+ lineSeparator + "        } ],"+ lineSeparator
+               + "        \"x-auth-type\" : \"Application \","+ lineSeparator + "        \"x-throttling-tier\" : \"10KPerMin\""+ lineSeparator
+               + "      }"+ lineSeparator + "    }"+ lineSeparator + "  }";
 
 
         restAPIPublisher.updateSwagger(apiId, swagger);
