@@ -477,6 +477,7 @@ public class RestAPIPublisherImpl {
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
+        body.setCategories(apiRequest.getApiCategories());
         APIDTO apidto;
         try {
             apidto = apIsApi.apisApiIdPut(apiId, body, null);
