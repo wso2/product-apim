@@ -90,7 +90,8 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
 
         String resourceOrder = "\"paths\" : {"+ lineSeparator + "    \"/*\" : {"+ lineSeparator + "      \"get\" : {" + lineSeparator
                + "        \"parameters\" : [ ],"+ lineSeparator + "        \"responses\" : {"+ lineSeparator + "          \"200\" : { }" + lineSeparator
-               + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]" + lineSeparator + "        } ]," + lineSeparator + "        \"x-auth-type\" : \"Application \"," + lineSeparator + "        \"x-throttling-tier\" : \"10KPerMin\"" + lineSeparator
+               + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]" + lineSeparator + "        } ]," + lineSeparator
+               + "        \"x-auth-type\" : \"Application \"," + lineSeparator + "        \"x-throttling-tier\" : \"10KPerMin\"" + lineSeparator
                + "      }"+ lineSeparator + "    },"+ lineSeparator + "    \"/post\" : {"+ lineSeparator + "      \"get\" : {"+ lineSeparator
                + "        \"parameters\" : [ ],"+ lineSeparator + "        \"responses\" : {"+ lineSeparator + "          \"200\" : { }"+ lineSeparator
                + "        },"+ lineSeparator + "        \"security\" : [ {"+ lineSeparator + "          \"default\" : [ ]"+ lineSeparator + "        } ],"+ lineSeparator
