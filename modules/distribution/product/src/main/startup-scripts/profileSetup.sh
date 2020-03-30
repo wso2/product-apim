@@ -80,7 +80,7 @@ removeAxis2BlockingClientXMLFile(){
 	then
 		rm -r $pathToAxis2BlockingClientXML
 		timeStamp
-		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml file from $pathToAxis2BlockingClientXML"
+		echo "[${timestamp}] INFO - Removed the file $pathToAxis2BlockingClientXML"
 	fi
 }
 
@@ -89,7 +89,7 @@ removeAxis2BlockingClientXMLTemplateFile(){
 	then
 		rm -r $pathToAxis2BlockingClientXMLTemplate
 		timeStamp
-		echo "[${timestamp}] INFO - Removed the axis2_blocking_client.xml.j2 file from $pathToAxis2BlockingClientXMLTemplate"
+		echo "[${timestamp}] INFO - Removed the file $pathToAxis2BlockingClientXMLTemplate"
 	fi
 }
 
@@ -141,11 +141,10 @@ replaceDeploymentConfiguration(){
         if [ -e "$pathToDeploymentConfiguration" ] && [ -e "$profileConfiguration" ];then
             mv "$pathToDeploymentConfiguration" "$pathToDeploymentConfigurationBackup"
             timeStamp
-            echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml
-            .backup"
+            echo "[${timestamp}] INFO - Renamed the existing $pathToDeploymentConfiguration file as deployment.toml.backup"
             cp "$profileConfiguration" "$pathToDeploymentConfiguration"
             timeStamp
-            echo "[${timestamp}] INFO - Renamed the existing $profileConfiguration file as deployment.toml"
+            echo "[${timestamp}] INFO - Copied the existing $profileConfiguration file as $pathToDeploymentConfiguration"
         fi
     fi
 }
@@ -176,7 +175,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -204,7 +203,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -232,7 +231,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

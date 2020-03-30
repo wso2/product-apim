@@ -128,6 +128,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
 #claim_dialect = "http://wso2.org/claims"
+#convert_dialect = false
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
@@ -155,7 +156,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 [apim.cors]
 allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey"]
 allow_credentials = false
 
 #[apim.throttling]
@@ -240,3 +241,6 @@ subscriptions=["POST_ADD_USER"]
 
 [service_provider]
 sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"

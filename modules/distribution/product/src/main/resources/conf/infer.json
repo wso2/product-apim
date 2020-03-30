@@ -8,10 +8,13 @@
       "indexing.enable": false,
       "system.parameter.profile": "gateway-worker",
       "enabled_global_handlers": [
-        "external_call_logger"
+        "external_call_logger",
+        "open_tracing"
       ],
       "synapse_handlers.external_call_logger.name": "externalCallLogger",
-      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
+      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
+      "synapse_handlers.open_tracing.name": "open_tracing",
+      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"
     },
     "api-key-manager": {
       "apim.throttling.enable_policy_deploy": false,
@@ -48,10 +51,13 @@
     "default": {
       "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer",
       "enabled_global_handlers": [
-        "external_call_logger"
+        "external_call_logger",
+        "open_tracing"
       ],
       "synapse_handlers.external_call_logger.name": "externalCallLogger",
-      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"
+      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
+      "synapse_handlers.open_tracing.name": "open_tracing",
+      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"
     }
   },
   "apim.jwt.encoding": {
@@ -61,7 +67,7 @@
     },
     "base64url": {
       "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
-      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImplImpl"
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImpl"
     }
   },
   "apim.jwt.enable_user_claims": {

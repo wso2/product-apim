@@ -91,29 +91,21 @@
   "transport.passthru_https.sender.ssl_profile.file_path": "repository/resources/security/sslprofiles.xml",
   "transport.passthru_https.sender.ssl_profile.interval": "600000",
   "transport.ws.sender.enable": true,
-  "transport.ws.sender.parameters": {
-    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
-    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
-  },
+  "transport.ws.sender.parameters.ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+  "transport.ws.sender.parameters.ws.outflow.dispatch.fault.sequence": "outflowFaultSeq",
   "transport.wss.sender.enable": true,
-  "transport.wss.sender.parameters": {
-    "ws.outflow.dispatch.sequence": "outflowDispatchSeq",
-    "ws.outflow.dispatch.fault.sequence": "outflowFaultSeq"
-  },
+  "transport.wss.sender.parameters.ws.outflow.dispatch.sequence": "outflowDispatchSeq",
+  "transport.wss.sender.parameters.ws.outflow.dispatch.fault.sequence": "outflowFaultSeq",
   "transport.wss.sender.trust_store.location": "repository/resources/security/$ref{truststore.file_name}",
   "transport.wss.sender.trust_store.password": "$ref{truststore.password}",
-  "transport.blocking_http.sender.parameters": {
-    "PROTOCOL": "HTTP/1.1",
-    "Transfer-Encoding": "chunked",
-    "cacheHttpClient": true,
-    "defaultMaxConnectionsPerHost": "200"
-  },
-  "transport.blocking_https.sender.parameters": {
-    "PROTOCOL": "HTTP/1.1",
-    "Transfer-Encoding": "chunked",
-    "cacheHttpClient": true,
-    "defaultMaxConnectionsPerHost": "200"
-  },
+  "transport.blocking_http.sender.parameters.PROTOCOL": "HTTP/1.1",
+  "transport.blocking_http.sender.parameters.Transfer-Encoding": "chunked",
+  "transport.blocking_http.sender.parameters.cacheHttpClient": true,
+  "transport.blocking_http.sender.parameters.defaultMaxConnectionsPerHost": "200",
+  "transport.blocking_https.sender.parameters.PROTOCOL": "HTTP/1.1",
+  "transport.blocking_https.sender.parameters.Transfer-Encoding": "chunked",
+  "transport.blocking_https.sender.parameters.cacheHttpClient": true,
+  "transport.blocking_https.sender.parameters.defaultMaxConnectionsPerHost": "200",
   "synapse_properties.'synapse.sal.endpoints.sesssion.timeout.default'": "600000",
   "synapse_properties.'synapse.global_timeout_interval'": "120000",
   "synapse_properties.'synapse.rest.CORSConfig.enabled'": false,
@@ -145,13 +137,10 @@
   "indexing.frequency": "3",
   "indexing.bach_size": "40",
   "indexing.pool_size": "40",
-  "realm_manager": {
-    "data_source": "SHARED_DB",
-    "properties": {
-      "isCascadeDeleteEnabled": true,
-      "initializeNewClaimManager": true
-    }
-  },
+  "indexing.location": "../../../../solr/data",
+  "realm_manager.data_source": "SHARED_DB",
+  "realm_manager.properties.isCascadeDeleteEnabled": true,
+  "realm_manager.properties.initializeNewClaimManager": true,
   "tasks.client_dispatch_address": "https://localhost:9443",
   "tasks.server_address": "https://localhost:9443",
   "identity.entitlement.policy_point.pip.attribute_designators": [
@@ -230,5 +219,25 @@
     "error_page.code_general.location": "/carbon/errors/error.html",
   "xml_input_factory.properties.'javax.xml.stream.isCoalescing'": true,
   "xml_input_factory.properties.'javax.xml.stream.isSupportingExternalEntities'": false,
-  "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false
+  "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false,
+  "transport.client.default_max_connection_per_host": "500",
+  "transport.client.max_total_connections":"15000",
+  "transport.client.http_content_negotiation": false,
+  "transport.client.send_stacktrace_details_with_fault":true,
+  "transport.client.drilldown_to_root_cause_for_fault_reason": false,
+  "transport.client.http.properties.PROTOCOL": "HTTP/1.1",
+  "transport.client.http.properties.Transfer-Encoding": "chunked",
+  "transport.client.http.properties.SO_TIMEOUT": "60000",
+  "transport.client.http.properties.CONNECTION_TIMEOUT": "60000",
+  "transport.client.https.properties.PROTOCOL": "HTTP/1.1",
+  "transport.client.https.properties.Transfer-Encoding": "chunked",
+  "transport.client.https.properties.SO_TIMEOUT": "60000",
+  "transport.client.https.properties.CONNECTION_TIMEOUT": "60000",
+  "config_data.overwrite": "true",
+  "governance_data.overwrite": "true",
+  "static_configuration.versioning_properties.enable": false,
+  "static_configuration.versioning_comments.enable": false,
+  "static_configuration.versioning_tags.enable": false,
+  "static_configuration.versioning_ratings.enable": false,
+  "version_resources.on_change": false
 }

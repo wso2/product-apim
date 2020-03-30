@@ -115,14 +115,32 @@ claim_dialect = "http://wso2.org/claims"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
-[[apim.jwt.gateway_generator.claims]]
+[apim.jwt.gateway_generator]
+excluded_claims = ["http://idp.org/claims/mobileno"]
+
+[[apim.jwt.issuer]]
+name = "https://test.apim.integration"
+[[apim.jwt.issuer.claim_mapping]]
 remote_claim = "http://idp.org/claims/givenname"
 local_claim = "http://wso2.org/claims/givenname"
-[[apim.jwt.gateway_generator.claims]]
+[[apim.jwt.issuer.claim_mapping]]
 remote_claim = "http://idp.org/claims/firstname"
 local_claim = "http://wso2.org/claims/firstname"
-[[apim.jwt.gateway_generator.claims]]
+[[apim.jwt.issuer.claim_mapping]]
 remote_claim = "http://idp.org/claims/email"
+local_claim = "http://wso2.org/claims/email"
+[[apim.jwt.issuer]]
+name = "https://test2.apim.integration"
+[apim.jwt.issuer.jwks]
+url = "https://localhost:8743/jwks/1.0"
+[[apim.jwt.issuer.claim_mapping]]
+remote_claim = "http://idp2.org/claims/givenname"
+local_claim = "http://wso2.org/claims/givenname"
+[[apim.jwt.issuer.claim_mapping]]
+remote_claim = "http://idp2.org/claims/firstname"
+local_claim = "http://wso2.org/claims/firstname"
+[[apim.jwt.issuer.claim_mapping]]
+remote_claim = "http://idp2.org/claims/email"
 local_claim = "http://wso2.org/claims/email"
 
 #[apim.oauth_config]
@@ -254,3 +272,6 @@ enable_client_validation = false
 
 [apim.certificate_reloader]
 period = "1m"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"

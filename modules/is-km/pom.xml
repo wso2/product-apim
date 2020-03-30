@@ -23,14 +23,14 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.1.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.is-km</groupId>
     <artifactId>org.wso2.is-km</artifactId>
-    <version>5.7.0</version>
+    <version>5.10.0</version>
     <packaging>pom</packaging>
     <name>IS as Key Manager</name>
     <url>http://wso2.org</url>
@@ -180,7 +180,7 @@
                         <configuration>
                             <tasks>
                                 <task>
-                                    <base>${basedir}/../distribution/product/src/main/resources/conf/default.json</base>
+                                    <base>${basedir}/default.json</base>
                                     <include>
                                         <param>
                                             ${basedir}/${is_folder_name}/repository/resources/conf/default.json
@@ -192,6 +192,7 @@
                                     <target>
                                         ${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json
                                     </target>
+                                    <mergeChildren>true</mergeChildren>
                                 </task>
                                 <task>
                                     <base>${basedir}/../distribution/product/src/main/resources/conf/infer.json</base>
@@ -315,6 +316,7 @@
                         <phase>install</phase>
                         <configuration>
                             <tasks>
+                                <delete file="${basedir}/${is_folder_name}/repository/components/plugins/wsdl4j.wso2_${wsdl4j.version}.jar"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json"/>
                                 <delete file="${basedir}/${is_folder_name}/repository/resources/conf/default-merged.json"/>
@@ -358,7 +360,7 @@
     </pluginRepositories>
 
     <properties>
-        <is_folder_name>wso2is-5.9.0</is_folder_name>
+        <is_folder_name>wso2is-5.10.0</is_folder_name>
         <p2_repo_folder>../p2-profile/product/target/p2-repo</p2_repo_folder>
         <keymanager.feature.version>${carbon.apimgt.version}</keymanager.feature.version>
         <carbon-governance.version>${carbon.governance.version}</carbon-governance.version>

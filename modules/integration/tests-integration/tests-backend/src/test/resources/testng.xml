@@ -91,6 +91,7 @@
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
         </classes>
     </test>
 
@@ -127,7 +128,6 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.login.APIMANAGER2611oginTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
@@ -187,7 +187,6 @@
             <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
         </classes>
     </test>
-
 
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
@@ -308,6 +307,7 @@
     <test name="apim-integration-tests-endpoint-security" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityPerTypeTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-external-idp" preserve-order="true" parallel="false"
@@ -315,6 +315,12 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-integration-emailusername-login" preserve-order="true" parallel="false"
+          group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
         </classes>
     </test>
 </suite>
