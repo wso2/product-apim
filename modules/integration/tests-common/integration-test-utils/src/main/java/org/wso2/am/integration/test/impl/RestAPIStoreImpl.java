@@ -107,6 +107,7 @@ public class RestAPIStoreImpl {
                 .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
                         password, tenantDomain, tokenURL);
 
+        apiStoreClient.setDebugging(true);
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
@@ -124,6 +125,7 @@ public class RestAPIStoreImpl {
 
 
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
+        apiStoreClient.setDebugging(true);
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
