@@ -144,6 +144,9 @@ under the License.
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
+                            <systemPropertyVariables>
+                                <okHttpLogs>true</okHttpLogs>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -238,6 +241,9 @@ under the License.
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
+                            <systemPropertyVariables>
+                                <okHttpLogs>true</okHttpLogs>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -327,6 +333,9 @@ under the License.
                                 <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                             </systemProperties>
+                            <systemPropertyVariables>
+                                <okHttpLogs>true</okHttpLogs>
+                            </systemPropertyVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
