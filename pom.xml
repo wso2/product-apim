@@ -915,7 +915,7 @@
             <dependency>
                 <groupId>com.icegreen</groupId>
                 <artifactId>greenmail</artifactId>
-                <version>1.5.10</version>
+                <version>1.5.12</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.utils</groupId>
