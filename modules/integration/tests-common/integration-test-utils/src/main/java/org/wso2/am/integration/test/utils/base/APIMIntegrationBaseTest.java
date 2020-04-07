@@ -40,10 +40,12 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -81,18 +83,20 @@ public class APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
     protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
-            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext, adminContext;
     protected OMElement synapseConfiguration;
     protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
     protected String executionMode;
-    protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
+    protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl, adminUrls;
     protected User user;
     private static final long WAIT_TIME = 45 * 1000;
     protected APIPublisherRestClient apiPublisher;
     protected APIStoreRestClient apiStore;
+    protected AdminDashboardRestClient apiAdmin;
     protected RestAPIPublisherImpl restAPIPublisher;
     protected RestAPIStoreImpl restAPIStore;
+    protected RestAPIAdminImpl restAPIAdmin;
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
@@ -101,6 +105,8 @@ public class APIMIntegrationBaseTest {
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
     protected String publisherURLHttps;
+    protected String adminURLHttp;
+    protected String adminURLHttps;
     protected String keyManagerHTTPSURL;
     protected String gatewayHTTPSURL;
     protected String storeURLHttp;
@@ -137,6 +143,12 @@ public class APIMIntegrationBaseTest {
                     new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                                           APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
             storeUrls = new APIMURLBean(storeContext.getContextUrls());
+
+            //create admin server instance based on configuration given at automation.xml
+            adminContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
+            adminUrls = new APIMURLBean(adminContext.getContextUrls());
 
             //create publisher server instance based on configuration given at automation.xml
             publisherContext =
@@ -176,11 +188,14 @@ public class APIMIntegrationBaseTest {
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+            adminURLHttps =  adminUrls.getWebAppURLHttps();
+            adminURLHttp = adminUrls.getWebAppURLHttps();
 
             storeURLHttp = storeUrls.getWebAppURLHttp();
             storeURLHttps = storeUrls.getWebAppURLHttps();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new APIStoreRestClient(storeURLHttp);
+            apiAdmin = new AdminDashboardRestClient(adminURLHttp);
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
@@ -189,6 +204,10 @@ public class APIMIntegrationBaseTest {
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
                             storeContext.getContextTenant().getDomain(), storeURLHttps);
+            restAPIAdmin =
+                    new RestAPIAdminImpl(adminContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                            adminContext.getContextTenant().getContextUser().getPassword(),
+                            adminContext.getContextTenant().getDomain(), adminURLHttps);
 
             try {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();

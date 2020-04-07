@@ -37,6 +37,7 @@ under the License.
         <module>integration-test-extensions</module>
         <module>ui-pages</module>
         <module>clients</module>
+        <module>clients/admin</module>
     </modules>
 
 </project>

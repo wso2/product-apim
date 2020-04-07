@@ -135,6 +135,12 @@ under the License.
             <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.rest.api.admin</artifactId>
+            <version>6.6.169-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
