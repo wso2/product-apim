@@ -1,5 +1,21 @@
+/*
+ *  Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
 package org.wso2.am.integration.test.impl;
-
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
@@ -12,8 +28,10 @@ import org.wso2.am.integration.clients.admin.api.v1.dto.WorkflowListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+/**
+ * This util class performs the actions related to WorkflowDTOobjects.
+ */
 public class RestAPIAdminImpl {
-
 
     public ApiCategoryCollectionApi apiCategoryCollection = new ApiCategoryCollectionApi();
     public ApiCategoryIndividualApi individualCategory = new ApiCategoryIndividualApi();
@@ -66,7 +84,6 @@ public class RestAPIAdminImpl {
                                 "apim:admin_operations" ,
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
-
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiAdminClient.setBasePath(adminURL + "api/am/admin/v0.16");
         workflowCollectionApi.setApiClient(apiAdminClient);
@@ -114,7 +131,6 @@ public class RestAPIAdminImpl {
         WorkflowListDTO workflowListdto = null;
         HttpResponse response = null;
         Gson gson = new Gson();
-
         try {
             workflowListdto = workflowCollectionApi.workflowsGet(null,null,null,null,workflowType );
             response = new HttpResponse(gson.toJson(workflowListdto), 200);
@@ -130,12 +146,10 @@ public class RestAPIAdminImpl {
         Gson gson = new Gson();
 
         WorkflowDTO body= new WorkflowDTO();
-
         WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "APPROVED" );
         body.setStatus(status);
         body.setDescription("Approve workflow request.");
         //body.setAttributes();
-
         try {
             workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body );
             response = new HttpResponse(gson.toJson(workflowdto), 200);
@@ -144,6 +158,4 @@ public class RestAPIAdminImpl {
         }
         return response;
     }
-
-
 }
