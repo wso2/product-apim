@@ -128,6 +128,9 @@
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/devportal/**
                 </exclude>
                 <exclude>
+                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin_new/**
+                </exclude>
+                <exclude>
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**
                 </exclude>
                 <exclude>
@@ -366,6 +369,12 @@
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/devportal/
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/devportal</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin_new/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin_new</outputDirectory>
         </fileSet>
         <!--  copying modules xml -->
         <fileSet>
