@@ -124,7 +124,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
     }
 
-    @Test(groups = { "wso2.am" }, description = "Api workflow process check")
+    @Test(groups = {"wso2.am"}, description = "Api workflow process check")
     public void testAPIWorkflowProcess() throws Exception {
 
         //add API
@@ -140,7 +140,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId= apiResponse.getData();
+        apiId = apiResponse.getData();
         //request to publish the API
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -158,7 +158,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Lifecycle state should remain without changing till approval. ");
         //Get workflow pending requests by unauthorized user
         String workflowType = "AM_API_STATE";
-        restAPIAdminUser = new RestAPIAdminImpl(USER_SMITH, "john123", "carbon.super" , adminURLHttps);
+        restAPIAdminUser = new RestAPIAdminImpl(USER_SMITH, "john123", "carbon.super",
+                adminURLHttps);
         HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow requests can only be viewed for the admin");
@@ -172,8 +173,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
         List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
         list = workflowListDTO.getList();
-        String externalWorkflowRef="";
-        for(WorkflowInfoDTO workflowinfo: list) {
+        String externalWorkflowRef = "";
+        for (WorkflowInfoDTO workflowinfo : list) {
             externalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -210,7 +211,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Lifecycle state should change after approval. ");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Application workflow process check" ,dependsOnMethods = "testAPIWorkflowProcess",enabled = true)
+    @Test(groups = {"wso2.am"}, description = "Application workflow process check", dependsOnMethods =
+            "testAPIWorkflowProcess", enabled = true)
     public void testApplicationWorkflowProcess() throws Exception {
 
         //create Application
@@ -221,7 +223,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(applicationResponse.getResponseCode(), 200,
                 "Application Creation test failed in Approval Workflow Executor");
         //Application State should be CREATED
-        ApplicationDTO appResponse=restAPIStore.getApplicationById(applicationID);
+        ApplicationDTO appResponse = restAPIStore.getApplicationById(applicationID);
         String status1 = appResponse.getStatus();
         assertEquals(status1, "CREATED",
                 "Application state should remain without changing till approval. ");
@@ -240,8 +242,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
         List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
         list = workflowListDTO.getList();
-        String externalWorkflowRef="";
-        for(WorkflowInfoDTO workflowinfo: list) {
+        String externalWorkflowRef = "";
+        for (WorkflowInfoDTO workflowinfo : list) {
             externalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -270,31 +272,33 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
                 "Workflow state should change by the authorized admin. ");
         //Application status should be changed as APPROVED
-        ApplicationDTO appFinalResponse=restAPIStore.getApplicationById(applicationID);
+        ApplicationDTO appFinalResponse = restAPIStore.getApplicationById(applicationID);
         String status = appFinalResponse.getStatus();
         assertEquals(status, "APPROVED",
                 "Application state should change after  approval. ");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Subscription workflow process check" , dependsOnMethods = "testApplicationWorkflowProcess")
+    @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods =
+            "testApplicationWorkflowProcess")
     public void testSubscriptionWorkflowProcess() throws Exception {
 
         //create Subscription
-        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiId, applicationID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId = SubscribeResponse.getData();
         assertEquals(SubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of API is not successful");
 
-        SubscriptionListDTO subscriptionListDTO=restAPIPublisher.getSubscriptionByAPIID(apiId);
+        SubscriptionListDTO subscriptionListDTO = restAPIPublisher.getSubscriptionByAPIID(apiId);
         List<SubscriptionDTO> subscriptionList = new ArrayList<SubscriptionDTO>();
         subscriptionList = subscriptionListDTO.getList();
         SubscriptionDTO.SubscriptionStatusEnum SubscriptionStatus = SubscriptionDTO.SubscriptionStatusEnum.BLOCKED;
-        for(SubscriptionDTO subscriptioninfo: subscriptionList) {
+        for (SubscriptionDTO subscriptioninfo : subscriptionList) {
             SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
         }
 
         //Subscription Status should not change
-        assertEquals(SubscriptionStatus,SubscriptionDTO.SubscriptionStatusEnum.ON_HOLD,
+        assertEquals(SubscriptionStatus, SubscriptionDTO.SubscriptionStatusEnum.ON_HOLD,
                 "Subscription state should remain without changing till approval. ");
         //get pending workflow requests by unauthorized user
         String workflowType = "AM_SUBSCRIPTION_CREATION";
@@ -312,7 +316,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
         list = workflowListDTO.getList();
         String externalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: list) {
+        for (WorkflowInfoDTO workflowinfo : list) {
             externalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -344,7 +348,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         SubscriptionListDTO subscriptionFinalListDTO = restAPIPublisher.getSubscriptionByAPIID(apiId);
         List<SubscriptionDTO> subscriptionFinalList = new ArrayList<SubscriptionDTO>();
         subscriptionFinalList = subscriptionFinalListDTO.getList();
-        for(SubscriptionDTO subscriptioninfo: subscriptionFinalList) {
+        for (SubscriptionDTO subscriptioninfo : subscriptionFinalList) {
             SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
         }
 
@@ -353,7 +357,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Subscription state should change after approval. ");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Registration workflow process check" , dependsOnMethods = "testSubscriptionWorkflowProcess")
+    @Test(groups = {"wso2.am"}, description = "Registration workflow process check",
+            dependsOnMethods = "testSubscriptionWorkflowProcess")
     public void testRegistrationWorkflowProcess() throws Exception {
 
         //generate keys
@@ -361,7 +366,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationID,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         //application key generation state should not change
         String keyState = applicationKeyDTO.getKeyState();
         assertEquals(keyState, "CREATED",
@@ -381,8 +386,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
         List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
         list = workflowListDTO.getList();
-        String externalWorkflowRef="";
-        for(WorkflowInfoDTO workflowinfo: list) {
+        String externalWorkflowRef = "";
+        for (WorkflowInfoDTO workflowinfo : list) {
             externalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -411,14 +416,16 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
                 "Workflow state should change by the authorized admin. ");
 
-        ApiResponse<ApplicationKeyDTO> apiresponse = restAPIStore.getApplicationKeysByKeyType(applicationID,"PRODUCTION");
+        ApiResponse<ApplicationKeyDTO> apiresponse = restAPIStore.getApplicationKeysByKeyType(applicationID,
+                "PRODUCTION");
         ApplicationKeyDTO applicationKeyData = apiresponse.getData();
         //key state should change to COMPLETED
         assertEquals(applicationKeyData.getKeyState(), "COMPLETED",
                 "Application key generation stat should change after approval");
     }
 
-    @Test(groups = { "wso2.am" }, description = "User Sign Up workflow process check" , dependsOnMethods = "testRegistrationWorkflowProcess")
+    @Test(groups = {"wso2.am"}, description = "User Sign Up workflow process check",
+            dependsOnMethods = "testRegistrationWorkflowProcess")
     public void testUserSignUpWorkflowProcess() throws Exception {
 
         String giveName = "Jane";
@@ -429,7 +436,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         String store = storeURLHttps;
 
         //User self sign up process
-        UserManagementUtils.signupUser(username, password, giveName, organization,email);
+        UserManagementUtils.signupUser(username, password, giveName, organization, email);
         APIStoreClient = new
                 RestAPIStoreImpl(username, password, SUPER_TENANT_DOMAIN, store);
         //get workflow pending requests by unauthorized user
@@ -447,8 +454,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
         List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
         list = workflowListDTO.getList();
-        String externalWorkflowRef="";
-        for(WorkflowInfoDTO workflowinfo: list) {
+        String externalWorkflowRef = "";
+        for (WorkflowInfoDTO workflowinfo : list) {
             externalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -478,12 +485,13 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
                 "Workflow state should change by the authorized admin. ");
         //Login in to developer portal
-        HttpResponse loginResponse= apiStore.login(username,password);
+        HttpResponse loginResponse = apiStore.login(username, password);
         assertEquals(loginResponse.getResponseCode(), 302,
                 "Failed to login to developer portal");
     }
 
-    @Test(groups = { "wso2.am" }, description = "clean up workflow process check", dependsOnMethods = "testUserSignUpWorkflowProcess")
+    @Test(groups = {"wso2.am"}, description = "clean up workflow process check", dependsOnMethods =
+            "testUserSignUpWorkflowProcess")
     public void testCleanUpWorkflowProcess() throws Exception {
 
         //create application
@@ -505,7 +513,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         //request to publish the API
-        String apiIdNew= apiResponse.getData();
+        String apiIdNew = apiResponse.getData();
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiIdNew, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -517,11 +525,12 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         String jsonAPIStateChangeGetResponse = response.getData();
         Gson gsonAPIStateChangeGetResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonAPIStateChangeGetResponse.fromJson(jsonAPIStateChangeGetResponse, WorkflowListDTO.class);
+        WorkflowListDTO workflowListDTO = gsonAPIStateChangeGetResponse.fromJson(jsonAPIStateChangeGetResponse,
+                WorkflowListDTO.class);
         List<WorkflowInfoDTO> apiStateChangelist = new ArrayList<WorkflowInfoDTO>();
         apiStateChangelist = workflowListDTO.getList();
         String apiStateChangeExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: apiStateChangelist) {
+        for (WorkflowInfoDTO workflowinfo : apiStateChangelist) {
             apiStateChangeExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -537,11 +546,12 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         String jsonApplicationCreationGetResponse = response.getData();
         Gson gsonApplicationCreationGetResponse = new Gson();
-        workflowListDTO = gsonApplicationCreationGetResponse.fromJson(jsonApplicationCreationGetResponse, WorkflowListDTO.class);
+        workflowListDTO = gsonApplicationCreationGetResponse.fromJson(jsonApplicationCreationGetResponse,
+                WorkflowListDTO.class);
         List<WorkflowInfoDTO> applicationCreationlist = new ArrayList<WorkflowInfoDTO>();
         applicationCreationlist = workflowListDTO.getList();
         String applicationCreationExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo : applicationCreationlist) {
+        for (WorkflowInfoDTO workflowinfo : applicationCreationlist) {
             applicationCreationExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -553,7 +563,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiIdNew);
         restAPIStore.deleteApplication(applicationIDNew);
         //check workflow pending requests are cleaned (Application Creation, API State Change)
-        response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef );
+        response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 500,
                 "Clean up pending task process is failed for Application creation");
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(apiStateChangeExternalWorkflowRef);
@@ -567,8 +577,9 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         String applicationIDSecond = applicationResponseNew.getData();
         //create API and request for publish the API
         HttpResponse apiResponseNew = restAPIPublisher.addAPI(apiRequest);
-        String apiIdSecond= apiResponseNew.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiIdSecond, APILifeCycleAction.PUBLISH.getAction(), null);
+        String apiIdSecond = apiResponseNew.getData();
+        restAPIPublisher.changeAPILifeCycleStatus(apiIdSecond, APILifeCycleAction.PUBLISH.getAction(),
+                null);
         //get workflow requests of API state change
         workflowType = "AM_API_STATE";
         response = restAPIAdmin.getWorkflows(workflowType);
@@ -581,7 +592,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> apiStateChangenewlist = new ArrayList<WorkflowInfoDTO>();
         apiStateChangenewlist = workflowListDTO.getList();
         String apiStateChangeNewExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: apiStateChangenewlist) {
+        for (WorkflowInfoDTO workflowinfo : apiStateChangenewlist) {
             apiStateChangeNewExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -601,7 +612,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> applicationCreationNewlist = new ArrayList<WorkflowInfoDTO>();
         applicationCreationNewlist = workflowListDTO.getList();
         String applicationCreationNewExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: applicationCreationNewlist) {
+        for (WorkflowInfoDTO workflowinfo : applicationCreationNewlist) {
             applicationCreationNewExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -610,7 +621,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), 200,
                 "Update workflow pending process is failed for user admin");
         //subscription creation
-        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiIdSecond, applicationIDSecond, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiIdSecond, applicationIDSecond,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId = SubscribeResponse.getData();
         assertEquals(SubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of  API  request not successful");
@@ -626,7 +638,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> subscriptionCreationlist = new ArrayList<WorkflowInfoDTO>();
         subscriptionCreationlist = workflowListDTO.getList();
         String subscriptionCreationExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: subscriptionCreationlist) {
+        for (WorkflowInfoDTO workflowinfo : subscriptionCreationlist) {
             subscriptionCreationExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -639,7 +651,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationIDSecond,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         //get workflow pending requests for application key generation
         workflowType = "AM_APPLICATION_REGISTRATION_PRODUCTION";
         response = restAPIAdmin.getWorkflows(workflowType);
@@ -652,7 +664,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> keyGenerationlist = new ArrayList<WorkflowInfoDTO>();
         keyGenerationlist = workflowListDTO.getList();
         String keyGenerationExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: keyGenerationlist) {
+        for (WorkflowInfoDTO workflowinfo : keyGenerationlist) {
             keyGenerationExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -672,7 +684,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Clean up pending task process is failed for Application Key generation");
     }
 
-    @Test(groups = { "wso2.am" }, description = "pending tasks workflow process check", dependsOnMethods = "testCleanUpWorkflowProcess")
+    @Test(groups = {"wso2.am"}, description = "pending tasks workflow process check", dependsOnMethods =
+            "testCleanUpWorkflowProcess")
     public void testPendingTaskWorkflowProcess() throws Exception {
 
         //create application
@@ -695,7 +708,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<WorkflowInfoDTO> firstlist = new ArrayList<WorkflowInfoDTO>();
         firstlist = workflowListDTO.getList();
         String firstExternalWorkflowRef = "";
-        for(WorkflowInfoDTO workflowinfo: firstlist) {
+        for (WorkflowInfoDTO workflowinfo : firstlist) {
             firstExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -712,7 +725,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        String apiIdFirst= apiResponse.getData();
+        String apiIdFirst = apiResponse.getData();
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiIdFirst, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -735,7 +748,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), 200,
                 "Workflow request can only be viewed for the admin");
 
-        for(WorkflowInfoDTO workflowinfo: secondlist) {
+        for (WorkflowInfoDTO workflowinfo : secondlist) {
             secondExternalWorkflowRef = workflowinfo.getReferenceId();
         }
 
@@ -744,7 +757,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), 200,
                 "Workflow request can only be viewed for the admin");
         //create subscription
-        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiIdFirst, applicationIDNew, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiIdFirst, applicationIDNew,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
         subscriptionId = SubscribeResponse.getData();
         assertEquals(SubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful");
@@ -764,7 +778,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationIDNew,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         //get workflow pending requests by admin
         response = restAPIAdmin.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 200,
@@ -785,7 +799,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         jsonResponse = response.getData();
-        workflowListDTO = gsonResponse.fromJson(jsonResponse , WorkflowListDTO.class);
+        workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
         count = workflowListDTO.getCount();
         assertEquals(count, 1,
                 "Correct Number of Workflow requests never received");

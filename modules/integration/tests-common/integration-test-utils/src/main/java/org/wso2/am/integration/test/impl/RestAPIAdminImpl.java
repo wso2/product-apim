@@ -81,7 +81,7 @@ public class RestAPIAdminImpl {
                                 "apim:mediation_policy_view apim:mediation_policy_create apim:app_owner_change " +
                                 "apim:app_import_export apim:api_import_export  apim:label_manage apim:label_read " +
                                 "apim:monetization_usage_publish apim:api_workflow apim:bot_data apim:tenantInfo " +
-                                "apim:admin_operations" ,
+                                "apim:admin_operations",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -117,7 +117,7 @@ public class RestAPIAdminImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            workflowInfodto = workflowsIndividualApi.workflowsExternalWorkflowRefGet(externalWorkflowRef,null);
+            workflowInfodto = workflowsIndividualApi.workflowsExternalWorkflowRefGet(externalWorkflowRef, null);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -132,7 +132,7 @@ public class RestAPIAdminImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            workflowListdto = workflowCollectionApi.workflowsGet(null,null,null,null,workflowType );
+            workflowListdto = workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
             response = new HttpResponse(gson.toJson(workflowListdto), 200);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
@@ -145,13 +145,13 @@ public class RestAPIAdminImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
 
-        WorkflowDTO body= new WorkflowDTO();
-        WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "APPROVED" );
+        WorkflowDTO body = new WorkflowDTO();
+        WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "APPROVED");
         body.setStatus(status);
         body.setDescription("Approve workflow request.");
         //body.setAttributes();
         try {
-            workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body );
+            workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body);
             response = new HttpResponse(gson.toJson(workflowdto), 200);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
