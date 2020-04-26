@@ -286,9 +286,15 @@ public class RestAPIStoreImpl {
         return response.getData();
     }
 
-    public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod) throws ApiException {
+    public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod,
+                                     String permittedIP, String permittedReferer) throws ApiException {
         APIKeyGenerateRequestDTO keyGenerateRequestDTO = new APIKeyGenerateRequestDTO();
         keyGenerateRequestDTO.setValidityPeriod(validityPeriod);
+        HashMap additionalProperties = new HashMap<String, String>();
+        additionalProperties.put("permittedIP", permittedIP);
+        additionalProperties.put("permittedReferer", permittedReferer);
+        keyGenerateRequestDTO.setAdditionalProperties(additionalProperties);
+
         ApiResponse<APIKeyDTO> response = apiKeysApi
                 .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType,
                         keyGenerateRequestDTO, null);
