@@ -552,7 +552,7 @@ public class ScenarioTestBase {
             if(isAnonymousUser) {
                 tagResponse = apiStoreRestClient.getTagListFromStoreAsAnonymousUser();
             } else {
-                tagResponse = apiStoreRestClient.getAllTags();
+                tagResponse = apiStoreRestClient.getAllTags("carbon.super");
             }
             verifyResponse(tagResponse);
             if (tagResponse != null) {

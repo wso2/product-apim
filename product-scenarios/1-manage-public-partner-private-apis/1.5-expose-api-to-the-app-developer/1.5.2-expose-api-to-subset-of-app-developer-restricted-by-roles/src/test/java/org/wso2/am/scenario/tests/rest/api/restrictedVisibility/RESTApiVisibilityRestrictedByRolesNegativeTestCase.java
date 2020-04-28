@@ -126,7 +126,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
                 .changeAPILifeCycleStatusToPublish(new APIIdentifier(API_DEVELOPER_USER, apiName2, apiVersion2), false);
 
         apiStoreClient.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        HttpResponse serviceResponseGetAllTags = apiStoreClient.getAllTags();
+        HttpResponse serviceResponseGetAllTags = apiStoreClient.getAllTags("carbon.super");
         verifyResponse(serviceResponseGetAllTags);
 
         JSONObject tagsResponseData = new JSONObject(serviceResponseGetAllTags.getData());
