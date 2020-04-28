@@ -19,6 +19,7 @@
 package org.wso2.am.scenario.test.common;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
@@ -869,13 +870,16 @@ public class APIStoreRestClient {
      * @return - http response of get all api tags
      * @throws APIManagerIntegrationTestException - throws if get all tags fails
      */
-    public HttpResponse getAllTags() throws APIManagerIntegrationTestException {
+    public HttpResponse getAllTags(String tenantDomain) throws APIManagerIntegrationTestException {
+
+        if (StringUtils.isEmpty(tenantDomain)) {
+            tenantDomain = "carbon.super";
+        }
         try {
             checkAuthentication();
-
             return HttpClient.doPost(
                     new URL(backendURL + "/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"),
-                    "", requestHeaders);
+                    "tenant=" + tenantDomain, requestHeaders);
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get all tags. Error: " + e.getMessage(), e);
