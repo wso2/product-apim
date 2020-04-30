@@ -145,7 +145,7 @@ under the License.
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
-                                <okHttpLogs>true</okHttpLogs>
+                                <okHttpLogs>false</okHttpLogs>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -242,7 +242,7 @@ under the License.
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
-                                <okHttpLogs>true</okHttpLogs>
+                                <okHttpLogs>false</okHttpLogs>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -334,7 +334,7 @@ under the License.
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                             </systemProperties>
                             <systemPropertyVariables>
-                                <okHttpLogs>true</okHttpLogs>
+                                <okHttpLogs>false</okHttpLogs>
                             </systemPropertyVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
@@ -695,7 +695,6 @@ under the License.
             <artifactId>json</artifactId>
             <version>2.0.0.wso2v1</version>
         </dependency>
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <scope>test</scope>
