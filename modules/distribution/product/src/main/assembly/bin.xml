@@ -666,6 +666,7 @@
             <includes>
                 <include>api#am#publisher#v0.16.war</include>
                 <include>api#am#publisher.war</include>
+                <include>api#am#endpoint-registry.war</include>
             </includes>
         </fileSet>
         <fileSet>
