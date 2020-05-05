@@ -7088,6 +7088,13 @@ definitions:
                   type: string
                 priority:
                   type: integer
+      categories:
+        description: |
+          API categories
+        type: array
+        items:
+          type: string
+          example: ["Finance"]
 
   #-----------------------------------------------------
   # The Audit Report resource

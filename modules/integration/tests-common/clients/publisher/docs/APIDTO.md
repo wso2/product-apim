@@ -49,6 +49,7 @@ Name | Type | Description | Notes
 **scopes** | [**List&lt;ScopeDTO&gt;**](ScopeDTO.md) |  |  [optional]
 **operations** | [**List&lt;APIOperationsDTO&gt;**](APIOperationsDTO.md) |  |  [optional]
 **threatProtectionPolicies** | [**APIThreatProtectionPoliciesDTO**](APIThreatProtectionPoliciesDTO.md) |  |  [optional]
+**categories** | **List&lt;String&gt;** | API categories  |  [optional]
 
 
 <a name="TypeEnum"></a>
