@@ -1380,7 +1380,7 @@
         <javax.jms.version>2.0.1</javax.jms.version>
 
         <!-- API Import/Export Dependencies -->
-        <com.fasterxml.jackson.dataformat.version>2.11.0</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>1.11.2</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
 
