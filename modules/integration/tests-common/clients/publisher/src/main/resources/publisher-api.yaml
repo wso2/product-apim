@@ -3223,37 +3223,6 @@ paths:
             $ref: '#/definitions/Error'
 
   ######################################################
-  # Check scope existence
-  ######################################################
-  /scopes/{name}:
-    #-----------------------------------------------------
-    # The scope name existence check resource
-    #-----------------------------------------------------
-    head:
-      security:
-        - OAuth2Security:
-            - apim:api_create
-            - apim:api_publish
-      operationId: validateScope
-      summary:
-        Check given scope name is already exist
-      description: |
-        Using this operation, user can check a given scope name exists or not.
-      parameters:
-        - $ref : '#/parameters/scopeName'
-      tags:
-        - scope
-      responses:
-        200:
-          description:
-            OK.
-            Requested scope name exists.
-        404:
-          description:
-            Not Found.
-            Requested scope name does not exist.
-
-  ######################################################
   # The "Resource Paths" resource
   ######################################################
   /apis/{apiId}/resource-paths:
@@ -6339,6 +6308,227 @@ paths:
           schema:
             $ref: '#/definitions/LabelList'
 
+  ######################################################
+  # The "Scopes" resource APIs
+  ######################################################
+  /scopes:
+
+    #-------------------------------------------------------------
+    # Retrieve the Shared Scopes list
+    #-------------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      description: |
+        This operation can be used to get all the available Shared Scopes.
+      summary: Get all available Shared Scopes
+      operationId: getSharedScopes
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+      tags:
+        - Scopes
+      responses:
+        200:
+          description: |
+            OK.
+            Shared Scope list is returned.
+          schema:
+            $ref: '#/definitions/ScopeList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        500:
+          description: Internal server error while retrieving shared scope list
+          schema:
+            $ref: '#/definitions/Error'
+
+    #-------------------------------------------------------------
+    # Create a new Shared Scope
+    #-------------------------------------------------------------
+    post:
+      security:
+        - OAuth2Security:
+            - apim:shared_scope_manage
+      summary: Add a new Shared Scope
+      description: |
+        This operation can be used to add a new Shared Scope.
+      operationId: addSharedScope
+      tags:
+        - Scopes
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Scope object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Scope'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created Scope object as an entity in the body.
+          schema:
+            $ref: '#/definitions/Scope'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+  ######################################################
+  # The "Individual Shared Scope" resource APIs
+  ######################################################
+  /scopes/{scopeId}:
+
+    #-------------------------------------------------------------
+    # Retrieve the details of a Shared Scope
+    #-------------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      summary: Get a Shared Scope by Scope Id
+      description: |
+        This operation can be used to retrieve details of a Shared Scope by a given scope Id.
+      operationId: getSharedScope
+      tags:
+        - Scopes
+      parameters:
+        - $ref: '#/parameters/scopeId'
+      responses:
+        200:
+          description: |
+            OK.
+            Requested Shared Scope is returned.
+          schema:
+            $ref: '#/definitions/Scope'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        404:
+          description: |
+            Not Found.
+            Requested Shared Scope does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
+    #-------------------------------------------------------------
+    # Update a shared scope
+    #-------------------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+            - apim:shared_scope_manage
+      summary: Update a Shared Scope
+      description: |
+        This operation can be used to update a Shared Scope by a given scope Id.
+      operationId: updateSharedScope
+      tags:
+        - Scopes
+      parameters:
+        - $ref: '#/parameters/scopeId'
+        - in: body
+          name: body
+          description: |
+            Scope object that needs to be updated
+          required: true
+          schema:
+            $ref: '#/definitions/Scope'
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated Scope object
+          schema:
+            $ref: '#/definitions/Scope'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
+    #-----------------------------------------------------
+    # Delete the shared scope
+    #-----------------------------------------------------
+    delete:
+      security:
+        - OAuth2Security:
+            - apim:shared_scope_manage
+      summary: Delete a Shared Scope
+      description: |
+        This operation can be used to delete a Shared Scope proving the Id of the scope.
+      operationId: deleteSharedScope
+      tags:
+        - Scopes
+      parameters:
+        - $ref: '#/parameters/scopeId'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            The resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
+    #-----------------------------------------------------
+    # The scope name existence check resource
+    #-----------------------------------------------------
+    head:
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_publish
+      operationId: validateScope
+      summary:
+        Check given scope name is already exist
+      description: |
+        Using this operation, user can check a given scope name exists or not.
+      parameters:
+        - $ref : '#/parameters/scopeName'
+      tags:
+        - Scopes
+      responses:
+        200:
+          description:
+            OK.
+            Requested scope name exists.
+        404:
+          description:
+            Not Found.
+            Requested scope name does not exist.
+
 ######################################################
 # Parameters - required by some of the APIs above
 ######################################################
@@ -6563,10 +6753,19 @@ parameters:
 
   # Scope Name
   scopeName:
-    name: name
+    name: scopeId
     in: path
     description: |
       Scope name
+    required: true
+    type: string
+
+  # Shared Scope Id
+  scopeId:
+    name: scopeId
+    in: path
+    description: |
+      Scope Id consisting the UUID of the shared scope
     required: true
     type: string
 
@@ -7073,7 +7272,7 @@ definitions:
       scopes:
         type: array
         items:
-          $ref: '#/definitions/Scope'
+          $ref: '#/definitions/APIScope'
       operations:
         type: array
         items:
@@ -8142,33 +8341,62 @@ definitions:
         items:
           $ref: '#/definitions/Endpoint'
 
-  #-----------------------------------------------------
-  # The Environment Endpoint resource
-  #-----------------------------------------------------
+#-----------------------------------------------------
+# The Scope resource
+#-----------------------------------------------------
   Scope :
     title: Scope
+    required:
+      - name
     properties:
+      id:
+        type: string
+        description: |
+          UUID of the Scope. Valid only for shared scopes.
+        example: 01234567-0123-0123-0123-012345678901
       name:
         type: string
         description: |
           name of Scope
         example: apim:api_view
+      displayName:
+        type: string
+        description: |
+          display name of Scope
+        example: api_view
       description:
         type: string
         description: |
           description of Scope
         example: 'This Scope can used to view Apis'
       bindings:
-        properties:
-          type:
-            type: string
-            description: |
-              Type of binding role / permission
-          values:
-            type: array
-            items:
-              type: string
+        description: |
+          role bindings list of the Scope
+        type: array
+        items:
+          type: string
+        example: ['admin','Internal/creator','Internal/publisher']
 
+#-----------------------------------------------------
+# The APIScope resource
+#-----------------------------------------------------
+  APIScope :
+    title: APIScope
+    required:
+      - scope
+    properties:
+      scope:
+        $ref: '#/definitions/Scope'
+      shared:
+        type: boolean
+        description: |
+          States whether scope is shared. This will not be honored when updating/adding scopes to APIs or when
+          adding/updating Shared Scopes.
+        example: true
+
+#-----------------------------------------------------
+# The APIOperations resource
+#-----------------------------------------------------
   APIOperations :
     title: Operation
     properties:
@@ -8209,13 +8437,9 @@ definitions:
       list:
         type: array
         items:
-          properties:
-            name:
-              type: string
-              example: "apim:api_view"
-            description:
-              type: string
-              example: "Scope for Api view"
+          $ref: '#/definitions/Scope'
+      pagination:
+        $ref: '#/definitions/Pagination'
 
   #-----------------------------------------------------
   # The External-Store resource

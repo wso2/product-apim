@@ -374,7 +374,7 @@ public class ApiProductTestHelper {
 
             Assert.assertEquals(scopeInfoDTO.getDescription(), scopeDTO.getDescription());
             Assert.assertEquals(scopeInfoDTO.getName(), scopeDTO.getName());
-            Assert.assertEquals(new HashSet<>(scopeInfoDTO.getRoles()), new HashSet<>(scopeDTO.getBindings().getValues()));
+            Assert.assertEquals(new HashSet<>(scopeInfoDTO.getRoles()), new HashSet<>(scopeDTO.getBindings()));
         }
 
     }

@@ -32,10 +32,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityD
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIThreatProtectionPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIWsdlInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 
 /**
  * APIDTO
@@ -414,7 +414,7 @@ public class APIDTO {
   private EndpointImplementationTypeEnum endpointImplementationType = EndpointImplementationTypeEnum.ENDPOINT;
 
   @SerializedName("scopes")
-  private List<ScopeDTO> scopes = null;
+  private List<APIScopeDTO> scopes = null;
 
   @SerializedName("operations")
   private List<APIOperationsDTO> operations = null;
@@ -1277,12 +1277,12 @@ public class APIDTO {
     this.endpointImplementationType = endpointImplementationType;
   }
 
-  public APIDTO scopes(List<ScopeDTO> scopes) {
+  public APIDTO scopes(List<APIScopeDTO> scopes) {
     this.scopes = scopes;
     return this;
   }
 
-  public APIDTO addScopesItem(ScopeDTO scopesItem) {
+  public APIDTO addScopesItem(APIScopeDTO scopesItem) {
     if (this.scopes == null) {
       this.scopes = new ArrayList<>();
     }
@@ -1295,11 +1295,11 @@ public class APIDTO {
    * @return scopes
   **/
   @ApiModelProperty(value = "")
-  public List<ScopeDTO> getScopes() {
+  public List<APIScopeDTO> getScopes() {
     return scopes;
   }
 
-  public void setScopes(List<ScopeDTO> scopes) {
+  public void setScopes(List<APIScopeDTO> scopes) {
     this.scopes = scopes;
   }
 
