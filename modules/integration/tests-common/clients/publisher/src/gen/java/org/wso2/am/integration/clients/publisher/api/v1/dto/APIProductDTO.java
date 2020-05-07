@@ -30,8 +30,8 @@ import java.util.Map;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 
 /**
  * APIProductDTO
@@ -327,7 +327,7 @@ public class APIProductDTO {
   private List<ProductAPIDTO> apis = null;
 
   @SerializedName("scopes")
-  private List<ScopeDTO> scopes = null;
+  private List<APIScopeDTO> scopes = null;
 
   public APIProductDTO id(String id) {
     this.id = id;
@@ -993,12 +993,12 @@ public class APIProductDTO {
     this.apis = apis;
   }
 
-  public APIProductDTO scopes(List<ScopeDTO> scopes) {
+  public APIProductDTO scopes(List<APIScopeDTO> scopes) {
     this.scopes = scopes;
     return this;
   }
 
-  public APIProductDTO addScopesItem(ScopeDTO scopesItem) {
+  public APIProductDTO addScopesItem(APIScopeDTO scopesItem) {
     if (this.scopes == null) {
       this.scopes = new ArrayList<>();
     }
@@ -1011,11 +1011,11 @@ public class APIProductDTO {
    * @return scopes
   **/
   @ApiModelProperty(value = "")
-  public List<ScopeDTO> getScopes() {
+  public List<APIScopeDTO> getScopes() {
     return scopes;
   }
 
-  public void setScopes(List<ScopeDTO> scopes) {
+  public void setScopes(List<APIScopeDTO> scopes) {
     this.scopes = scopes;
   }
 

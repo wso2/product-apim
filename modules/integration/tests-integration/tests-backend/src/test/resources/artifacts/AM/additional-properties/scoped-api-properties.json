@@ -8,14 +8,17 @@
 				"production_endpoints" : { "url" : "http://localhost" },
 				"sandbox_endpoints" : { "url" : "http://localhost" }
 			   },
-	"scopes" : [{
-			"name" : "restricted_scope",
-			"description" : "A restricted scope",
-			"bindings" : {
-					"type" : "role",
-					"values" : ["restricted_role"]
-				     }
-		    }],
+	"scopes": [
+		{
+			"scope": {
+				"name": "restricted_scope",
+				"description": "A restricted scope",
+				"bindings": [
+					"restricted_role"
+				]
+			}
+		}
+	],
 	"operations" : [{
 				"target" : "/customers",
 				"verb" :  "get",

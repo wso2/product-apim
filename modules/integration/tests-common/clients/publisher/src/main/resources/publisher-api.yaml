@@ -7548,7 +7548,7 @@ definitions:
       scopes:
         type: array
         items:
-          $ref: '#/definitions/Scope'
+          $ref: '#/definitions/APIScope'
   #-----------------------------------------------------
   # The API and its resources in a API Product resource
   #-----------------------------------------------------
