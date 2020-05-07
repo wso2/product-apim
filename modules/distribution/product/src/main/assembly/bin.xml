@@ -677,6 +677,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#admin#v0.16.war</include>
+                <include>api#am#admin.war</include>
             </includes>
         </fileSet>
         <fileSet>
