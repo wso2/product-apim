@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **apiInfo** | [**APIInfoDTO**](APIInfoDTO.md) |  |  [optional]
 **applicationInfo** | [**ApplicationInfoDTO**](ApplicationInfoDTO.md) |  |  [optional]
 **throttlingPolicy** | **String** |  | 
+**requestedThrottlingPolicy** | **String** |  |  [optional]
 **status** | [**StatusEnum**](#StatusEnum) |  |  [optional]
 
 
@@ -22,6 +23,7 @@ PROD_ONLY_BLOCKED | &quot;PROD_ONLY_BLOCKED&quot;
 UNBLOCKED | &quot;UNBLOCKED&quot;
 ON_HOLD | &quot;ON_HOLD&quot;
 REJECTED | &quot;REJECTED&quot;
+TIER_UPDATE_PENDING | &quot;TIER_UPDATE_PENDING&quot;
 
 
 

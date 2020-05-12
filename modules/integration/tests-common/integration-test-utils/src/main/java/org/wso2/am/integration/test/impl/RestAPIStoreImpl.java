@@ -236,6 +236,7 @@ public class RestAPIStoreImpl {
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
+            subscription.setRequestedThrottlingPolicy(subscriptionTier);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
