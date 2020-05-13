@@ -19,8 +19,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="10.1.1-expose-service-secured-via-basic-authentication" preserve-order="true" verbose="2" parallel="false">
-        <classes>
+        <!--        <classes>
             <class name="org.wso2.am.scenario.tests.basic.auth.security.BasicAuthEndpointSecuredAPITestcase"/>
-        </classes>
+        </classes>-->
     </test>
 </suite>
