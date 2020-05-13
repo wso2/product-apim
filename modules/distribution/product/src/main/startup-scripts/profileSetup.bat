@@ -18,6 +18,7 @@ set userLocation=%cd%
 set pathToAxis2XMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2.xml.j2
 set pathToRegistryTemplate=..\repository\resources\conf\templates\repository\conf\registry.xml.j2
 set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\default\inbound-endpoints
+set pathToInboundEndpointsTemplate=..\repository\resources\conf\templates\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
@@ -210,6 +211,11 @@ if exist %pathToInboundEndpoints%\WebSocketInboundEndpoint.xml (
 	call :Timestamp value
 	echo %value% INFO - Removed the WebSocketInboundEndpoint.xml file from %pathToInboundEndpoints%
 )
+if exist %pathToInboundEndpointsTemplate%\WebSocketInboundEndpoint.xml.j2 (
+	del /f %pathToInboundEndpointsTemplate%\WebSocketInboundEndpoint.xml.j2
+	call :Timestamp value
+	echo %value% INFO - Removed the WebSocketInboundEndpoint.xml.j2 file from %pathToInboundEndpointsTemplate%
+)
 EXIT /B 0
 
 :removeSecureWebSocketInboundEndpoint
@@ -217,6 +223,11 @@ if exist %pathToInboundEndpoints%\SecureWebSocketInboundEndpoint.xml (
 	del /f %pathToInboundEndpoints%\SecureWebSocketInboundEndpoint.xml
 	call :Timestamp value
 	echo %value% INFO - Removed the SecureWebSocketInboundEndpoint.xml file from %pathToInboundEndpoints%
+)
+if exist %pathToInboundEndpointsTemplate%\SecureWebSocketInboundEndpoint.xml.j2 (
+	del /f %pathToInboundEndpointsTemplate%\SecureWebSocketInboundEndpoint.xml.j2
+	call :Timestamp value
+	echo %value% INFO - Removed the SecureWebSocketInboundEndpoint.xml.j2 file from %pathToInboundEndpointsTemplate%
 )
 EXIT /B 0
 

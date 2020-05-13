@@ -440,7 +440,7 @@
             <dependency>
                 <groupId>org.springframework.ws.wso2</groupId>
                 <artifactId>spring.framework</artifactId>
-                <version>3.2.9.wso2v1</version>
+                <version>3.2.9.wso2v2</version>
             </dependency>
 
             <dependency>
@@ -1321,7 +1321,7 @@
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
         <slf4j.api.version>1.7.28</slf4j.api.version>
-        <org.slf4j.version>1.7.28</org.slf4j.version>
+        <org.slf4j.version>1.7.30</org.slf4j.version>
         <google.code.gson.version>2.8.5</google.code.gson.version>
 
         <!-- Developer Portal -->
@@ -1380,13 +1380,13 @@
         <javax.jms.version>2.0.1</javax.jms.version>
 
         <!-- API Import/Export Dependencies -->
-        <com.fasterxml.jackson.dataformat.version>2.11.0</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>1.11.2</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.5.0</identity.outbound.auth.oidc.version>
-        <swagger-parser-version>2.0.19</swagger-parser-version>
+        <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
 
         <!-- CallHome version -->
