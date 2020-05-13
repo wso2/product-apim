@@ -28,5 +28,6 @@
     <modules>
         <module>publisher</module>
         <module>store</module>
+        <module>admin</module>
     </modules>
 </project>
