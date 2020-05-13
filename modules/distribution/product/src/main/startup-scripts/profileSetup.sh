@@ -22,6 +22,7 @@ pathToAxis2BlockingClientXML='../repository/conf/axis2/axis2_blocking_client.xml
 pathToAxis2BlockingClientXMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_blocking_client.xml.j2'
 pathToRegistryTemplate='../repository/resources/conf/templates/repository/conf/registry.xml.j2'
 pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/inbound-endpoints/'
+pathToInboundEndpointsTemplate='../repository/resources/conf/templates/repository/deployment/server/synapse-configs/default/inbound-endpoints/'
 pathToWebapps='../repository/deployment/server/webapps'
 pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
@@ -48,6 +49,13 @@ removeWebSocketInboundEndpoint(){
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
+
+    if [ -e ${pathToInboundEndpointsTemplate}WebSocketInboundEndpoint.xml.j2 ]
+	then
+		rm -r ${pathToInboundEndpointsTemplate}WebSocketInboundEndpoint.xml.j2
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml.j2 file from $pathToInboundEndpointsTemplate"
+	fi
 }
 
 removeSecureWebSocketInboundEndpoint(){
@@ -56,6 +64,13 @@ removeSecureWebSocketInboundEndpoint(){
 		rm -r ${pathToInboundEndpoints}SecureWebSocketInboundEndpoint.xml
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
+	fi
+
+	if [ -e ${pathToInboundEndpointsTemplate}SecureWebSocketInboundEndpoint.xml.j2 ]
+	then
+		rm -r ${pathToInboundEndpointsTemplate}SecureWebSocketInboundEndpoint.xml.j2
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml.j2 file from $pathToInboundEndpointsTemplate"
 	fi
 }
 
