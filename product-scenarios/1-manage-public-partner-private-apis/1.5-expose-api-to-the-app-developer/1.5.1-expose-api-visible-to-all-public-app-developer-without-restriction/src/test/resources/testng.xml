@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.5.1-expose-api-visible-to-all-public-app-developer-without-restriction" preserve-order="true"
           verbose="2" parallel="false">
-        <classes>
+        <!--        <classes>
             <class name="org.wso2.am.scenario.tests.rest.api.publicVisibility.PublicRestApiVisibilityTestCase"/>
-        </classes>
+        </classes>-->
     </test>
 </suite>

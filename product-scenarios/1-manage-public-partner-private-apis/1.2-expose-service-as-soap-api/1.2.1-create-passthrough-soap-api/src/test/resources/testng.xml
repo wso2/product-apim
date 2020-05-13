@@ -19,9 +19,9 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.2.1-create-passthrough-soap-api" preserve-order="true" verbose="2" parallel="false">
-        <classes>
+        <!--        <classes>
             <!--<class name="org.wso2.am.scenario.tests.soap.api.creation.PassthroughSOAPApiCreationTestCase"/>-->
-        </classes>
+        </classes>-->
     </test>
 </suite>
 

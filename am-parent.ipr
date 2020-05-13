@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AntConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
+  <component name="CodeStyleManager">
+    <option name="USE_DEFAULT_CODE_STYLE_SCHEME" value="true" />
+    <option name="CODE_STYLE_SCHEME" value="" />
+  </component>
+  <component name="CompilerConfiguration">
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+    </wildcardResourcePatterns>
+  </component>
+  <component name="ExportToHTMLSettings">
+    <option name="PRINT_LINE_NUMBERS" value="false" />
+    <option name="OPEN_IN_BROWSER" value="false" />
+    <option name="OUTPUT_DIRECTORY" />
+  </component>
+  <component name="ImportConfiguration">
+    <option name="VENDOR" />
+    <option name="RELEASE_TAG" />
+    <option name="LOG_MESSAGE" />
+    <option name="CHECKOUT_AFTER_IMPORT" value="true" />
+  </component>
+  <component name="InspectionProjectProfileManager">
+    <profile version="1.0">
+      <option name="myName" value="Project Default" />
+    </profile>
+    <version value="1.0" />
+  </component>
+  <component name="JUnitProjectSettings">
+    <option name="TEST_RUNNER" value="UI" />
+  </component>
+  <component name="JavacSettings">
+    <option name="DEBUGGING_INFO" value="true" />
+    <option name="GENERATE_NO_WARNINGS" value="false" />
+    <option name="DEPRECATION" value="true" />
+    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
+    <option name="MAXIMUM_HEAP_SIZE" value="128" />
+    <option name="USE_GENERICS_COMPILER" value="false" />
+  </component>
+  <component name="JavadocGenerationManager">
+    <option name="OUTPUT_DIRECTORY" />
+    <option name="OPTION_SCOPE" value="protected" />
+    <option name="OPTION_HIERARCHY" value="false" />
+    <option name="OPTION_NAVIGATOR" value="false" />
+    <option name="OPTION_INDEX" value="false" />
+    <option name="OPTION_SEPARATE_INDEX" value="false" />
+    <option name="OPTION_USE_1_1" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_USE" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_VERSION" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_DEPRECATED" value="false" />
+    <option name="OPTION_DEPRECATED_LIST" value="false" />
+    <option name="OTHER_OPTIONS" />
+    <option name="HEAP_SIZE" />
+    <option name="OPEN_IN_BROWSER" value="false" />
+  </component>
+  <component name="JikesSettings">
+    <option name="DEBUGGING_INFO" value="true" />
+    <option name="DEPRECATION" value="true" />
+    <option name="GENERATE_NO_WARNINGS" value="false" />
+    <option name="GENERATE_MAKE_FILE_DEPENDENCIES" value="false" />
+    <option name="DO_FULL_DEPENDENCE_CHECK" value="false" />
+    <option name="IS_INCREMENTAL_MODE" value="false" />
+    <option name="IS_EMACS_ERRORS_MODE" value="true" />
+    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
+    <option name="MAXIMUM_HEAP_SIZE" value="128" />
+  </component>
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/modules/distribution/am-distribution-parent.iml" filepath="$PROJECT_DIR$/modules/distribution/am-distribution-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/features/product/am-features.iml" filepath="$PROJECT_DIR$/modules/features/product/am-features.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/features/am-features-parent.iml" filepath="$PROJECT_DIR$/modules/features/am-features-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/p2-profile/product/am-p2-profile.iml" filepath="$PROJECT_DIR$/modules/p2-profile/product/am-p2-profile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/p2-profile/am-p2-profile-gen-parent.iml" filepath="$PROJECT_DIR$/modules/p2-profile/am-p2-profile-gen-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/am-parent.iml" filepath="$PROJECT_DIR$/am-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/styles/am-styles-parent.iml" filepath="$PROJECT_DIR$/modules/styles/am-styles-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/callhome/apim-callhome.iml" filepath="$PROJECT_DIR$/modules/callhome/apim-callhome.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/backend-service/monitor-app/artifact-deployment-monitor.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/backend-service/monitor-app/artifact-deployment-monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/integration.iml" filepath="$PROJECT_DIR$/modules/integration/integration.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/framework-extensions/org.wso2.am.framework.extensions.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/framework-extensions/org.wso2.am.framework.extensions.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/admin-clients/org.wso2.am.integration.admin.clients.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/admin-clients/org.wso2.am.integration.admin.clients.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/backend-service/jaxrs-app/org.wso2.am.integration.backend.service.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/backend-service/jaxrs-app/org.wso2.am.integration.backend.service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/clients/org.wso2.am.integration.clients.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/clients/org.wso2.am.integration.clients.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/clients/publisher/org.wso2.am.integration.clients.publisher.api.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/clients/publisher/org.wso2.am.integration.clients.publisher.api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/clients/store/org.wso2.am.integration.clients.store.api.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/clients/store/org.wso2.am.integration.clients.store.api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/integration-test-utils/org.wso2.am.integration.common.test.utils.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/integration-test-utils/org.wso2.am.integration.common.test.utils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/integration-test-extensions/org.wso2.am.integration.test.extensions.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/integration-test-extensions/org.wso2.am.integration.test.extensions.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/ui-pages/org.wso2.am.integration.ui.pages.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/ui-pages/org.wso2.am.integration.ui.pages.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/org.wso2.am.multitenancy.dashboard.ui/org.wso2.am.multitenancy.dashboard.ui.iml" filepath="$PROJECT_DIR$/modules/org.wso2.am.multitenancy.dashboard.ui/org.wso2.am.multitenancy.dashboard.ui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/features/product/org.wso2.am.multitenancy.dashboard.ui.feature/org.wso2.am.multitenancy.dashboard.ui.feature.iml" filepath="$PROJECT_DIR$/modules/features/product/org.wso2.am.multitenancy.dashboard.ui.feature/org.wso2.am.multitenancy.dashboard.ui.feature.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/styles/product/org.wso2.am.styles.iml" filepath="$PROJECT_DIR$/modules/styles/product/org.wso2.am.styles.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/features/product/org.wso2.am.styles.feature/org.wso2.am.styles.feature.iml" filepath="$PROJECT_DIR$/modules/features/product/org.wso2.am.styles.feature/org.wso2.am.styles.feature.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-integration/tests-backend/org.wso2.carbon.am.integration.backend.test.iml" filepath="$PROJECT_DIR$/modules/integration/tests-integration/tests-backend/org.wso2.carbon.am.integration.backend.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-integration/org.wso2.carbon.am.integration.test.iml" filepath="$PROJECT_DIR$/modules/integration/tests-integration/org.wso2.carbon.am.integration.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/styles/service/org.wso2.stratos.apimgt.styles.iml" filepath="$PROJECT_DIR$/modules/styles/service/org.wso2.stratos.apimgt.styles.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/backend-service/test-artifacts.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/backend-service/test-artifacts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/integration/tests-common/tests-common.iml" filepath="$PROJECT_DIR$/modules/integration/tests-common/tests-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/distribution/product/wso2am.iml" filepath="$PROJECT_DIR$/modules/distribution/product/wso2am.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/oauth2-grant-types/wso2is-identity-oauth2-grant-types.iml" filepath="$PROJECT_DIR$/modules/oauth2-grant-types/wso2is-identity-oauth2-grant-types.iml" />
+      <module fileurl="file://$PROJECT_DIR$/modules/authenticators/wso2is-identity-outbound-authenticators.iml" filepath="$PROJECT_DIR$/modules/authenticators/wso2is-identity-outbound-authenticators.iml" />
+    </modules>
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="1.8.0_241" project-jdk-type="JavaSDK" />
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+  </component>
+</project>
