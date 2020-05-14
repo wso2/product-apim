@@ -40,7 +40,10 @@ import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class RESTApiCreationTestCase extends ScenarioTestBase {
@@ -48,6 +51,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
+    private APICreationRequestBean designBean;
 
     private String apiName;
     private String apiContext;
@@ -75,38 +79,54 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String inSequence = "debug_in_flow";
     private String outSequence = "debug_out_flow";
 
-    private String username;
-    private String password;
-    private String adminUsername;
-    private String adminPassword;
+    private String apiId;
+    private String backendURL;
+    private String providerName;
 
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
-    // All tests in this class will run with a super tenant API creator and a tenant API creator.
-    @Factory(dataProvider = "userModeDataProvider") public RESTApiCreationTestCase(String username, String password,
-            String adminUsername, String adminPassword) {
-        this.username = username;
-        this.password = password;
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
-    }
-
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(username, password);
+    public void init() throws Exception {
+        super.init(userMode);
+        providerName = user.getUserName();
+
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
     }
 
     @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
 
-        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
-                apiVersion, apiResource);
+//        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
+//                apiVersion, apiResource);
+//        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+//        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+//        apiOperationsDTO.setVerb("GET");
+//        apiOperationsDTO.setTarget(apiResource);
+//
+//        apiOperationsDTOs.add(apiOperationsDTO);
 
-        //Design API with name,context,version,visibility and apiResource
-        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        verifyAPIName(apiName, username);
+//        backendURL = getGatewayURLNhttp() + apiName + "_backend/" + apiVersion;
+//        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
+//        apiRequest = new APIRequest(apiName, "/" + apiName, new URL(backendEndPoint));
+//        apiRequest.setVersion(apiVersion);
+//        apiRequest.setVisibility(apiVisibility);
+//        apiRequest.setOperationsDTOS(apiOperationsDTOs);
+
+        List<APIResourceBean> resourceBeans = new ArrayList<>();
+        APIResourceBean rBean = new APIResourceBean();
+        rBean.setResourceMethod("GET");
+        rBean.setUriTemplate(apiResource);
+        resourceBeans.add(rBean);
+
+        designBean = APICreationRequestBean(apiName, "/" + apiName, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+        designBean.setVisibility(apiVisibility);
+
+        //Design API with apiRequest
+//        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest); //RestAPIPublisherImpl //design
+        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
+        verifyResponse(serviceResponse); //need to change
+        verifyAPIName(apiName, providerName);
     }
 
     @Test(description = "1.1.1.2")
@@ -114,16 +134,44 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
-                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
-                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
-                subscriptions, http_checked, https_checked, inSequence, outSequence);
+//        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
+//                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
+//                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
+//                subscriptions, http_checked, https_checked, inSequence, outSequence);
+
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
+
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+//        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
+        apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndPoint));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setRoles("");
+        apiRequest.setDescription(description);
+        apiRequest.setTags(tag);
+        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setBusinessOwner(bizOwner);
+        apiRequest.setBusinessOwnerEmail(bizOwnerMail);
+        apiRequest.setTechnicalOwner(techOwner);
+        apiRequest.getTechnicalOwnerEmail(techOwnerMail);
+        apiRequest.setEndpointType(endpointType);
+        //endpointAuthType
+        apiRequest.setDefault_version_checked(default_version_checked);
+        //responseCache, cacheTimeout, subscriptions, in/outSequence
+        apiRequest.setHttp_checked(http_checked);
+        apiRequest.setHttps_checked(https_checked);
+
 
         //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        HttpResponse serviceResponseGetApi = apiPublisher.getAPI(apiName, username);
-        validateOptionalFiled(serviceResponseGetApi);
+        verifyResponse(serviceResponse); //need to change
+        HttpResponse serviceResponseGetApi = apiPublisher.getAPI(apiName, providerName);
+        validateOptionalField(serviceResponseGetApi);
     }
 
     @Test(description = "1.1.1.4")
@@ -132,15 +180,38 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiContext = "apiwildcard";
         apiResource = "/*";
 
-        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+//        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+//        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+//        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+//        apiOperationsDTO.setVerb("GET");
+//        apiOperationsDTO.setTarget(apiResource);
+//
+//        apiOperationsDTOs.add(apiOperationsDTO);
+//
+//        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
+//        apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndPoint));
+//        apiRequest.setVisibility(apiVisibility);
+//        apiRequest.setVersion(apiVersion);
+//        apiRequest.setOperationsDTOS(apiOperationsDTOs);
+
+        List<APIResourceBean> resourceBeans = new ArrayList<>();
+        APIResourceBean rBean = new APIResourceBean();
+        rBean.setResourceMethod("GET");
+        rBean.setUriTemplate(apiResource);
+        resourceBeans.add(rBean);
+
+        designBean = APICreationRequestBean(apiName, apiContext, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+        designBean.setVisibility(apiVisibility);
 
         //Design API with name,context,version,visibility and wildcard apiResource
-        HttpResponse serviceResponse = apiPublisher.designAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        verifyAPIName(apiName, username);
+//        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest); //design
+        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
+        verifyResponse(serviceResponse); //need to change
+
+        verifyAPIName(apiName, providerName);
     }
 
-    private void validateOptionalFiled(HttpResponse response) throws APIManagerIntegrationTestException {
+    private void validateOptionalField(HttpResponse response) throws APIManagerIntegrationTestException {
         JSONObject responseJson = new JSONObject(response.getData());
         Assert.assertEquals(responseJson.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
         Assert.assertEquals(responseJson.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
