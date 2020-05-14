@@ -17,6 +17,7 @@
  */
 package org.wso2.am.scenario.test.common;
 
+import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
@@ -28,18 +29,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
+import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +86,145 @@ public class ScenarioTestBase {
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
     public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
+    protected String publisherURLHttp;
+    protected String publisherURLHttps;
+    protected String keyManagerHTTPSURL;
+    protected String gatewayHTTPSURL;
+    protected String storeURLHttp;
+    protected String storeURLHttps;
+    protected TestUserMode userMode;
+    protected APIMTestCaseUtils apimTestCaseUtils;
+    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
+    protected OMElement synapseConfiguration;
+    protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
+    protected String executionMode;
+    protected String keymanagerSessionCookie;
+    protected String keymanagerSuperTenantSessionCookie;
+    protected APIPublisherRestClient apiPublisher;
+    protected org.wso2.am.integration.test.utils.clients.APIStoreRestClient apiStore;
+    protected RestAPIPublisherImpl restAPIPublisher;
+    protected RestAPIStoreImpl restAPIStore;
+    protected UserManagementClient userManagementClient;
+    protected TenantManagementServiceClient tenantManagementServiceClient;
+    protected User user;
+
+
+    /**
+     * This method will initialize test environment
+     * based on user mode and configuration given at automation.xml
+     *
+     * @throws APIManagerIntegrationTestException - if test configuration init fails
+     */
+    protected void init() throws APIManagerIntegrationTestException {
+        userMode = TestUserMode.SUPER_TENANT_ADMIN;
+        init(userMode);
+    }
+
+    /**
+     * init the object with user mode , create context objects and get session cookies
+     *
+     * @param userMode - user mode to run the tests
+     * @throws APIManagerIntegrationTestException - if test configuration init fails
+     */
+    protected void init(TestUserMode userMode) throws APIManagerIntegrationTestException {
+
+        apimTestCaseUtils = new APIMTestCaseUtils();
+
+        try {
+            //create store server instance based on configuration given at automation.xml
+            storeContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
+            storeUrls = new APIMURLBean(storeContext.getContextUrls());
+
+            //create publisher server instance based on configuration given at automation.xml
+            publisherContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
+            publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
+
+            //create gateway server instance based on configuration given at automation.xml
+            gatewayContextMgt =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, userMode);
+            gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
+
+            gatewayContextWrk =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, userMode);
+            gatewayUrlsWrk = new APIMURLBean(gatewayContextWrk.getContextUrls());
+
+            keyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                    APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, userMode);
+            keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
+
+            backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                    APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
+            backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
+
+            executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
+
+            user = storeContext.getContextTenant().getContextUser();
+
+            superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                    APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                    TestUserMode.SUPER_TENANT_ADMIN);
+
+            keymanagerSessionCookie = createSession(keyManagerContext);
+            publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            publisherURLHttps = publisherUrls.getWebAppURLHttps();
+            keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
+            gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+
+            storeURLHttp = storeUrls.getWebAppURLHttp();
+            storeURLHttps = storeUrls.getWebAppURLHttps();
+            apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+            apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
+            restAPIPublisher = new RestAPIPublisherImpl(
+                    publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getContextUser().getPassword(),
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+            restAPIStore =
+                    new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                            storeContext.getContextTenant().getContextUser().getPassword(),
+                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+
+            try {
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                userManagementClient = new UserManagementClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSuperTenantSessionCookie);
+            } catch (Exception e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
+
+        } catch (XPathExpressionException e) {
+            log.error("APIM test environment initialization failed", e);
+            throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
+        }
+
+    }
+
+
+    /**
+     * @param automationContext - automation context instance of given server
+     * @return - created session cookie variable
+     * @throws APIManagerIntegrationTestException - Throws if creating session cookie fails
+     */
+    protected String createSession(AutomationContext automationContext)
+            throws APIManagerIntegrationTestException {
+        LoginLogoutClient loginLogoutClient;
+        try {
+            loginLogoutClient = new LoginLogoutClient(automationContext);
+            return loginLogoutClient.login();
+        } catch (Exception e) {
+            log.error("session creation error", e);
+            throw new APIManagerIntegrationTestException("session creation error", e);
+        }
+    }
 
     public ScenarioTestBase() {
         setup();

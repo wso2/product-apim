@@ -63,7 +63,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
     private String applicationDescription = "Application_Description";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher.login(ADMIN_USERNAME, ADMIN_PASSWORD);

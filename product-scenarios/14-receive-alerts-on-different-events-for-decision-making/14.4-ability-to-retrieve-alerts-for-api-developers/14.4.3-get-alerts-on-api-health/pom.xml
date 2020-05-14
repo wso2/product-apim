@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.4-ability-to-retrieve-alerts-for-api-developers</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_4][USECASE_3] - Get Alerts on API Health</name>
     <artifactId>14.4.3-get-alerts-on-api-health</artifactId>
     <packaging>pom</packaging>

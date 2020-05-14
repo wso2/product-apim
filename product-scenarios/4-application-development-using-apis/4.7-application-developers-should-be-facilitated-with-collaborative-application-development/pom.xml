@@ -23,13 +23,13 @@
     <parent>
         <artifactId>4-application-development-using-apis</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_4][SUBSCENARIO_7] - Application developers should be facilitated with collaborative application development</name>
     <artifactId>4.7-application-developers-should-be-facilitated-with-collaborative-application-development</artifactId>
     <packaging>pom</packaging>

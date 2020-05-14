@@ -61,7 +61,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(RESTApiCreationUsingOASDocTestCase.class);
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         createUsers();
         apiPublisher = new APIPublisherRestClient(publisherURL);

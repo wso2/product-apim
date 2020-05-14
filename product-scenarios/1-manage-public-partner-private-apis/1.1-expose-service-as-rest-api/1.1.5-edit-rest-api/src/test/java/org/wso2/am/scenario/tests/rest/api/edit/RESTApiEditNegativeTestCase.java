@@ -68,7 +68,7 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         createUsers();
         apiPublisher = new APIPublisherRestClient(publisherURL);

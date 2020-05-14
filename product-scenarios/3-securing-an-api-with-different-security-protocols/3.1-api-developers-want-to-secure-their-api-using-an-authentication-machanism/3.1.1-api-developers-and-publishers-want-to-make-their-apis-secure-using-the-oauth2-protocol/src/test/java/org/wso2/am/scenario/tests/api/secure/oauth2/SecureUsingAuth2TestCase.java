@@ -73,7 +73,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher = new APIPublisherRestClient(publisherURL);
 

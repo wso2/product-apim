@@ -77,7 +77,7 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     private String consumerSecret;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         apiPublisher = new APIPublisherRestClient(publisherURL);
 

@@ -70,7 +70,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private APIStoreRestClient apiStoreClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStoreClient = new APIStoreRestClient(storeURL);
 

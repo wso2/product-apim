@@ -122,7 +122,7 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         setupUserData();
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);

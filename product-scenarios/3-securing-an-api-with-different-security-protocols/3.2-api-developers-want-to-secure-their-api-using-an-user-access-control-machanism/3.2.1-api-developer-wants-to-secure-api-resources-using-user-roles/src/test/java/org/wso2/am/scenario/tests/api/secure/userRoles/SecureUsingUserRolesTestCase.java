@@ -201,7 +201,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         setupUserData();
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);

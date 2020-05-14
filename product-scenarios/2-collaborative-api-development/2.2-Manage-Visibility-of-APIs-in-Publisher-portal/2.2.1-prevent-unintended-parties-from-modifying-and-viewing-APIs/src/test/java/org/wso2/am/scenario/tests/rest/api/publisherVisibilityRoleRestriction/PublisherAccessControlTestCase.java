@@ -72,7 +72,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
     private int count = 0;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         apiPublisher = new APIPublisherRestClient(publisherURL);
         createUsers();

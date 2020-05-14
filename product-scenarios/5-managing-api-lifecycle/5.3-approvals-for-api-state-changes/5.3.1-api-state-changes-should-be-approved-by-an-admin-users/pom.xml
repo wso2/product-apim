@@ -23,13 +23,13 @@
     <parent>
         <artifactId>5.3-approvals-for-api-state-changes</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_5][SUBSCENARIO_3][USECASE_1] API state changes should be approved by an admin users</name>
     <artifactId>5.3.1-api-state-changes-should-be-approved-by-an-admin-users</artifactId>
     <packaging>pom</packaging>

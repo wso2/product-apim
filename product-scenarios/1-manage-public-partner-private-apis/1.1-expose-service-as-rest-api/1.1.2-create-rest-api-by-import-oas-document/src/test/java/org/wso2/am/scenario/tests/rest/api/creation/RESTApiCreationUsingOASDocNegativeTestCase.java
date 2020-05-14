@@ -65,7 +65,7 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
     String resourceLocation = System.getProperty("test.resource.location");
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         createUsers();
         apiPublisher = new APIPublisherRestClient(publisherURL);

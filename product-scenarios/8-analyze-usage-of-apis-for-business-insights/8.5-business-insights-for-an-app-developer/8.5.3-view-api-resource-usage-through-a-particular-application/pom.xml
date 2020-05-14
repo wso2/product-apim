@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.5-business-insights-for-an-app-developer</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_5][USECASE_3] - View API Resource Usage Through a Particular Application</name>
     <artifactId>8.5.3-view-api-resource-usage-through-a-particular-application</artifactId>
     <packaging>pom</packaging>

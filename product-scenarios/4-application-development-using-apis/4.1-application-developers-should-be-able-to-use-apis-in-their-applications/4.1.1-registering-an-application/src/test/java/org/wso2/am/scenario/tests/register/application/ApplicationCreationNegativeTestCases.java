@@ -70,7 +70,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     private final String APPLICATION_DESCRIPTION = "Application description";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1,
                 ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);

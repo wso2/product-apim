@@ -92,7 +92,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login(username, password);
     }
