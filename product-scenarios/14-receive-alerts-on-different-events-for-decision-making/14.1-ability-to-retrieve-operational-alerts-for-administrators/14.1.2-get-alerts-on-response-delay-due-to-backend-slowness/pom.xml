@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.1-ability-to-retrieve-operational-alerts-for-administrators</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_1][USECASE_2] - Get Alerts on Response Delays due to Backend Slowness</name>
     <artifactId>14.1.2-get-alerts-on-response-delay-due-to-backend-slowness</artifactId>
     <packaging>pom</packaging>

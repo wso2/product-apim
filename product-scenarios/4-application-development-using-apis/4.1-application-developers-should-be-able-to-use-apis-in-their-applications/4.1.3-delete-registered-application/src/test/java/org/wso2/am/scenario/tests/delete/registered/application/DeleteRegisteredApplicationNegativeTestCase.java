@@ -28,7 +28,7 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     private final String SUBSCRIBER2_PW = "deleteAppSubscriber2";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         createUserWithSubscriberRole(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
 

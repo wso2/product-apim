@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.3-business-insights-for-an-api-develeoper-based-on-api-usage</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_3][USECASE_4] - View from What Type of Devices an API Get the Highest Number of Requests</name>
     <artifactId>8.3.4-view-from-what-type-of-devices-an-api-get-the-highest-number-of-requests</artifactId>
     <packaging>pom</packaging>

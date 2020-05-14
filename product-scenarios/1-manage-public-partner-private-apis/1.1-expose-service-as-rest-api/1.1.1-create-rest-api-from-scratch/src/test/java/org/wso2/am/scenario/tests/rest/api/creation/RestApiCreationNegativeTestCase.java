@@ -3,11 +3,14 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -33,9 +36,15 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private String DuplicateNameResponse = "A duplicate API already exists for ";
     private String DuplicateContextResponse = "A duplicate API context already exists for ";
     private String InvalidNameResponse = " Error while adding the API- ";
+    protected TestUserMode userMode;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public RestApiCreationNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void setEnvironment() throws APIManagerIntegrationTestException {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiPublisher.login("admin", "admin");
 

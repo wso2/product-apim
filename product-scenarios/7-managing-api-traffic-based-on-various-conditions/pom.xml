@@ -23,12 +23,12 @@
     <parent>
         <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <name>[APIM][SCENARIO_7] - Managing API traffic based on various conditions</name>
     <artifactId>7-managing-api-traffic-based-on-various-conditions</artifactId>
     <packaging>pom</packaging>

@@ -62,7 +62,7 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiPublisher = new APIPublisherRestClient(publisherURL);
         apiStore = new APIStoreRestClient(storeURL);
 

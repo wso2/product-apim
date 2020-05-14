@@ -68,7 +68,7 @@ public class DeleteRegisteredApplicationTestCase extends ScenarioTestBase {
     private final String WITH_SUBSCRIPTION_SUFFIX = "WithSubs";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
         apiStore = new APIStoreRestClient(storeURL);
         apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);

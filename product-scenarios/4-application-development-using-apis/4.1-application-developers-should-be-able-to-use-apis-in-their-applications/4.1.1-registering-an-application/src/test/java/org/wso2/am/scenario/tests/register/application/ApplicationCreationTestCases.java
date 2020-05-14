@@ -75,7 +75,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         apiStore = new APIStoreRestClient(storeURL);
         createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME, SUBSCRIBER_LOGIN_PW,
                 ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);

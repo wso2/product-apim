@@ -22,9 +22,10 @@
     <name>Product Scenarios</name>
     <packaging>pom</packaging>
     <groupId>org.wso2.am</groupId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
 
     <modules>
+<!--        <module>tests-common</module>-->
         <module>scenarios-common</module>
         <module>1-manage-public-partner-private-apis</module>
         <module>2-collaborative-api-development</module>
@@ -554,7 +555,16 @@
                 <artifactId>logging-interceptor</artifactId>
                 <version>${com.squareup.okhttp.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -578,7 +588,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.35</carbon.kernel.version>
-        <apimserver.version>2.6.0</apimserver.version>
+        <apimserver.version>3.0.0</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
         <cipher.tool.version>1.0.0-wso2v8</cipher.tool.version>

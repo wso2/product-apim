@@ -17,7 +17,7 @@
   -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="ApiManager-2.6.0-scenario-tests-suite">
+<suite name="ApiManager-3.0.0-scenario-tests-suite">
     <suite-files>
         <suite-file path="testng.xml" />
     </suite-files>

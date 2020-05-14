@@ -5,7 +5,7 @@
     <parent>
         <artifactId>10.1-expose-service-with-secured-backend</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.6.0</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>[APIM][SCENARIO_10][SUBSCENARIO_1][USECASE_1] - Expose a service which is secured via Basic Authentication</name>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>scenarios-common</artifactId>
-            <version>2.6.0</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
