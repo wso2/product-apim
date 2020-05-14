@@ -437,9 +437,27 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.4</version>
+                            <reportSets>
+                                <reportSet>
+                                    <reports>
+                                        <report>index</report>
+                                    </reports>
+                                </reportSet>
+                            </reportSets>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
+                        <id>--------create-documentation-module----</id>
                         <goals>
                             <goal>site</goal>
                         </goals>
@@ -913,22 +931,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.4</version>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>index</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
 
 </project>
