@@ -55,16 +55,11 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class ScenarioTestBase {
 
@@ -361,7 +356,7 @@ public class ScenarioTestBase {
     }
 
     public static void setKeyStoreProperties() {
-        System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystore/wso2carbon.jks");
+        System.setProperty("javax.net.ssl.trustStore", resourceLocation + "/keystores/client-truststore.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
     }
@@ -387,24 +382,24 @@ public class ScenarioTestBase {
     }
 
     public static void createUserWithCreatorRole(String username, String password,
-            String adminUsername, String adminPassword) throws APIManagementException {
+                                                 String adminUsername, String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addUser(username, password, new String[] { ScenarioTestConstants.CREATOR_ROLE }, username);
+            userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with creator role " + username, e);
         }
     }
 
     public static void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
-                                                      String adminPassword) throws APIManagementException {
+                                                             String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient
-                    .addUser(username, password, new String[] { ScenarioTestConstants.CREATOR_ROLE,
-                            ScenarioTestConstants.PUBLISHER_ROLE }, username);
+                    .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
+                            ScenarioTestConstants.PUBLISHER_ROLE}, username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
         }
@@ -412,12 +407,12 @@ public class ScenarioTestBase {
     }
 
     public void createUserWithPublisherRole(String username, String password, String adminUsername,
-            String adminPassword) throws APIManagementException {
+                                            String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient
-                    .addUser(username, password, new String[] { ScenarioTestConstants.PUBLISHER_ROLE }, username);
+                    .addUser(username, password, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher role " + username, e);
         }
@@ -425,26 +420,26 @@ public class ScenarioTestBase {
     }
 
     public static void createUserWithSubscriberRole(String username, String password,
-            String adminUsername, String adminPassword)
+                                                    String adminUsername, String adminPassword)
             throws RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient
-                    .addUser(username, password, new String[] { ScenarioTestConstants.SUBSCRIBER_ROLE }, username);
+                    .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with subscriber role " + username, e);
         }
     }
 
     public void createUser(String username, String password, String[] roleList,
-            String adminUsername, String adminPassword) throws APIManagementException {
+                           String adminUsername, String adminPassword) throws APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addUser(username, password, roleList, username);
         } catch (Exception e) {
-            for(String s : roleList) {
+            for (String s : roleList) {
                 log.error("Unable to create user with the provided role : " + s);
                 throw new APIManagementException("Unable to create user with the provided role list : " + roleList, e);
             }
@@ -460,7 +455,7 @@ public class ScenarioTestBase {
             userManagementClient.addRole(role,
                     new String[]{},
                     permisionArray
-                   );
+            );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
@@ -495,13 +490,13 @@ public class ScenarioTestBase {
         }
     }
 
-    public void updateUser(String username,String[] newRoles,String[] deletedRoles, String adminUsername, String adminPassword)
+    public void updateUser(String username, String[] newRoles, String[] deletedRoles, String adminUsername, String adminPassword)
             throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addRemoveRolesOfUser(username,newRoles,deletedRoles);
+            userManagementClient.addRemoveRolesOfUser(username, newRoles, deletedRoles);
         } catch (Exception e) {
             throw new APIManagementException("Unable to update user with the provided role " + newRoles.toString(), e);
         }
@@ -541,7 +536,7 @@ public class ScenarioTestBase {
                 }
             }
         }
-        if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
+        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was not found in store at the end of wait time.");
             Assert.assertTrue(false, "API not found in store : " + apiName);
         }
@@ -555,7 +550,7 @@ public class ScenarioTestBase {
      * @param tags newly added tags of the API
      * @throws Exception
      * */
-    public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags){
+    public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags) {
         String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
                 .get("tags").toString();
         List<String> tagsList = Arrays.asList(tags.split(","));
@@ -649,14 +644,14 @@ public class ScenarioTestBase {
                 }
             }
         }
-        if(apiResponseStore != null && apiResponseStore.getData().contains(apiName)) {
+        if (apiResponseStore != null && apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was found in store at the end of wait time.");
             Assert.assertTrue(false, "API found in store : " + apiName);
         }
     }
 
     public void isChangeVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient, String assertText,
-            String tenantDomain) throws APIManagerIntegrationTestException {
+                                       String tenantDomain) throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
         log.info("WAIT for availability of change in API: " + apiName);
@@ -691,25 +686,25 @@ public class ScenarioTestBase {
         }
     }
 
-    public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean  isAnonymousUser)
-            throws Exception{
+    public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean isAnonymousUser)
+            throws Exception {
         long waitTime = System.currentTimeMillis() +
                 ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse tagResponse = null;
-        log.info("WAIT for tag \'" + tag +"\' to be visible in store");
+        log.info("WAIT for tag \'" + tag + "\' to be visible in store");
         while ((waitTime > System.currentTimeMillis())) {
-            if(isAnonymousUser) {
+            if (isAnonymousUser) {
                 tagResponse = apiStoreRestClient.getTagListFromStoreAsAnonymousUser();
             } else {
                 tagResponse = apiStoreRestClient.getAllTags();
             }
             verifyResponse(tagResponse);
             if (tagResponse != null) {
-                if(tagResponse.getData().contains(tag)) {
-                    log.info("Tag \'" + tag +"\' visible in store");
+                if (tagResponse.getData().contains(tag)) {
+                    log.info("Tag \'" + tag + "\' visible in store");
                     break;
                 } else {
-                    log.info("Tag \'" + tag +"\' is not visible in store");
+                    log.info("Tag \'" + tag + "\' is not visible in store");
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
@@ -799,9 +794,9 @@ public class ScenarioTestBase {
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
         String colonSeparatedHeader = "admin" + ':' + "admin";
-        String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
+        String authorizationHeader = "Basic " + new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
         Map headerMap = new HashMap();
-        headerMap.put("Authorization",authorizationHeader);
+        headerMap.put("Authorization", authorizationHeader);
         String tenantIdentifier = getTenantIdentifier(apiProvider);
 
         while (waitTime > System.currentTimeMillis()) {
@@ -846,13 +841,13 @@ public class ScenarioTestBase {
     private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
         int tenantId = -1234;
         String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
-        try{
-            if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+        try {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)) {
                 String sessionCookie = login(serviceEndpoint, "admin", "admin");
                 TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
                         serviceEndpoint, sessionCookie);
                 TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
-                if(tenant == null){
+                if (tenant == null) {
                     log.info("tenant is null: " + providerTenantDomain);
                 } else {
                     tenantId = tenant.getTenantId();
@@ -864,5 +859,53 @@ public class ScenarioTestBase {
             throw new APIManagerIntegrationTestException(e.getMessage(), e);
         }
         return providerTenantDomain + "/" + tenantId + "/";
+    }
+
+    protected String getStoreURLHttp() {
+        return storeUrls.getWebAppURLHttp();
+    }
+
+    protected String getStoreURLHttps() {
+        return storeUrls.getWebAppURLHttps();
+    }
+
+    protected String getPublisherURLHttp() {
+        return publisherUrls.getWebAppURLHttp();
+    }
+
+    protected String getPublisherURLHttps() {
+        return publisherUrls.getWebAppURLHttps();
+    }
+
+    protected String getGatewayMgtURLHttp() {
+        return gatewayUrlsMgt.getWebAppURLHttp();
+    }
+
+    protected String getGatewayMgtBackendURLHttps() {
+        return gatewayUrlsMgt.getWebAppURLHttp();
+    }
+
+    protected String getGatewayMgtURLHttps() {
+        return gatewayUrlsMgt.getWebAppURLHttps();
+    }
+
+    protected String getGatewayURLHttp() {
+        return gatewayUrlsWrk.getWebAppURLHttp();
+    }
+
+    protected String getGatewayURLNhttp() {
+        return gatewayUrlsWrk.getWebAppURLNhttp();
+    }
+
+    protected String getGatewayURLHttps() {
+        return gatewayUrlsWrk.getWebAppURLHttps();
+    }
+
+    protected String getGatewayURLNhttps() {
+        return gatewayUrlsWrk.getWebAppURLNhttps();
+    }
+
+    protected String getKeyManagerURLHttp() {
+        return keyMangerUrl.getWebAppURLHttp();
     }
 }
