@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -17,12 +17,16 @@
   -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="ApiManager-scenario-tests-suite">
-    <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false">
+
+<suite name="ApiManager-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+
+
+    <test name="apim-integration-tests-api-common" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationTestCase"/>
-<!--            <class name="org.wso2.am.scenario.tests.rest.api.creation.RestApiCreationNegativeTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
         </classes>
     </test>
-</suite>
 
+</suite>
