@@ -129,16 +129,8 @@
                 </admin>
                 <users>
                     <user key="userKey1">
-                        <userName>testu1</userName>
-                        <password>testu1pass</password>
-                    </user>
-                    <user key="userKey2">
-                        <userName>testu2</userName>
-                        <password>testu2pass</password>
-                    </user>
-                    <user key="userKey3">
-                        <userName>testu3</userName>
-                        <password>testu3pass</password>
+                        <userName>micheal</userName>
+                        <password>Micheal#123</password>
                     </user>
                 </users>
             </tenant>
@@ -148,17 +140,13 @@
                 <admin>
                     <user key="admin">
                         <userName>admin</userName>
-                            <password>admin</password>
+                        <password>admin</password>
                     </user>
                 </admin>
                 <users>
                     <user key="user1">
-                        <userName>testuser11</userName>
-                        <password>testuser11</password>
-                    </user>
-                    <user key="user2">
-                        <userName>testuser21</userName>
-                        <password>testuser21</password>
+                        <userName>andrew</userName>
+                        <password>Andrew#123</password>
                     </user>
                 </users>
             </tenant>
@@ -231,8 +219,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
                 </ports>
                 <properties>
                 </properties>
@@ -242,8 +230,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
                 </ports>
                 <properties>
                 </properties>
@@ -253,8 +241,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
                 </ports>
                 <properties>
                 </properties>
@@ -264,8 +252,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
                 </ports>
                 <properties>
                 </properties>
@@ -275,10 +263,10 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
-                    <port type="nhttps">8743</port>
-                    <port type="nhttp">8780</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
@@ -289,8 +277,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">10263</port>
-                    <port type="https">9943</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
                     <!--<port type="nhttps">8280</port>-->
                     <!--<port type="nhttp">8243</port>-->
                 </ports>

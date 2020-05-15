@@ -166,7 +166,9 @@ public class ScenarioTestBase {
                     APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                     TestUserMode.SUPER_TENANT_ADMIN);
 
-            keymanagerSessionCookie = createSession(keyManagerContext);
+            if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+                keymanagerSessionCookie = createSession(keyManagerContext);
+            }
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
@@ -186,12 +188,14 @@ public class ScenarioTestBase {
                             storeContext.getContextTenant().getDomain(), storeURLHttps);
 
             try {
-                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
-                userManagementClient = new UserManagementClient(
-                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
-                tenantManagementServiceClient = new TenantManagementServiceClient(
-                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
-                        keymanagerSuperTenantSessionCookie);
+                if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+                    keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                    userManagementClient = new UserManagementClient(
+                            keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                    tenantManagementServiceClient = new TenantManagementServiceClient(
+                            superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                            keymanagerSuperTenantSessionCookie);
+                }
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
             }
