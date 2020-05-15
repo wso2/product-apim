@@ -18,14 +18,17 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="ApiManager-features-test-suite">
+<suite name="apim-pattern9-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
+    <test name="apim-integration-tests-config-changes" preserve-order="true" parallel="false">
 
-    <test name="apim-integration-tests-api-common" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
+            <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
         </classes>
     </test>
 

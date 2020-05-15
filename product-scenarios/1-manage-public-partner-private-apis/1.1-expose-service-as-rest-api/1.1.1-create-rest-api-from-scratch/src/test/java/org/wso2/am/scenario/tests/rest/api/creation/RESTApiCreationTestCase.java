@@ -17,34 +17,20 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIDesignBean;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-//import org.wso2.am.scenario.test.common.APIRequest;
+import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
-import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.json.JSONObject;
-import org.testng.Assert;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import javax.ws.rs.core.Response;
+import java.net.URL;
+
+import static org.testng.Assert.assertEquals;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -54,7 +40,7 @@ import java.util.Properties;
 public class RESTApiCreationTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(APIRequest.class);
 
-    //    private APIPublisherRestClient apiPublisher;
+    private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
     private APIDesignBean designBean;
 
@@ -83,24 +69,41 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String https_checked = "";
     private String inSequence = "debug_in_flow";
     private String outSequence = "debug_out_flow";
-
+    private String apiProviderName;
+    private String apiProductionEndPointUrl;
     private String apiId;
-    private String backendURL;
-    private String providerName;
+    private  String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
+            "customerservice/customers/123";
+
 
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
+    // All tests in this class will run with a super tenant API creator and a tenant API creator.
+    @Factory(dataProvider = "userModeDataProvider")
+    public RESTApiCreationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        setup();
         super.init(userMode);
-        providerName = user.getUserName();
 
-//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
-//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
+
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
+                apiProductionEndpointPostfixUrl;
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
     }
 
     @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
+        APIRequest apiCreationRequestBean = new APIRequest(apiName, "con", new URL(apiProductionEndPointUrl));
+        apiCreationRequestBean.setVersion(apiVersion);
 
 //        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
 //                apiVersion, apiResource);
@@ -133,11 +136,11 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         verifyAPIName(apiName, providerName);
     }
 
-    @Test(description = "1.1.1.2")
-    public void testRESTAPICreationWithOptionalValues() throws Exception {
-        apiName = "PhoneVerificationOptionalAdd";
-        apiContext = "/phoneverifyOptionaladd";
+        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = apiCreationResponse.getData();
 
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response Code miss matched when creating the API");
 //        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
 //                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
 //                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
@@ -245,13 +248,14 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI("PhoneVerification", apiVersion, providerName);
-        apiPublisher.deleteAPI("123567890", apiVersion, providerName);
-        apiPublisher.deleteAPI("eñe", apiVersion, providerName);
-        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, providerName);
-        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, providerName);
-        apiPublisher.deleteAPI("APIWildCard", apiVersion, providerName);
-
+//        apiPublisher.deleteAPI("PhoneVerification", apiVersion, username);
+//        apiPublisher.deleteAPI("123567890", apiVersion, username);
+//        apiPublisher.deleteAPI("eñe", apiVersion, username);
+//        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, username);
+//        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, username);
+//        apiPublisher.deleteAPI("APIWildCard", apiVersion, username);
+//
+//        deleteUser(MultitenantUtils.getTenantAwareUsername(username), adminUsername, adminPassword  );
     }
 
     // This method runs prior to the @BeforeClass method.
@@ -271,7 +275,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator
-        return new Object[][]{{"micheal", "Micheal#123", "admin", "admin"},
-                {"andrew@" + ScenarioTestConstants.TENANT_WSO2, "Andrew#123", "admin@wso2.com", "admin"}};
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
