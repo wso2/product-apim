@@ -24,9 +24,14 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIDesignBean;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
+//import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
@@ -49,9 +54,9 @@ import java.util.Properties;
 public class RESTApiCreationTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(APIRequest.class);
 
-    private APIPublisherRestClient apiPublisher;
+    //    private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
-    private APICreationRequestBean designBean;
+    private APIDesignBean designBean;
 
     private String apiName;
     private String apiContext;
@@ -86,12 +91,12 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init(userMode);
         providerName = user.getUserName();
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
     }
 
     @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
@@ -114,12 +119,11 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 //        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean(apiName, "/" + apiName, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+//        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, description, tag);
         designBean.setVisibility(apiVisibility);
 
         //Design API with apiRequest
@@ -158,7 +162,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiRequest.setBusinessOwner(bizOwner);
         apiRequest.setBusinessOwnerEmail(bizOwnerMail);
         apiRequest.setTechnicalOwner(techOwner);
-        apiRequest.getTechnicalOwnerEmail(techOwnerMail);
+        apiRequest.setTechnicalOwnerEmail(techOwnerMail);
         apiRequest.setEndpointType(endpointType);
         //endpointAuthType
         apiRequest.setDefault_version_checked(default_version_checked);
@@ -195,12 +199,11 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 //        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean(apiName, apiContext, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+//        designBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
+        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, description, tag);
         designBean.setVisibility(apiVisibility);
 
         //Design API with name,context,version,visibility and wildcard apiResource
@@ -242,14 +245,13 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI("PhoneVerification", apiVersion, username);
-        apiPublisher.deleteAPI("123567890", apiVersion, username);
-        apiPublisher.deleteAPI("eñe", apiVersion, username);
-        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, username);
-        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, username);
-        apiPublisher.deleteAPI("APIWildCard", apiVersion, username);
+        apiPublisher.deleteAPI("PhoneVerification", apiVersion, providerName);
+        apiPublisher.deleteAPI("123567890", apiVersion, providerName);
+        apiPublisher.deleteAPI("eñe", apiVersion, providerName);
+        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, providerName);
+        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, providerName);
+        apiPublisher.deleteAPI("APIWildCard", apiVersion, providerName);
 
-        deleteUser(MultitenantUtils.getTenantAwareUsername(username), adminUsername, adminPassword  );
     }
 
     // This method runs prior to the @BeforeClass method.
@@ -269,7 +271,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator
-        return new Object[][] { { "micheal", "Micheal#123", "admin", "admin"},
-                { "andrew@" + ScenarioTestConstants.TENANT_WSO2, "Andrew#123", "admin@wso2.com", "admin" } };
+        return new Object[][]{{"micheal", "Micheal#123", "admin", "admin"},
+                {"andrew@" + ScenarioTestConstants.TENANT_WSO2, "Andrew#123", "admin@wso2.com", "admin"}};
     }
 }

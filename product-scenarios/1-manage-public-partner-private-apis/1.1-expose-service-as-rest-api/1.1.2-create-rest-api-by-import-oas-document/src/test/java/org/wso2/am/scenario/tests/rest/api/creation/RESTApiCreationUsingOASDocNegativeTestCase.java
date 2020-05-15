@@ -62,14 +62,14 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
     private final String admin = "admin";
     private final String adminPw = "admin";
 
+    private String providerName;
+
     String resourceLocation = System.getProperty("test.resource.location");
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
-        createUsers();
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(APICreator, pw);
+        super.init(userMode);
+        providerName = user.getUserName();
     }
 
 //    @Test(description = "1.1.2.7") //todo fix uploaded swagger file not reading issue
@@ -121,7 +121,7 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
     @AfterClass(alwaysRun = true)
     public void RemoveAPI() throws Exception {
 
-        deleteUser(APICreator, admin, adminPw);
+//        deleteUser(APICreator, admin, adminPw);
     }
 
     /*

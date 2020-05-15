@@ -44,8 +44,10 @@ import static org.testng.Assert.assertTrue;
 
 public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(DeleteExistingAPIsTestCases.class);
+
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+
     private List<String> applicationsList = new ArrayList<>();
     private List<String> apiList = new ArrayList<>();
     private static final String ADMIN_USERNAME = "admin";
@@ -57,16 +59,23 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     private static final String API_NAME_PREFIX = "DeleteAPI_";
     private static final String API_VERSION = "1.0.0";
 
+    private String providerName;
+
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException, APIManagementException, RemoteException,
             UserAdminUserAdminException {
+        super.init(userMode);
+        providerName = user.getUserName();
+
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
         apiPublisher = new APIPublisherRestClient(publisherURL);
-        createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW, ADMIN_USERNAME,
-                ADMIN_PW);
-        apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
-        createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+//        createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW, ADMIN_USERNAME,
+//                ADMIN_PW);
+//        apiPublisher.login(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW);
+//        createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW);
+//        apiStore.login(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW);
     }
 
     @Test(description = "1.4.1.1", dataProvider = "DeleteAPIInLifeCycleStateDataProvider",
@@ -104,13 +113,26 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
     }
 
     private void createApi(String apiName) throws Exception {
-        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
-                "/menu", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                new URL("https://localhost:9443/am/sample/pizzashack/v1/api/"));
+//        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
+//                "/menu", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+//                new URL("https://localhost:9443/am/sample/pizzashack/v1/api/"));
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/menu");
+
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, new URL("https://localhost:9443/am/sample/pizzashack/v1/api/"));
+        apiRequest.setVisibility("public");
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setTier(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+
         HttpResponse createAPIResponse = apiPublisher.addAPI(apiRequest);
         apiList.add(apiName);
         verifyResponse(createAPIResponse);
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, API_CREATOR_PUBLISHER_USERNAME, API_VERSION);
+        HttpResponse apiInfo = apiPublisher.getAPI(apiName, providerName, API_VERSION);
         verifyResponse(apiInfo);
     }
 

@@ -61,9 +61,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class RESTApiEditTestCase extends ScenarioTestBase {
+    private static final Log log = LogFactory.getLog(RESTApiEditTestCase.class);
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private APICreationRequestBean apiCreationRequestBean;
+//    private APIPublisherRestClient apiPublisher;
+//    private APIStoreRestClient apiStore;
 
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
@@ -82,24 +84,26 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private String techOwnerMail = "wso2@gmail.com";
     private String defaultVersionChecked = "default_version";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private APICreationRequestBean apiCreationRequestBean;
+
+    private String providerName;
+
     private File swaggerFile;
     String resourceLocation = System.getProperty("test.resource.location");
-    private static final Log log = LogFactory.getLog(RESTApiEditTestCase.class);
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void setEnvironment() throws Exception {
+        super.init(userMode);
+        providerName = user.getUserName();
 
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        createUsers();
-        apiPublisher.login(APICreator, pw);
-
-        apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(APISubscriber, subscriberPw);
+//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+//
+//        String storeURLHttp = storeUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+//        apiStore = new APIStoreRestClient(storeURLHttp);
 
         //Create an API
         try {
-            apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, APICreator,
+            apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName,
                     new URL(backendEndPoint));
         } catch (MalformedURLException e) {
             throw new APIManagerIntegrationTestException("MalformedURLException for URL : " + backendEndPoint);
@@ -121,11 +125,11 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
+        verifyResponse(apiCreationResponse); //need to change this
 
         //Check availability of the API in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
@@ -138,7 +142,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
                 apiName + " is not updated");
         assertTrue(apiUpdateResponsePublisher.getData().contains("Description Changed"),
@@ -160,7 +164,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
@@ -178,7 +182,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         while (keys.hasNext()) {
             resourcePath = keys.next();
             String method = paths.getJSONObject(resourcePath).keys().next().toString();
-            resourceBean = new APIResourceBean(method, "Any", "Unlimitted", resourcePath);
+            resourceBean = new APIResourceBean(method, "Any", "Unlimited", resourcePath);
             resourceBeanArrayList.add(resourceBean);
         }
 
@@ -190,7 +194,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
                 apiName + " is not updated"); // Name should not get changed.
         assertTrue(apiUpdateResponsePublisher.getData().contains("This is a sample for OAS JSON document"),
@@ -207,7 +211,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     public void testRESTAPIEditUsingOASYAML(String fileName) throws Exception {
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
@@ -239,7 +243,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
                 apiName + " is not updated"); // Name should not get changed.
         assertTrue(apiUpdateResponsePublisher.getData().contains("This is a sample for OAS YAML document"),
@@ -255,7 +259,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         String apiContext = "/ctx";
         String apiVersion = "1.0.0";
         APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
-                apiVersion, APICreator, new URL(backendEndPoint));
+                apiVersion, providerName, new URL(backendEndPoint));
         apiCreationRequestBeanObj.setTags(tag);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -264,7 +268,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Check availability of the API and the tag in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
 
@@ -276,14 +280,14 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher, apiName, tags);
 
         // Verify new tags are updated in the store
-        isTagsVisibleInStore(APICreator, apiName, apiVersion, tags, apiStore);
+        isTagsVisibleInStore(providerName, apiName, apiVersion, tags, apiStore);
 
         apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
         verifyResponse(serviceResponse);
     }
 
@@ -294,7 +298,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         String apiContext = "/ctx";
         String apiVersion = "1.0.0";
         APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
-                apiVersion, APICreator, new URL(backendEndPoint));
+                apiVersion, providerName, new URL(backendEndPoint));
         apiCreationRequestBeanObj.setTags(tag);
         HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -302,7 +306,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         verifyResponse(apiCreationResponse);
 
         //Check availability of the API and the tag in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
 
@@ -312,11 +316,11 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBeanObj);
         verifyResponse(apiUpdateResponse);
-        HttpResponse apiUpdateResponsePublisher2 = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiUpdateResponsePublisher2 = apiPublisher.getAPI(apiName, providerName, apiVersion);
         verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher2, apiName, newTagAdded);
 
         apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
         verifyResponse(serviceResponse);
     }
 
@@ -324,18 +328,18 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      *  Create Users that can be used in each test case in this class
      *  @throws APIManagerIntegrationTestException
      * */
-    private void createUsers() throws APIManagerIntegrationTestException {
-
-        try {
-            createUser(APICreator, pw,
-                    new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, admin);
-            createUser(APISubscriber, subscriberPw,
-                    new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, admin, admin);
-
-        } catch (APIManagementException e) {
-            throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
-        }
-    }
+//    private void createUsers() throws APIManagerIntegrationTestException {
+//
+//        try {
+//            createUser(APICreator, pw,
+//                    new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, admin);
+//            createUser(APISubscriber, subscriberPw,
+//                    new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, admin, admin);
+//
+//        } catch (APIManagementException e) {
+//            throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
+//        }
+//    }
 
     /*
      * This method is used to read a file (OAS doc)
@@ -357,10 +361,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
 
-        apiPublisher.login(APICreator, pw);
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
         verifyResponse(serviceResponse);
-        deleteUser(APICreator, admin, admin);
-        deleteUser(APISubscriber, admin, admin);
     }
 }

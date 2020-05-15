@@ -4,10 +4,18 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.annotations.Factory;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIDesignBean;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
+//import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -16,9 +24,9 @@ import java.util.List;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
-    private APIPublisherRestClient apiPublisher;
+    //    private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
-    private APICreationRequestBean designBean;
+    private APIDesignBean designBean;
 
     private String apiName = "PhoneVerificationNeg";
     private String newApiName = "PhoneVerificationNegNew";
@@ -39,27 +47,33 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private String DuplicateContextResponse = "A duplicate API context already exists for ";
     private String InvalidNameResponse = " Error while adding the API- ";
 
-    private String backendURL;
+    protected TestUserMode userMode;
     private String providerName;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public RestApiCreationNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         super.init(userMode);
         providerName = user.getUserName();
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 //        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
 
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean(apiName, apiContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+//        designBean = APIDesignBean(apiName, apiContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+        try {
+            designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, "description", "tag");
+        } catch (Exception e) {
+        }
         designBean.setVisibility(apiVisibility);
 
         //Design API with name,context, version,visibility, URL and apiResource
@@ -79,10 +93,10 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         apiOperationsDTOs.add(apiOperationsDTO);
 
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
         apiRequest = new APIRequest(apiName, newContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api name
@@ -92,7 +106,8 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 //        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api name with uppercase
@@ -111,10 +126,10 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         apiOperationsDTOs.add(apiOperationsDTO);
 
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + newApiName + "_backend/" + apiVersion;
         apiRequest = new APIRequest(newApiName, apiContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api context
@@ -133,11 +148,10 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         apiOperationsDTOs.add(apiOperationsDTO);
 
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + "myresource";
         apiRequest = new APIRequest(apiName255, newContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
-        apiRequest.setVisibility(apiVisibility)
-        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with api name with max characters (185)
@@ -156,11 +170,10 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         apiOperationsDTOs.add(apiOperationsDTO);
 
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + "myresource";
         apiRequest = new APIRequest(apiNameSpecial, newContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
-        apiRequest.setVisibility(apiVisibility)
-        apiRequest.setTiersCollection(tierCollection);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with api name with not allowed special characters
@@ -219,14 +232,12 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     public void testRESTAPICreationWithoutApiname() throws Exception {
 
 //        apiRequest = new APIRequest("", newContext, apiVisibility, apiVersion, apiResource);
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + "myresource";
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean("", newContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+//        designBean = new APICreationRequestBean("", newContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+        designBean = new APIDesignBean("", newContext, apiVersion, "description", "tag");
         designBean.setVisibility(apiVisibility);
 
         //Design API without an API name
@@ -243,14 +254,12 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     public void testRESTAPICreationWithoutContext() throws Exception {
 
 //        apiRequest = new APIRequest(newApiName, "", apiVisibility, apiVersion, apiResource);
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + "myresource";
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean(newApiName, "", apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+//        designBean = new APICreationRequestBean(newApiName, "", apiVersion, providerName, new URL(endpointUrl), resourceBeans);
+        designBean = new APIDesignBean(newApiName, "", apiVersion, "description", "tag");
         designBean.setVisibility(apiVisibility);
 
         //Design API without an API context
@@ -267,14 +276,12 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     public void testRESTAPICreationWithoutVersion() throws Exception {
 
 //        apiRequest = new APIRequest(newApiName, newContext, apiVisibility, "", apiResource);
-        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + "myresource";
         List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean();
-        rBean.setResourceMethod("GET");
-        rBean.setUriTemplate(apiResource);
+        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
         resourceBeans.add(rBean);
 
-        designBean = APICreationRequestBean(newApiName, newContext, "", providerName, new URL(endpointUrl), resourceBeans);
+//        designBean = new APICreationRequestBean(newApiName, newContext, "", providerName, new URL(endpointUrl), resourceBeans);
+        designBean = new APIDesignBean(newApiName, newContext, "", "description", "tag");
         designBean.setVisibility(apiVisibility);
 
         //Design API without an API version
@@ -288,7 +295,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, "admin");
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
         verifyResponse(serviceResponse); //need to change
     }
 

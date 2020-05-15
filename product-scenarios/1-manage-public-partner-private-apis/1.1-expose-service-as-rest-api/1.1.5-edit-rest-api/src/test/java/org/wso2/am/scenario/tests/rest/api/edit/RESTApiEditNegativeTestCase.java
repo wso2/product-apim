@@ -44,8 +44,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
+    private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
 
-    private APIPublisherRestClient apiPublisher;
+    private APICreationRequestBean apiCreationRequestBean;
+//    private APIPublisherRestClient apiPublisher;
+
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
@@ -64,18 +67,19 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     private String default_version_checked = "default_version";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private String updateErrorResponse = "Error while updating the API- " + apiName + "-1.0.0";
-    private APICreationRequestBean apiCreationRequestBean;
-    private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
+
+    private String providerName;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        super.init(userMode);
+        providerName = user.getUserName();
 
-        createUsers();
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(APICreator, pw);
+//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
+//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
         //Create an API
         createAnAPI();
-
     }
 
     @Test(description = "1.1.5.2")
@@ -83,7 +87,7 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
 
         //Check availability of the API in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
@@ -94,7 +98,7 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
 
         //Check whether the previously created api is not altered
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         assertTrue(apiUpdateResponsePublisher.getData().contains(tag));
     }
 
@@ -102,7 +106,7 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     public void testRESTAPIEditTags(String tags) throws Exception {
         //Check availability of the API and the tag in publisher
         HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+                (apiName, providerName, apiVersion);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
 
@@ -125,24 +129,23 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
      *  Create Users that can be used in each test case in this class
      *  @throws APIManagerIntegrationTestException
      * */
-    private void createUsers() throws Exception {
-
-        createUserWithCreatorRole(APICreator, pw, admin, adminPw);
-    }
+//    private void createUsers() throws Exception {
+//
+//        createUserWithCreatorRole(APICreator, pw, admin, adminPw);
+//    }
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
 
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
         verifyResponse(serviceResponse);
-        deleteUser(APICreator, admin, admin);
 
     }
 
     private void createAnAPI() throws Exception {
 
         apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
-                APICreator, new URL(backendEndPoint));
+                providerName, new URL(backendEndPoint));
         apiCreationRequestBean.setTags(tag);
         apiCreationRequestBean.setDescription(description);
         apiCreationRequestBean.setTiersCollection(tierCollection);
