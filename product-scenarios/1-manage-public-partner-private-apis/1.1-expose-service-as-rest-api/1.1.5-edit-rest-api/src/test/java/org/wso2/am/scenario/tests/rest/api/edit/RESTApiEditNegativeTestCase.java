@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,34 @@
  */
 package org.wso2.am.scenario.tests.rest.api.edit;
 
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
-import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import javax.ws.rs.core.Response;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
-    private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
-
-    private APICreationRequestBean apiCreationRequestBean;
-//    private APIPublisherRestClient apiPublisher;
 
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
     private String APICreator = "APICreatorEdit";
-    private String pw = "wso2123$";
-    private String admin = "admin";
-    private String adminPw = "admin";
     private String description = "This is a API creation description";
     private String tag = "APICreationTag";
     private String invalidTag = "^invalid^";
@@ -66,86 +53,93 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
     private String techOwnerMail = "wso2@gmail.com";
     private String default_version_checked = "default_version";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private String updateErrorResponse = "Error while updating the API- " + apiName + "-1.0.0";
+    private APICreationRequestBean apiCreationRequestBean;
+    private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
+    private String apiProductionEndPointUrl;
+    private String apiId;
+    private String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
+            "customerservice/customers/123";
+    private String apiProviderName;
+    private APIDTO apidto;
+    private List apiDTOList = new ArrayList<APIDTO>();
 
-    private String providerName;
+    // All tests in this class will run with a super tenant API creator and a tenant API creator.
+    @Factory(dataProvider = "userModeDataProvider")
+    public RESTApiEditNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        setup();
         super.init(userMode);
-        providerName = user.getUserName();
 
-//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
-//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        //Create an API
-        createAnAPI();
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
+                apiProductionEndpointPostfixUrl;
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiId = createAnAPI();
+        apiDTOList.add(apiId);
     }
 
     @Test(description = "1.1.5.2")
     public void testRESTAPIEditWithInvalidValue() throws Exception {
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, providerName, apiVersion);
-        verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
+        assertTrue(apiResponsePublisher.getData().contains(apiId), apiName + " is not visible in publisher");
 
-        //Update API with an invalid tag & validate the result
-        apiCreationRequestBean.setTags(invalidTag);
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        Assert.assertTrue(apiUpdateResponse.getData().contains(updateErrorResponse));
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        apidto = g.fromJson(response.getData(), APIDTO.class);
+        List<String> tags = apidto.getTags();
+        tags.add(invalidTag);
+        apidto.setTags(tags);
+        APIDTO apidto1 = null;
+        try {
+            apidto1 = restAPIPublisher.updateAPI(apidto);
+        } catch (Exception e) {
+            Assert.assertEquals(apidto1, null);
+        }
 
         //Check whether the previously created api is not altered
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, providerName, apiVersion);
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(apiId);
         assertTrue(apiUpdateResponsePublisher.getData().contains(tag));
     }
 
     @Test(description = "1.1.5.16", dataProvider = "InvalidAPITags", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPIEditTags(String tags) throws Exception {
         //Check availability of the API and the tag in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, providerName, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
 
+        Gson g = new Gson();
+        apidto = g.fromJson(apiResponsePublisher.getData(), APIDTO.class);
+
         //remove tags from the API and update with new tags
-        apiCreationRequestBean.setTags(tags);
+        List<String> tagList = apidto.getTags();
+        tagList.add(String.valueOf((tags)));
+        apidto.setTags(tagList);
 
         HttpResponse apiUpdateResponse = null;
         try {
-            apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
+            apidto = restAPIPublisher.updateAPI(apidto);
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("Exception when updating API URLDecoder: Incomplete trailing"));
-            return;
+            Assert.assertTrue(((ApiException) e).getResponseBody().contains("Error while updating API : " + apiId));
         }
-
-        verifyNegativeResponse(apiUpdateResponse);
-
     }
-
-    /*
-     *  Create Users that can be used in each test case in this class
-     *  @throws APIManagerIntegrationTestException
-     * */
-//    private void createUsers() throws Exception {
-//
-//        createUserWithCreatorRole(APICreator, pw, admin, adminPw);
-//    }
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
-
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
-        verifyResponse(serviceResponse);
-
+        for (Object apidtoTemp : apiDTOList) {
+            restAPIPublisher.deleteAPI(((String) apidtoTemp));
+        }
     }
 
-    private void createAnAPI() throws Exception {
+    private String createAnAPI() throws Exception {
 
         apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
-                providerName, new URL(backendEndPoint));
+                APICreator, new URL(backendEndPoint));
         apiCreationRequestBean.setTags(tag);
         apiCreationRequestBean.setDescription(description);
         apiCreationRequestBean.setTiersCollection(tierCollection);
@@ -156,9 +150,32 @@ public class RESTApiEditNegativeTestCase extends ScenarioTestBase {
         apiCreationRequestBean.setTechOwner(techOwner);
         apiCreationRequestBean.setTechOwnerMail(techOwnerMail);
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        assertTrue(StringUtils.isNotEmpty(apiDto.getId()), "Error occured when creating api");
+        return apiDto.getId();
+    }
+
+
+    // This method runs prior to the @BeforeClass method.
+    // Create users and tenants needed or the tests in here. Try to reuse the TENANT_WSO2 as much as possible to avoid the number of tenants growing.
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        //Add and activate wso2.com tenant
+        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
+
+        // create user in super tenant
+        createUserWithPublisherAndCreatorRole("micheal", "Micheal#123", "admin", "admin");
+
+        // create user in wso2.com tenant
+        createUserWithPublisherAndCreatorRole("andrew", "Andrew#123", "admin@wso2.com", "admin");
+
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }

@@ -19,9 +19,9 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.5-create-edit-rest-api" preserve-order="true" verbose="2" parallel="false">
-        <!--        <classes>
-            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditTestCase"/>
+        <classes>
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditTestCase"/>-->
             <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditNegativeTestCase"/>
-        </classes>-->
+        </classes>
     </test>
 </suite>
