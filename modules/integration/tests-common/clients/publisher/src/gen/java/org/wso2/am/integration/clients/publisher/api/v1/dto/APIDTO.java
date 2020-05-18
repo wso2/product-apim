@@ -422,6 +422,9 @@ public class APIDTO {
   @SerializedName("threatProtectionPolicies")
   private APIThreatProtectionPoliciesDTO threatProtectionPolicies = null;
 
+  @SerializedName("categories")
+  private List<String> categories = null;
+
   public APIDTO id(String id) {
     this.id = id;
     return this;
@@ -1344,6 +1347,32 @@ public class APIDTO {
     this.threatProtectionPolicies = threatProtectionPolicies;
   }
 
+  public APIDTO categories(List<String> categories) {
+    this.categories = categories;
+    return this;
+  }
+
+  public APIDTO addCategoriesItem(String categoriesItem) {
+    if (this.categories == null) {
+      this.categories = new ArrayList<>();
+    }
+    this.categories.add(categoriesItem);
+    return this;
+  }
+
+   /**
+   * API categories 
+   * @return categories
+  **/
+  @ApiModelProperty(value = "API categories ")
+  public List<String> getCategories() {
+    return categories;
+  }
+
+  public void setCategories(List<String> categories) {
+    this.categories = categories;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -1398,12 +1427,13 @@ public class APIDTO {
         Objects.equals(this.endpointImplementationType, API.endpointImplementationType) &&
         Objects.equals(this.scopes, API.scopes) &&
         Objects.equals(this.operations, API.operations) &&
-        Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies);
+        Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies) &&
+        Objects.equals(this.categories, API.categories);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies);
+    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories);
   }
 
 
@@ -1457,6 +1487,7 @@ public class APIDTO {
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
     sb.append("    threatProtectionPolicies: ").append(toIndentedString(threatProtectionPolicies)).append("\n");
+    sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("}");
     return sb.toString();
   }

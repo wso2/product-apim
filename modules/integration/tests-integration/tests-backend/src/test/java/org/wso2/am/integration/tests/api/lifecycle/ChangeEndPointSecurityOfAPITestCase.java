@@ -62,7 +62,6 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     private HashMap<String, String> requestHeadersGet;
     private String providerName;
     private String apiEndPointUrl;
-    private APIIdentifier apiIdentifier;
     private String applicationID;
     private String apiID;
 
@@ -79,7 +78,6 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/plain");
         requestHeadersGet.put("Content-Type", "text/plain");
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         //Create application
         ApplicationDTO dto = restAPIStore.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");

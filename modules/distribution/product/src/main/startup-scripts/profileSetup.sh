@@ -22,6 +22,7 @@ pathToAxis2BlockingClientXML='../repository/conf/axis2/axis2_blocking_client.xml
 pathToAxis2BlockingClientXMLTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_blocking_client.xml.j2'
 pathToRegistryTemplate='../repository/resources/conf/templates/repository/conf/registry.xml.j2'
 pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/inbound-endpoints/'
+pathToInboundEndpointsTemplate='../repository/resources/conf/templates/repository/deployment/server/synapse-configs/default/inbound-endpoints/'
 pathToWebapps='../repository/deployment/server/webapps'
 pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
@@ -48,6 +49,13 @@ removeWebSocketInboundEndpoint(){
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
 	fi
+
+    if [ -e ${pathToInboundEndpointsTemplate}WebSocketInboundEndpoint.xml.j2 ]
+	then
+		rm -r ${pathToInboundEndpointsTemplate}WebSocketInboundEndpoint.xml.j2
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the WebSocketInboundEndpoint.xml.j2 file from $pathToInboundEndpointsTemplate"
+	fi
 }
 
 removeSecureWebSocketInboundEndpoint(){
@@ -56,6 +64,13 @@ removeSecureWebSocketInboundEndpoint(){
 		rm -r ${pathToInboundEndpoints}SecureWebSocketInboundEndpoint.xml
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml file from $pathToInboundEndpoints"
+	fi
+
+	if [ -e ${pathToInboundEndpointsTemplate}SecureWebSocketInboundEndpoint.xml.j2 ]
+	then
+		rm -r ${pathToInboundEndpointsTemplate}SecureWebSocketInboundEndpoint.xml.j2
+		timeStamp
+		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml.j2 file from $pathToInboundEndpointsTemplate"
 	fi
 }
 
@@ -203,7 +218,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -231,7 +246,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
