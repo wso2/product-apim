@@ -25,7 +25,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 
 /**
  * ScopeListDTO
@@ -36,7 +37,10 @@ public class ScopeListDTO {
   private Integer count = null;
 
   @SerializedName("list")
-  private List<ScopeListListDTO> list = null;
+  private List<ScopeDTO> list = null;
+
+  @SerializedName("pagination")
+  private PaginationDTO pagination = null;
 
   public ScopeListDTO count(Integer count) {
     this.count = count;
@@ -56,12 +60,12 @@ public class ScopeListDTO {
     this.count = count;
   }
 
-  public ScopeListDTO list(List<ScopeListListDTO> list) {
+  public ScopeListDTO list(List<ScopeDTO> list) {
     this.list = list;
     return this;
   }
 
-  public ScopeListDTO addListItem(ScopeListListDTO listItem) {
+  public ScopeListDTO addListItem(ScopeDTO listItem) {
     if (this.list == null) {
       this.list = new ArrayList<>();
     }
@@ -74,12 +78,30 @@ public class ScopeListDTO {
    * @return list
   **/
   @ApiModelProperty(value = "")
-  public List<ScopeListListDTO> getList() {
+  public List<ScopeDTO> getList() {
     return list;
   }
 
-  public void setList(List<ScopeListListDTO> list) {
+  public void setList(List<ScopeDTO> list) {
     this.list = list;
+  }
+
+  public ScopeListDTO pagination(PaginationDTO pagination) {
+    this.pagination = pagination;
+    return this;
+  }
+
+   /**
+   * Get pagination
+   * @return pagination
+  **/
+  @ApiModelProperty(value = "")
+  public PaginationDTO getPagination() {
+    return pagination;
+  }
+
+  public void setPagination(PaginationDTO pagination) {
+    this.pagination = pagination;
   }
 
 
@@ -93,12 +115,13 @@ public class ScopeListDTO {
     }
     ScopeListDTO scopeList = (ScopeListDTO) o;
     return Objects.equals(this.count, scopeList.count) &&
-        Objects.equals(this.list, scopeList.list);
+        Objects.equals(this.list, scopeList.list) &&
+        Objects.equals(this.pagination, scopeList.pagination);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list);
+    return Objects.hash(count, list, pagination);
   }
 
 
@@ -109,6 +132,7 @@ public class ScopeListDTO {
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
     sb.append("}");
     return sb.toString();
   }
