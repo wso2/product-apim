@@ -369,7 +369,7 @@ public class ScenarioTestBase {
         Assert.assertNotNull(httpResponse, "Response object is null");
         log.info("Response Code : " + httpResponse.getResponseCode());
         log.info("Response Message : " + httpResponse.getData());
-        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_CREATED, "Response code is not as expected");
     }
 
     public void verifyNegativeResponse(HttpResponse httpResponse) throws JSONException {

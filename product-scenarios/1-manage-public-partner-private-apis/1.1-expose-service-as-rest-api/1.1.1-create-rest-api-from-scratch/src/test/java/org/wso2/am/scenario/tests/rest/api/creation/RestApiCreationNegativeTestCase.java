@@ -1,20 +1,14 @@
 package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import org.testng.annotations.Factory;
+import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIDesignBean;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-//import org.wso2.am.scenario.test.common.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -23,10 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
-
-    //    private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
-    private APIDesignBean designBean;
 
     private String apiName = "PhoneVerificationNeg";
     private String newApiName = "PhoneVerificationNegNew";
@@ -46,6 +37,12 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private String DuplicateNameResponse = "A duplicate API already exists for ";
     private String DuplicateContextResponse = "A duplicate API context already exists for ";
     private String InvalidNameResponse = " Error while adding the API- ";
+    private String apiProductionEndPointUrl;
+    private  String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" + "customerservice/customers/123";
+    private String apiId;
+    private String apiProviderName;
+    private List<String> apiIdList = new ArrayList<>();
+    private HttpResponse serviceResponse;
 
     protected TestUserMode userMode;
     private String providerName;
@@ -56,35 +53,41 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void setEnvironment() throws Exception {
         super.init(userMode);
         providerName = user.getUserName();
 
-//        String publisherURLHttp = publisherUrls.getWebAppURLHttp(); //can get from ScenarioBaseTest as well
-//        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
 
-//        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
-        List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-        resourceBeans.add(rBean);
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
+                apiProductionEndpointPostfixUrl;
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
 
-//        designBean = APIDesignBean(apiName, apiContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
-        try {
-            designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, "description", "tag");
-        } catch (Exception e) {
-        }
-        designBean.setVisibility(apiVisibility);
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Design API with name,context, version,visibility, URL and apiResource
-        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
-        verifyResponse(serviceResponse); //need to change
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = serviceResponse.getData();
+        apiIdList.add(apiId);
+
+        verifyResponse(serviceResponse);
     }
 
     @Test(description = "1.1.1.7")
     public void testRESTAPICreationWithExistingName() throws Exception {
-
-//        apiRequest = new APIRequest(apiName, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
 
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
@@ -100,10 +103,9 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api name
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse + apiName + "-" + apiVersion));
+        serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse == null, "API created with existing name!");
 
-//        apiRequest = new APIRequest(apiName.toUpperCase(), newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
         apiRequest = new APIRequest(apiName.toUpperCase(), newContext, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
         apiRequest.setVisibility(apiVisibility);
@@ -111,14 +113,13 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api name with uppercase
-        serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(DuplicateNameResponse));
+        serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse == null, "API created with existing name");
     }
 
     @Test(description = "1.1.1.8")
     public void testRESTAPICreationWithExistingContext() throws Exception {
 
-//        apiRequest = new APIRequest(newApiName, apiContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
@@ -133,14 +134,13 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with same api context
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(DuplicateContextResponse + apiContext));
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertTrue(serviceResponse == null, "API created with existing context!");
     }
 
     @Test(description = "1.1.1.9")
     public void testRESTAPICreationWith255CharactersName() throws Exception {
 
-//        apiRequest = new APIRequest(apiName255, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
@@ -155,14 +155,16 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with api name with max characters (185)
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiName255 + "-" + apiVersion));
+        try {
+            serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        } catch (ApiException e){
+            Assert.assertTrue(serviceResponse == null, "API created with 255 character name!");
+        }
     }
 
     @Test(description = "1.1.1.10")
     public void testRESTAPICreationWithNotAllowedCharactersName() throws Exception {
 
-//        apiRequest = new APIRequest(apiNameSpecial, newContext, apiVisibility, apiVersion, apiResource, tiersCollection, new URL(endpointUrl));
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
@@ -177,8 +179,11 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Try to add API with api name with not allowed special characters
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        Assert.assertTrue(serviceResponse.getData().contains(InvalidNameResponse + apiNameSpecial + "-" + apiVersion));
+        try {
+            serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        } catch (ApiException e){
+            Assert.assertTrue(serviceResponse == null, "API created with not allowed characters!");
+        }
     }
 
     //TODO: Remove the comment once considered environment fix for create context with 255characters
@@ -231,21 +236,26 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     @Test(description = "1.1.1.15")
     public void testRESTAPICreationWithoutApiname() throws Exception {
 
-//        apiRequest = new APIRequest("", newContext, apiVisibility, apiVersion, apiResource);
-        List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-        resourceBeans.add(rBean);
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
 
-//        designBean = new APICreationRequestBean("", newContext, apiVersion, providerName, new URL(endpointUrl), resourceBeans);
-        designBean = new APIDesignBean("", newContext, apiVersion, "description", "tag");
-        designBean.setVisibility(apiVisibility);
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        apiRequest = new APIRequest("", newContext, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Design API without an API name
-        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
+
         try {
             System.out.println("Api name is null in the request");
-        } catch (NullPointerException e) {
-            Assert.assertTrue(serviceResponse.getResponseMessage().contains("Error"), "false");
+            serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        } catch (ApiException e){
+            Assert.assertTrue(serviceResponse == null, "API created without name!");
         }
     }
 
@@ -253,21 +263,25 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     @Test(description = "1.1.1.16")
     public void testRESTAPICreationWithoutContext() throws Exception {
 
-//        apiRequest = new APIRequest(newApiName, "", apiVisibility, apiVersion, apiResource);
-        List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-        resourceBeans.add(rBean);
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
 
-//        designBean = new APICreationRequestBean(newApiName, "", apiVersion, providerName, new URL(endpointUrl), resourceBeans);
-        designBean = new APIDesignBean(newApiName, "", apiVersion, "description", "tag");
-        designBean.setVisibility(apiVisibility);
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        apiRequest = new APIRequest(newApiName, "", new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Design API without an API context
-        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
         try {
             System.out.println("Api context is null in the request");
-        } catch (NullPointerException e) {
-            Assert.assertTrue(serviceResponse.getResponseMessage().contains("Error"), "false");
+            serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        } catch (ApiException e){
+            Assert.assertTrue(serviceResponse == null, "API created without context!");
         }
     }
 
@@ -275,28 +289,54 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     @Test(description = "1.1.1.17")
     public void testRESTAPICreationWithoutVersion() throws Exception {
 
-//        apiRequest = new APIRequest(newApiName, newContext, apiVisibility, "", apiResource);
-        List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-        resourceBeans.add(rBean);
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
 
-//        designBean = new APICreationRequestBean(newApiName, newContext, "", providerName, new URL(endpointUrl), resourceBeans);
-        designBean = new APIDesignBean(newApiName, newContext, "", "description", "tag");
-        designBean.setVisibility(apiVisibility);
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        apiRequest = new APIRequest(newApiName, newContext, new URL(endpointUrl));
+        apiRequest.setVersion("");
+        apiRequest.setVisibility(apiVisibility);
+        apiRequest.setTiersCollection(tiersCollection);
+        apiRequest.setOperationsDTOS(apiOperationsDTOs);
 
         //Design API without an API version
-        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
         try {
             System.out.println("Api version is null in the request");
-        } catch (NullPointerException e) {
-            Assert.assertTrue(serviceResponse.getResponseMessage().contains("Error"), "false");
+            serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        } catch (ApiException e){
+            Assert.assertTrue(serviceResponse == null, "API created without version!");
         }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, providerName);
-        verifyResponse(serviceResponse); //need to change
+        for (String apiId : apiIdList) {
+            restAPIPublisher.deleteAPI(apiId);
+        }
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        //Add and activate wso2.com tenant
+        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
+
+        // create user in super tenant
+        createUserWithCreatorRole("micheal", "Micheal#123", "admin", "admin");
+
+        // create user in wso2.com tenant
+        createUserWithCreatorRole("andrew", "Andrew#123", "admin@wso2.com", "admin");
+
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 
 }

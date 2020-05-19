@@ -17,13 +17,15 @@ package org.wso2.am.scenario.tests.rest.api.creation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APIDesignBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -47,7 +49,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
-    private APIDesignBean designBean;
 
     private String apiName;
     private String apiContext;
@@ -63,11 +64,11 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String techOwner = "wso2";
     private String techOwnerMail = "wso2@gmail.com";
     private String endpointType = "secured";
-    private String endpointAuthType = "basicAuth";
+    private String endpointAuthType = "BASIC";
     private String epUsername = "wso2";
     private String epPassword = "wso2123";
-    private String default_version_checked = "default_version";
-    private String responseCache = "enabled";
+    private boolean default_version_checked = true;
+    private boolean responseCache = true;
     private String cacheTimeout = "300";
     private String subscriptions = "all_tenants";
     private String http_checked = "http";
@@ -78,6 +79,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String apiProductionEndPointUrl;
     private String apiId;
     private  String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" + "customerservice/customers/123";
+    private List<String> apiIdList = new ArrayList<>();
 
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
@@ -105,18 +107,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.1", dataProvider = "apiNames", dataProviderClass = ScenarioDataProvider.class)
     public void testRESTAPICreationWithMandatoryValues(String apiName) throws Exception {
-//        APIRequest apiCreationRequestBean = new APIRequest(apiName, "con", new URL(apiProductionEndPointUrl));
-//        apiCreationRequestBean.setVersion(apiVersion);
-
-//        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-//        apiId = apiCreationResponse.getData();
-//
-//        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-//                "Response Code miss matched when creating the API");
-
-//        apiRequest = new APIRequest(apiName, "/" + apiName, apiVisibility,
-//                apiVersion, apiResource);
-
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
@@ -131,24 +121,10 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
         HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiCreationResponse.getData();
+        apiIdList.add(apiId);
 
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyAPIName(apiName, apiProviderName);
-
-//        List<APIResourceBean> resourceBeans = new ArrayList<>();
-//        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-//        resourceBeans.add(rBean);
-
-//        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
-//        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, description, tag);
-//        designBean.setVisibility(apiVisibility);
-
-        //Design API with apiRequest
-//        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest); //RestAPIPublisherImpl //design
-//        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
-//        verifyResponse(serviceResponse); //need to change
-
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Response Code miss matched when creating the API");
+        verifyAPIName(apiName, apiId);
     }
 
 
@@ -157,10 +133,68 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
 
-//        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, "" , apiVersion, apiResource, description, tag,
-//                tierCollection, backendEndPoint, bizOwner, bizOwnerMail, techOwner, techOwnerMail, endpointType,
-//                endpointAuthType, epUsername, epPassword, default_version_checked, responseCache, cacheTimeout,
-//                subscriptions, http_checked, https_checked, inSequence, outSequence);
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget(apiResource);
+        apiOperationsDTOs.add(apiOperationsDTO);
+
+        APIEndpointSecurityDTO securityDTO = new APIEndpointSecurityDTO();
+        securityDTO.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
+        securityDTO.setUsername(epUsername);
+        securityDTO.setPassword(epPassword);
+
+        APIBusinessInformationDTO businessDTO = new APIBusinessInformationDTO();
+        businessDTO.setBusinessOwner(bizOwner);
+        businessDTO.setBusinessOwnerEmail(bizOwnerMail);
+        businessDTO.setTechnicalOwner(techOwner);
+        businessDTO.setTechnicalOwnerEmail(techOwnerMail);
+
+        List<String> tags = new ArrayList<>();
+        tags.add(tag);
+
+        List<String> tiersCollectionList = new ArrayList<>();
+        tiersCollectionList.add(tierCollection);
+
+        List<String> subscriptionTenants = new ArrayList<>();
+        subscriptionTenants.add(subscriptions);
+
+        List<String> transports = new ArrayList<>();
+        transports.add(http_checked);
+        transports.add(https_checked);
+
+        APIDTO apiCreationDTO = new APIDTO();
+        apiCreationDTO.setName(apiName);
+        apiCreationDTO.setContext(apiContext);
+        apiCreationDTO.setVersion(apiVersion);
+        apiCreationDTO.setProvider(apiProviderName);
+        apiCreationDTO.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        apiCreationDTO.setOperations(apiOperationsDTOs);
+        apiCreationDTO.setDescription(description);
+        apiCreationDTO.setTags(tags);
+        apiCreationDTO.policies(tiersCollectionList);
+        apiCreationDTO.setCacheTimeout(Integer.parseInt(cacheTimeout));
+        apiCreationDTO.setResponseCachingEnabled(responseCache);
+        apiCreationDTO.setEndpointSecurity(securityDTO);
+        apiCreationDTO.setBusinessInformation(businessDTO);
+        apiCreationDTO.setSubscriptionAvailableTenants(subscriptionTenants);
+        apiCreationDTO.setIsDefaultVersion(default_version_checked);
+        apiCreationDTO.setTransport(transports);
+
+        //Design API with name,context,version,visibility,apiResource and with all optional values
+        APIDTO apidto = restAPIPublisher.addAPI(apiCreationDTO, "v3");
+        apiId = apidto.getId();
+        apiIdList.add(apiId);
+
+        HttpResponse serviceResponseGetApi = restAPIPublisher.getAPI(apiId);
+        validateOptionalField(serviceResponseGetApi);
+    }
+
+    @Test(description = "1.1.1.4")
+    public void testRESTAPICreationWithwildCardResource() throws Exception {
+        apiName = "APIWildCard";
+        apiContext = "apiwildcard";
+        apiResource = "/*";
 
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
@@ -170,108 +204,48 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiOperationsDTOs.add(apiOperationsDTO);
 
         apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndPoint));
-        apiRequest.setVersion(apiVersion);
         apiRequest.setVisibility(apiVisibility);
+        apiRequest.setVersion(apiVersion);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
-        apiRequest.setRoles("");
-        apiRequest.setDescription(description);
-        apiRequest.setTags(tag);
-        apiRequest.setTiersCollection(tierCollection);
-        apiRequest.setBusinessOwner(bizOwner);
-        apiRequest.setBusinessOwnerEmail(bizOwnerMail);
-        apiRequest.setTechnicalOwner(techOwner);
-        apiRequest.setTechnicalOwnerEmail(techOwnerMail);
-        apiRequest.setEndpointType(endpointType);
-        //endpointAuthType
-        apiRequest.setDefault_version_checked(default_version_checked);
-        //responseCache, cacheTimeout, subscriptions, in/outSequence
-        apiRequest.setHttp_checked(http_checked);
-        apiRequest.setHttps_checked(https_checked);
 
-
-        //Design API with name,context,version,visibility,apiResource and with all optional values
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
-        verifyResponse(serviceResponse); //need to change
-        HttpResponse serviceResponseGetApi = restAPIPublisher.getAPI(apiId);
-//        validateOptionalField(serviceResponseGetApi);
-    }
+        apiIdList.add(apiId);
 
-    @Test(description = "1.1.1.4")
-    public void testRESTAPICreationWithwildCardResource() throws Exception {
-        apiName = "APIWildCard";
-        apiContext = "apiwildcard";
-        apiResource = "/*";
-
-//        apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, apiResource);
-//        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
-//        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-//        apiOperationsDTO.setVerb("GET");
-//        apiOperationsDTO.setTarget(apiResource);
-//
-//        apiOperationsDTOs.add(apiOperationsDTO);
-//
-//        backendURL = gatewayUrlsWrk.getWebAppURLHttp() + apiName + "_backend/" + apiVersion;
-//        apiRequest = new APIRequest(apiName, apiContext, new URL(backendEndPoint));
-//        apiRequest.setVisibility(apiVisibility);
-//        apiRequest.setVersion(apiVersion);
-//        apiRequest.setOperationsDTOS(apiOperationsDTOs);
-
-        List<APIResourceBean> resourceBeans = new ArrayList<>();
-        APIResourceBean rBean = new APIResourceBean("GET", "Any", "Unlimited", apiResource);
-        resourceBeans.add(rBean);
-
-//        designBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName, new URL(backendEndPoint), resourceBeans);
-        designBean = new APIDesignBean(apiName, "/" + apiName, apiVersion, description, tag);
-        designBean.setVisibility(apiVisibility);
-
-        //Design API with name,context,version,visibility and wildcard apiResource
-//        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest); //design
-        HttpResponse serviceResponse = apiPublisher.designAPI(designBean);
-        verifyResponse(serviceResponse); //need to change
-
-        verifyAPIName(apiName, apiProviderName);
+        verifyResponse(serviceResponse);
+        verifyAPIName(apiName, apiId);
     }
 
     private void validateOptionalField(HttpResponse response) throws APIManagerIntegrationTestException {
         JSONObject responseJson = new JSONObject(response.getData());
-        assertEquals(responseJson.getJSONObject("api").get("bizOwner").toString(), bizOwner, "Expected bizOwner value not match");
-        assertEquals(responseJson.getJSONObject("api").get("bizOwnerMail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
-        assertEquals(responseJson.getJSONObject("api").get("techOwner").toString(), techOwner, "Expected techOwner value not match");
-        assertEquals(responseJson.getJSONObject("api").get("techOwnerMail").toString(), techOwnerMail, "Expected techOwnerMail value not match with the actual value");
-        assertEquals(responseJson.getJSONObject("api").get("endpointTypeSecured").toString(), "true", "Expected endpointType value not match with the actual value");
-        assertEquals(responseJson.getJSONObject("api").get("endpointAuthTypeDigest").toString(), "false", "Expected endpointAuthType value not match with the actual value");
-        assertEquals(responseJson.getJSONObject("api").get("epUsername").toString(), epUsername, "Expected epUsername value not match");
-        assertEquals(responseJson.getJSONObject("api").get("epPassword").toString(), epPassword, "Expected epPassword value not match");
-        assertEquals(responseJson.getJSONObject("api").get("isDefaultVersion").toString(), "true", "Expected default_version_checked value not match");
-        assertEquals(responseJson.getJSONObject("api").get("responseCache").toString(), "Enabled", "Expected responseCache: value not match");
-        assertEquals(responseJson.getJSONObject("api").get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
-        assertEquals(responseJson.getJSONObject("api").get("subscriptionAvailability").toString(), subscriptions, "Expected subscriptions value not match");
-        assertEquals(responseJson.getJSONObject("api").get("transport_http").toString(), "checked", "Expected http_checked value not match");
-        assertEquals(responseJson.getJSONObject("api").get("transport_https").toString(), "", "Expected https_checked value not match");
-        assertEquals(responseJson.getJSONObject("api").get("inSequence").toString(), inSequence, "Expected inSequence: value not match");
-        assertEquals(responseJson.getJSONObject("api").get("outSequence").toString(), outSequence, "Expected outSequence value not match");
-//
+        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwner").toString(), bizOwner, "Expected bizOwner value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwnerEmail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwner").toString(), techOwner, "Expected techOwner value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwnerEmail").toString(), techOwnerMail, "Expected techOwnerMail value not match");
+        assertEquals(responseJson.getJSONObject("endpointSecurity").get("type").toString(), "BASIC", "Expected endpointType value not match with the actual value");
+        assertEquals(responseJson.getJSONObject("endpointSecurity").get("username").toString(), epUsername, "Expected epUsername value not match with the actual value");
+        assertEquals(responseJson.getJSONArray("subscriptionAvailableTenants").get(0).toString(), subscriptions, "Expected subscriptions value not match");
+        assertEquals(responseJson.getJSONArray("transport").get(0).toString(), http_checked, "Expected http_checked value not match");
+        assertEquals(responseJson.get("isDefaultVersion"), default_version_checked, "Expected default_version_checked value not match");
+        assertEquals(responseJson.get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
     }
 
-    private void verifyAPIName(String apiName, String provider) throws APIManagerIntegrationTestException {
-        HttpResponse getApi = apiPublisher.getAPI(apiName, provider);
-        JSONObject response = new JSONObject(getApi.getData());
-        assertEquals(response.getJSONObject("api").get("name").toString(), apiName,
-                "Expected API name value not match");
+    private void verifyAPIName(String apiName, String apiId) throws APIManagerIntegrationTestException {
+        try{
+            HttpResponse getApi = restAPIPublisher.getAPI(apiId);
+            JSONObject response = new JSONObject(getApi.getData());
+            assertEquals(response.getJSONObject("api").get("name").toString(), apiName,
+                    "Expected API name value not match");
+        } catch (Exception e) {
+        }
 
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        apiPublisher.deleteAPI("PhoneVerification", apiVersion, username);
-//        apiPublisher.deleteAPI("123567890", apiVersion, username);
-//        apiPublisher.deleteAPI("eñe", apiVersion, username);
-//        apiPublisher.deleteAPI("Pho_ne-verify?api.", apiVersion, username);
-//        apiPublisher.deleteAPI("PhoneVerificationOptionalAdd", apiVersion, username);
-//        apiPublisher.deleteAPI("APIWildCard", apiVersion, username);
-//
-//        deleteUser(MultitenantUtils.getTenantAwareUsername(username), adminUsername, adminPassword  );
+        for (String apiId : apiIdList) {
+            restAPIPublisher.deleteAPI(apiId);
+        }
     }
 
     // This method runs prior to the @BeforeClass method.
