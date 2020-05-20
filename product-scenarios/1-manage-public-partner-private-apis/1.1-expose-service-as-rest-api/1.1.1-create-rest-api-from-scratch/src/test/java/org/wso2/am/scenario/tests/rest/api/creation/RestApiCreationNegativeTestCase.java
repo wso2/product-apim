@@ -83,7 +83,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiId = serviceResponse.getData();
         apiIdList.add(apiId);
 
-        verifyResponse(serviceResponse);
+//        verifyResponse(serviceResponse);
     }
 
     @Test(description = "1.1.1.7")

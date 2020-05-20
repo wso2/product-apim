@@ -369,7 +369,7 @@ public class ScenarioTestBase {
         Assert.assertNotNull(httpResponse, "Response object is null");
         log.info("Response Code : " + httpResponse.getResponseCode());
         log.info("Response Message : " + httpResponse.getData());
-        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_CREATED, "Response code is not as expected");
+        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
     }
 
     public void verifyNegativeResponse(HttpResponse httpResponse) throws JSONException {
@@ -549,17 +549,29 @@ public class ScenarioTestBase {
      * @throws Exception
      * */
     public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags) {
-        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
-                .get("tags").toString();
+        JSONObject responseJson = new JSONObject(apiUpdateResponsePublisher.getData());
+        List<String> updatedTags = new ArrayList<>();
+        JSONArray jsonArray = responseJson.getJSONArray("tags");
+        if (jsonArray != null) {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                updatedTags.add(jsonArray.getString(i));
+            }
+        }
+//        String updatedTags = responseJson.getJSONArray("tags").toString();
+//        List<String> tagArray = Arrays.asList(updatedTags);
+//        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
+//                .get("tags").toString();
         List<String> tagsList = Arrays.asList(tags.split(","));
         if (updatedTags != null) {
-            if (updatedTags.contains(",")) {
-                String[] updatedTagsArray = updatedTags.split(",");
-                for (String t : updatedTagsArray) {
+            if (updatedTags.size() > 1) {
+//                String[] updatedTagsArray = updatedTags.split(",");
+                for (String t : updatedTags) {
                     Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
                 }
+            } else if (updatedTags.size() == 1){
+                Assert.assertTrue(tags.equals(updatedTags.get(0)), "Tags of the " + apiName + " is not updated");
             } else {
-                Assert.assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
+                Assert.assertTrue(tags.equals(""), "Tags of the " + apiName + " is not updated");
             }
         }
     }
