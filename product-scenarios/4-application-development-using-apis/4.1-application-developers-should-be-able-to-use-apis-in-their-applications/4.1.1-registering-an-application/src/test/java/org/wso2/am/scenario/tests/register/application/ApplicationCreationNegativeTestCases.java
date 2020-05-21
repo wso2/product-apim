@@ -18,101 +18,100 @@
 
 package org.wso2.am.scenario.tests.register.application;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
+import org.apache.commons.httpclient.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
-    private APIStoreRestClient apiStore;
-    private List<String> applicationsList = new ArrayList<>();
-    private final Log log = LogFactory.getLog(ApplicationCreationNegativeTestCases.class);
-    private final String ADMIN_LOGIN_USERNAME = "admin";
-    private final String ADMIN_LOGIN_PW = "admin";
-    private final String SUBSCRIBER_LOGIN_USERNAME_1 = "AppCreationNegSubscriberA";
-    private final String SUBSCRIBER_LOGIN_PW_1 = "AppCreationNegSubscriberA";
+
     private final String SUBSCRIBER_LOGIN_USERNAME_2 = "AppCreationNegSubscriberB";
-    private final String SUBSCRIBER_LOGIN_PW_2= "AppCreationNegSubscriberB";
-    private static final String UTF_8 = "UTF-8";
-    private final String ERROR_APP_CREATION_FAILED = "Application creation failed for application: ";
-    private final String ERROR_APP_CREATION_NEGATIVE_TEST = "Error in application creation" +
-            " negative test cases. Application: ";
-    private final String ERROR_APPLICATION_NAME_LONGER_THAN_70_CHARACTERS
-            = "Application name longer than 70 characters. Application: ";
-    private final String ERROR_DUPLICATE_APPLICATION_EXIST = "A duplicate application already exists" +
-            " by the name - ";
-    private final String ERROR_GENERATING_KEY = " key generated for unowned application:  ";
-    private final String PRODUCTION = "PRODUCTION";
-    private final String SANDBOX = "SANDBOX";
-    private final String ERROR = "error";
-    private final String MESSAGE = "message";
-    private final String STATUS = "status";
-    private final String STATUS_APPROVED = "APPROVED";
-    private final String APPLICATION_NAME_PREFIX = "Application_";
-    private final String APPLICATION_NAME_LONGER_THAN_70_CHARS =
-            "ApplicationNameLongerThan70CharactersApplicationNameLongerThan70Characters";
+    private final String SUBSCRIBER_LOGIN_PW_2 = "AppCreationNegSubscriberB";
     private final String APPLICATION_DESCRIPTION = "Application description";
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public ApplicationCreationNegativeTestCases(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiStore = new APIStoreRestClient(storeURL);
-        createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1,
-                ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        apiStore.login(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
     }
 
     @Test(description = "4.1.1.5", dataProvider = "MissingMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithMissingMandatoryValues(String applicationName,
                                                                   String url, String errorMessage) throws Exception {
-        HttpResponse addApplicationResponse = apiStore.addApplication(url.replace("{{backendURL}}", storeURL));
-        verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
+                null, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse, null, errorMessage);
     }
 
     @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
                                                                   String errorMessage) throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(applicationName, UTF_8), URLEncoder.encode(tier, UTF_8)
-                        , "", "");
-        verifyApplicationNotCreated(addApplicationResponse, errorMessage, applicationName);
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
+                "null", ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse, null, errorMessage);
     }
 
     @Test(description = "4.1.1.7")
     public void testDuplicateApplicationName() throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(APPLICATION_NAME_PREFIX + "duplicate" , UTF_8),
-                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-                        "", URLEncoder.encode("", UTF_8));
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APP_CREATION_FAILED + APPLICATION_NAME_PREFIX + "duplicate");
-        applicationsList.add(APPLICATION_NAME_PREFIX + "duplicate");
-//        add duplicate application - case sensitive
-        addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(APPLICATION_NAME_PREFIX + "duplicate", UTF_8),
-                        URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-                        "", URLEncoder.encode(APPLICATION_DESCRIPTION, UTF_8));
-        verifyApplicationNotCreated(addApplicationResponse,
-                ERROR_DUPLICATE_APPLICATION_EXIST + APPLICATION_NAME_PREFIX + "duplicate",
-                APPLICATION_NAME_PREFIX + "duplicate");
+        String APPLICATION_NAME = "Application";
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+
+        HttpResponse applicationResponseError = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponseError, null, "Duplicate application creation successful.");
+        restAPIStore.deleteApplication(applicationResponse.getData());
+
     }
 
 //    todo uncomment once jappery api validation is fixed
@@ -148,62 +147,63 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
 
     @Test(description = "4.1.1.10")
     public void testTokenGenerationForOthersApplications() throws Exception {
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(URLEncoder.encode(APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications",
-                        UTF_8), URLEncoder.encode(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, UTF_8),
-                        "", URLEncoder.encode("", UTF_8));
-        applicationsList.add(APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications");
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                ERROR_APP_CREATION_FAILED + APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications");
-        createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_2, SUBSCRIBER_LOGIN_PW_2,
-                ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        apiStore.login(SUBSCRIBER_LOGIN_USERNAME_2, SUBSCRIBER_LOGIN_PW_2);
-        testTokenGenerationFailure(APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications",
-                PRODUCTION);
-        testTokenGenerationFailure(APPLICATION_NAME_PREFIX + "generateTokensForUnownedApplications",
-                SANDBOX);
-    }
+        String APPLICATION_NAME = "Application";
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
 
-    private void verifyApplicationNotCreated(HttpResponse response, String errorMessage, String applicationName) {
-        log.info("Verify application is not created. Response code : " + response.getResponseCode());
-        log.info("Verify application is not created. Response data : " + response.getData());
-        JSONObject responseJsonObject = new JSONObject(response.getData());
-//        if application added due to test failure add it to application list so that it could be removed later
-        if (!responseJsonObject.getBoolean(ERROR)
-                && responseJsonObject.get(STATUS).equals(STATUS_APPROVED)) {
-            applicationsList.add(applicationName);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_2, SUBSCRIBER_LOGIN_PW_2,
+                    ADMIN_USERNAME, ADMIN_PW);
         }
-//        validate application wasn't created
-        assertTrue(responseJsonObject.getBoolean(ERROR),
-                ERROR_APP_CREATION_NEGATIVE_TEST + applicationName);
-        assertTrue(responseJsonObject.getString(MESSAGE).trim().contains(errorMessage),
-                ERROR_APP_CREATION_NEGATIVE_TEST + applicationName);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME_2, SUBSCRIBER_LOGIN_PW_2,
+                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+        }
+
+        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
+                SUBSCRIBER_LOGIN_USERNAME_2,
+                SUBSCRIBER_LOGIN_PW_2,
+                storeContext.getContextTenant().getDomain(), storeURLHttps);
+
+        try {
+            ArrayList grantTypes = new ArrayList();
+            grantTypes.add("client_credentials");
+            grantTypes.add("password");
+            restAPIStoreNew.generateKeys(applicationResponse.getData(), "3600", null,
+                    ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+            assertTrue(false, "Key generated a different owners application");
+        } catch (ApiException e) {
+            restAPIStore.deleteApplication(applicationResponse.getData());
+            assertTrue(true);
+        }
     }
 
-    private void testTokenGenerationFailure(String applicationName, String keyType)
-            throws APIManagerIntegrationTestException{
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME_PREFIX +
-                "generateTokensForUnownedApplications");
-        appKeyRequestGenerator.setKeyType(keyType);
-        HttpResponse response = apiStore.generateApplicationKey(appKeyRequestGenerator);
-        log.info("Verify application token is not generated. Response code : " + response.getResponseCode());
-        log.info("Verify application token is not generated. Response data : " + response.getData());
-        JSONObject responseStringJson = new JSONObject(response.getData());
-        assertTrue(responseStringJson.getBoolean(ERROR), keyType + ERROR_GENERATING_KEY +applicationName);
-        assertEquals(responseStringJson.getString("message"),
-                "Error occurred while executing the action generateApplicationKey", keyType +
-                        ERROR_GENERATING_KEY + applicationName);
-    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.login(SUBSCRIBER_LOGIN_USERNAME_1, SUBSCRIBER_LOGIN_PW_1);
-        for (String name : applicationsList) {
-            apiStore.removeApplication(URLEncoder.encode(name, UTF_8));
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, ADMIN_USERNAME, ADMIN_PW);
         }
-        applicationsList.clear();
-        deleteUser(SUBSCRIBER_LOGIN_USERNAME_1, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
