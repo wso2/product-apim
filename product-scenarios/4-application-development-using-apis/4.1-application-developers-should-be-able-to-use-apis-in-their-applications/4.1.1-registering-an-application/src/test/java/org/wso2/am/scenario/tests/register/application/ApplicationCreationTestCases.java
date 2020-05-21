@@ -180,7 +180,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         // 1) Super tenant API creator
         // 2) Tenant API creator
         return new Object[][]{
-//                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
                 new Object[]{TestUserMode.TENANT_USER},
         };
     }
