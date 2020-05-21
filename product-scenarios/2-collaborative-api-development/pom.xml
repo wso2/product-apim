@@ -37,7 +37,7 @@
 
     <modules>
         <module>2.1-manage-publisher-portal-operations-for-users</module>
-        <module>2.2-manage-visibility-of-apis-in-publisher-portal</module>
+<!--        <module>2.2-manage-visibility-of-apis-in-publisher-portal</module>-->
     </modules>
 
     <repositories>
