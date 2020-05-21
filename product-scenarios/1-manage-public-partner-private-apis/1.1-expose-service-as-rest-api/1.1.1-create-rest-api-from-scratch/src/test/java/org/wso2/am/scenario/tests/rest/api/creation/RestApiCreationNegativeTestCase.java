@@ -4,8 +4,6 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
@@ -18,6 +16,15 @@ import java.util.List;
 
 public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private APIRequest apiRequest;
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
     private String apiName = "PhoneVerificationNeg";
     private String newApiName = "PhoneVerificationNegNew";
@@ -45,7 +52,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
     private HttpResponse serviceResponse;
 
     protected TestUserMode userMode;
-    private String providerName;
 
     @Factory(dataProvider = "userModeDataProvider")
     public RestApiCreationNegativeTestCase(TestUserMode userMode) {
@@ -54,17 +60,26 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+
         super.init(userMode);
-        providerName = user.getUserName();
 
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
-                apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
@@ -83,7 +98,6 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiId = serviceResponse.getData();
         apiIdList.add(apiId);
 
-//        verifyResponse(serviceResponse);
     }
 
     @Test(description = "1.1.1.7")
@@ -316,20 +330,21 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         for (String apiId : apiIdList) {
             restAPIPublisher.deleteAPI(apiId);
         }
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() throws Exception {
         setup();
-        //Add and activate wso2.com tenant
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
-
-        // create user in super tenant
-        createUserWithCreatorRole("micheal", "Micheal#123", "admin", "admin");
-
-        // create user in wso2.com tenant
-        createUserWithCreatorRole("andrew", "Andrew#123", "admin@wso2.com", "admin");
-
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator

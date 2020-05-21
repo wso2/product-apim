@@ -19,41 +19,31 @@ import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.*;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
-import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.*;
 
@@ -62,12 +52,19 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
     private APICreationRequestBean apiCreationRequestBean;
     private APIDTO apidto;
-    private APIBusinessInformationDTO businessDTO;
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
-    private final String admin = "admin";
     private String APICreator = "APICreatorEdit";
     private String pw = "wso2123$";
     private String APISubscriber = "APISubscriber";
@@ -86,7 +83,6 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private String apiProviderName;
     private String apiId;
     private String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" + "customerservice/customers/123";
-    //    private List<String> tiersCollectionList;
     private List<String> apiIdList = new ArrayList<>();
 
     private File swaggerFile;
@@ -99,8 +95,32 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+
         setup();
         super.init(userMode);
+
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
+
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
         apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
                 apiProductionEndpointPostfixUrl;
@@ -379,21 +399,22 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         for (String apiId : apiIdList) {
             restAPIPublisher.deleteAPI(apiId);
         }
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
 //        verifyResponse(serviceResponse);
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() throws Exception {
         setup();
-        //Add and activate wso2.com tenant
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, "admin", "admin");
-
-        // create user in super tenant
-        createUserWithPublisherAndCreatorRole("micheal", "Micheal#123", "admin", "admin");
-
-        // create user in wso2.com tenant
-        createUserWithPublisherAndCreatorRole("andrew", "Andrew#123", "admin@wso2.com", "admin");
-
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator
