@@ -98,6 +98,10 @@ else
     PRODUCT_VERSION="-$PRODUCT_VERSION"
 fi
 
+cd $HOME/../modules/integration/tests-common
+mvn clean install -Dmaven.test.skip=true
+cd $HOME
+
 #=============== Execute Scenarios ===============================================
 mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
