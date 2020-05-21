@@ -18,172 +18,170 @@
 
 package org.wso2.am.scenario.tests.register.application;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
+import com.google.gson.Gson;
+import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 
 public class ApplicationCreationTestCases extends ScenarioTestBase {
-    private APIStoreRestClient apiStore;
-    private List<String> applicationsList = new ArrayList<>();
-    private final Log log = LogFactory.getLog(ApplicationCreationTestCases.class);
-    private final String ADMIN_LOGIN_USERNAME = "admin";
-    private final String ADMIN_LOGIN_PW = "admin";
-    private final String SUBSCRIBER_LOGIN_USERNAME = "AppCreationPosSubscriber";
-    private final String SUBSCRIBER_LOGIN_PW = "AppCreationPosSubscriber";
-    private final String ERROR_APPLICATION_TIER_MISMATCH = "Application tier value mismatch for application: ";
-    private final String ERROR_APPLICATION_DESCRIPTION_MISMATCH = "Application description value mismatch" +
-            " for application: ";
-    private final String ERROR_APPLICATION_TOKEN_TYPE_MISMATCH = "Application token type value mismatch" +
-            " for application: ";
-    private final String ERROR_GENERATING_KEY = " key generation failed for application:  ";
-    private final String ERROR = "error";
-    private final String STATUS = "status";
+
     private final String STATUS_APPROVED = "APPROVED";
-    private final String NAME = "name";
-    private final String TIER = "tier";
-    private final String DESCRIPTION = "description";
-    private final String TOKEN_TYPE = "tokenType";
-    private final String APPLICATIONS = "applications";
-    private final String DATA = "data";
-    private final String KEY = "key";
-    private final String KEY_STATE = "keyState";
-    private final String APP_DETAILS = "appDetails";
-    private final String KEY_TYPE = "key_type";
-    private final String CONSUMER_KEY = "consumerKey";
-    private final String CONSUMER_SECRET = "consumerSecret";
-    private final String ACCESS_TOKEN = "accessToken";
-    private final String PRODUCTION = "PRODUCTION";
-    private final String SANDBOX = "SANDBOX";
-    private final String APPLICATION_NAME = "Application";
     private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public ApplicationCreationTestCases(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiStore = new APIStoreRestClient(storeURL);
-        createUserWithSubscriberRole(SUBSCRIBER_LOGIN_USERNAME, SUBSCRIBER_LOGIN_PW,
-                ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        apiStore.login(SUBSCRIBER_LOGIN_USERNAME, SUBSCRIBER_LOGIN_PW);
-    }
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
+    }
 
     @Test(description = "4.1.1.1")
     public void testApplicationCreationWithMandatoryValues() throws Exception {
-        HttpResponse addApplicationResponse = apiStore.addApplication(APPLICATION_NAME,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", APPLICATION_DESCRIPTION);
-        applicationsList.add(APPLICATION_NAME);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
+        String APPLICATION_NAME = "Application";
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        verifyResponse(applicationResponse);
+
+        Gson g = new Gson();
+        ApplicationDTO applicationDTO = g.fromJson(restAPIStore
+                .getApplicationById(applicationResponse.getData()).getData(), ApplicationDTO.class);
+
+        assertEquals(applicationDTO.getName(), APPLICATION_NAME,
                 "Error in application creation with mandatory values. Application  : " + APPLICATION_NAME);
-        validateApplicationWithValidMandatoryValues(APPLICATION_NAME,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, APPLICATION_DESCRIPTION);
+        assertEquals(applicationDTO.getDescription(), APPLICATION_DESCRIPTION,
+                "Error in application creation with mandatory values. Application  : " + APPLICATION_NAME);
+        assertEquals(applicationDTO.getStatus(), STATUS_APPROVED,
+                "Error in application creation with mandatory values. Application  : " + APPLICATION_NAME);
+        restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
     @Test(description = "4.1.1.2", dataProvider = "OptionalApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithMandatoryAndOptionalValues(String tokenType) throws Exception {
         String applicationName = "AppToken";
-
-        HttpResponse addApplicationResponse = apiStore.addApplicationWithTokenType(
-                applicationName + tokenType, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                "", APPLICATION_DESCRIPTION, tokenType);
-        applicationsList.add(applicationName + tokenType);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get(STATUS), STATUS_APPROVED,
-                "Error in application creation with mandatory and optional values. Application  : "
-                        + applicationName + tokenType);
-        validateApplicationWithMandatoryAndOptionsValues(applicationName + tokenType,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, APPLICATION_DESCRIPTION, tokenType);
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
+                APPLICATION_DESCRIPTION, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        verifyResponse(applicationResponse);
+        JSONObject applicationData = new JSONObject(restAPIStore.getApplicationById(applicationResponse.getData()).getData());
+        String STATUS = "status";
+        assertEquals(applicationData.get(STATUS), STATUS_APPROVED,
+                "Error in application creation with mandatory and optional values. Application STATUS");
+        String DESCRIPTION = "description";
+        assertEquals(applicationData.get(DESCRIPTION), APPLICATION_DESCRIPTION,
+                "Error in application creation with mandatory and optional values. Application DESCRIPTION");
+        String THROTTLING_POLICY = "throttlingPolicy";
+        assertEquals(applicationData.get(THROTTLING_POLICY), APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                "Error in application creation with mandatory and optional values. Application TIER");
+        String TOKEN_TYPE = "tokenType";
+        assertEquals(applicationData.get(TOKEN_TYPE), ApplicationDTO.TokenTypeEnum.OAUTH.getValue(),
+                "Error in application creation with mandatory and optional values. Application TOKEN_TYPE");
+        restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
     @Test(description = "4.1.1.3", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateProductionKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator), PRODUCTION);
+        String applicationName = "AppToken";
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
+                APPLICATION_DESCRIPTION, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        grantTypes.add("password");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationResponse.getData(), "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String consumerKey = applicationKeyDTO.getConsumerKey();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
+        assertNotNull(consumerKey, "consumer key is not found");
+        assertNotNull(consumerSecret, "consumer secret is not found");
+        restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
     @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
     public void testGenerateSandboxKeysForApplication() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(APPLICATION_NAME);
-        appKeyRequestGenerator.setKeyType(SANDBOX);
-        verifyKeyGeneration(apiStore.generateApplicationKey(appKeyRequestGenerator), SANDBOX);
-    }
-
-    private void validateApplicationWithValidMandatoryValues(String applicationName, String tier, String description)
-            throws Exception {
-        HttpResponse getAllAppResponse = apiStore.getAllApplications();
-        verifyResponse(getAllAppResponse);
-        JSONArray getAllAppJsonArray = new JSONObject(getAllAppResponse.getData()).getJSONArray(APPLICATIONS);
-
-        for (int i = 0; i < getAllAppJsonArray.length(); i++) {
-            if (applicationName.equals(getAllAppJsonArray.getJSONObject(i).getString(NAME))) {
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TIER), tier,
-                        ERROR_APPLICATION_TIER_MISMATCH + applicationName);
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(DESCRIPTION), description,
-                        ERROR_APPLICATION_DESCRIPTION_MISMATCH + applicationName);
-            }
-        }
-    }
-
-    private void validateApplicationWithMandatoryAndOptionsValues(String applicationName, String tier,
-                                                                  String description, String tokenType)
-            throws Exception {
-        HttpResponse getAllAppResponse = apiStore.getAllApplications();
-        verifyResponse(getAllAppResponse);
-        JSONArray getAllAppJsonArray = new JSONObject(getAllAppResponse.getData()).getJSONArray(APPLICATIONS);
-
-        for (int i = 0; i < getAllAppJsonArray.length(); i++) {
-            if (applicationName.equals(getAllAppJsonArray.getJSONObject(i).getString(NAME))) {
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TIER), tier,
-                        ERROR_APPLICATION_TIER_MISMATCH + applicationName);
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(DESCRIPTION), description,
-                        ERROR_APPLICATION_DESCRIPTION_MISMATCH + applicationName);
-                assertEquals(getAllAppJsonArray.getJSONObject(i).getString(TOKEN_TYPE), tokenType,
-                        ERROR_APPLICATION_TOKEN_TYPE_MISMATCH + applicationName);
-            }
-        }
-    }
-
-    private void verifyKeyGeneration(HttpResponse response, String keyType) {
-        JSONObject responseStringJson = new JSONObject(response.getData());
-        log.info(keyType + " key generation response for application \'" + APPLICATION_NAME + "\' response data :"
-                + response.getData());
-        assertFalse(responseStringJson.getBoolean(ERROR),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertEquals(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(KEY_STATE), STATUS_APPROVED,
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertEquals(new JSONObject(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).getString(APP_DETAILS))
-                .get(KEY_TYPE), keyType, keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(ACCESS_TOKEN),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_KEY),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
-        assertNotNull(responseStringJson.getJSONObject(DATA).getJSONObject(KEY).get(CONSUMER_SECRET),
-                keyType + ERROR_GENERATING_KEY + APPLICATION_NAME);
+        String applicationName = "AppToken";
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
+                APPLICATION_DESCRIPTION, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        grantTypes.add("password");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationResponse.getData(), "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes);
+        String consumerKey = applicationKeyDTO.getConsumerKey();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
+        assertNotNull(consumerKey, "consumer key is not found");
+        assertNotNull(consumerSecret, "consumer secret is not found");
+        restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        for (String name : applicationsList) {
-            apiStore.removeApplication(name);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
-        applicationsList.clear();
-        deleteUser(SUBSCRIBER_LOGIN_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
