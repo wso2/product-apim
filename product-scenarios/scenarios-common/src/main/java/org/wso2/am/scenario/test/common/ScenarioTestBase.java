@@ -59,7 +59,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class ScenarioTestBase {
 
@@ -111,7 +115,7 @@ public class ScenarioTestBase {
      *
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
-    protected void init() throws APIManagerIntegrationTestException {
+    protected void init() throws Exception {
         userMode = TestUserMode.SUPER_TENANT_ADMIN;
         init(userMode);
     }
@@ -122,7 +126,7 @@ public class ScenarioTestBase {
      * @param userMode - user mode to run the tests
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
-    protected void init(TestUserMode userMode) throws APIManagerIntegrationTestException {
+    protected void init(TestUserMode userMode) throws Exception {
 
         apimTestCaseUtils = new APIMTestCaseUtils();
 
@@ -179,12 +183,13 @@ public class ScenarioTestBase {
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
             restAPIPublisher = new RestAPIPublisherImpl(
-                    publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                    publisherContext.getContextTenant().getContextUser().getPassword(),
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
             restAPIStore =
-                    new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                            storeContext.getContextTenant().getContextUser().getPassword(),
+                    new RestAPIStoreImpl(
+                            storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
+                            storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
                             storeContext.getContextTenant().getDomain(), storeURLHttps);
 
             try {
@@ -306,6 +311,40 @@ public class ScenarioTestBase {
         }
     }
 
+    public static void deactivateAndDeleteTenant(String domain)
+            throws APIManagementException {
+        TenantManagementServiceClient tenantManagementServiceClient;
+        try {
+            tenantManagementServiceClient = getTenantManagementServiceClient();
+            TenantInfoBean tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
+            if (tenantInfoBean.getActive()) {
+                tenantManagementServiceClient.deactivateTenant(domain);
+                tenantManagementServiceClient.deleteTenant(domain);
+            }
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
+        }
+    }
+
+    public static boolean isActivated(String domain) throws APIManagementException {
+        TenantManagementServiceClient tenantManagementServiceClient;
+        try {
+            tenantManagementServiceClient = getTenantManagementServiceClient();
+            TenantInfoBean tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
+            boolean isActive = false;
+            while (!isActive) {
+                if (tenantInfoBean.getActive()) {
+                    isActive = true;
+                }
+                log.info("Waiting for the tenant " + domain + " to get activated");
+                Thread.sleep(3000);
+            }
+            return true;
+        } catch (Exception e) {
+            throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
+        }
+    }
+
     public static TenantManagementServiceClient getTenantManagementServiceClient() throws APIManagementException {
 
         AuthenticatorClient authenticatorClient = null;
@@ -395,9 +434,13 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient
-                    .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
-                            ScenarioTestConstants.PUBLISHER_ROLE}, username);
+
+            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.CREATOR_ROLE)) {
+                userManagementClient
+                        .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
+                                ScenarioTestConstants.PUBLISHER_ROLE}, username);
+            }
+
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
         }
@@ -423,8 +466,10 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient
-                    .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
+            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.SUBSCRIBER_ROLE)) {
+                userManagementClient
+                        .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
+            }
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with subscriber role " + username, e);
         }

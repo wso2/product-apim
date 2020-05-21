@@ -128,9 +128,13 @@
                     </user>
                 </admin>
                 <users>
-                    <user key="userKey1">
+                    <user key="publisherUser">
                         <userName>micheal</userName>
                         <password>Micheal#123</password>
+                    </user>
+                    <user key="storeUser">
+                        <userName>andrew</userName>
+                        <password>Andrew#123</password>
                     </user>
                 </users>
             </tenant>
@@ -144,7 +148,11 @@
                     </user>
                 </admin>
                 <users>
-                    <user key="user1">
+                    <user key="publisherUser">
+                        <userName>micheal</userName>
+                        <password>Micheal#123</password>
+                    </user>
+                    <user key="storeUser">
                         <userName>andrew</userName>
                         <password>Andrew#123</password>
                     </user>

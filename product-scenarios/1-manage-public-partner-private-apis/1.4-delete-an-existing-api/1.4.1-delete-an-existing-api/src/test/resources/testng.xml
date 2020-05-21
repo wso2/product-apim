@@ -19,10 +19,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false">
-        <!--        <classes>
+        <classes>
             <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteExistingAPIsTestCases"/>
-            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>
-        </classes>-->
+<!--            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>-->
+        </classes>
     </test>
 </suite>
 

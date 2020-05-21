@@ -173,8 +173,6 @@ public class RestAPIStoreImpl {
     public HttpResponse deleteApplication(String applicationId) {
         try {
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
-            applicationsApi.applicationsApplicationIdGet(applicationId, null);
-
             return null;
         } catch (ApiException e) {
             HttpResponse response = null;
