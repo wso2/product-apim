@@ -21,7 +21,7 @@
     <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false">
         <classes>
             <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteExistingAPIsTestCases"/>
-<!--            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>-->
+            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>
         </classes>
     </test>
 </suite>
