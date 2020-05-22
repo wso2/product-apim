@@ -1,5 +1,5 @@
 /*
- *Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *WSO2 Inc. licenses this file to you under the Apache License,
  *Version 2.0 (the "License"); you may not use this file except
@@ -17,213 +17,222 @@
  */
 package org.wso2.am.scenario.tests.delete.registered.application;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class DeleteRegisteredApplicationTestCase extends ScenarioTestBase {
-    private APIStoreRestClient apiStore;
-    private APIPublisherRestClient apiPublisher;
-    private List<String> apiList = new ArrayList<>();
-    private List<String> applicationsList = new ArrayList<>();
+
     private String apiName = "";
     private String applicationName = "";
     private final Log log = LogFactory.getLog(DeleteRegisteredApplicationTestCase.class);
-    private final String ADMIN_LOGIN_USERNAME = "admin";
-    private final String ADMIN_LOGIN_PW = "admin";
-    private final String API_NAME_PREFIX = "AppDeleteAPI_";
     private final String API_VERSION = "1.0.0";
     private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
     private final String APPLICATION_NAME_PREFIX = "AppDelete_";
-    private final String CREATOR_PUBLISHER_USERNAME = "deleteAppCreatorPublisher";
-    private final String CREATOR_PUBLISHER_PW = "deleteAppCreatorPublisher";
     private final String KEY_GENERATION_SUFFIX = "KeyGen";
-    private final String PRODUCTION = "PRODUCTION";
-    private final String SANDBOX = "SANDBOX";
-    private final String STATUS_APPROVED = "APPROVED";
-    private final String SUBSCRIBER_USERNAME = "deleteAppSubscriber";
-    private final String SUBSCRIBER_PW = "deleteAppSubscriber";
-    private final String TIER_GOLD = "Gold";
-    private final String WITH_SUBSCRIPTION_SUFFIX = "WithSubs";
+    private String applicationId = null;
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DeleteRegisteredApplicationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
-        createUserWithPublisherAndCreatorRole(CREATOR_PUBLISHER_USERNAME, CREATOR_PUBLISHER_PW, ADMIN_LOGIN_USERNAME,
-                ADMIN_LOGIN_PW);
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(CREATOR_PUBLISHER_USERNAME, CREATOR_PUBLISHER_PW);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
     }
 
     @Test(description = "4.1.3.2")
-    public void testDeleteApplication() throws Exception {
-        createApplication(APPLICATION_NAME_PREFIX);
-        deleteApplication(APPLICATION_NAME_PREFIX);
+    public void testDeleteApplication() {
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME_PREFIX, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        verifyResponse(applicationResponse);
+        restAPIStore.deleteApplication(applicationResponse.getData());
+    }
+
+    @Test(description = "4.1.3.3", dependsOnMethods = {"testDeleteApplication"})
+    public void testRecreateDeletedApplication() throws Exception {
+        applicationId = createApplication(APPLICATION_NAME_PREFIX);
+        assertNotNull(applicationId);
+    }
+
+    @Test(description = "4.1.3.4", dependsOnMethods = {"testRecreateDeletedApplication"})
+    public void testKeyGenerationForRecreateDeletedApplication() throws Exception {
+        keyGenerationForApplication(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION);
+        keyGenerationForApplication(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX);
+        restAPIStore.deleteApplication(applicationId);
     }
 
     @Test(description = "4.1.3.1")
     public void testDeleteApplicationWithSubscription() throws Exception {
 //        delete app with subscriptions
+        String API_NAME_PREFIX = "AppDeleteAPI_";
+        String WITH_SUBSCRIPTION_SUFFIX = "WithSubs";
         apiName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
         applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX;
 
-        createApplication(applicationName);
-        createAndPublishAPI(apiName);
-        subscribeToAPI(apiName, applicationName);
-        deleteApplication(applicationName);
-        verifyRemovalOfSubscriptionToAPI(apiName);
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME_PREFIX, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        String applicationId = applicationResponse.getData();
+
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, "apiContext2", API_VERSION,
+                "admin", new URL("http://ws.cdyne.com/phoneverify/phoneverify.asmx"));
+
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        String apiID = apiDto.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
+
+        restAPIStore.createSubscription(apiID, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        restAPIStore.deleteApplication(applicationId);
+        verifyRemovalOfSubscriptionToAPI(apiID);
 
 //        delete applications with keys
-        applicationDeletionWithKeys(PRODUCTION);
-        applicationDeletionWithKeys(SANDBOX);
+        applicationDeletionWithKeys(ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION);
+        applicationDeletionWithKeys(ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX);
 
 //        delete app with subscription and keys
-        apiName = API_NAME_PREFIX +  WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
+        apiName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
         applicationName = API_NAME_PREFIX + WITH_SUBSCRIPTION_SUFFIX + KEY_GENERATION_SUFFIX;
 
-        createApplication(applicationName);
-        createAndPublishAPI(apiName);
-        subscribeToAPI(apiName, applicationName);
-        keyGenerationForApplication(applicationName, PRODUCTION);
-        keyGenerationForApplication(applicationName, SANDBOX);
-        deleteApplication(applicationName);
-        verifyRemovalOfSubscriptionToAPI(apiName);
+        String apiID2 = createAndPublishAPI(apiName);
+        String applicationId2 = createApplication(applicationName);
+        restAPIStore.createSubscription(applicationId2, apiID2, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        keyGenerationForApplication(applicationId2, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION);
+        keyGenerationForApplication(applicationId2, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX);
+        restAPIStore.deleteApplication(applicationId2);
+        verifyRemovalOfSubscriptionToAPI(apiID);
+        restAPIPublisher.deleteAPI(apiID);
+        restAPIPublisher.deleteAPI(apiID2);
     }
 
-    @Test(description = "4.1.3.3", dependsOnMethods = {"testDeleteApplication"})
-    public void testRecreateDeletedApplication() throws Exception {
-        createApplication(APPLICATION_NAME_PREFIX);
+    private String createApplication(String applicationName) throws Exception {
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        return applicationResponse.getData();
     }
 
-    @Test(description = "4.1.3.4", dependsOnMethods = {"testRecreateDeletedApplication"})
-    public void testKeyGenerationForRecreateDeletedApplication() throws Exception {
-        keyGenerationForApplication(APPLICATION_NAME_PREFIX, PRODUCTION);
-        keyGenerationForApplication(APPLICATION_NAME_PREFIX, SANDBOX);
+
+    private String createAPI(String apiName) throws Exception {
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, "apiContext", API_VERSION,
+                "admin", new URL("http://ws.cdyne.com/phoneverify/phoneverify.asmx"));
+        APIDTO apidto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        return apidto.getId();
     }
 
-    private void createApplication(String applicationName) throws Exception {
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName,
-                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", APPLICATION_DESCRIPTION);
-        applicationsList.add(applicationName);
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get("status"), STATUS_APPROVED,
-                "Application creation failed for application: " + applicationName);
+    private String createAndPublishAPI(String apiName) throws Exception {
+        String apiId = createAPI(apiName);
+        HttpResponse stateChangeRequest = restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        log.info("API publish response code: " + stateChangeRequest.getResponseCode());
+        log.info("API publish response data: " + stateChangeRequest.getData());
+        assertTrue(stateChangeRequest.getData().contains("Published"), "API has not been created in publisher");
+        return apiId;
     }
 
-    private void deleteApplication(String applicationName) throws Exception {
-        HttpResponse deleteResponse = apiStore.removeApplication(applicationName);
-        verifyResponse(deleteResponse);
-        verifyApplicationDeletionFromStore(applicationName);
-    }
-
-    private void verifyApplicationDeletionFromStore(String applicationName) throws Exception {
-//        verify whether the application doesn't exist in store
-        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
-        log.info("Verify application does not exist in store response code : " +
-                getApplicationsResponse.getResponseCode());
-        log.info("Verify application does not exist in store response message : " +
-                getApplicationsResponse.getData());
-        assertFalse(getApplicationsResponse.getData().contains(applicationName),
-                "Application still available in store: " + applicationName);
-    }
-
-    private void createAPI(String apiName) throws Exception {
-        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", API_VERSION,
-                "/find", TIER_GOLD, new URL("http://ws.cdyne.com/phoneverify/phoneverify.asmx"));
-
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        apiList.add(apiName);
-        verifyResponse(serviceResponse);
-        verifyApiCreation(apiName);
-    }
-
-    private void verifyApiCreation(String apiName) throws Exception {
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, CREATOR_PUBLISHER_USERNAME, API_VERSION);
-        verifyResponse(apiInfo);
-    }
-
-    private void createAndPublishAPI(String apiName) throws Exception {
-        createAPI(apiName);
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, CREATOR_PUBLISHER_USERNAME, APILifeCycleState.PUBLISHED);
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        log.info("API publish response code: " + creationResponse.getResponseCode());
-        log.info("API publish response data: " + creationResponse.getData());
-        assertTrue(creationResponse.getData().contains("PUBLISHED"), "API has not been created in publisher");
-    }
-
-    private void subscribeToAPI(String apiName, String applicationName) throws Exception {
-        isAPIVisibleInStore(apiName, apiStore);
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, CREATOR_PUBLISHER_USERNAME);
-        subscriptionRequest.setApplicationName(applicationName);
-        subscriptionRequest.setTier(TIER_GOLD);
-        HttpResponse serviceResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(serviceResponse);
-    }
-
-    private void verifyRemovalOfSubscriptionToAPI(String apiName) throws Exception {
+    private void verifyRemovalOfSubscriptionToAPI(String apiId) throws Exception {
 //        verify subscription is removed from api
-        HttpResponse apiInfo = apiPublisher.getAPI(apiName, CREATOR_PUBLISHER_USERNAME, API_VERSION);
-        verifyResponse(apiInfo);
-        assertEquals(0, new JSONObject(apiInfo.getData()).getJSONObject("api").getInt("subs"),
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiInfo = restAPIStore.getAPI(apiId);
+        assertNotNull(apiInfo.getId());
+        SubscriptionListDTO subscriptionListDTO = restAPIStore.getSubscription(apiId, null,
+                null, null);
+        Assert.assertFalse(new JSONObject(apiInfo).toString().contains("subs"),
                 "Incorrect subscription count for api \'" + apiName + "\'");
     }
 
-    private void applicationDeletionWithKeys(String keyType) throws Exception {
+    private void applicationDeletionWithKeys(ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyType) throws Exception {
         applicationName = APPLICATION_NAME_PREFIX + KEY_GENERATION_SUFFIX + keyType;
-
-        createApplication(applicationName);
-        keyGenerationForApplication(applicationName, keyType);
-        deleteApplication(applicationName);
+        String applicationId = createApplication(applicationName);
+        keyGenerationForApplication(applicationId, keyType);
+        restAPIStore.deleteApplication(applicationId);
     }
 
-    private void keyGenerationForApplication(String applicationName, String keyType) throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
-        appKeyRequestGenerator.setKeyType(keyType);
-        HttpResponse responseString = apiStore.generateApplicationKey(appKeyRequestGenerator);
-        verifyResponse(responseString);
-        JSONObject responseStringJson = new JSONObject(responseString.getData());
-        JSONObject key = responseStringJson.getJSONObject("data").getJSONObject("key");
-        assertEquals(key.getString("keyState"),
-                STATUS_APPROVED, keyType.toLowerCase() + " key generation failed for application:  "
-                        + applicationName);
-        assertEquals(new JSONObject(key.getString("appDetails")).get("key_type"), keyType,
-                keyType.toLowerCase() + " key generation failed for application:  " + applicationName);
+    private void keyGenerationForApplication(String applicationID, ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyType) throws Exception {
+
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        grantTypes.add("password");
+        ApplicationKeyDTO generatedKeys = restAPIStore.generateKeys(applicationID, "3600", null,
+                keyType, null, grantTypes);
+        String consumerKey = generatedKeys.getConsumerKey();
+        String consumerSecret = generatedKeys.getConsumerSecret();
+        Assert.assertNotNull(consumerKey, "Error in generating keys for application, consumer key not found");
+        Assert.assertNotNull(consumerSecret, "Error in generating keys for application, consumerSecret key not found");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        for (String name : applicationsList) {
-            apiStore.removeApplication(name);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
-        for (String name : apiList) {
-            apiPublisher.deleteAPI(name, API_VERSION, CREATOR_PUBLISHER_USERNAME);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
-        deleteUser(CREATOR_PUBLISHER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
