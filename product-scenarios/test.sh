@@ -107,6 +107,8 @@ mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf
 -DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
 
+sleep 10800
+
 #=============== Copy Surefire Reports ===========================================
 
 echo "Copying surefire-reports to ${OUTPUT_DIR}/scenarios"
@@ -119,3 +121,4 @@ find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR}/
 echo "Generating Scenario Code Coverage Reports"
 source ${HOME}/code-coverage/code-coverage.sh
 generate_code_coverage ${INPUT_DIR} ${OUTPUT_DIR}
+
