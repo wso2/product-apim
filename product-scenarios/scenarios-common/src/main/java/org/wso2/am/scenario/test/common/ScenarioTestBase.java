@@ -191,6 +191,10 @@ public class ScenarioTestBase {
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
                             storeContext.getContextTenant().getDomain(), storeURLHttps);
+            log.info("Logging URL's");
+            log.info(publisherURLHttps +  "publisherURLHttps");
+            log.info(storeURLHttps +  "storeURLHttps");
+            log.info("Logging URL's ENDED");
 
             try {
                 if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
