@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
@@ -28,6 +29,7 @@ import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
 import org.wso2.am.scenario.test.common.httpserver.SimpleHTTPServer;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
@@ -46,6 +48,15 @@ import static org.testng.Assert.assertFalse;
  *
  * */
 public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase {
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
     private APIPublisherRestClient apiPublisher;
     private APIRequest apiRequest;
@@ -66,10 +77,34 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
 
     String resourceLocation = System.getProperty("test.resource.location");
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public RESTApiCreationUsingOASDocNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+
+        setup();
         super.init(userMode);
-        providerName = user.getUserName();
+
     }
 
 //    @Test(description = "1.1.2.7") //todo fix uploaded swagger file not reading issue
@@ -119,17 +154,16 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
     }
 
     @AfterClass(alwaysRun = true)
-    public void RemoveAPI() throws Exception {
-
-//        deleteUser(APICreator, admin, adminPw);
+    public void destroy() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
     }
 
-    /*
-     *  Create Users that can be used in each test case in this class
-     *  @throws Exception
-     * */
-    private void createUsers() throws Exception {
-
-        createUser(APICreator, pw, new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, adminPw);
-    }
 }

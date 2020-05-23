@@ -598,14 +598,9 @@ public class ScenarioTestBase {
                 updatedTags.add(jsonArray.getString(i));
             }
         }
-//        String updatedTags = responseJson.getJSONArray("tags").toString();
-//        List<String> tagArray = Arrays.asList(updatedTags);
-//        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
-//                .get("tags").toString();
         List<String> tagsList = Arrays.asList(tags.split(","));
         if (updatedTags != null) {
             if (updatedTags.size() > 1) {
-//                String[] updatedTagsArray = updatedTags.split(",");
                 for (String t : updatedTags) {
                     Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
                 }
