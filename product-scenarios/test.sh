@@ -98,10 +98,16 @@ else
     PRODUCT_VERSION="-$PRODUCT_VERSION"
 fi
 
+cd $HOME/../modules/integration/tests-common
+mvn clean install -Dmaven.test.skip=true
+cd $HOME
+
 #=============== Execute Scenarios ===============================================
 mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
+
+sleep 10800
 
 #=============== Copy Surefire Reports ===========================================
 
@@ -115,3 +121,4 @@ find . -name "aggregate-surefire-report" -exec cp --parents -r {} ${OUTPUT_DIR}/
 echo "Generating Scenario Code Coverage Reports"
 source ${HOME}/code-coverage/code-coverage.sh
 generate_code_coverage ${INPUT_DIR} ${OUTPUT_DIR}
+
