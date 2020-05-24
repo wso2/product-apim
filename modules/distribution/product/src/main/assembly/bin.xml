@@ -128,7 +128,7 @@
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/devportal/**
                 </exclude>
                 <exclude>
-                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin_new/**
+                    **/repository/components/features/org.wso2.carbon.apimgt.admin_${carbon.apimgt.version}/admin_new/**
                 </exclude>
                 <exclude>
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**
