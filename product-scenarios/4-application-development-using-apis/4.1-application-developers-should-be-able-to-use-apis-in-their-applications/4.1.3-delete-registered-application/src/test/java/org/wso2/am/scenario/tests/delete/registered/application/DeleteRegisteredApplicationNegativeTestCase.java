@@ -15,7 +15,9 @@ import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import static org.testng.Assert.assertEquals;
+import static org.osgi.service.application.ApplicationDescriptor.APPLICATION_DESCRIPTION;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
@@ -68,37 +70,26 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     @Test(description = "4.1.3.5")
     public void testUnownedDeleteApplication() throws Exception {
         applicationId = createApplication(APPLICATION_NAME);
-
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
                 SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps);
-
         HttpResponse response = restAPIStoreNew.deleteApplication(applicationId);
         assertNull(response, "Different owners application deleted.");
     }
 
-//    @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
-//    public void testDeleteApplicationWithSameName() throws Exception {
-//        apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
-//        createApplication(APPLICATION_NAME);
-//        HttpResponse deleteResponse = apiStore.removeApplication(APPLICATION_NAME);
-//        verifyResponse(deleteResponse);
-//        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
-//        log.info("Verify application does not exist in store response code : " +
-//                getApplicationsResponse.getResponseCode());
-//        log.info("Verify application does not exist in store response message : " +
-//                getApplicationsResponse.getData());
-//        assertFalse(getApplicationsResponse.getData().contains(APPLICATION_NAME),
-//                "Application still available in store: " + APPLICATION_NAME);
-//
-//        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-//        getApplicationsResponse = apiStore.getAllApplications();
-//        log.info("Verify application still exists in store response code : " +
-//                getApplicationsResponse.getResponseCode());
-//        log.info("Verify application still exists in store response message : " +
-//                getApplicationsResponse.getData());
-//        assertTrue(getApplicationsResponse.getData().contains(APPLICATION_NAME),
-//                "Application not available in store: " + APPLICATION_NAME);
-//    }
+    @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
+    public void testDeleteApplicationWithSameName() throws Exception {
+        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
+                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps);
+        HttpResponse applicationResponse = restAPIStoreNew.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertNotNull(applicationResponse.getData());
+        assertFalse(applicationId.equals(applicationResponse.getData()));
+        assertNull(restAPIStoreNew.deleteApplication(applicationId));
+        HttpResponse applicationResponseOld = restAPIStore.getApplicationById(applicationId);
+        assertTrue(applicationResponseOld.getData().contains(applicationId));
+        restAPIStoreNew.deleteApplication(applicationResponse.getData());
+        restAPIStore.deleteApplication(applicationId);
+    }
 
     private String createApplication(String applicationName) throws Exception {
         String APPLICATION_DESCRIPTION = "ApplicationDescription";
@@ -131,7 +122,7 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
         // 2) Tenant API creator
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_USER},
-                    new Object[]{TestUserMode.TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
         };
     }
 }
