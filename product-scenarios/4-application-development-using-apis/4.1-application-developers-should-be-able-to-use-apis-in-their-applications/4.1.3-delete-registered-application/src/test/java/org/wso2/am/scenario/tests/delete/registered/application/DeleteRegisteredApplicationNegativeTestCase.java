@@ -2,99 +2,136 @@ package org.wso2.am.scenario.tests.delete.registered.application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBase {
-    private APIStoreRestClient apiStore;
     private final Log log = LogFactory.getLog(DeleteRegisteredApplicationNegativeTestCase.class);
-    private final String ADMIN_LOGIN_USERNAME = "admin";
-    private final String ADMIN_LOGIN_PW = "admin";
     private final String APPLICATION_NAME = "DeleteUnownedApplication";
-    private final String SUBSCRIBER_USERNAME = "deleteAppSubscriber1";
-    private final String SUBSCRIBER_PW = "deleteAppSubscriber1";
     private final String SUBSCRIBER2_USERNAME = "deleteAppSubscriber2";
     private final String SUBSCRIBER2_PW = "deleteAppSubscriber2";
+    private String applicationId = null;
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DeleteRegisteredApplicationNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        createUserWithSubscriberRole(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
-        apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
     }
 
     @Test(description = "4.1.3.5")
     public void testUnownedDeleteApplication() throws Exception {
-        addApplication(APPLICATION_NAME);
-        apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
-        HttpResponse deleteResponse = apiStore.removeApplication(APPLICATION_NAME);
-        log.info("Delete unowned application Response Code : " + deleteResponse.getResponseCode());
-        log.info("Delete unowned application Response Message : " + deleteResponse.getData());
-        JSONObject responseData = new JSONObject(deleteResponse.getData());
-        Assert.assertTrue(responseData.getBoolean("error"), "Error message received not received when" +
-                "deleting unowned application: " + deleteResponse.getData());
+        applicationId = createApplication(APPLICATION_NAME);
 
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
-        log.info("Verify owner's application still exists in store response code : " +
-                getApplicationsResponse.getResponseCode());
-        log.info("Verify owner's application still exists in store response message : " +
-                getApplicationsResponse.getData());
-        assertTrue(getApplicationsResponse.getData().contains(APPLICATION_NAME),
-                "Application not available in store:" + APPLICATION_NAME);
+        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
+                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps);
+
+        HttpResponse response = restAPIStoreNew.deleteApplication(applicationId);
+        assertNull(response, "Different owners application deleted.");
     }
 
-    @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
-    public void testDeleteApplicationWithSameName() throws Exception {
-        apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
-        addApplication(APPLICATION_NAME);
-        HttpResponse deleteResponse = apiStore.removeApplication(APPLICATION_NAME);
-        verifyResponse(deleteResponse);
-        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
-        log.info("Verify application does not exist in store response code : " +
-                getApplicationsResponse.getResponseCode());
-        log.info("Verify application does not exist in store response message : " +
-                getApplicationsResponse.getData());
-        assertFalse(getApplicationsResponse.getData().contains(APPLICATION_NAME),
-                "Application still available in store: " + APPLICATION_NAME);
+//    @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
+//    public void testDeleteApplicationWithSameName() throws Exception {
+//        apiStore.login(SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW);
+//        createApplication(APPLICATION_NAME);
+//        HttpResponse deleteResponse = apiStore.removeApplication(APPLICATION_NAME);
+//        verifyResponse(deleteResponse);
+//        HttpResponse getApplicationsResponse = apiStore.getAllApplications();
+//        log.info("Verify application does not exist in store response code : " +
+//                getApplicationsResponse.getResponseCode());
+//        log.info("Verify application does not exist in store response message : " +
+//                getApplicationsResponse.getData());
+//        assertFalse(getApplicationsResponse.getData().contains(APPLICATION_NAME),
+//                "Application still available in store: " + APPLICATION_NAME);
+//
+//        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
+//        getApplicationsResponse = apiStore.getAllApplications();
+//        log.info("Verify application still exists in store response code : " +
+//                getApplicationsResponse.getResponseCode());
+//        log.info("Verify application still exists in store response message : " +
+//                getApplicationsResponse.getData());
+//        assertTrue(getApplicationsResponse.getData().contains(APPLICATION_NAME),
+//                "Application not available in store: " + APPLICATION_NAME);
+//    }
 
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-        getApplicationsResponse = apiStore.getAllApplications();
-        log.info("Verify application still exists in store response code : " +
-                getApplicationsResponse.getResponseCode());
-        log.info("Verify application still exists in store response message : " +
-                getApplicationsResponse.getData());
-        assertTrue(getApplicationsResponse.getData().contains(APPLICATION_NAME),
-                "Application not available in store: " + APPLICATION_NAME);
-    }
-
-    private void addApplication(String applicationName) throws Exception{
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Description");
-        verifyResponse(addApplicationResponse);
-        assertEquals(new JSONObject(addApplicationResponse.getData()).get("status"), "APPROVED",
-                "Application creation failed for application: " + applicationName);
+    private String createApplication(String applicationName) throws Exception {
+        String APPLICATION_DESCRIPTION = "ApplicationDescription";
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        return applicationResponse.getData();
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-        apiStore.removeApplication(APPLICATION_NAME);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(SUBSCRIBER2_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(SUBSCRIBER2_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+    }
 
-        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        deleteUser(SUBSCRIBER2_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                    new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
