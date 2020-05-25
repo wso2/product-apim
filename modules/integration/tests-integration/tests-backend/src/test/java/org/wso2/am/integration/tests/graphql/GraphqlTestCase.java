@@ -35,10 +35,10 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseGraphQLInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeBindingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -217,13 +217,14 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         role.add(GRAPHQL_ROLE);
 
         ScopeDTO scopeObject = new ScopeDTO();
-        ScopeBindingsDTO scopeBinding = new ScopeBindingsDTO();
-        scopeBinding.setValues(role);
         scopeObject.setName("subscriber");
-        scopeObject.setBindings(scopeBinding);
+        scopeObject.setBindings(role);
+
+        APIScopeDTO apiScopeDTO = new APIScopeDTO();
+        apiScopeDTO.setScope(scopeObject);
 
         ArrayList apiScopeList = new ArrayList();
-        apiScopeList.add(scopeObject);
+        apiScopeList.add(apiScopeDTO);
 
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
         Gson g = new Gson();

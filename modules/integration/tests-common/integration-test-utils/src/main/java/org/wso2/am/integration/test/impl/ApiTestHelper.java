@@ -184,10 +184,12 @@ public class ApiTestHelper {
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
 
-        ((JSONObject) ((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).get("bindings")).
-                put("values", Collections.singletonList(role));
-        ((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).put("name", scope);
-        ((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).put("description", scope);
+
+        ((JSONObject) (((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).get("scope"))).put("bindings",
+                Collections.singletonList(role));
+
+        ((JSONObject) (((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).get("scope"))).put("name", scope);
+        ((JSONObject) (((JSONObject) (apiProperties.getJSONArray("scopes")).get(0)).get("scope"))).put("description", scope);
 
         JSONArray operations = apiProperties.getJSONArray("operations");
 
