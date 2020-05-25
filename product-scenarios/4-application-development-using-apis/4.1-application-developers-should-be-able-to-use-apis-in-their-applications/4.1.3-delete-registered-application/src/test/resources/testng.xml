@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="4.1.3-delete-registered-application" preserve-order="true" verbose="2" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationTestCase"/>
-<!--            <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationNegativeTestCase"/>-->
+<!--            <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationTestCase"/>-->
+            <class name="org.wso2.am.scenario.tests.delete.registered.application.DeleteRegisteredApplicationNegativeTestCase"/>
         </classes>
     </test>
 </suite>
