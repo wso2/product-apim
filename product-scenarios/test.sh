@@ -107,7 +107,7 @@ mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf
 -DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
 
-sleep 10800
+#sleep 10800
 
 #=============== Copy Surefire Reports ===========================================
 
