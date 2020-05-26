@@ -19,8 +19,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Scenario-Test-Initializer">
     <test name="Deploy-WebApps" verbose="2" parallel="false">
-        <!--        <classes>
+        <classes>
             <class name="org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase"/>
-        </classes>-->
+        </classes>
     </test>
 </suite>
