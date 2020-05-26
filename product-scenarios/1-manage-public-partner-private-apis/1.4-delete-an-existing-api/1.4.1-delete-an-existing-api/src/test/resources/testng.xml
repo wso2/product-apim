@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.1-create-rest-api-from-scratch" preserve-order="true" verbose="2" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteExistingAPIsTestCases"/>
-            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>
+<!--            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteExistingAPIsTestCases"/>-->
+<!--            <class name="org.wso2.am.scenario.tests.delete.existing.api.DeleteAPINegativeTestCases"/>-->
         </classes>
     </test>
 </suite>
