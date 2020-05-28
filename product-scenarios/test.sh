@@ -109,7 +109,7 @@ cd $HOME
 
 mvn clean install
 
-#sleep 10800
+sleep 10800
 
 #=============== Copy Surefire Reports ===========================================
 
