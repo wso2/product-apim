@@ -77,6 +77,7 @@ public class ScenarioTestBase {
     protected static String gatewayHttpsURL;
     protected static String serviceEndpoint;
     protected static String adminURL;
+    protected static String baseUrl;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
@@ -84,6 +85,7 @@ public class ScenarioTestBase {
     public static final String KEYAMANAGER_URL = "KeyManagerUrl";
     public static final String GATEWAYHTTPS_URL = "GatewayHttpsUrl";
     public static final String SERVICE_ENDPOINT = "CarbonServerUrl";
+    public static final String BASE_URL = "BaseUrl";
     protected static String resourceLocation = System.getProperty("framework.resource.location");
     protected String publisherURLHttp;
     protected String publisherURLHttps;
@@ -185,14 +187,14 @@ public class ScenarioTestBase {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                    publisherContext.getContextTenant().getDomain(), baseUrl);
             restAPIStore =
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+                            storeContext.getContextTenant().getDomain(), baseUrl);
             log.info("Logging URL's");
-            log.info(publisherURLHttps +  "publisherURLHttps");
+            log.info(baseUrl +  "baseUrl");
             log.info(storeURLHttps +  "storeURLHttps");
             log.info("Logging URL's ENDED");
 
@@ -264,6 +266,10 @@ public class ScenarioTestBase {
         if (adminURL == null) {
             adminURL = "https://localhost:9443/admin";
         }
+        baseUrl = infraProperties.getProperty(BASE_URL);
+        if (adminURL == null) {
+            adminURL = "https://localhost:9443/";
+        }
         setKeyStoreProperties();
     }
 
@@ -277,7 +283,7 @@ public class ScenarioTestBase {
      * @return properties the deployment properties
      */
     public static Properties getDeploymentProperties() {
-        Path infraPropsFile = Paths.get(INPUTS_LOCATION + File.separator + INFRASTRUCTURE_PROPERTIES);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Path infraPropsFile = Paths.get(INPUTS_LOCATION + File.separator + INFRASTRUCTURE_PROPERTIES);
         Properties props = new Properties();
         loadProperties(infraPropsFile, props);
 
