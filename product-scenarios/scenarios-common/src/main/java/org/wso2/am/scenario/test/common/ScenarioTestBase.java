@@ -267,8 +267,8 @@ public class ScenarioTestBase {
             adminURL = "https://localhost:9443/admin";
         }
         baseUrl = infraProperties.getProperty(BASE_URL);
-        if (adminURL == null) {
-            adminURL = "https://localhost:9443/";
+        if (baseUrl == null) {
+            baseUrl = "https://localhost:9443/";
         }
         setKeyStoreProperties();
     }
