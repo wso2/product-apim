@@ -20,6 +20,8 @@ package org.wso2.am.scenario.tests.register.application;
 
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

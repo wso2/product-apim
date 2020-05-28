@@ -47,6 +47,7 @@ public class DeploymentInitializerTestCase extends ScenarioTestBase {
 
     @Test
     public void deployingWebAPPs() throws Exception {
+        setup();
         log.info(System.getProperty("test.resource.location"));
         log.info("Start deploying Web Apps");
         String testArtifactPath = resourceLocation + File.separator + "artifacts";
@@ -57,6 +58,6 @@ public class DeploymentInitializerTestCase extends ScenarioTestBase {
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
 
         // Once distributed setup is created use gateway webapp url from TG
-        WebAppDeploymentUtil.isMonitoringAppDeployed(getBackendEndServiceEndPointHttps(""));
+        WebAppDeploymentUtil.isMonitoringAppDeployed(getBackendEndServiceEndPointHttps(baseUrl));
     }
 }
