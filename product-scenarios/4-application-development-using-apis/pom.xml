@@ -37,16 +37,16 @@
 
     <modules>
         <module>4.1-application-developers-should-be-able-to-use-apis-in-their-applications</module>
-        <module>4.2-develop-a-non-secured-application</module>
-        <module>4.3-develop-an-application-secured-with-an-external-idp</module>
-        <module>4.4-developing-an-application-secured-with-a-local-idp</module>
-        <module>4.5-application-developers-should-be-able-to-easily-integrate-apis-to-their-applications</module>
-        <module>4.6-application-developers-should-be-able-to-try-out-apis</module>
-        <module>4.7-application-developers-should-be-facilitated-with-collaborative-application-development</module>
-        <module>4.8-on-boarding-application-developers</module>
-        <module>4.10-external-users-should-be-able-to-use-exposed-apis-through-applications</module>
-        <module>4.11-localization-in-developer-portal</module>
-        <module>4.12-developer-portal-theming</module>
+<!--        <module>4.2-develop-a-non-secured-application</module>-->
+<!--        <module>4.3-develop-an-application-secured-with-an-external-idp</module>-->
+<!--        <module>4.4-developing-an-application-secured-with-a-local-idp</module>-->
+<!--        <module>4.5-application-developers-should-be-able-to-easily-integrate-apis-to-their-applications</module>-->
+<!--        <module>4.6-application-developers-should-be-able-to-try-out-apis</module>-->
+<!--        <module>4.7-application-developers-should-be-facilitated-with-collaborative-application-development</module>-->
+<!--        <module>4.8-on-boarding-application-developers</module>-->
+<!--        <module>4.10-external-users-should-be-able-to-use-exposed-apis-through-applications</module>-->
+<!--        <module>4.11-localization-in-developer-portal</module>-->
+<!--        <module>4.12-developer-portal-theming</module>-->
     </modules>
 
 </project>

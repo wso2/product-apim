@@ -28,7 +28,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.assertNotNull;
 
 public class UpdatePublishedAPITest extends ScenarioTestBase {
-    
+
     private static final String UPDATE_RESOURCE = "/update";
     private static final String API_VERSION = "1.0.0";
 
@@ -197,7 +197,6 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
         swagger.createResourcePaths(resourcePaths);
     }
 
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -209,10 +208,6 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
             deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
-    }
-
-    private static String appendTenant(String userName) {
-        return userName + '@' + ScenarioTestConstants.TENANT_WSO2;
     }
 
     @DataProvider

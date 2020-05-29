@@ -145,7 +145,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
                 APPLICATION_NAME_PREFIX + "duplicate");
     }*/
 
-    @Test(description = "4.1.1.10")
+    @Test(description = "4.1.1.10", dependsOnMethods = {"testDuplicateApplicationName"})
     public void testTokenGenerationForOthersApplications() throws Exception {
         String APPLICATION_NAME = "Application";
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
