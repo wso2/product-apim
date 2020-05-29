@@ -78,7 +78,6 @@ done
 echo "working Directory : ${HOME}"
 echo "input directory : ${INPUT_DIR}"
 echo "output directory : ${OUTPUT_DIR}"
-
 export DATA_BUCKET_LOCATION=${INPUT_DIR}
 
 # Retrieve specific property from deployment.properties file
@@ -109,7 +108,7 @@ cd $HOME
 
 mvn clean install
 
-sleep 10800
+#sleep 10800
 
 #=============== Copy Surefire Reports ===========================================
 
