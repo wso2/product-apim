@@ -172,7 +172,7 @@ public class ScenarioTestBase {
                     APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                     TestUserMode.SUPER_TENANT_ADMIN);
 
-            if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+            if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                 keymanagerSessionCookie = createSession(keyManagerContext);
             }
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -194,12 +194,12 @@ public class ScenarioTestBase {
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
                             storeContext.getContextTenant().getDomain(), baseUrl);
             log.info("Logging URL's");
-            log.info(baseUrl +  "baseUrl");
-            log.info(storeURLHttps +  "storeURLHttps");
+            log.info(baseUrl + "baseUrl");
+            log.info(storeURLHttps + "storeURLHttps");
             log.info("Logging URL's ENDED");
 
             try {
-                if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+                if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                     keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
                     userManagementClient = new UserManagementClient(
                             keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
@@ -283,7 +283,7 @@ public class ScenarioTestBase {
      * @return properties the deployment properties
      */
     public static Properties getDeploymentProperties() {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Path infraPropsFile = Paths.get(INPUTS_LOCATION + File.separator + INFRASTRUCTURE_PROPERTIES);
+        Path infraPropsFile = Paths.get(INPUTS_LOCATION + File.separator + INFRASTRUCTURE_PROPERTIES);
         Properties props = new Properties();
         loadProperties(infraPropsFile, props);
 
@@ -433,7 +433,9 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
+                userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
+            }
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with creator role " + username, e);
         }
@@ -445,7 +447,7 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
 
-            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.CREATOR_ROLE)) {
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
                 userManagementClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
                                 ScenarioTestConstants.PUBLISHER_ROLE}, username);
@@ -476,7 +478,7 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.SUBSCRIBER_ROLE)) {
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.SUBSCRIBER_ROLE, username)) {
                 userManagementClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
             }
