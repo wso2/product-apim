@@ -90,6 +90,10 @@ import static org.testng.Assert.assertTrue;
 public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
+    enum AUTH_IN {
+        HEADER,
+        QUERY
+    }
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
@@ -221,7 +225,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, accessToken);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER);
+            invokeAPI(client, accessToken, AUTH_IN.QUERY);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -286,7 +291,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, "00000000-0000-0000-0000-000000000000");
+            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER);
         } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
             assertTrue(true, "Client cannot connect to server");
@@ -409,14 +414,23 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      *
      * @param client      WebSocketClient object
      * @param accessToken API access Token
+     * @param in location of the Auth header. {@code query} or {@code header}
+     * @throws Exception If an error occurs while invoking WebSocket API
      */
-    private void invokeAPI(WebSocketClient client, String accessToken) throws Exception {
+    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in) throws Exception {
 
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
-        URI echoUri = new URI(apiEndPoint);
         ClientUpgradeRequest request = new ClientUpgradeRequest();
-        request.setHeader("Authorization", "Bearer " + accessToken);
+        URI echoUri = null;
+
+        if (AUTH_IN.HEADER == in) {
+            request.setHeader("Authorization", "Bearer " + accessToken);
+            echoUri = new URI(apiEndPoint);
+        } else if (AUTH_IN.QUERY == in) {
+            echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
+        }
+
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);

@@ -49,6 +49,9 @@ public class SubscriptionDTO {
   @SerializedName("throttlingPolicy")
   private String throttlingPolicy = null;
 
+  @SerializedName("requestedThrottlingPolicy")
+  private String requestedThrottlingPolicy = null;
+
   /**
    * Gets or Sets status
    */
@@ -62,7 +65,9 @@ public class SubscriptionDTO {
     
     ON_HOLD("ON_HOLD"),
     
-    REJECTED("REJECTED");
+    REJECTED("REJECTED"),
+    
+    TIER_UPDATE_PENDING("TIER_UPDATE_PENDING");
 
     private String value;
 
@@ -213,6 +218,24 @@ public class SubscriptionDTO {
     this.throttlingPolicy = throttlingPolicy;
   }
 
+  public SubscriptionDTO requestedThrottlingPolicy(String requestedThrottlingPolicy) {
+    this.requestedThrottlingPolicy = requestedThrottlingPolicy;
+    return this;
+  }
+
+   /**
+   * Get requestedThrottlingPolicy
+   * @return requestedThrottlingPolicy
+  **/
+  @ApiModelProperty(example = "Unlimited", value = "")
+  public String getRequestedThrottlingPolicy() {
+    return requestedThrottlingPolicy;
+  }
+
+  public void setRequestedThrottlingPolicy(String requestedThrottlingPolicy) {
+    this.requestedThrottlingPolicy = requestedThrottlingPolicy;
+  }
+
   public SubscriptionDTO status(StatusEnum status) {
     this.status = status;
     return this;
@@ -247,12 +270,13 @@ public class SubscriptionDTO {
         Objects.equals(this.apiInfo, subscription.apiInfo) &&
         Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
         Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
+        Objects.equals(this.requestedThrottlingPolicy, subscription.requestedThrottlingPolicy) &&
         Objects.equals(this.status, subscription.status);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, status);
+    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, requestedThrottlingPolicy, status);
   }
 
 
@@ -267,6 +291,7 @@ public class SubscriptionDTO {
     sb.append("    apiInfo: ").append(toIndentedString(apiInfo)).append("\n");
     sb.append("    applicationInfo: ").append(toIndentedString(applicationInfo)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
+    sb.append("    requestedThrottlingPolicy: ").append(toIndentedString(requestedThrottlingPolicy)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("}");
     return sb.toString();
