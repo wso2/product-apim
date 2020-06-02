@@ -120,8 +120,10 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 #[apim.idp]
+#server_url = "https://localhost:${mgt.transport.https.port}"
 #authorize_endpoint = "https://localhost:${mgt.transport.https.port}/oauth2/authorize"
 #oidc_logout_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/logout"
+#oidc_check_session_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/checksession"
 
 #[apim.jwt]
 #enable = true
@@ -152,6 +154,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #enable_comments = true
 #enable_ratings = true
 #enable_forum = true
+#enable_anonymous_mode=true
 
 [apim.cors]
 allow_origins = "*"

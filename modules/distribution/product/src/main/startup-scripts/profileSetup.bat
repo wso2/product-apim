@@ -18,6 +18,7 @@ set userLocation=%cd%
 set pathToAxis2XMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2.xml.j2
 set pathToRegistryTemplate=..\repository\resources\conf\templates\repository\conf\registry.xml.j2
 set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\default\inbound-endpoints
+set pathToInboundEndpointsTemplate=..\repository\resources\conf\templates\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToWebapps=..\repository\deployment\server\webapps
 set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
@@ -97,7 +98,7 @@ call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -125,7 +126,7 @@ call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war api#am#store.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war api#am#store.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -210,6 +211,11 @@ if exist %pathToInboundEndpoints%\WebSocketInboundEndpoint.xml (
 	call :Timestamp value
 	echo %value% INFO - Removed the WebSocketInboundEndpoint.xml file from %pathToInboundEndpoints%
 )
+if exist %pathToInboundEndpointsTemplate%\WebSocketInboundEndpoint.xml.j2 (
+	del /f %pathToInboundEndpointsTemplate%\WebSocketInboundEndpoint.xml.j2
+	call :Timestamp value
+	echo %value% INFO - Removed the WebSocketInboundEndpoint.xml.j2 file from %pathToInboundEndpointsTemplate%
+)
 EXIT /B 0
 
 :removeSecureWebSocketInboundEndpoint
@@ -217,6 +223,11 @@ if exist %pathToInboundEndpoints%\SecureWebSocketInboundEndpoint.xml (
 	del /f %pathToInboundEndpoints%\SecureWebSocketInboundEndpoint.xml
 	call :Timestamp value
 	echo %value% INFO - Removed the SecureWebSocketInboundEndpoint.xml file from %pathToInboundEndpoints%
+)
+if exist %pathToInboundEndpointsTemplate%\SecureWebSocketInboundEndpoint.xml.j2 (
+	del /f %pathToInboundEndpointsTemplate%\SecureWebSocketInboundEndpoint.xml.j2
+	call :Timestamp value
+	echo %value% INFO - Removed the SecureWebSocketInboundEndpoint.xml.j2 file from %pathToInboundEndpointsTemplate%
 )
 EXIT /B 0
 

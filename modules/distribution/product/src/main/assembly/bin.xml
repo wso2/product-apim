@@ -142,7 +142,6 @@
 
                 <exclude>**/repository/deployment/server/webapps/api#identity#entitlement.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#dcr#v1.0.war</exclude>
-                <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#v1.0.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
@@ -632,9 +631,10 @@
             </outputDirectory>
             <includes>
                 <include>api#identity#recovery#v0.9.war</include>
+                <!-- Copy api#identity#oauth2#v1.0 for scope management feature-->
+                <include>api#identity#oauth2#v1.0.war</include>
             </includes>
         </fileSet>
-
 
         <fileSet>
             <directory>
@@ -685,6 +685,7 @@
             </outputDirectory>
             <includes>
                 <include>api#am#admin#v0.16.war</include>
+                <include>api#am#admin.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -694,7 +695,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>throttle#data#v1.war</include>
+                <include>internal#data#v1.war</include>
             </includes>
         </fileSet>
         <fileSet>

@@ -2551,6 +2551,80 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+#-----------------------------------------------------
+# Update existing subscription
+#-----------------------------------------------------
+    put:
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X PUT  -d @data.json \"https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9\""
+      x-wso2-request: "PUT https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\n\n{\n    \"throttlingPolicy\": \"Gold\",\n  \"requestedThrottlingPolicy\": \"Unlimited\",\n    \"apiId\": \"c43a325c-260b-4302-81cb-768eafaa3aed\",\n    \"applicationId\": \"c30f3a6e-ffa4-4ae7-afce-224d1f820524\"\n    \"status\": \"UNBLOCKED\"\n}"
+      x-wso2-response: "HTTP/1.1 200 Ok\nLocation: https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9\nContent-Type: application/json\n\n{\n   \"throttlingPolicy\": \"Gold\",\n   \"subscriptionId\": \"5b65808c-cdf2-43e1-a695-de63e3ad0ae9\",\n   \"apiIdentifier\": \"admin-PhoneVerification-2.0.0\",\n   \"applicationId\": \"c30f3a6e-ffa4-4ae7-afce-224d1f820524\",\n   \"status\": \"UNBLOCKED\"\n}"
+      summary: |
+        Update existing subscription
+      description: |
+        This operation can be used to update a subscription providing the subscription id, api id, application Id, status and updated throttling policy tier.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Subscription object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Subscription'
+        - $ref: '#/parameters/requestedTenant'
+        - $ref: '#/parameters/subscriptionId'
+      tags:
+        - Subscriptions
+      responses:
+        200:
+          description: |
+            Subscription Updated.
+            Successful response with the updated object as entity in the body.
+            Location header contains URL of newly updates entity.
+          schema:
+            $ref: '#/definitions/Subscription'
+          headers:
+            Location:
+              description: |
+                Location to the updated subscription.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              type: string
+        202:
+          description: |
+            Accepted.
+            The request has been accepted.
+          schema:
+            $ref: '#/definitions/WorkflowResponse'
+          headers:
+            Location:
+              description: |
+                Location of the updated subscription.
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested Subscription does not exist.
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
     #-----------------------------------------------------
     # Delete a certain subscription
     #-----------------------------------------------------
@@ -4332,6 +4406,9 @@ definitions:
       throttlingPolicy:
         type: string
         example: Unlimited
+      requestedThrottlingPolicy:
+        type: string
+        example: Unlimited
       status:
         type: string
         enum:
@@ -4340,6 +4417,7 @@ definitions:
           - UNBLOCKED
           - ON_HOLD
           - REJECTED
+          - TIER_UPDATE_PENDING
         example: UNBLOCKED
 
 

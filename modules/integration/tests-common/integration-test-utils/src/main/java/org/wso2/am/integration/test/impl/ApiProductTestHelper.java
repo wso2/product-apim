@@ -26,6 +26,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessIn
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
@@ -41,7 +42,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * A collection of helper methods to aid in setting up and testing APIProducts
@@ -362,8 +364,9 @@ public class ApiProductTestHelper {
         }
     }
 
-    private void verifyScopes(List<ScopeInfoDTO> scopeInfoDTOs, List<ScopeDTO> scopeDTOs) {
+    private void verifyScopes(List<ScopeInfoDTO> scopeInfoDTOs, List<APIScopeDTO> apiScopeDTOS) {
         scopeInfoDTOs.sort(Comparator.comparing(ScopeInfoDTO::getName));
+        List<ScopeDTO> scopeDTOs = apiScopeDTOS.stream().map(APIScopeDTO::getScope).collect(Collectors.toList());
         scopeDTOs.sort(Comparator.comparing(ScopeDTO::getName));
 
         Assert.assertEquals(scopeInfoDTOs.size(), scopeDTOs.size());
@@ -374,7 +377,7 @@ public class ApiProductTestHelper {
 
             Assert.assertEquals(scopeInfoDTO.getDescription(), scopeDTO.getDescription());
             Assert.assertEquals(scopeInfoDTO.getName(), scopeDTO.getName());
-            Assert.assertEquals(new HashSet<>(scopeInfoDTO.getRoles()), new HashSet<>(scopeDTO.getBindings().getValues()));
+            Assert.assertEquals(new HashSet<>(scopeInfoDTO.getRoles()), new HashSet<>(scopeDTO.getBindings()));
         }
 
     }

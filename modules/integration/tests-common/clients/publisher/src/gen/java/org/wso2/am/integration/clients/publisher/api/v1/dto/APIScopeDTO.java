@@ -23,62 +23,53 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 
 /**
- * ScopeBindingsDTO
+ * APIScopeDTO
  */
 
-public class ScopeBindingsDTO {
-  @SerializedName("type")
-  private String type = null;
+public class APIScopeDTO {
+  @SerializedName("scope")
+  private ScopeDTO scope = null;
 
-  @SerializedName("values")
-  private List<String> values = null;
+  @SerializedName("shared")
+  private Boolean shared = null;
 
-  public ScopeBindingsDTO type(String type) {
-    this.type = type;
+  public APIScopeDTO scope(ScopeDTO scope) {
+    this.scope = scope;
     return this;
   }
 
    /**
-   * Type of binding role / permission 
-   * @return type
+   * Get scope
+   * @return scope
   **/
-  @ApiModelProperty(value = "Type of binding role / permission ")
-  public String getType() {
-    return type;
+  @ApiModelProperty(required = true, value = "")
+  public ScopeDTO getScope() {
+    return scope;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setScope(ScopeDTO scope) {
+    this.scope = scope;
   }
 
-  public ScopeBindingsDTO values(List<String> values) {
-    this.values = values;
-    return this;
-  }
-
-  public ScopeBindingsDTO addValuesItem(String valuesItem) {
-    if (this.values == null) {
-      this.values = new ArrayList<>();
-    }
-    this.values.add(valuesItem);
+  public APIScopeDTO shared(Boolean shared) {
+    this.shared = shared;
     return this;
   }
 
    /**
-   * Get values
-   * @return values
+   * States whether scope is shared. This will not be honored when updating/adding scopes to APIs or when adding/updating Shared Scopes. 
+   * @return shared
   **/
-  @ApiModelProperty(value = "")
-  public List<String> getValues() {
-    return values;
+  @ApiModelProperty(example = "true", value = "States whether scope is shared. This will not be honored when updating/adding scopes to APIs or when adding/updating Shared Scopes. ")
+  public Boolean isShared() {
+    return shared;
   }
 
-  public void setValues(List<String> values) {
-    this.values = values;
+  public void setShared(Boolean shared) {
+    this.shared = shared;
   }
 
 
@@ -90,24 +81,24 @@ public class ScopeBindingsDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ScopeBindingsDTO scopeBindings = (ScopeBindingsDTO) o;
-    return Objects.equals(this.type, scopeBindings.type) &&
-        Objects.equals(this.values, scopeBindings.values);
+    APIScopeDTO apIScope = (APIScopeDTO) o;
+    return Objects.equals(this.scope, apIScope.scope) &&
+        Objects.equals(this.shared, apIScope.shared);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, values);
+    return Objects.hash(scope, shared);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ScopeBindingsDTO {\n");
+    sb.append("class APIScopeDTO {\n");
     
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    values: ").append(toIndentedString(values)).append("\n");
+    sb.append("    scope: ").append(toIndentedString(scope)).append("\n");
+    sb.append("    shared: ").append(toIndentedString(shared)).append("\n");
     sb.append("}");
     return sb.toString();
   }

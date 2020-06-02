@@ -16,6 +16,7 @@
 
 package org.wso2.am.integration.tests.other;
 
+import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,10 +37,17 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(APICategoriesTestCase.class);
@@ -156,6 +164,52 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
                 Assert.assertEquals(count, 1);
             }
         }
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test attach API category to API")
+    public void testAttachAPICategoryToAPI() throws Exception{
+        //Add Category
+        try (CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();) {
+            HttpPost post = new HttpPost(categoriesAdminAPIURL);
+            post.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                    "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+            post.addHeader("Content-Type", "application/json");
+            StringEntity payload = new StringEntity(
+                    "{\"name\": \"Sales\", \"description\": \"Sales category\"}", "UTF-8");
+            payload.setContentType("application/json");
+            post.setEntity(payload);
+            CloseableHttpResponse response = client.execute(post);
+        }
+
+        //Add API
+        String apiName = "CategoryTestAPI";
+        String apiContext = "category";
+        String apiVersion = "1.0";
+        String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(url));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(user.getUserName());
+
+        //Add the API using the API publisher.
+        HttpResponse postResponse = restAPIPublisher.addAPI(apiRequest);
+        String apiId = postResponse.getData();
+
+        //update API with category mapping
+        List<String> apiCategories = new ArrayList<>();
+        apiCategories.add("Sales");
+        apiRequest.setApiCategories(apiCategories);
+        HttpResponse updateResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
+
+        waitForAPIDeployment();
+        HttpResponse getResponse = restAPIPublisher.getAPI(updateResponse.getData());
+
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(getResponse.getData(), APIDTO.class);
+        List<String> categoriesInReceivedAPI = apidto.getCategories();
+        Assert.assertNotNull(categoriesInReceivedAPI);
+        Assert.assertTrue(categoriesInReceivedAPI.contains("Sales"));
     }
 
     @Test(groups = { "wso2.am" }, description = "Test delete API category", dependsOnMethods = {
