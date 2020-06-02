@@ -26,19 +26,19 @@
 
     <modules>
 <!--        <module>tests-common</module>-->
-        <module>scenarios-common</module>
-<!--        <module>1-manage-public-partner-private-apis</module>-->
-<!--        <module>2-collaborative-api-development</module>-->
-        <!--<module>3-securing-an-api-with-different-security-protocols</module>-->
+<!--        <module>scenarios-common</module>-->
+        <module>1-manage-public-partner-private-apis</module>
+        <module>2-collaborative-api-development</module>
+<!--        <module>3-securing-an-api-with-different-security-protocols</module>-->
         <module>4-application-development-using-apis</module>
-<!--        <module>5-managing-api-lifecycle</module>-->
-<!--        <module>6-rollout-api-updates-seamlessly</module>-->
-<!--        <module>7-managing-api-traffic-based-on-various-conditions</module>-->
-<!--        <module>8-analyze-usage-of-apis-for-business-insights</module>-->
-<!--        <module>9-developer-community-building</module>-->
-<!--        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>-->
-<!--        <module>11-segregate-api-traffic</module>-->
-<!--        <module>14-receive-alerts-on-different-events-for-decision-making</module>-->
+        <module>5-managing-api-lifecycle</module>
+        <module>6-rollout-api-updates-seamlessly</module>
+        <module>7-managing-api-traffic-based-on-various-conditions</module>
+        <module>8-analyze-usage-of-apis-for-business-insights</module>
+        <module>9-developer-community-building</module>
+        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>
+        <module>11-segregate-api-traffic</module>
+        <module>14-receive-alerts-on-different-events-for-decision-making</module>
     </modules>
 
     <repositories>

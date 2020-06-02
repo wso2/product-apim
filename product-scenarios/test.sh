@@ -106,7 +106,7 @@ cd $HOME
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
 
-mvn clean install
+mvn clean install -fae
 
 #sleep 10800
 
