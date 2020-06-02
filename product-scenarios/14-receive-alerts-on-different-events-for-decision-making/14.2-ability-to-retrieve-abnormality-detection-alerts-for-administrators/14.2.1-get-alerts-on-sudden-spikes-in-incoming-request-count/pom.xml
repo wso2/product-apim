@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_2][USECASE_1] - Get Alerts on Sudden Spikes in Incoming Request Count</name>
     <artifactId>14.2.1-get-alerts-on-sudden-spikes-in-incoming-request-count</artifactId>
     <packaging>pom</packaging>

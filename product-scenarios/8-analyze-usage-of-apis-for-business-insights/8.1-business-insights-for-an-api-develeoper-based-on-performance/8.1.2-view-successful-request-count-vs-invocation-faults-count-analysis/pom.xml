@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.1-business-insights-for-an-api-develeoper-based-on-performance</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_1][USECASE_2] - View Successful Request Count vs Invocation Faults Count Analysis</name>
     <artifactId>8.1.2-view-successful-request-count-vs-invocation-faults-count-analysis</artifactId>
     <packaging>pom</packaging>

@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.2-business-insights-for-an-api-develeoper-based-on-api-popularity</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_2][USECASE_4] - View Userbase Breakdown for an API based on API Versions</name>
     <artifactId>8.2.4-view-the-userbase-breakdown-for-an-api-based-on-api-versions</artifactId>
     <packaging>pom</packaging>

@@ -23,13 +23,13 @@
     <parent>
         <artifactId>5-managing-api-lifecycle</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_5][SUBSCENARIO_1] - An API should have a lifecycle with a set of defined lifecycle states so that API developer can set one state at a given time</name>
     <artifactId>5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time</artifactId>
     <packaging>pom</packaging>

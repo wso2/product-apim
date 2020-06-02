@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.3-business-insights-for-an-api-develeoper-based-on-api-usage</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_3][USECASE_2] - View Most Frequently Accessed API Resources</name>
     <artifactId>8.3.2-view-most-frequently-accessed-api-resources</artifactId>
     <packaging>pom</packaging>

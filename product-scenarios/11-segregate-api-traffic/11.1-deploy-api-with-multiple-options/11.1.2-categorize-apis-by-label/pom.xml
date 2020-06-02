@@ -5,7 +5,7 @@
     <parent>
         <artifactId>11.1-deploy-api-with-multiple-options</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>[APIM][SCENARIO_11][SUBSCENARIO_1][USECASE_2] - Categorize APIs by label</name>

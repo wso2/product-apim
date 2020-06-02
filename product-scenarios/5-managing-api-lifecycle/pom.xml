@@ -23,13 +23,13 @@
     <parent>
         <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_5] - Managing API Lifecycle</name>
     <artifactId>5-managing-api-lifecycle</artifactId>
     <packaging>pom</packaging>

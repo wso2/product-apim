@@ -23,13 +23,13 @@
     <parent>
         <artifactId>2-collaborative-api-development</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_2][SUBSCENARIO_1] - manage publisher portal operations for users</name>
     <artifactId>2.1-manage-publisher-portal-operations-for-users</artifactId>
     <packaging>pom</packaging>

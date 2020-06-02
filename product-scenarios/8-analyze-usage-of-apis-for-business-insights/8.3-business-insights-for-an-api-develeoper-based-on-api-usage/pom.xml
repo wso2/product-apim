@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <artifactId>8.3-business-insights-for-an-api-develeoper-based-on-api-usage</artifactId>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_3] - Business Insights for an API Developer based on API Usage</name>
     <packaging>pom</packaging>

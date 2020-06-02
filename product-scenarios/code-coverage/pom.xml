@@ -20,12 +20,12 @@
     <parent>
         <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>WSO2 API Manager - Code Coverage POM</name>
     <artifactId>code-coverage</artifactId>
     <packaging>pom</packaging>

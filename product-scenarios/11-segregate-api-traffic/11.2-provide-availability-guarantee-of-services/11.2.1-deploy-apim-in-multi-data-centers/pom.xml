@@ -5,7 +5,7 @@
     <parent>
         <artifactId>11.2-provide-availability-guarantee-of-services</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>[APIM][SCENARIO_11][SUBSCENARIO_2][USECASE_1] - Deploy API-M solution in multi data centers</name>

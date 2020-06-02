@@ -5,7 +5,7 @@
     <parent>
         <artifactId>6.1-rollout-api-updates-to-existing-api</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>scenarios-common</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>

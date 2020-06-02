@@ -23,13 +23,13 @@
     <parent>
         <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_3] - Securing an API with Different Security Protocols</name>
     <artifactId>3-securing-an-api-with-different-security-protocols</artifactId>
     <packaging>pom</packaging>

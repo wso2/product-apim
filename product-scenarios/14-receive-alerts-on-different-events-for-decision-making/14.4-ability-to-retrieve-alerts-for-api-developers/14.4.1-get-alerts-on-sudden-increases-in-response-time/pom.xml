@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.4-ability-to-retrieve-alerts-for-api-developers</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_4][USECASE_1] - Get Alerts on Sudden Increases in Response Time</name>
     <artifactId>14.4.1-get-alerts-on-sudden-increases-in-response-time</artifactId>
     <packaging>pom</packaging>

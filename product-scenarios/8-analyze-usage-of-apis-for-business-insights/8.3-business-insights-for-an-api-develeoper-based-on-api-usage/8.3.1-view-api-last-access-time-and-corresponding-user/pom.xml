@@ -23,13 +23,13 @@
     <parent>
         <artifactId>8.3-business-insights-for-an-api-develeoper-based-on-api-usage</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_8][SUBSCENARIO_3][USECASE_1] - View API Last Access Time and Corresponding User</name>
     <artifactId>8.3.1-view-api-last-access-time-and-corresponding-user</artifactId>
     <packaging>pom</packaging>

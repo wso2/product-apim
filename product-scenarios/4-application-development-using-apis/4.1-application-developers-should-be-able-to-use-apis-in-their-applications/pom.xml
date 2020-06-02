@@ -23,13 +23,13 @@
     <parent>
         <artifactId>4-application-development-using-apis</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_4][SUBSCENARIO_1] - Application developers should be able to use APIs in their applications</name>
     <artifactId>4.1-application-developers-should-be-able-to-use-apis-in-their-applications</artifactId>
     <packaging>pom</packaging>

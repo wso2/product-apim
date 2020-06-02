@@ -23,12 +23,12 @@
     <parent>
         <artifactId>3-securing-an-api-with-different-security-protocols</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_3][SUBSCENARIO_2] - API developers want to secure their API using an user access control machanism</name>
     <artifactId>3.2-api-developers-want-to-secure-their-api-using-an-user-access-control-machanism</artifactId>
     <packaging>pom</packaging>

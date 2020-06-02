@@ -23,7 +23,7 @@
     <parent>
         <artifactId>3.1-api-developers-want-to-secure-their-api-using-an-authentication-machanism</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

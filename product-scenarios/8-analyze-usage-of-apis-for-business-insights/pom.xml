@@ -23,13 +23,13 @@
     <parent>
         <artifactId>product-scenarios</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_8] - Analyzing Usage of APIs for Business Insights</name>
     <artifactId>8-analyze-usage-of-apis-for-business-insights</artifactId>
     <packaging>pom</packaging>

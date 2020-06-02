@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.5-ability-to-retrieve-alerts-for-app-developers</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_5][USECASE_4] - Get Alerts if Requests get Throttled out Frequently due to Reaching Subscribed Tier Limit</name>
     <artifactId>14.5.4-get-alerts-if-requests-get-throttled-out-frequently-due-to-reaching-subscribed-tier-limit</artifactId>
     <packaging>pom</packaging>

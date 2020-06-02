@@ -23,13 +23,13 @@
     <parent>
         <artifactId>5-managing-api-lifecycle</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_5][SUBSCENARIO_2] - Ability to have custom API states to cater different use cases</name>
     <artifactId>5.2-ability-to-have-custom-api-states-to-cater-different-use-cases</artifactId>
     <packaging>pom</packaging>

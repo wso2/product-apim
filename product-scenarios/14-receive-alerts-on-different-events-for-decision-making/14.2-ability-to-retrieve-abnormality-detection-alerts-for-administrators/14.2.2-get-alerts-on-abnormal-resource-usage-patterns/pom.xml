@@ -23,13 +23,13 @@
     <parent>
         <artifactId>14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <name>[APIM][SCENARIO_14][SUBSCENARIO_2][USECASE_2] - Get Alerts on Abnormal Resource Usage Patterns</name>
     <artifactId>14.2.2-get-alerts-on-abnormal-resource-usage-patterns</artifactId>
     <packaging>pom</packaging>
