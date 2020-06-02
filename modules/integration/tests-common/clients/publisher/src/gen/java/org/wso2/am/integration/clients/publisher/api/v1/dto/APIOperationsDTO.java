@@ -52,6 +52,12 @@ public class APIOperationsDTO {
   @SerializedName("usedProductIds")
   private List<String> usedProductIds = null;
 
+  @SerializedName("amznResourceName")
+  private String amznResourceName = null;
+
+  @SerializedName("amznResourceTimeout")
+  private Integer amznResourceTimeout = null;
+
   public APIOperationsDTO id(String id) {
     this.id = id;
     return this;
@@ -194,6 +200,42 @@ public class APIOperationsDTO {
     this.usedProductIds = usedProductIds;
   }
 
+  public APIOperationsDTO amznResourceName(String amznResourceName) {
+    this.amznResourceName = amznResourceName;
+    return this;
+  }
+
+   /**
+   * Get amznResourceName
+   * @return amznResourceName
+  **/
+  @ApiModelProperty(value = "")
+  public String getAmznResourceName() {
+    return amznResourceName;
+  }
+
+  public void setAmznResourceName(String amznResourceName) {
+    this.amznResourceName = amznResourceName;
+  }
+
+  public APIOperationsDTO amznResourceTimeout(Integer amznResourceTimeout) {
+    this.amznResourceTimeout = amznResourceTimeout;
+    return this;
+  }
+
+   /**
+   * Get amznResourceTimeout
+   * @return amznResourceTimeout
+  **/
+  @ApiModelProperty(value = "")
+  public Integer getAmznResourceTimeout() {
+    return amznResourceTimeout;
+  }
+
+  public void setAmznResourceTimeout(Integer amznResourceTimeout) {
+    this.amznResourceTimeout = amznResourceTimeout;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -210,12 +252,14 @@ public class APIOperationsDTO {
         Objects.equals(this.authType, apIOperations.authType) &&
         Objects.equals(this.throttlingPolicy, apIOperations.throttlingPolicy) &&
         Objects.equals(this.scopes, apIOperations.scopes) &&
-        Objects.equals(this.usedProductIds, apIOperations.usedProductIds);
+        Objects.equals(this.usedProductIds, apIOperations.usedProductIds) &&
+        Objects.equals(this.amznResourceName, apIOperations.amznResourceName) &&
+        Objects.equals(this.amznResourceTimeout, apIOperations.amznResourceTimeout);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds);
+    return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout);
   }
 
 
@@ -231,6 +275,8 @@ public class APIOperationsDTO {
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    usedProductIds: ").append(toIndentedString(usedProductIds)).append("\n");
+    sb.append("    amznResourceName: ").append(toIndentedString(amznResourceName)).append("\n");
+    sb.append("    amznResourceTimeout: ").append(toIndentedString(amznResourceTimeout)).append("\n");
     sb.append("}");
     return sb.toString();
   }

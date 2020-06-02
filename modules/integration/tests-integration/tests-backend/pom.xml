@@ -403,6 +403,19 @@ under the License.
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-thirdparty-km-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/src/test/resources/artifacts/AM/configFiles/idpjwt
+                            </outputDirectory>
+                            <includeTypes>jar</includeTypes>
+                            <includeArtifactIds>org.wso2.am.thirdparty.km</includeArtifactIds>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -569,6 +582,16 @@ under the License.
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.thirdparty.km</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wso2.carbon.apimgt</groupId>
+                    <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
@@ -703,6 +726,7 @@ under the License.
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>

@@ -32,8 +32,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePathListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLInfoDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -1502,7 +1504,7 @@ public class ApIsApi {
 
     /**
      * Import API Definition
-     * This operation can be used to create api from api definition.  API definition is GraphQL Schema 
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
@@ -1517,7 +1519,7 @@ public class ApIsApi {
 
     /**
      * Import API Definition
-     * This operation can be used to create api from api definition.  API definition is GraphQL Schema 
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
@@ -1533,7 +1535,7 @@ public class ApIsApi {
 
     /**
      * Import API Definition (asynchronously)
-     * This operation can be used to create api from api definition.  API definition is GraphQL Schema 
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
@@ -1693,6 +1695,387 @@ public class ApIsApi {
 
         com.squareup.okhttp.Call call = apisPostValidateBeforeCall(body, openAPIVersion, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for generateMockScripts
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call generateMockScriptsCall(String apiId, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/generate-mock-scripts"
+            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null)
+        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call generateMockScriptsValidateBeforeCall(String apiId, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling generateMockScripts(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = generateMockScriptsCall(apiId, ifNoneMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Generate mock response payloads
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public String generateMockScripts(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<String> resp = generateMockScriptsWithHttpInfo(apiId, ifNoneMatch);
+        return resp.getData();
+    }
+
+    /**
+     * Generate mock response payloads
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<String> generateMockScriptsWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, null, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Generate mock response payloads (asynchronously)
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call generateMockScriptsAsync(String apiId, String ifNoneMatch, final ApiCallback<String> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for getGeneratedMockScriptsOfAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call getGeneratedMockScriptsOfAPICall(String apiId, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/generated-mock-scripts"
+            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null)
+        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call getGeneratedMockScriptsOfAPIValidateBeforeCall(String apiId, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getGeneratedMockScriptsOfAPI(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = getGeneratedMockScriptsOfAPICall(apiId, ifNoneMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Generate mock response payloads
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return MockResponsePayloadListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public MockResponsePayloadListDTO getGeneratedMockScriptsOfAPI(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<MockResponsePayloadListDTO> resp = getGeneratedMockScriptsOfAPIWithHttpInfo(apiId, ifNoneMatch);
+        return resp.getData();
+    }
+
+    /**
+     * Generate mock response payloads
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;MockResponsePayloadListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<MockResponsePayloadListDTO> getGeneratedMockScriptsOfAPIWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = getGeneratedMockScriptsOfAPIValidateBeforeCall(apiId, ifNoneMatch, null, null);
+        Type localVarReturnType = new TypeToken<MockResponsePayloadListDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Generate mock response payloads (asynchronously)
+     * This operation can be used to generate mock responses from examples of swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call getGeneratedMockScriptsOfAPIAsync(String apiId, String ifNoneMatch, final ApiCallback<MockResponsePayloadListDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = getGeneratedMockScriptsOfAPIValidateBeforeCall(apiId, ifNoneMatch, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<MockResponsePayloadListDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for getWSDLInfoOfAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call getWSDLInfoOfAPICall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/wsdl-info"
+            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call getWSDLInfoOfAPIValidateBeforeCall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getWSDLInfoOfAPI(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = getWSDLInfoOfAPICall(apiId, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Get WSDL definition
+     * This operation can be used to retrieve the WSDL meta information of an API. It states whether the API is a SOAP API. If the API is a SOAP API, it states whether it has a single WSDL or a WSDL archive. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return WSDLInfoDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public WSDLInfoDTO getWSDLInfoOfAPI(String apiId) throws ApiException {
+        ApiResponse<WSDLInfoDTO> resp = getWSDLInfoOfAPIWithHttpInfo(apiId);
+        return resp.getData();
+    }
+
+    /**
+     * Get WSDL definition
+     * This operation can be used to retrieve the WSDL meta information of an API. It states whether the API is a SOAP API. If the API is a SOAP API, it states whether it has a single WSDL or a WSDL archive. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;WSDLInfoDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<WSDLInfoDTO> getWSDLInfoOfAPIWithHttpInfo(String apiId) throws ApiException {
+        com.squareup.okhttp.Call call = getWSDLInfoOfAPIValidateBeforeCall(apiId, null, null);
+        Type localVarReturnType = new TypeToken<WSDLInfoDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Get WSDL definition (asynchronously)
+     * This operation can be used to retrieve the WSDL meta information of an API. It states whether the API is a SOAP API. If the API is a SOAP API, it states whether it has a single WSDL or a WSDL archive. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call getWSDLInfoOfAPIAsync(String apiId, final ApiCallback<WSDLInfoDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = getWSDLInfoOfAPIValidateBeforeCall(apiId, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<WSDLInfoDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
@@ -2232,7 +2615,7 @@ public class ApIsApi {
     /**
      * Build call for updateWSDLOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param file WSDL file or archive to upload (required)
+     * @param file WSDL file or archive to upload (optional)
      * @param url WSDL Definition url (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param progressListener Progress listener
@@ -2296,11 +2679,6 @@ public class ApIsApi {
             throw new ApiException("Missing the required parameter 'apiId' when calling updateWSDLOfAPI(Async)");
         }
         
-        // verify the required parameter 'file' is set
-        if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling updateWSDLOfAPI(Async)");
-        }
-        
 
         com.squareup.okhttp.Call call = updateWSDLOfAPICall(apiId, file, url, ifMatch, progressListener, progressRequestListener);
         return call;
@@ -2311,7 +2689,7 @@ public class ApIsApi {
      * Update WSDL definition
      * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated can be passed as either \&quot;url\&quot; or \&quot;file\&quot;. Only one of \&quot;url\&quot; or \&quot;file\&quot; can be used at the same time. \&quot;file\&quot; can be specified as a single WSDL file or as a zip file which has a WSDL and its dependencies (eg: XSDs) 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param file WSDL file or archive to upload (required)
+     * @param file WSDL file or archive to upload (optional)
      * @param url WSDL Definition url (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -2324,7 +2702,7 @@ public class ApIsApi {
      * Update WSDL definition
      * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated can be passed as either \&quot;url\&quot; or \&quot;file\&quot;. Only one of \&quot;url\&quot; or \&quot;file\&quot; can be used at the same time. \&quot;file\&quot; can be specified as a single WSDL file or as a zip file which has a WSDL and its dependencies (eg: XSDs) 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param file WSDL file or archive to upload (required)
+     * @param file WSDL file or archive to upload (optional)
      * @param url WSDL Definition url (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return ApiResponse&lt;Void&gt;
@@ -2339,7 +2717,7 @@ public class ApIsApi {
      * Update WSDL definition (asynchronously)
      * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated can be passed as either \&quot;url\&quot; or \&quot;file\&quot;. Only one of \&quot;url\&quot; or \&quot;file\&quot; can be used at the same time. \&quot;file\&quot; can be specified as a single WSDL file or as a zip file which has a WSDL and its dependencies (eg: XSDs) 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param file WSDL file or archive to upload (required)
+     * @param file WSDL file or archive to upload (optional)
      * @param url WSDL Definition url (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param callback The callback to be executed when the API call finishes

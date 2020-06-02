@@ -36,6 +36,7 @@ Name | Value
 INLINE | &quot;INLINE&quot;
 URL | &quot;URL&quot;
 FILE | &quot;FILE&quot;
+MARKDOWN | &quot;MARKDOWN&quot;
 
 
 <a name="VisibilityEnum"></a>

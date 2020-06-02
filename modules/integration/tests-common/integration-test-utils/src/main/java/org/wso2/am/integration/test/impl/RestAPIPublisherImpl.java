@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
@@ -57,6 +58,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
@@ -97,7 +99,6 @@ public class RestAPIPublisherImpl {
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
-
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -131,6 +132,7 @@ public class RestAPIPublisherImpl {
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1");
+        apiPublisherClient.setDebugging(true);
         apIsApi.setApiClient(apiPublisherClient);
 	    apiProductsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
@@ -244,6 +246,9 @@ public class RestAPIPublisherImpl {
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
         body.isDefaultVersion(Boolean.valueOf(apiRequest.getDefault_version_checked()));
+        if (apiRequest.getKeyManagers()!= null){
+            body.setKeyManagers(apiRequest.getKeyManagers());
+        }
         APIDTO apidto;
         try {
             ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, osVersion);
@@ -913,6 +918,9 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
+    public APIDTO getAPIByID(String apiId) throws ApiException {
+        return  apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+    }
 
     public APIDTO importOASDefinition(File file, String properties) throws ApiException {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
@@ -1103,4 +1111,5 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
 }

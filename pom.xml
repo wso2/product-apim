@@ -372,6 +372,11 @@
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.thirdparty.km</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.h2database.wso2</groupId>
                 <artifactId>h2-database-engine</artifactId>
                 <version>${orbit.version.h2.engine}</version>
@@ -1219,7 +1224,7 @@
         <carbon.analytics.common.version>5.2.24</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.6.249</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.250-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1326,7 +1331,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.7</carbon.automation.version>
+        <carbon.automation.version>4.4.6</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>

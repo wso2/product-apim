@@ -21,8 +21,10 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
+import org.wso2.am.integration.clients.admin.api.SettingsApi;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
 /**
@@ -33,6 +35,7 @@ public class RestAPIAdminImpl {
     public ApiClient apiAdminClient = new ApiClient();
     private KeyManagerCollectionApi keyManagerCollectionApi = new KeyManagerCollectionApi();
     private KeyManagerIndividualApi keyManagerIndividualApi = new KeyManagerIndividualApi();
+    private SettingsApi settingsApi = new SettingsApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -54,9 +57,11 @@ public class RestAPIAdminImpl {
                         tokenURL);
 
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiAdminClient.setBasePath(adminURl + "api/am/admin/v0.16");
+        apiAdminClient.setBasePath(adminURl + "api/am/admin/v1");
+        apiAdminClient.setDebugging(true);
         keyManagerCollectionApi.setApiClient(apiAdminClient);
         keyManagerIndividualApi.setApiClient(apiAdminClient);
+        settingsApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -85,4 +90,8 @@ public class RestAPIAdminImpl {
         keyManagerIndividualApi.keyManagersKeyManagerIdDelete(uuid);
     }
 
+    public SettingsDTO getSettings() throws ApiException {
+
+        return settingsApi.settingsGet();
+    }
 }

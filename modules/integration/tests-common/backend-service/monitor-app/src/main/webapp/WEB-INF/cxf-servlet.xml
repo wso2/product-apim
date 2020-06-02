@@ -27,10 +27,13 @@
         <jaxrs:serviceBeans>
             <ref bean="webAppStatusMonitor"/>
             <ref bean="apiInfoservice"/>
+            <ref bean="keyManagerInformationService"/>
         </jaxrs:serviceBeans>
     </jaxrs:server>
     <bean id="webAppStatusMonitor"
           class="org.wso2.am.apiMonitorService.WebAppInformationService"/>
     <bean id="apiInfoservice"
           class="org.wso2.am.apiMonitorService.ApiInformationService"/>
+    <bean id="keyManagerInformationService"
+          class="org.wso2.am.apiMonitorService.KeyManagerInformationService"/>
 </beans>
