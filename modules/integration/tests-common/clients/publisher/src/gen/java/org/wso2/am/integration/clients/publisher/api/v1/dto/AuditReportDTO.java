@@ -38,6 +38,9 @@ public class AuditReportDTO {
   @SerializedName("numErrors")
   private Integer numErrors = null;
 
+  @SerializedName("externalApiId")
+  private String externalApiId = null;
+
   public AuditReportDTO report(String report) {
     this.report = report;
     return this;
@@ -92,6 +95,24 @@ public class AuditReportDTO {
     this.numErrors = numErrors;
   }
 
+  public AuditReportDTO externalApiId(String externalApiId) {
+    this.externalApiId = externalApiId;
+    return this;
+  }
+
+   /**
+   * The External API ID 
+   * @return externalApiId
+  **/
+  @ApiModelProperty(example = "fd21f9f7-3674-49cf-8a83-dca401f635de", value = "The External API ID ")
+  public String getExternalApiId() {
+    return externalApiId;
+  }
+
+  public void setExternalApiId(String externalApiId) {
+    this.externalApiId = externalApiId;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -104,12 +125,13 @@ public class AuditReportDTO {
     AuditReportDTO auditReport = (AuditReportDTO) o;
     return Objects.equals(this.report, auditReport.report) &&
         Objects.equals(this.grade, auditReport.grade) &&
-        Objects.equals(this.numErrors, auditReport.numErrors);
+        Objects.equals(this.numErrors, auditReport.numErrors) &&
+        Objects.equals(this.externalApiId, auditReport.externalApiId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(report, grade, numErrors);
+    return Objects.hash(report, grade, numErrors, externalApiId);
   }
 
 
@@ -121,6 +143,7 @@ public class AuditReportDTO {
     sb.append("    report: ").append(toIndentedString(report)).append("\n");
     sb.append("    grade: ").append(toIndentedString(grade)).append("\n");
     sb.append("    numErrors: ").append(toIndentedString(numErrors)).append("\n");
+    sb.append("    externalApiId: ").append(toIndentedString(externalApiId)).append("\n");
     sb.append("}");
     return sb.toString();
   }

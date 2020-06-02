@@ -71,7 +71,7 @@ securityDefinitions:
   OAuth2Security:
     type: oauth2
     flow: password
-    tokenUrl: https://localhost:9443/token
+    tokenUrl: https://localhost:9443/oauth2/token
     scopes:
       openid: Authorize access to user details
       apim:api_view: View API
@@ -95,11 +95,12 @@ securityDefinitions:
       apim:ep_certificates_add: Add backend endpoint certificates
       apim:ep_certificates_update: Update and delete backend endpoint certificates
       apim:publisher_settings: Retrieve store settings
-      apim:pub_alert_manage: Get/ subscribe/ configure publisher alerts.
+      apim:pub_alert_manage: Get/ subscribe/ configure publisher alerts
+      apim:shared_scope_manage: Manage shared scopes
 
 security:
   - OAuth2Security:
-    - apim:api_view
+      - apim:api_view
 
 ######################################################
 # The "API Collection" resource APIs
@@ -107,9 +108,9 @@ security:
 paths:
   /apis:
 
-#-----------------------------------------------------
-# Retrieving the list of all APIs qualifying under a given search condition
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieving the list of all APIs qualifying under a given search condition
+    #-----------------------------------------------------
     get:
       summary: |
         Retrieve/Search APIs
@@ -182,16 +183,16 @@ paths:
             The requested media type is not supported
           schema:
             $ref: '#/definitions/Error'
-#-----------------------------------------------------
-# Create a new API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Create a new API
+    #-----------------------------------------------------
     post:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X POST -d @data.json https://127.0.0.1:9443/api/am/publisher/v1/apis"
       x-wso2-request: "POST https://127.0.0.1:9443/api/am/publisher/v1/apis\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\n\n{\r\n   \"name\": \"PizzaShackAPI\",\r\n   \"description\": \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\r\\n\",\r\n   \"context\": \"/pizzashack\",\r\n   \"version\": \"1.0.0\",\r\n   \"provider\": \"admin\",\r\n   \"wsdlUri\": null,\r\n   \"lifeCycleStatus\": \"PUBLISHED\",\r\n   \"responseCachingEnabled\": false,\r\n   \"cacheTimeout\": 300,\r\n   \"destinationStatsEnabled\": false,\r\n   \"isDefaultVersion\": false,\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n   \"tags\": [\"pizza\"],\r\n   \"policies\": [\"Unlimited\"],\r\n   \"maxTps\":    {\r\n      \"sandbox\": 5000,\r\n      \"production\": 1000\r\n   },\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n   \"visibleTenants\": [],\r\n   \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"sandbox_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n   \"endpointSecurity\":    {\r\n      \"username\": \"user\",\r\n      \"type\": \"basic\",\r\n      \"password\": \"pass\"\r\n   },\r\n   \"gatewayEnvironments\": \"Production and Sandbox\",\r\n   \"sequences\": [],\r\n   \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n   \"businessInformation\":    {\r\n      \"businessOwnerEmail\": \"marketing@pizzashack.com\",\r\n      \"technicalOwnerEmail\": \"architecture@pizzashack.com\",\r\n      \"technicalOwner\": \"John Doe\",\r\n      \"businessOwner\": \"Jane Roe\"\r\n   },\r\n   \"corsConfiguration\":    {\r\n      \"accessControlAllowOrigins\": [\"*\"],\r\n      \"accessControlAllowHeaders\":       [\r\n         \"authorization\",\r\n         \"Access-Control-Allow-Origin\",\r\n         \"Content-Type\",\r\n         \"SOAPAction\"\r\n      ],\r\n      \"accessControlAllowMethods\":       [\r\n         \"GET\",\r\n         \"PUT\",\r\n         \"POST\",\r\n         \"DELETE\",\r\n         \"PATCH\",\r\n         \"OPTIONS\"\r\n      ],\r\n      \"accessControlAllowCredentials\": false,\r\n      \"corsConfigurationEnabled\": false\r\n   }\r\n}"
       x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://127.0.0.1:9443/api/am/publisher/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f\nContent-Type: application/json\n\n{\r\n   \"id\": \"7a2298c4-c905-403f-8fac-38c73301631f\",\r\n   \"name\": \"PizzaShackAPI\",\r\n   \"description\": \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\r\\n\",\r\n   \"context\": \"/pizzashack\",\r\n   \"version\": \"1.0.0\",\r\n   \"provider\": \"admin\",\r\n   \"wsdlUri\": null,\r\n   \"lifeCycleStatus\": \"CREATED\",\r\n   \"responseCachingEnabled\": false,\r\n   \"cacheTimeout\": 300,\r\n   \"destinationStatsEnabled\": null,\r\n   \"isDefaultVersion\": false,\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n   \"tags\": [\"pizza\"],\r\n   \"policies\": [\"Unlimited\"],\r\n   \"maxTps\":    {\r\n      \"sandbox\": 5000,\r\n      \"production\": 1000\r\n   },\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n   \"visibleTenants\": [],\r\n   \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"sandbox_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n   \"endpointSecurity\":    {\r\n      \"username\": \"user\",\r\n      \"type\": \"basic\",\r\n      \"password\": \"pass\"\r\n   },\r\n   \"gatewayEnvironments\": \"Production and Sandbox\",\r\n   \"sequences\": [],\r\n   \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n   \"businessInformation\":    {\r\n      \"businessOwnerEmail\": \"marketing@pizzashack.com\",\r\n      \"technicalOwnerEmail\": \"architecture@pizzashack.com\",\r\n      \"technicalOwner\": \"John Doe\",\r\n      \"businessOwner\": \"Jane Roe\"\r\n   },\r\n   \"corsConfiguration\":    {\r\n      \"accessControlAllowOrigins\": [\"*\"],\r\n      \"accessControlAllowHeaders\":       [\r\n         \"authorization\",\r\n         \"Access-Control-Allow-Origin\",\r\n         \"Content-Type\",\r\n         \"SOAPAction\"\r\n      ],\r\n      \"accessControlAllowMethods\":       [\r\n         \"GET\",\r\n         \"PUT\",\r\n         \"POST\",\r\n         \"DELETE\",\r\n         \"PATCH\",\r\n         \"OPTIONS\"\r\n      ],\r\n      \"accessControlAllowCredentials\": false,\r\n      \"corsConfigurationEnabled\": false\r\n   }\r\n}"
       security:
         - OAuth2Security:
-          - apim:api_create
+            - apim:api_create
       summary: Create a new API
       description: |
         This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in `CREATED` state.
@@ -250,14 +251,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-######################################################
-# The "Individual API" resource APIs
-######################################################
+  ######################################################
+  # The "Individual API" resource APIs
+  ######################################################
   /apis/{apiId}:
 
-#-----------------------------------------------------
-# Retrieve the details of an API definition
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieve the details of an API definition
+    #-----------------------------------------------------
     get:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://127.0.0.1:9443/api/am/publisher/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f"
       x-wso2-request: |
@@ -316,17 +317,17 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Update the definition of an API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Update the definition of an API
+    #-----------------------------------------------------
     put:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X PUT -d @data.json https://127.0.0.1:9443/api/am/publisher/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f"
       x-wso2-request: "PUT https://127.0.0.1:9443/api/am/publisher/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\r\n   \"id\": \"7a2298c4-c905-403f-8fac-38c73301631f\",\r\n   \"name\": \"PizzaShackAPI\",\r\n   \"description\": \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\r\\n\",\r\n   \"context\": \"/pizzashack\",\r\n   \"version\": \"1.0.0\",\r\n   \"provider\": \"admin\",\r\n   \"endpointId\": \"{\\\"paths\\\":{\\\"/order\\\":{\\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-policy\\\":\\\"Unlimited\\\",\\\"description\\\":\\\"Create a new Order\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"$ref\\\":\\\"#/definitions/Order\\\"},\\\"description\\\":\\\"Order object that needs to be added\\\",\\\"name\\\":\\\"body\\\",\\\"required\\\":true,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"201\\\":{\\\"headers\\\":{\\\"Location\\\":{\\\"description\\\":\\\"The URL of the newly created resource.\\\",\\\"type\\\":\\\"string\\\"}},\\\"schema\\\":{\\\"$ref\\\":\\\"#/definitions/Order\\\"},\\\"description\\\":\\\"Created.\\\"}}}},\\\"/menu\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-policy\\\":\\\"Unlimited\\\",\\\"description\\\":\\\"Return a list of available menu items\\\",\\\"parameters\\\":[],\\\"responses\\\":{\\\"200\\\":{\\\"headers\\\":{},\\\"schema\\\":{\\\"title\\\":\\\"Menu\\\",\\\"properties\\\":{\\\"list\\\":{\\\"items\\\":{\\\"$ref\\\":\\\"#/definitions/MenuItem\\\"},\\\"type\\\":\\\"array\\\"}},\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"OK.\\\"}}}}},\\\"schemes\\\":[\\\"https\\\"],\\\"produces\\\":[\\\"application/json\\\"],\\\"swagger\\\":\\\"2.0\\\",\\\"definitions\\\":{\\\"MenuItem\\\":{\\\"title\\\":\\\"Pizza menu Item\\\",\\\"properties\\\":{\\\"price\\\":{\\\"type\\\":\\\"string\\\"},\\\"description\\\":{\\\"type\\\":\\\"string\\\"},\\\"name\\\":{\\\"type\\\":\\\"string\\\"},\\\"image\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"name\\\"]},\\\"Order\\\":{\\\"title\\\":\\\"Pizza Order\\\",\\\"properties\\\":{\\\"customerName\\\":{\\\"type\\\":\\\"string\\\"},\\\"delivered\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"address\\\":{\\\"type\\\":\\\"string\\\"},\\\"pizzaType\\\":{\\\"type\\\":\\\"string\\\"},\\\"creditCardNumber\\\":{\\\"type\\\":\\\"string\\\"},\\\"quantity\\\":{\\\"type\\\":\\\"number\\\"},\\\"orderId\\\":{\\\"type\\\":\\\"integer\\\"}},\\\"required\\\":[\\\"orderId\\\"]}},\\\"consumes\\\":[\\\"application/json\\\"],\\\"info\\\":{\\\"title\\\":\\\"PizzaShackAPI\\\",\\\"description\\\":\\\"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\\\n\\\",\\\"license\\\":{\\\"name\\\":\\\"Apache 2.0\\\",\\\"url\\\":\\\"http://www.apache.org/licenses/LICENSE-2.0.html\\\"},\\\"contact\\\":{\\\"email\\\":\\\"architecture@pizzashack.com\\\",\\\"name\\\":\\\"John Doe\\\",\\\"url\\\":\\\"http://www.pizzashack.com\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\",\r\n   \"wsdlUri\": null,\r\n   \"lifeCycleStatus\": \"CREATED\",\r\n   \"responseCachingEnabled\": false,\r\n   \"cacheTimeout\": 300,\r\n   \"destinationStatsEnabled\": null,\r\n   \"isDefaultVersion\": false,\r\n   \"transport\":    [\r\n      \"https\"\r\n   ],\r\n   \"tags\": [\"pizza\",\"chicken\"],\r\n   \"policies\": [\"Unlimited\"],\r\n   \"maxTps\":    {\r\n      \"sandbox\": 500,\r\n      \"production\": 100\r\n   },\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n   \"visibleTenants\": [],\r\n   \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"sandbox_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n   \"endpointSecurity\":    {\r\n      \"username\": \"user\",\r\n      \"type\": \"basic\",\r\n      \"password\": \"pass\"\r\n   },\r\n   \"gatewayEnvironments\": \"Production and Sandbox\",\r\n   \"sequences\": [],\r\n   \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n   \"businessInformation\":    {\r\n      \"businessOwnerEmail\": \"marketing@pizzashack.com\",\r\n      \"technicalOwnerEmail\": \"architecture@pizzashack.com\",\r\n      \"technicalOwner\": \"John Doe\",\r\n      \"businessOwner\": \"Jane Roe\"\r\n   },\r\n   \"corsConfiguration\":    {\r\n      \"accessControlAllowOrigins\": [\"*\"],\r\n      \"accessControlAllowHeaders\":       [\r\n         \"authorization\",\r\n         \"Access-Control-Allow-Origin\",\r\n         \"Content-Type\",\r\n         \"SOAPAction\"\r\n      ],\r\n      \"accessControlAllowMethods\":       [\r\n         \"GET\",\r\n         \"PUT\",\r\n         \"POST\",\r\n         \"DELETE\",\r\n         \"PATCH\",\r\n         \"OPTIONS\"\r\n      ],\r\n      \"accessControlAllowCredentials\": false,\r\n      \"corsConfigurationEnabled\": false\r\n   }\r\n}"
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\r\n   \"id\": \"7a2298c4-c905-403f-8fac-38c73301631f\",\r\n   \"name\": \"PizzaShackAPI\",\r\n   \"description\": \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\r\\n\",\r\n   \"context\": \"/pizzashack\",\r\n   \"version\": \"1.0.0\",\r\n   \"provider\": \"admin\",\r\n   \"endpointId\": \"{\\\"paths\\\":{\\\"/order\\\":{\\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-policy\\\":\\\"Unlimited\\\",\\\"description\\\":\\\"Create a new Order\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"$ref\\\":\\\"#/definitions/Order\\\"},\\\"description\\\":\\\"Order object that needs to be added\\\",\\\"name\\\":\\\"body\\\",\\\"required\\\":true,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"201\\\":{\\\"headers\\\":{\\\"Location\\\":{\\\"description\\\":\\\"The URL of the newly created resource.\\\",\\\"type\\\":\\\"string\\\"}},\\\"schema\\\":{\\\"$ref\\\":\\\"#/definitions/Order\\\"},\\\"description\\\":\\\"Created.\\\"}}}},\\\"/menu\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-policy\\\":\\\"Unlimited\\\",\\\"description\\\":\\\"Return a list of available menu items\\\",\\\"parameters\\\":[],\\\"responses\\\":{\\\"200\\\":{\\\"headers\\\":{},\\\"schema\\\":{\\\"title\\\":\\\"Menu\\\",\\\"properties\\\":{\\\"list\\\":{\\\"items\\\":{\\\"$ref\\\":\\\"#/definitions/MenuItem\\\"},\\\"type\\\":\\\"array\\\"}},\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"OK.\\\"}}}}},\\\"schemes\\\":[\\\"https\\\"],\\\"produces\\\":[\\\"application/json\\\"],\\\"swagger\\\":\\\"2.0\\\",\\\"definitions\\\":{\\\"MenuItem\\\":{\\\"title\\\":\\\"Pizza menu Item\\\",\\\"properties\\\":{\\\"price\\\":{\\\"type\\\":\\\"string\\\"},\\\"description\\\":{\\\"type\\\":\\\"string\\\"},\\\"name\\\":{\\\"type\\\":\\\"string\\\"},\\\"image\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"name\\\"]},\\\"Order\\\":{\\\"title\\\":\\\"Pizza Order\\\",\\\"properties\\\":{\\\"customerName\\\":{\\\"type\\\":\\\"string\\\"},\\\"delivered\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"address\\\":{\\\"type\\\":\\\"string\\\"},\\\"pizzaType\\\":{\\\"type\\\":\\\"string\\\"},\\\"creditCardNumber\\\":{\\\"type\\\":\\\"string\\\"},\\\"quantity\\\":{\\\"type\\\":\\\"number\\\"},\\\"orderId\\\":{\\\"type\\\":\\\"integer\\\"}},\\\"required\\\":[\\\"orderId\\\"]}},\\\"consumes\\\":[\\\"application/json\\\"],\\\"info\\\":{\\\"title\\\":\\\"PizzaShackAPI\\\",\\\"description\\\":\\\"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\\\n\\\",\\\"license\\\":{\\\"name\\\":\\\"Apache 2.0\\\",\\\"url\\\":\\\"http://www.apache.org/licenses/LICENSE-2.0.html\\\"},\\\"contact\\\":{\\\"email\\\":\\\"architecture@pizzashack.com\\\",\\\"name\\\":\\\"John Doe\\\",\\\"url\\\":\\\"http://www.pizzashack.com\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\",\r\n   \"wsdlUri\": null,\r\n   \"lifeCycleStatus\": \"CREATED\",\r\n   \"responseCachingEnabled\": false,\r\n   \"cacheTimeout\": 300,\r\n   \"destinationStatsEnabled\": null,\r\n   \"isDefaultVersion\": false,\r\n   \"transport\": [\"https\"],\r\n   \"tags\":    [\r\n      \"chicken\",\r\n      \"pizza\"\r\n   ],\r\n   \"policies\": [\"Unlimited\"],\r\n   \"maxTps\":    {\r\n      \"sandbox\": 500,\r\n      \"production\": 100\r\n   },\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n   \"visibleTenants\": [],\r\n   \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"sandbox_endpoints\\\":{\\\"url\\\":\\\"https://localhost:9443/am/sample/pizzashack/v1/api/\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n   \"endpointSecurity\":    {\r\n      \"username\": \"user\",\r\n      \"type\": \"basic\",\r\n      \"password\": \"pass\"\r\n   },\r\n   \"gatewayEnvironments\": \"Production and Sandbox\",\r\n   \"sequences\": [],\r\n   \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n   \"businessInformation\":    {\r\n      \"businessOwnerEmail\": \"marketing@pizzashack.com\",\r\n      \"technicalOwnerEmail\": \"architecture@pizzashack.com\",\r\n      \"technicalOwner\": \"John Doe\",\r\n      \"businessOwner\": \"Jane Roe\"\r\n   },\r\n   \"corsConfiguration\":    {\r\n      \"accessControlAllowOrigins\": [\"*\"],\r\n      \"accessControlAllowHeaders\":       [\r\n         \"authorization\",\r\n         \"Access-Control-Allow-Origin\",\r\n         \"Content-Type\",\r\n         \"SOAPAction\"\r\n      ],\r\n      \"accessControlAllowMethods\":       [\r\n         \"GET\",\r\n         \"PUT\",\r\n         \"POST\",\r\n         \"DELETE\",\r\n         \"PATCH\",\r\n         \"OPTIONS\"\r\n      ],\r\n      \"accessControlAllowCredentials\": false,\r\n      \"corsConfigurationEnabled\": false\r\n   }\r\n}"
       security:
         - OAuth2Security:
-          - apim:api_create
-          - apim:api_publish
+            - apim:api_create
+            - apim:api_publish
       summary: Update an API
       description: |
         This operation can be used to update an existing API.
@@ -399,9 +400,9 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Delete the definition of an API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Delete the definition of an API
+    #-----------------------------------------------------
     delete:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X DELETE https://127.0.0.1:9443/api/am/publisher/v1/apis/6fb74674-4ab8-4b52-9886-f9a376985060"
       x-wso2-request: |
@@ -410,7 +411,7 @@ paths:
       x-wso2-response: "HTTP/1.1 200 OK"
       security:
         - OAuth2Security:
-          - apim:api_delete
+            - apim:api_delete
       summary: Delete an API
       description: |
         This operation can be used to delete an existing API proving the Id of the API.
@@ -449,14 +450,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-################################################################
-# The swagger resource of "Individual API" resource APIs
-################################################################
+  ################################################################
+  # The swagger resource of "Individual API" resource APIs
+  ################################################################
 
   /apis/{apiId}/swagger:
-#-----------------------------------------------------
-# Retrieve the API swagger definition
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieve the API swagger definition
+    #-----------------------------------------------------
     get:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/swagger"
       x-wso2-request: |
@@ -477,8 +478,8 @@ paths:
       responses:
         200:
           schema:
-             type: string
-             example: ""
+            type: string
+            example: ""
           description: |
             OK.
             Requested swagger document of the API is returned
@@ -513,24 +514,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-#-----------------------------------------------------
-# Update the API swagger definition
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Update the API swagger definition
+    #-----------------------------------------------------
     put:
       consumes:
         - multipart/form-data
       x-wso2-curl: "curl -k -H \"Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013\" -F endpointId=\"{\\\"paths\\\":{\\\"\\/*\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application\\\",\\\"x-throttling-policy\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{\\\"description\\\":\\\"OK\\\"}}}}},\\\"swagger\\\":\\\"2.0\\\",\\\"info\\\":{\\\"title\\\":\\\"PhoneVerification\\\",\\\"description\\\":\\\"Verify a phone number\\\",\\\"contact\\\":{\\\"email\\\":\\\"xx@ee.com\\\",\\\"name\\\":\\\"xx\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\" -X PUT \"https://127.0.0.1:9443/api/am/publisher/v1/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/swagger\""
       x-wso2-request: |
+
         PUT https://127.0.0.1:9443/api/am/publisher/v1/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/swagger
         Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013
         Content-Length: 477
         Content-Type: multipart/form-data; boundary=------------------------4f51e636c0003d99
 
-        --------------------------4f51e636c0003d99
-        Content-Disposition: form-data; name="apiDefinition"
 
-        {"paths":{"\/*":{"get":{"x-auth-type":"Application","x-throttling-policy":"Unlimited","responses":{"200":{"description":"OK"}}}}},"swagger":"2.0","info":{"title":"PhoneVerification","description":"Verify a phone number","contact":{"email":"xx@ee.com","name":"xx"},"version":"1.0.0"}}
-        --------------------------4f51e636c0003d99--
+         --------------------------4f51e636c0003d99
+         Content-Disposition: form-data; name="apiDefinition"
+
+         {"paths":{"\/*":{"get":{"x-auth-type":"Application","x-throttling-policy":"Unlimited","responses":{"200":{"description":"OK"}}}}},"swagger":"2.0","info":{"title":"PhoneVerification","description":"Verify a phone number","contact":{"email":"xx@ee.com","name":"xx"},"version":"1.0.0"}}
+         --------------------------4f51e636c0003d99--
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"paths\": {\"/*\": {\"get\":    {\n      \"x-auth-type\": \"Application\",\n      \"x-throttling-policy\": \"Unlimited\",\n      \"responses\": {\"200\": {\"description\": \"OK\"}}\n   }}},\n   \"swagger\": \"2.0\",\n   \"info\":    {\n      \"title\": \"PhoneVerification\",\n      \"description\": \"Verify a phone number\",\n      \"contact\":       {\n         \"email\": \"xx@ee.com\",\n         \"name\": \"xx\"\n      },\n      \"version\": \"1.0.0\"\n   }\n}"
       security:
         - OAuth2Security:
@@ -604,6 +607,125 @@ paths:
           description: |
             Precondition Failed.
             The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ################################################################
+  # Generates Mock/Sample Payloads from Examples in API Definition
+  ################################################################
+
+  /apis/{apiId}/generate-mock-scripts:
+    #-----------------------------------------------------
+    # Generate Mock responses from Swagger/OAS Definition
+    #-----------------------------------------------------
+    post:
+      operationId: generateMockScripts
+      summary: Generate mock response payloads
+      description: |
+        This operation can be used to generate mock responses from examples of swagger definition of an API.
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/If-None-Match'
+      tags:
+        - APIs
+      responses:
+        200:
+          schema:
+            type: string
+            example: ""
+          description: |
+            OK.
+            Requested swagger document of the API is returned with example responses
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported
+          schema:
+            $ref: '#/definitions/Error'
+
+  ################################################################
+  # Generated Mock/Sample Payloads from Examples in API Definition
+  ################################################################
+
+  /apis/{apiId}/generated-mock-scripts:
+    #-----------------------------------------------------
+    # resets Mock responses from Swagger/OAS Definition
+    #-----------------------------------------------------
+    get:
+      operationId: getGeneratedMockScriptsOfAPI
+      summary: Generate mock response payloads
+      description: |
+        This operation can be used to generate mock responses from examples of swagger definition of an API.
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/If-None-Match'
+      tags:
+        - APIs
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/MockResponsePayloadList'
+          description: |
+            OK.
+            Requested swagger document of the API is returned with example responses
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported
           schema:
             $ref: '#/definitions/Error'
 
@@ -909,8 +1031,8 @@ paths:
         - multipart/form-data
       security:
         - OAuth2Security:
-          - apim:api_create
-          - apim:api_publish
+            - apim:api_create
+            - apim:api_publish
       x-wso2-curl: "curl -X POST -H \"Authorization: Bearer d34baf74-3f02-3929-814e-88b27f750ba9\" https://127.0.0.1:9443/api/am/publisher/v1/apis/29c9ec3d-f590-467e-83e6-96d43517080f/thumbnail -F file=@image.jpg"
       x-wso2-request: |
         POST https://127.0.0.1:9443/api/am/publisher/v1/apis/8848faaa-7fd1-478a-baa2-48a4ebb92c98/thumbnail
@@ -986,14 +1108,14 @@ paths:
             $ref: '#/definitions/Error'
 
 
-######################################################
-# The "API Throttling Policy" resource APIs
-######################################################
+  ######################################################
+  # The "API Throttling Policy" resource APIs
+  ######################################################
   '/apis/{apiId}/subscription-policies':
 
-#-----------------------------------------------------
-# Retrieve subscription throttling policies of an API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieve subscription throttling policies of an API
+    #-----------------------------------------------------
     get:
       security:
         - OAuth2Security:
@@ -1051,14 +1173,14 @@ paths:
             $ref: '#/definitions/Error'
 
 
-######################################################
-# The "Copy API" Processing Function resource API
-######################################################
+  ######################################################
+  # The "Copy API" Processing Function resource API
+  ######################################################
   /apis/copy-api:
 
-#-----------------------------------------------------
-# Create a new API based on an already existing one
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Create a new API based on an already existing one
+    #-----------------------------------------------------
     post:
       security:
         - OAuth2Security:
@@ -1087,13 +1209,13 @@ paths:
           description: |
             Created.
             Successful response with the newly created API as entity in the body. Location header contains URL of newly created API.
+          schema:
+            $ref: '#/definitions/API'
           headers:
             Location:
               description: |
                 The URL of the newly created API.
               type: string
-          schema:
-            $ref: '#/definitions/API'
         400:
           description: |
             Bad Request.
@@ -1107,18 +1229,18 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-######################################################
-# The "Change Lifecycle" Processing Function resource API
-######################################################
+  ######################################################
+  # The "Change Lifecycle" Processing Function resource API
+  ######################################################
   /apis/change-lifecycle:
 
-#-----------------------------------------------------
-# Change the lifecycle of an API
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Change the lifecycle of an API
+    #-----------------------------------------------------
     post:
       security:
         - OAuth2Security:
-          - apim:api_publish
+            - apim:api_publish
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://127.0.0.1:9443/api/am/publisher/v1/apis/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish\""
       x-wso2-request: |
         POST https://127.0.0.1:9443/api/am/publisher/v1/apis/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish
@@ -1216,9 +1338,9 @@ paths:
             The request has not been performed because one of the preconditions is not met.
           schema:
             $ref: '#/definitions/Error'
-######################################################
-#  The "API State Change History"  resource API
-######################################################
+  ######################################################
+  #  The "API State Change History"  resource API
+  ######################################################
   /apis/{apiId}/lifecycle-history:
 
     #--------------------------------------------
@@ -1227,7 +1349,7 @@ paths:
     get:
       security:
         - OAuth2Security:
-          - apim:api_publish
+            - apim:api_publish
       x-wso2-curl: "curl -k -H \"Authorization: Bearer f8828f52-175a-4cb2-b246-02b1e6054f97\" https://127.0.0.1:9443/api/am/publisher/v1/apis/0527a55e-8dcf-4ce5-bddf-c77e8418be8a/lifecycle-history"
       x-wso2-request: |
         GET https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-history
@@ -1271,14 +1393,14 @@ paths:
             Requested API does not exist.
           schema:
             $ref: '#/definitions/Error'
-######################################################
-#  The "API Lifecycle State Data"  resource API
-######################################################
+  ######################################################
+  #  The "API Lifecycle State Data"  resource API
+  ######################################################
   /apis/{apiId}/lifecycle-state:
 
-#--------------------------------------------
-# Retrieve API LIfecycle state data
-#--------------------------------------------
+    #--------------------------------------------
+    # Retrieve API LIfecycle state data
+    #--------------------------------------------
     get:
       security:
         - OAuth2Security:
@@ -1337,14 +1459,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-######################################################
-#  The "API Lifecycle State Data"  resource API
-######################################################
+  ######################################################
+  #  The "API Lifecycle State Data"  resource API
+  ######################################################
   /apis/{apiId}/lifecycle-state/pending-tasks:
 
-#--------------------------------------------
-# Delete API LIfecycle state change pending task
-#--------------------------------------------
+    #--------------------------------------------
+    # Delete API LIfecycle state change pending task
+    #--------------------------------------------
     delete:
       x-wso2-curl: "curl -k -H \"Authorization: Bearer f8828f52-175a-4cb2-b246-02b1e6054f97\" -X DELETE https://127.0.0.1:9443/api/am/publisher/v1/apis/0527a55e-8dcf-4ce5-bddf-c77e8418be8a/lifecycle/lifecycle-pending-task"
       x-wso2-request: |
@@ -1565,7 +1687,7 @@ paths:
             - apim:api_create
       summary: Import API Definition
       description: |
-        This operation can be used to create api from api definition.
+        This operation can be used to create api from api definition.APIMgtDAOTest
 
         API definition is GraphQL Schema
       parameters:
@@ -1733,7 +1855,7 @@ paths:
 
   ######################################################
   # The "Validate API" utility API.
-  # This api is used to check the existance of
+  # This api is used to check the existence of
   # apiName and context/version.
   ######################################################
 
@@ -1903,7 +2025,9 @@ paths:
     # Retrieve the details about a certain GraphQL schema
     #-----------------------------------------------------
     get:
-      x-scope: apim:api_view
+      security:
+        - OAuth2Security:
+            - apim:api_view
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1/apis/7f82f6b0-2667-441e-af23-c0fc44cf3a17/graphql-schema\""
       x-wso2-request: |
         GET https://localhost:9443/api/am/publisher/v1/apis/7f82f6b0-2667-441e-af23-c0fc44cf3a17/graphql-schema
@@ -1961,7 +2085,9 @@ paths:
     # Add a GraphQL schema to the registry
     #-----------------------------------------------------
     put:
-      x-scope: apim:api_create
+      security:
+        - OAuth2Security:
+            - apim:api_create
       x-wso2-curl: "curl -k -H \"Authorization:Bearer 5311eca3-8ac8-354e-ab36-7e2fdd6a4013\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/publisher/v1/apis/af3f96da-9ccf-463f-8cee-13ec8530a9cd/graphql-schema\""
       x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1/apis/af3f96da-9ccf-463f-8cee-13ec8530a9cd/graphql-schema\r\nContent-Type: text/plain\r\nAuthorization: Bearer 7d237cab-7011-3f81-b384-24d03e750873\r\n\r\n{\r\n   \"name\": \"admin--HackerNewsAPI1.0.0.graphql\",\r\n   \"schemaDefinition\": \"schema {\r\n  \r\n  # The query root of HackerNews GraphQL interface.\r\n  query: Query\r\n\r\n  # The root query for implementing GraphQL mutations.\r\n  mutation: Mutation\r\n}\r\n\r\ntype Link {\r\n\r\n  # ID of the link\r\n  id: ID!\r\n\r\n  # URL of the link\r\n  url: String!\r\n\r\n  # Description of the link\r\n  description: String\r\n}\r\n\r\ninput LinkFilter {\r\n\r\n  # Value to be checked whether it contains in the description\r\n  description_contains: String\r\n\r\n  # Value to be checked whether it contains in the URL\r\n  url_contains: String\r\n}\r\n\r\ntype Query {\r\n\r\n  # Fetches all the links\r\n  #\r\n  # Arguments\r\n  # filter: To filter the links according a specific criteria\r\n  # skip: Skip to a specific index in the list (default value is 0)\r\n  # first: Index of the link first to display (default value is 0)\r\n  allLinks(filter: LinkFilter, skip: Int = 0, first: Int = 0): [Link]\r\n}\r\n\r\ntype Mutation {\r\n\r\n  # Creates a new link\r\n  #\r\n  # Arguments\r\n  # url: URL of the link\r\n  # description: Description about the link\r\n  createLink(url: String!, description: String!): Link\r\n}\r\n\"\r\n}"
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n{\r\n   \"name\": \"admin--HackerNewsAPI1.0.0.graphql\",\r\n   \"schemaDefinition\": \"schema {\r\n  \r\n  # The query root of HackerNews GraphQL interface.\r\n  query: Query\r\n\r\n  # The root query for implementing GraphQL mutations.\r\n  mutation: Mutation\r\n}\r\n\r\ntype Link {\r\n\r\n  # ID of the link\r\n  id: ID!\r\n\r\n  # URL of the link\r\n  url: String!\r\n\r\n  # Description of the link\r\n  description: String\r\n}\r\n\r\ninput LinkFilter {\r\n\r\n  # Value to be checked whether it contains in the description\r\n  description_contains: String\r\n\r\n  # Value to be checked whether it contains in the URL\r\n  url_contains: String\r\n}\r\n\r\ntype Query {\r\n\r\n  # Fetches all the links\r\n  #\r\n  # Arguments\r\n  # filter: To filter the links according a specific criteria\r\n  # skip: Skip to a specific index in the list (default value is 0)\r\n  # first: Index of the link first to display (default value is 0)\r\n  allLinks(filter: LinkFilter, skip: Int = 0, first: Int = 0): [Link]\r\n}\r\n\r\ntype Mutation {\r\n\r\n  # Creates a new link\r\n  #\r\n  # Arguments\r\n  # url: URL of the link\r\n  # description: Description about the link\r\n  createLink(url: String!, description: String!): Link\r\n}\r\n\"\r\n}"
@@ -2028,6 +2154,50 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+  ######################################################
+  # AWS Lambda
+  ######################################################
+  /apis/{apiId}/amznResourceNames:
+    #-----------------------------------------------------
+    # Retrieve the ARNs of AWS Lambda functions
+    #-----------------------------------------------------
+    get:
+      x-examples:
+        $ref: docs/examples/apis/apis_id_amznresourcenames_get.yaml
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://127.0.0.1:9443/api/am/publisher/v1.0/apis/64eca60b-2e55-4c38-8603-e9e6bad7d809/amznResourceNames"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/publisher/v1.0/apis/64eca60b-2e55-4c38-8603-e9e6bad7d809/arns
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"count\": \"2\",\n   \"list\": [\n      \"arn:aws:lambda:us-west-2:123456789012:function:my-function1\",\n      \"arn:aws:lambda:us-west-2:123456789012:function:my-function2\"\n   ]\n}"
+      summary: Retrieve the ARNs of AWS Lambda functions
+      description: |
+        This operation can be use to retrieve ARNs of AWS Lambda function for a given AWS credentials.
+      parameters:
+        - $ref: '#/parameters/apiId'
+      tags:
+        - AWS Lambda (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Requested ARN List of the API is returned
+          schema:
+            type: string
+            example: "{\n   \"count\": \"2\",\n   \"list\": [\n      \"arn:aws:lambda:us-west-2:123456789012:function:my-function1\",\n      \"arn:aws:lambda:us-west-2:123456789012:function:my-function2\"\n   ]\n}"
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        404:
+          description: |
+            Not Found.
+            Requested resource does not exist.
+          schema:
+            $ref: '#/definitions/Error'
 
   #########################################################
   # The "Configure Monetization" Processing Function resource API
@@ -2190,7 +2360,7 @@ paths:
       x-wso2-request: |
         GET https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"INLINE\",\n         \"sourceUrl\": null,\n         \"otherTypeName\": null,\n         \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n         \"summary\": \"This is a sample documentation for v1\",\n         \"name\": \"PhoneVerification API Documentation\",\n         \"type\": \"HOWTO\"\n      },\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"URL\",\n         \"sourceUrl\": \"http://wiki.cdyne.com/index.php/Phone_Verification\",\n         \"otherTypeName\": null,\n         \"documentId\": \"4145df31-04f1-440c-8d08-68952874622c\",\n         \"summary\": \"This is the URL for online documentation\",\n         \"name\": \"Online Documentation\",\n         \"type\": \"SAMPLES\"\n      }\n   ],\n   \"next\": \"\",\n   \"count\": 2\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"INLINE\",\n         \"sourceUrl\": null,\n         \"otherTypeName\": null,\n         \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n         \"summary\": \"This is a sample documentation for v1.0\",\n         \"name\": \"PhoneVerification API Documentation\",\n         \"type\": \"HOWTO\"\n      },\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"URL\",\n         \"sourceUrl\": \"http://wiki.cdyne.com/index.php/Phone_Verification\",\n         \"otherTypeName\": null,\n         \"documentId\": \"4145df31-04f1-440c-8d08-68952874622c\",\n         \"summary\": \"This is the URL for online documentation\",\n         \"name\": \"Online Documentation\",\n         \"type\": \"SAMPLES\"\n      }\n   ],\n   \"next\": \"\",\n   \"count\": 2\n}"
       summary: Get a list of documents of an API
       description: |
         This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API.
@@ -2243,6 +2413,7 @@ paths:
       x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058\",\n   \"summary\": \"This is a sample documentation\",\n   \"name\": \"Introduction to PhoneVerification API\",\n   \"type\": \"HOWTO\"\n}"
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:document_create
       summary: Add a new document to an API
       description: |
@@ -2362,10 +2533,11 @@ paths:
     #-----------------------------------------------------
     put:
       x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" -H \"Content-Type: application/json\" -X PUT -d data.json \"https://127.0.0.1:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
-      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
-      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:document_manage
       summary: Update a document of an API
       description: |
@@ -2434,6 +2606,7 @@ paths:
     delete:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:document_manage
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X DELETE https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/ffd5790d-b7a9-4cb6-b76a-f8b83ecdd058"
       x-wso2-request: |
@@ -2561,6 +2734,7 @@ paths:
         - multipart/form-data
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:document_create
       x-wso2-curl: "curl -k -H \"Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -F file=@\"sample.pdf\" -X POST \"https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/daf732d3-bda2-46da-b381-2c39d901ea61/content\""
       x-wso2-request: |
@@ -2655,6 +2829,7 @@ paths:
         $ref: docs/examples/apis/apis_id_document_validate.yaml
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:document_create
       summary: Check whether a document with the provided name exist.
       description: |
@@ -2711,6 +2886,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:mediation_policy_view
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_get.yaml
@@ -2764,6 +2940,7 @@ paths:
         - multipart/form-data
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:mediation_policy_create
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_post.yaml
@@ -2848,6 +3025,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:mediation_policy_view
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_get.yaml
       summary: Get an API specific mediation policy
@@ -2905,6 +3083,7 @@ paths:
     delete:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:mediation_policy_manage
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_delete.yaml
@@ -2953,6 +3132,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:mediation_policy_view
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_content_get.yaml
       summary: Download an API specific mediation policy
@@ -3003,6 +3183,7 @@ paths:
         - multipart/form-data
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:mediation_policy_manage
       x-examples:
         $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_content_put.yaml
@@ -3078,6 +3259,51 @@ paths:
           description: |
             Precondition Failed.
             The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ################################################################
+  # The WSDL meta info resource of "APIs" resource APIs
+  ################################################################
+
+  /apis/{apiId}/wsdl-info:
+    #-----------------------------------------------------
+    # Retrieve the API's WSDL
+    #-----------------------------------------------------
+    get:
+      produces:
+        - application/json
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      operationId: getWSDLInfoOfAPI
+      summary: Get WSDL definition
+      description: |
+        This operation can be used to retrieve the WSDL meta information of an API. It states whether the API is a SOAP
+        API. If the API is a SOAP API, it states whether it has a single WSDL or a WSDL archive.
+      x-examples:
+        $ref: docs/examples/apis/wsdl/apiId_wsdl_info_get.yaml
+      parameters:
+        - $ref: '#/parameters/apiId'
+      tags:
+        - APIs
+      responses:
+        200:
+          description: |
+            OK.
+            Requested WSDL meta information of the API is returned
+          schema:
+            $ref: '#/definitions/WSDLInfo'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist or the API is not a SOAP API.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported
           schema:
             $ref: '#/definitions/Error'
 
@@ -3165,7 +3391,7 @@ paths:
           name: file
           description: WSDL file or archive to upload
           type: file
-          required: true
+          required: false
         - in: formData
           name: url
           description: WSDL Definition url
@@ -3266,7 +3492,7 @@ paths:
               type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
+                Date and time the resource has been modified the last time.
                 Used by caches, or in conditional requests (Will be supported in future).
               type: string
         304:
@@ -3330,6 +3556,7 @@ paths:
   ######################################################
   # The "ExternalStore Collection" resource APIs
   ######################################################
+
   /apis/{apiId}/external-stores:
 
     #-------------------------------------------------------------
@@ -3431,6 +3658,94 @@ paths:
           description: |
             Not Found.
             Request API resource or external store Ids not found.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
+  # Export Resource API
+  ######################################################
+  '/apis/export':
+    #--------------------------------------------------------
+    # Get an API as a Zip File
+    #--------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_create
+      produces:
+        - application/zip
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/publisher/v1/export/api?name=PizzaShackAPI&version=1.0.0&providerName=admin > exportAPI.zip"
+      x-wso2-request: |
+        GET https://localhost:9443/api/am/publisher/v1/export/api?name=SampleAPI&version=1.0.0&providerName=admin
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-response: "HTTP/1.1 200 OK\n Connection: keep-alive\n  Content-Disposition: attachment; filename=\"exported-api.zip\"\n  Content-Type: application/zip"
+      summary: Export an API
+      description: |
+        This operation can be used to export the details of a particular API as a zip file.
+      parameters:
+        - in: query
+          name: apiId
+          required: false
+          type: string
+          description: UUID of the API
+        - name: name
+          in: query
+          description: |
+            API Name
+          required: false
+          type: string
+        - name: version
+          in: query
+          description: |
+            Version of the API
+          required: false
+          type: string
+        - name: providerName
+          in: query
+          description: |
+            Provider name of the API
+          required: false
+          type: string
+        - name: format
+          in: query
+          description: |
+            Format of output documents. Can be YAML or JSON.
+          type: string
+          enum:
+            - JSON
+            - YAML
+          required: false
+        - name: preserveStatus
+          in: query
+          description: |
+            Preserve API Status on export
+          required: false
+          type: boolean
+      tags:
+        - Import Export
+      responses:
+        200:
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+          schema:
+            type: file
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: |
+            Internal Server Error.
+            Error in exporting API.
           schema:
             $ref: '#/definitions/Error'
 
@@ -3541,6 +3856,35 @@ paths:
             Not Modified.
             Empty body because the client has already the latest version of the requested resource (Will be supported in future).
         '404':
+          description: |
+            Not Found.
+            Requested Subscription does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
+  # The get subscriber information
+  ######################################################
+  '/subscriptions/{subscriptionId}/subscriber-info':
+    get:
+      security:
+        - OAuth2Security:
+            - apim:subscription_view
+      summary: Get details of a user who subscribed an API
+      description: |
+        This operation can be used to get details of a user who subscribed to the API.
+      parameters:
+        - $ref: '#/parameters/subscriptionId'
+      tags:
+        - Subscriber
+      responses:
+        200:
+          description: |
+            OK.
+             Details of the subscriber are returned.
+          schema:
+            $ref: '#/definitions/SubscriberInfo'
+        404:
           description: |
             Not Found.
             Requested Subscription does not exist.
@@ -3813,6 +4157,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:mediation_policy_view
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/publisher/v1/mediation-policies"
       x-wso2-request: |
@@ -3874,6 +4219,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:mediation_policy_view
       summary: Downloadt specific global mediation policy
       operationId: getGlobalMediationPolicyContent
       description: |
@@ -3925,6 +4271,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:client_certificates_view
       produces:
         - application/json
@@ -3985,6 +4332,7 @@ paths:
     post:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:client_certificates_add
       consumes:
         - multipart/form-data
@@ -4072,7 +4420,8 @@ paths:
     put:
       security:
         - OAuth2Security:
-            - apim:client_certificates_view
+            - apim:api_create
+            - apim:client_certificates_update
       consumes:
         - multipart/form-data
       x-wso2-curl: "curl -X PUT \
@@ -4151,6 +4500,7 @@ paths:
     delete:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:client_certificates_update
       x-wso2-curl:
         "curl -X DELETE \
@@ -4211,6 +4561,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:client_certificates_view
       produces:
         - application/json
@@ -4278,6 +4629,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:client_certificates_view
       x-wso2-curl: "curl -X GET \
                       https://localhost:9443/api/am/publisher/v1/client-certificates/newtest1/content \
@@ -4341,6 +4693,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:ep_certificates_view
       produces:
         - application/json
@@ -4400,6 +4753,7 @@ paths:
     post:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:ep_certificates_add
       consumes:
         - multipart/form-data
@@ -4470,6 +4824,7 @@ paths:
     put:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:ep_certificates_update
       consumes:
         - multipart/form-data
@@ -4532,6 +4887,7 @@ paths:
     delete:
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:ep_certificates_update
       x-wso2-curl:
         "curl -X DELETE -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1/certificates/wso2carbon\""
@@ -4585,6 +4941,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:ep_certificates_view
       produces:
         - application/json
@@ -4637,6 +4994,7 @@ paths:
     get:
       security:
         - OAuth2Security:
+            - apim:api_view
             - apim:ep_certificates_view
       x-wso2-curl: "curl -X GET \"https://apis.wso2.com/api/am/publisher/v1/certificates/wso2carbon/content\" -H \"accept: application/json\""
       x-wso2-request: "GET https://apis.wso2.com/api/am/publisher/v1/certificates/wso2carbon/content Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -4753,7 +5111,7 @@ paths:
     get:
       security:
         - OAuth2Security:
-            - apim:api_publish
+            - apim:api_view
       summary: |
         Retrieve/Search API Products
       description: |
@@ -5268,7 +5626,7 @@ paths:
       x-wso2-request: |
         GET https://localhost:9443/api/am/publisher/v1/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"INLINE\",\n         \"sourceUrl\": null,\n         \"otherTypeName\": null,\n         \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n         \"summary\": \"This is a sample documentation for v1\",\n         \"name\": \"PhoneVerification API Documentation\",\n         \"type\": \"HOWTO\"\n      },\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"URL\",\n         \"sourceUrl\": \"http://wiki.cdyne.com/index.php/Phone_Verification\",\n         \"otherTypeName\": null,\n         \"documentId\": \"4145df31-04f1-440c-8d08-68952874622c\",\n         \"summary\": \"This is the URL for online documentation\",\n         \"name\": \"Online Documentation\",\n         \"type\": \"SAMPLES\"\n      }\n   ],\n   \"next\": \"\",\n   \"count\": 2\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"INLINE\",\n         \"sourceUrl\": null,\n         \"otherTypeName\": null,\n         \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n         \"summary\": \"This is a sample documentation for v1.0\",\n         \"name\": \"PhoneVerification API Documentation\",\n         \"type\": \"HOWTO\"\n      },\n            {\n         \"visibility\": \"API_LEVEL\",\n         \"sourceType\": \"URL\",\n         \"sourceUrl\": \"http://wiki.cdyne.com/index.php/Phone_Verification\",\n         \"otherTypeName\": null,\n         \"documentId\": \"4145df31-04f1-440c-8d08-68952874622c\",\n         \"summary\": \"This is the URL for online documentation\",\n         \"name\": \"Online Documentation\",\n         \"type\": \"SAMPLES\"\n      }\n   ],\n   \"next\": \"\",\n   \"count\": 2\n}"
       summary: Get a list of documents of an API Product
       description: |
         This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product.
@@ -5370,7 +5728,7 @@ paths:
             Unsupported media type.
             The entity of the request was in a not supported format.
 
-            ######################################################
+  ######################################################
   # The "Individual Document" resource APIs
   ######################################################
   /api-products/{apiProductId}/documents/{documentId}:
@@ -5442,10 +5800,11 @@ paths:
     put:
       security:
         - OAuth2Security:
+
             - apim:api_publish
       x-wso2-curl: "curl -k -H \"Authorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\" -H \"Content-Type: application/json\" -X PUT -d data.json \"https://localhost:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\""
-      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
-      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-request: "PUT https://localhost:9443/api/am/publisher/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\nAuthorization:Bearer b0982cd2aacd463ff5f63cd5ebe58f4a\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"visibility\": \"API_LEVEL\",\n   \"sourceType\": \"INLINE\",\n   \"sourceUrl\": null,\n   \"otherTypeName\": null,\n   \"documentId\": \"0bcb7f05-599d-4e1a-adce-5cb89bfe58d5\",\n   \"summary\": \"This is a sample documentation for v1.0\",\n   \"name\": \"PhoneVerification API Documentation\",\n   \"type\": \"HOWTO\"\n}"
       summary: Update a document of an API Product
       description: |
         This operation can be used to update metadata of an API's document.
@@ -6289,7 +6648,9 @@ paths:
     # Retrieve all labels
     #-----------------------------------------------------
     get:
-      x-scope: apim:api_view
+      security:
+        - OAuth2Security:
+            - apim:api_view
       x-wso2-request: |
         GET https://localhost:9443/api/am/publisher/v1/labels
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
@@ -6307,6 +6668,36 @@ paths:
             Labels returned
           schema:
             $ref: '#/definitions/LabelList'
+
+  ######################################################
+  # The "Category" resource API
+  ######################################################
+  /api-categories:
+
+    #-----------------------------------------------------
+    # Retrieve all categories
+    #-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      x-wso2-request: |
+        GET https://localhost:9443/api/am/publisher/v1.1/api-categories
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/publisher/v1.1/api-categories\""
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n      }\r\n   ]\r\n}"
+      summary: Get all API categories
+      description: |
+        Get all API categories
+      tags:
+        - API Category (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Categories returned
+          schema:
+            $ref: '#/definitions/APICategoryList'
 
   ######################################################
   # The "Scopes" resource APIs
@@ -6389,6 +6780,7 @@ paths:
           description: |
             Unsupported media type.
             The entity of the request was in a not supported format.
+
   ######################################################
   # The "Individual Shared Scope" resource APIs
   ######################################################
@@ -6981,14 +7373,10 @@ definitions:
         type: string
         example: CREATED
       wsdlInfo:
-        description: WSDL information of the API. This is only available if the API is a SOAP API.
-        properties:
-          type:
-            type: string
-            description: Indicates whether the WSDL is a single WSDL or an archive in ZIP format
-            enum:
-              - WSDL
-              - ZIP
+        $ref: '#/definitions/WSDLInfo'
+      wsdlUrl:
+        type: string
+        example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
       responseCachingEnabled:
         type: boolean
         example: true
@@ -7168,6 +7556,8 @@ definitions:
       lastUpdatedTime:
         type: string
         example: 2017-02-20T13:57:16.229
+        x-otherScopes:
+          - apim:api_publish
       endpointConfig:
         type: object
         description: |
@@ -7252,6 +7642,12 @@ definitions:
               }
             }
 
+          `Endpoint from Endpoint Registry`
+            {
+              "endpoint_type": "Registry",
+              "endpoint_id": "{registry-name:entry-name:version}",
+            }
+
         example:
           {
             "endpoint_type": "http",
@@ -7294,6 +7690,10 @@ definitions:
         items:
           type: string
           example: ["Finance"]
+      keyManagers:
+        description: |
+          API Key Managers
+        type: object
 
   #-----------------------------------------------------
   # The Audit Report resource
@@ -7315,6 +7715,11 @@ definitions:
         description: |
           The number of errors in the API Definition
         example: 20
+      externalApiId:
+        type: string
+        description: |
+          The External API ID
+        example: "fd21f9f7-3674-49cf-8a83-dca401f635de"
 
   #-----------------------------------------------------
   # The API Product List resource
@@ -7492,9 +7897,9 @@ definitions:
           type: string
         example: ["Unlimited"]
       apiThrottlingPolicy:
-         description: The API level throttling policy selected for the particular API Product
-         type: string
-         example: "Unlimited"
+        description: The API level throttling policy selected for the particular API Product
+        type: string
+        example: "Unlimited"
       authorizationHeader:
         type: string
         description: |
@@ -7515,6 +7920,7 @@ definitions:
           - ALL_TENANTS
           - SPECIFIC_TENANTS
         example: CURRENT_TENANT
+        default: ALL_TENANTS
       subscriptionAvailableTenants:
         type: array
         items:
@@ -7549,6 +7955,13 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/APIScope'
+      categories:
+        description: |
+          API categories
+        type: array
+        items:
+          type: string
+          example: ["Finance"]
   #-----------------------------------------------------
   # The API and its resources in a API Product resource
   #-----------------------------------------------------
@@ -7633,6 +8046,36 @@ definitions:
       technicalOwnerEmail:
         type: string
         example: technicalowner@wso2.com
+
+  #-----------------------------------------------------
+  # The Claim resource
+  #-----------------------------------------------------
+  Claim:
+    title: Claim
+    properties:
+      name:
+        type: string
+        example: email
+      URI:
+        type: string
+        example: http://wso2.org/claims/emailaddress
+      value:
+        type: string
+        example: admin@wso2.com
+
+  #-----------------------------------------------------
+  # The Subscriber resource
+  #-----------------------------------------------------
+  SubscriberInfo:
+    title: SubscriberInfo
+    properties:
+      name:
+        type: string
+        example: admin
+      claims:
+        type: array
+        items:
+          $ref: '#/definitions/Claim'
 
   #-----------------------------------------------------
   # The Application resource
@@ -8341,9 +8784,9 @@ definitions:
         items:
           $ref: '#/definitions/Endpoint'
 
-#-----------------------------------------------------
-# The Scope resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The Scope resource
+  #-----------------------------------------------------
   Scope :
     title: Scope
     required:
@@ -8376,10 +8819,15 @@ definitions:
         items:
           type: string
         example: ['admin','Internal/creator','Internal/publisher']
+      usageCount:
+        type: integer
+        description: |
+          usage count of Scope
+        example: 3
 
-#-----------------------------------------------------
-# The APIScope resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The APIScope resource
+  #-----------------------------------------------------
   APIScope :
     title: APIScope
     required:
@@ -8394,9 +8842,9 @@ definitions:
           adding/updating Shared Scopes.
         example: true
 
-#-----------------------------------------------------
-# The APIOperations resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The APIOperations resource
+  #-----------------------------------------------------
   APIOperations :
     title: Operation
     properties:
@@ -8421,11 +8869,15 @@ definitions:
         type: array
         items:
           type: string
+      amznResourceName:
+        type: string
+      amznResourceTimeout:
+        type: integer
 
 
-#-----------------------------------------------------
-# The Scope List resource
-#-----------------------------------------------------
+  #-----------------------------------------------------
+  # The Scope List resource
+  #-----------------------------------------------------
   ScopeList:
     title: Scope List
     properties:
@@ -8785,6 +9237,13 @@ definitions:
           openAPIVersion:
             type: string
             example: "3.0.0"
+          endpoints:
+            type: array
+            description: |
+              contains host/servers specified in the OpenAPI file/URL
+            items:
+              type: string
+              example: "https://localhost:9443/am/sample/pizzashack/v1/api/"
       errors:
         type: array
         description: |
@@ -9005,6 +9464,10 @@ definitions:
             type: string
             description: A string that represents the context of the user's request
             example: CalculatorAPI
+          version:
+            type: string
+            description: The version of the API Product
+            example: 1.0.0
           provider:
             description: |
               If the provider value is not given, the user invoking the API will be used as the provider.
@@ -9092,6 +9555,33 @@ definitions:
             type: string
           associatedType:
             type: string
+
+  #-----------------------------------------------------
+  # The Mock Response Payload List resource
+  #-----------------------------------------------------
+  MockResponsePayloadList:
+    title: Mock Response Payload list
+    properties:
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/MockResponsePayloadInfo'
+
+  #-----------------------------------------------------
+  # The Mock Response Payload info resource
+  #-----------------------------------------------------
+  MockResponsePayloadInfo:
+    title : Mock Response Payload info object
+    properties:
+      path:
+        type: string
+        description: path of the resource
+      content:
+        type: string
+        description: new modified code
+      verb:
+        type: string
+
   #-----------------------------------------------------
   # The Resource policy List resource
   #-----------------------------------------------------
@@ -9184,6 +9674,15 @@ definitions:
       baseUrl:
         type: string
 
+  WSDLInfo:
+    title: WSDL information of the API. This is only available if the API is a SOAP API.
+    properties:
+      type:
+        type: string
+        description: Indicates whether the WSDL is a single WSDL or an archive in ZIP format
+        enum:
+          - WSDL
+          - ZIP
 
   #-----------------------------------------------------
   # The pagination resource
@@ -9406,6 +9905,40 @@ definitions:
       apiVersion: '1.0.0'
       applicationName: 'DefaultApplication'
       requestConunt: '12'
+
+  #-----------------------------------------------------
+  # The Category resource
+  #-----------------------------------------------------
+  APICategory:
+    title: API Category
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        example: "01234567-0123-0123-0123-012345678901"
+      name:
+        type: string
+        example: "Finance"
+      description:
+        type: string
+        example: "Finance related APIs"
+
+  #-----------------------------------------------------
+  # The Category List resource
+  #-----------------------------------------------------
+  APICategoryList:
+    title: API Category List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of API categories returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/APICategory'
 
 #-----------------------------------------------------
 # END-OF-FILE

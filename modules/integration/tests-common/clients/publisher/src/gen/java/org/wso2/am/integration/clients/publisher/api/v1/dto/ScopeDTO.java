@@ -46,6 +46,9 @@ public class ScopeDTO {
   @SerializedName("bindings")
   private List<String> bindings = null;
 
+  @SerializedName("usageCount")
+  private Integer usageCount = null;
+
   public ScopeDTO id(String id) {
     this.id = id;
     return this;
@@ -144,6 +147,24 @@ public class ScopeDTO {
     this.bindings = bindings;
   }
 
+  public ScopeDTO usageCount(Integer usageCount) {
+    this.usageCount = usageCount;
+    return this;
+  }
+
+   /**
+   * usage count of Scope 
+   * @return usageCount
+  **/
+  @ApiModelProperty(example = "3", value = "usage count of Scope ")
+  public Integer getUsageCount() {
+    return usageCount;
+  }
+
+  public void setUsageCount(Integer usageCount) {
+    this.usageCount = usageCount;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -158,12 +179,13 @@ public class ScopeDTO {
         Objects.equals(this.name, scope.name) &&
         Objects.equals(this.displayName, scope.displayName) &&
         Objects.equals(this.description, scope.description) &&
-        Objects.equals(this.bindings, scope.bindings);
+        Objects.equals(this.bindings, scope.bindings) &&
+        Objects.equals(this.usageCount, scope.usageCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, displayName, description, bindings);
+    return Objects.hash(id, name, displayName, description, bindings, usageCount);
   }
 
 
@@ -177,6 +199,7 @@ public class ScopeDTO {
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    bindings: ").append(toIndentedString(bindings)).append("\n");
+    sb.append("    usageCount: ").append(toIndentedString(usageCount)).append("\n");
     sb.append("}");
     return sb.toString();
   }

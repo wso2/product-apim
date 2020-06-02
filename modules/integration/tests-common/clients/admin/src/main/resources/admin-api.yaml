@@ -1,9 +1,24 @@
+#   Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+################################################################################
+
 swagger: '2.0'
 ######################################################
 # Prolog
 ######################################################
 info:
-  version: "0.16.0"
+  version: "v1.1"
   title: "WSO2 API Manager - Admin"
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - Admin Portal.
@@ -31,7 +46,7 @@ host: apis.wso2.com
 
 # The base path of the API.
 # Will be prefixed to all paths.
-basePath: /api/am/admin/v0.16
+basePath: /api/am/admin/v1
 
 # The following media types can be passed as input in message bodies of the API.
 # The actual media type must be specified in the Content-Type header field of the request.
@@ -50,93 +65,54 @@ consumes:
 produces:
   - application/json
 
-x-wso2-security:
-  apim:
-    x-wso2-scopes:
-      - description: ""
-        roles: admin
-        name: apim:tier_view
-        key: apim:tier_view
-      - description: ""
-        roles: admin
-        name: apim:tier_manage
-        key: apim:tier_manage
-      - description: ""
-        roles: admin
-        name: apim:bl_view
-        key: apim:bl_view
-      - description: ""
-        roles: admin
-        name: apim:bl_manage
-        key: apim:bl_manage
-      - description: ""
-        roles: admin
-        name: apim:mediation_policy_view
-        key: apim:mediation_policy_view
-      - description: ""
-        roles: admin
-        name: apim:mediation_policy_create
-        key: apim:mediation_policy_create
-      - description: ""
-        roles: admin
-        name: apim:app_owner_change
-        key: apim:app_owner_change
-      - description: ""
-        roles: admin
-        name: apim:app_import_export
-        key: apim:app_import_export
-      - description: ""
-        roles: admin
-        name: apim:api_import_export
-        key: apim:api_import_export
-      - description: ""
-        roles: admin
-        name: apim:label_manage
-        key: apim:label_manage
-      - description: ""
-        roles: admin
-        name: apim:label_read
-        key: apim:label_read
-      - description: ""
-        roles: admin
-        name: apim:monetization_usage_publish
-        key: apim:monetization_usage_publish
-      - description: ""
-        roles: admin
-        name: apim:api_workflow
-        key: apim:api_workflow
-      - description: ""
-        roles: admin
-        name: apim:bot_data
-        key: apim:bot_data
-      - description: ""
-        roles: admin
-        name: apim:tenantInfo
-        key: apim:tenantInfo
-      - description: ""
-        roles: admin
-        name: apim:admin_operations
-        key: apim:admin_operations
+securityDefinitions:
+  OAuth2Security:
+    type: oauth2
+    flow: password
+    tokenUrl: https://localhost:9443/oauth2/token
+    scopes:
+      openid: Authorize access to user details
+      apim:tier_view: View tiers
+      apim:tier_manage: Update and delete tiers
+      apim:bl_view: View blocking conditions
+      apim:bl_manage: Update and delete blocking conditions
+      apim:mediation_policy_view: View mediation policies
+      apim:mediation_policy_create: Create mediation policies
+      apim:app_owner_change: Retrieve and manage applications #TODO: Verify Description
+      apim:app_import_export: Import and export applications
+      apim:api_import_export: Import and export APIs
+      apim:api_product_import_export: Import and export API Products
+      apim:label_manage: Manage labels
+      apim:label_read: Retrieve labels
+      apim:monetization_usage_publish: Retrieve and publish Monetization related usage records #TODO: Verify Description
+      apim:api_workflow: Manage workflows #TODO: Verify Description
+      apim:bot_data: Manage emails  #TODO: Verify Description
+      apim:tenantInfo: Retrieve tenant related information  #TODO: Verify Description
+      apim:tenant_theme_manage: Manage tenant themes
+      apim:admin_operations: Manage API categories
+      apim:admin_settings: Retrieve admin settings
 
 ######################################################
 # The "API Collection" resource APIs
 ######################################################
 paths:
-######################################################
-# The "Application Throttling Policy Collection" resource API
-######################################################
+  ######################################################
+  # The "Application Throttling Policy Collection" resource API
+  ######################################################
   '/throttling/policies/application':
 
-#-----------------------------------------------------
-# Retrieve all Application level policies
-#-----------------------------------------------------
+    #-----------------------------------------------------
+    # Retrieve all Application level policies
+    #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer e59e2657-4c2a-3cd0-8b48-0f4f39940c41\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/application"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer e59e2657-4c2a-3cd0-8b48-0f4f39940c41\" https://localhost:9443/api/am/admin/v1/throttling/policies/application"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/application
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/application
         Authorization: Bearer e59e2657-4c2a-3cd0-8b48-0f4f39940c41
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 4,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"aef4447a-f996-4b3c-9c47-d0a401ab913c\",\r\n      \"policyName\": \"50PerMin\",\r\n      \"displayName\": \"50PerMin\",\r\n      \"description\": \"Allows 50 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 50\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"472b573d-b162-4ac9-9984-531ee03d9d7c\",\r\n      \"policyName\": \"20PerMin\",\r\n      \"displayName\": \"20PerMin\",\r\n      \"description\": \"Allows 20 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 20\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"251d4f70-29f8-40f4-8aad-f2d1e7b8cfc2\",\r\n      \"policyName\": \"10PerMin\",\r\n      \"displayName\": \"10PerMin\",\r\n      \"description\": \"Allows 10 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 10\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"aaaef257-5453-42e6-b4a6-c48567864f92\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      }\r\n    }\r\n  ]\r\n}\r\n"
-      x-scope: apim:tier_view
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 4,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"aef4447a-f996-4b3c-9c47-d0a401ab913c\",\r\n      \"policyName\": \"50PerMin\",\r\n      \"displayName\": \"50PerMin\",\r\n      \"description\": \"Allows 50 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 50\r\n        },\r\n        \"bandwidth\": null\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"472b573d-b162-4ac9-9984-531ee03d9d7c\",\r\n      \"policyName\": \"20PerMin\",\r\n      \"displayName\": \"20PerMin\",\r\n      \"description\": \"Allows 20 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 20\r\n        },\r\n        \"bandwidth\": null\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"251d4f70-29f8-40f4-8aad-f2d1e7b8cfc2\",\r\n      \"policyName\": \"10PerMin\",\r\n      \"displayName\": \"10PerMin\",\r\n      \"description\": \"Allows 10 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 10\r\n        },\r\n        \"bandwidth\": null\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"aaaef257-5453-42e6-b4a6-c48567864f92\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 2147483647\r\n        },\r\n        \"bandwidth\": null\r\n      }\r\n    }\r\n  ]\r\n}\r\n"
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get all Application Throttling Policies
       description: |
         Retrieves all existing application throttling policies.
@@ -182,10 +158,12 @@ paths:
     # Add a Application level Throttling Policy
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -X POST -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/application -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/throttling/policies/application\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -X POST -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/application -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/throttling/policies/application\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 1\r\n    },\r\n    \"bandwidth\": null\r\n  }\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 1\r\n    },\r\n    \"bandwidth\": null\r\n  }\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Add an Application Throttling Policy
       description: |
         This operation can be used to add a new application level throttling policy.
@@ -242,12 +220,14 @@ paths:
     # Retrieve a certain Application Policy
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" https://localhost:9443/api/am/admin/v1/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b
         Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6fc88136-dd36-4e81-ac6c-746225c5001b\",\r\n  \"policyName\": \"10PerMwin\",\r\n  \"displayName\": \"10PerwMin\",\r\n  \"description\": \"Allows 10 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 10\r\n  }\r\n}\r\n"
-      x-scope: apim:tier_view
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6fc88136-dd36-4e81-ac6c-746225c5001b\",\r\n  \"policyName\": \"10PerMwin\",\r\n  \"displayName\": \"10PerwMin\",\r\n  \"description\": \"Allows 10 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 10\r\n    },\r\n    \"bandwidth\": null\r\n  }\r\n}\r\n"
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get an Application Policy
       description: |
         Retrieves an Application Policy.
@@ -300,12 +280,14 @@ paths:
     # Delete an Application level throttling policy
     #-----------------------------------------------------
     delete:
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479"
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479
+        DELETE https://localhost:9443/api/am/admin/v1/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
       x-wso2-response: "HTTP/1.1 200 OK"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Delete an Application Throttling policy
       description: |
         Deletes an Application level throttling policy.
@@ -337,10 +319,12 @@ paths:
     # Update an Application throttling policy
     #-----------------------------------------------------
     put:
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 1\r\n    },\r\n    \"bandwidth\": null\r\n  }\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 1\r\n    },\r\n    \"bandwidth\": null\r\n  }\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Update an Application Throttling policy
       description: |
         Updates an existing Application level throttling policy. Upon succesfull, you will receive the updated application policy as the response.
@@ -408,9 +392,11 @@ paths:
     # Retrieving the list of all global mediation sequences under a given search condition
     #-----------------------------------------------------------------------------------------
     get:
-      x-scope: apim:mediation_policy_view
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21\" https://localhost:9443/api/am/admin/v0.16/policies/mediation"
-      x-wso2-request: "GET https://localhost:9443/api/am/admin/v0.16/policies/mediation\r\nAuthorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21"
+      security:
+        - OAuth2Security:
+            - apim:mediation_policy_view
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21\" https://localhost:9443/api/am/admin/v1/policies/mediation"
+      x-wso2-request: "GET https://localhost:9443/api/am/admin/v1/policies/mediation\r\nAuthorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21"
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\": 13,\r\n   \"next\": null,\r\n   \"previous\": null,\r\n   \"list\":    [\r\n            {\r\n         \"name\": \"debug_json_fault\",\r\n         \"id\": \"563de8f3-dd1d-4ec7-afc2-d158c663ed34\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_fault\",\r\n         \"id\": \"f9c36f4d-a2b6-41e7-b311-d358a47916be\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"debug_json_fault2\",\r\n         \"id\": \"378169d3-6fd2-427f-b0db-0f378e89ccea\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_in_message\",\r\n         \"id\": \"3921225b-7918-4b95-a851-22c4e4e3e911\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"debug_in_flow\",\r\n         \"id\": \"2bc15f93-4455-4763-89b8-83600fb9d731\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"log_in_message\",\r\n         \"id\": \"4d287cca-76ab-44ca-b22e-919fc27c50e3\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"preserve_accept_header\",\r\n         \"id\": \"3776b215-b3bc-40b6-bdcb-06efa7de64be\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_in_message\",\r\n         \"id\": \"50ac2002-769e-4f90-8549-6d0248dff7d2\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_out_message\",\r\n         \"id\": \"2af75853-ed75-4d25-81aa-0ebbeca691ea\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_out_message\",\r\n         \"id\": \"d9fa3ffc-f6b6-4171-ab97-eb44196cb66e\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"debug_out_flow\",\r\n         \"id\": \"260b7701-4071-46bd-9b66-900ac6fffed6\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"apply_accept_header\",\r\n         \"id\": \"15c17c2f-33e3-4c37-a262-04dfa49983a4\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"log_out_message\",\r\n         \"id\": \"d37dca41-c048-492a-82cf-9a2292c6fff0\",\r\n         \"type\": \"out\"\r\n      }\r\n   ]\r\n}"
       summary: |
         Get all global mediation policies
@@ -458,10 +444,12 @@ paths:
     # Upload a global mediation policy
     #----------------------------------------------------------------------------
     post:
-      x-scope: apim:mediation_policy_create
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/admin/v0.16/policies/mediation\""
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/policies/mediation\r\nContent-Type: application/json\r\nAuthorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\r\n\r\n{\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/registry/resource/_system/governance/apimgt/customsequences/fault/add_custom_header_fault.xml\r\nContent-Type: application/json\r\n\r\n{\r\n   \"id\": \"2e5cebbb-e48c-4345-a912-1f0a2058aa05\",\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/admin/v1/policies/mediation\""
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/policies/mediation\r\nContent-Type: application/json\r\nAuthorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\r\n\r\n{\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/registry/resource/_system/governance/apimgt/customsequences/fault/add_custom_header_fault.xml\r\nContent-Type: application/json\r\n\r\n{\r\n   \"id\": \"2e5cebbb-e48c-4345-a912-1f0a2058aa05\",\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
       summary: Add a global mediation policy
       description: |
         This operation can be used to add a new global mediation policy.
@@ -531,9 +519,11 @@ paths:
     # Retrieve a particular global mediation policy
     #-----------------------------------------------------
     get:
-      x-scope: apim:mediation_policy_view
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809\" https://localhost:9443/api/am/admin/v0.16/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05"
-      x-wso2-request: "GET https://localhost:9443/api/am/admin/v0.16/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05\nAuthorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809"
+      security:
+        - OAuth2Security:
+            - apim:mediation_policy_view
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809\" https://localhost:9443/api/am/admin/v1/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05"
+      x-wso2-request: "GET https://localhost:9443/api/am/admin/v1/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05\nAuthorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809"
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"id\": \"2e5cebbb-e48c-4345-a912-1f0a2058aa05\",\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}"
       summary: Get a global mediation policy
       description: |
@@ -588,9 +578,11 @@ paths:
     # Delete the mediation policy
     #-----------------------------------------------------
     delete:
-      x-scope: apim:mediation_policy_create
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer fb2a0784-f60c-3276-8fde-5b0f70e61ecc\" -X DELETE https://localhost:9443/api/am/admin/v0.16/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b"
-      x-wso2-request: "DELETE https://localhost:9443/api/am/admin/v0.16/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f"
+      security:
+        - OAuth2Security:
+            - apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer fb2a0784-f60c-3276-8fde-5b0f70e61ecc\" -X DELETE https://localhost:9443/api/am/admin/v1/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b"
+      x-wso2-request: "DELETE https://localhost:9443/api/am/admin/v1/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f"
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Delete a global mediation policy
       description: |
@@ -629,9 +621,11 @@ paths:
     # Update the a mediation policy
     #-----------------------------------------------------
     put:
-      x-scope: apim:mediation_policy_create
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\" -H \"Content-Type: application/json\" -X PUT -d @data.json https://localhost:9443/api/am/admin/v0.16/policies/mediation/8242d72c-b7d7-4b51-9098-d24bd4a5ea3a"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/policies/mediation/76cc38e4-f41a-457a-a987-3a677c290dc6\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\n\n{\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}\n"
+      security:
+        - OAuth2Security:
+            - apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\" -H \"Content-Type: application/json\" -X PUT -d @data.json https://localhost:9443/api/am/admin/v1/policies/mediation/8242d72c-b7d7-4b51-9098-d24bd4a5ea3a"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/policies/mediation/76cc38e4-f41a-457a-a987-3a677c290dc6\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\n\n{\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}\n"
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"id\": \"8242d72c-b7d7-4b51-9098-d24bd4a5ea3a\",\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}"
       summary: Update a global mediation policy
       description: |
@@ -708,12 +702,14 @@ paths:
     # Retrieve all Subscription level policies
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/subscription"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/subscription
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 5,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"6fac9345-6e49-4a31-813b-3d520e09e38b\",\r\n      \"policyName\": \"Gold\",\r\n      \"displayName\": \"Gold\",\r\n      \"description\": \"Allows 5000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 5000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"851bf1b4-19da-4019-949a-9b371f53c8d6\",\r\n      \"policyName\": \"Silver\",\r\n      \"displayName\": \"Silver\",\r\n      \"description\": \"Allows 2000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"f0b88e6e-cb02-46d6-9c7c-6204729b39f2\",\r\n      \"policyName\": \"Bronze\",\r\n      \"displayName\": \"Bronze\",\r\n      \"description\": \"Allows 1000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 1000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"880bd267-4b14-4248-ac35-37c52546851f\",\r\n      \"policyName\": \"Unauthenticated\",\r\n      \"displayName\": \"Unauthenticated\",\r\n      \"description\": \"Allows 500 request(s) per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 500\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"c61f9682-a5f5-4991-b8f9-ea0f44147a5a\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:tier_view
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 5,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"6fac9345-6e49-4a31-813b-3d520e09e38b\",\r\n      \"policyName\": \"Gold\",\r\n      \"displayName\": \"Gold\",\r\n      \"description\": \"Allows 5000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 5000\r\n        },\r\n        \"bandwidth\": null\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"851bf1b4-19da-4019-949a-9b371f53c8d6\",\r\n      \"policyName\": \"Silver\",\r\n      \"displayName\": \"Silver\",\r\n      \"description\": \"Allows 2000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 2000\r\n        },\r\n        \"bandwidth\": null\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"f0b88e6e-cb02-46d6-9c7c-6204729b39f2\",\r\n      \"policyName\": \"Bronze\",\r\n      \"displayName\": \"Bronze\",\r\n      \"description\": \"Allows 1000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 1000\r\n        },\r\n        \"bandwidth\": null\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"880bd267-4b14-4248-ac35-37c52546851f\",\r\n      \"policyName\": \"Unauthenticated\",\r\n      \"displayName\": \"Unauthenticated\",\r\n      \"description\": \"Allows 500 request(s) per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 500\r\n        },\r\n        \"bandwidth\": null\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"c61f9682-a5f5-4991-b8f9-ea0f44147a5a\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"requestCount\": {\r\n          \"type\": \"REQUESTCOUNTLIMIT\",\r\n          \"timeUnit\": \"min\",\r\n          \"unitTime\": 1,\r\n          \"requestCount\": 2147483647\r\n        },\r\n        \"bandwidth\": null\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    }\r\n  ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get all Subscription Throttling Policies
       description: |
         This operation can be used to retrieve all Subscription level throttling policies.
@@ -760,10 +756,12 @@ paths:
     # Add a Subscription level Throttling Policy
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n    \"policyName\": \"Platinum\",\r\n    \"displayName\": \"Platinum\",\r\n    \"description\": \"Allows 4000 requests per minute\",\r\n    \"defaultLimit\":          {\r\n       \"type\": \"RequestCountLimit\",\r\n       \"timeUnit\": \"min\",\r\n       \"unitTime\": 1,\r\n       \"requestCount\": 4000\r\n    },\r\n    \"rateLimitCount\": -1,\r\n    \"rateLimitTimeUnit\": \"NA\",\r\n    \"customAttributes\":          [\r\n                   {\r\n          \"name\": \"customAttr1\",\r\n          \"value\": \"value1\"\r\n       },\r\n                   {\r\n          \"name\": \"customAttr2\",\r\n          \"value\": \"value2\"\r\n       }\r\n    ],\r\n    \"stopOnQuotaReach\": true,\r\n    \"billingPlan\": \"COMMERCIAL\"\r\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 4000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/subscription -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/throttling/policies/subscription\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 4000\r\n    },\r\n    \"bandwidth\": null\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 4000\r\n    },\r\n    \"bandwidth\": null\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Add a Subscription Throttling Policy
       description: |
         This operation can be used to add a Subscription level throttling policy specifying the details of the policy in the payload.
@@ -820,12 +818,14 @@ paths:
     # Retrieve a certain Subscription Policy
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 4000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
-      x-scope: apim:tier_view
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 4000\r\n    },\r\n    \"bandwidth\": null\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get a Subscription Policy
       description: |
         Retrieve a single subscription-level throttling policy. We should provide the Id of the policy as a path parameter.
@@ -878,13 +878,15 @@ paths:
     # Delete a Subscription level throttling policy
     #-----------------------------------------------------
     delete:
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8"
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8
+        DELETE https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
         Content-Type: application/json
       x-wso2-response: "HTTP/1.1 200 OK"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Delete a Subscription Policy
       description: |
         This operation can be used to delete a subscription-level throttling policy specifying the Id of the policy as a path paramter.
@@ -916,10 +918,12 @@ paths:
     # Update a Subscription Throttling Policy
     #-----------------------------------------------------
     put:
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n    \"policyName\": \"Platinum\",\r\n    \"displayName\": \"Platinum\",\r\n    \"description\": \"Allows 10000 requests per minute\",\r\n    \"defaultLimit\":          {\r\n       \"type\": \"RequestCountLimit\",\r\n       \"timeUnit\": \"min\",\r\n       \"unitTime\": 1,\r\n       \"requestCount\": 10000\r\n    },\r\n    \"isDeployed\": true,\r\n    \"rateLimitCount\": -1,\r\n    \"rateLimitTimeUnit\": \"NA\",\r\n    \"customAttributes\":          [\r\n                   {\r\n          \"name\": \"customAttr0\",\r\n          \"value\": \"value1\"\r\n       },\r\n                   {\r\n          \"name\": \"customAttr1\",\r\n          \"value\": \"value1\"\r\n       }\r\n    ],\r\n    \"stopOnQuotaReach\": true,\r\n    \"billingPlan\": \"COMMERCIAL\"\r\n}"
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 10000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 10000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr0\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 10000 requests per minute\",\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 10000\r\n    },\r\n    \"bandwidth\": null\r\n  },\r\n  \"isDeployed\": true,\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 10000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"requestCount\": {\r\n      \"type\": \"REQUESTCOUNTLIMIT\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 1,\r\n      \"requestCount\": 10000\r\n    },\r\n    \"bandwidth\": null\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr0\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Update a Subscription Policy
       description: |
         Updates an existing subscription-level throttling policy.
@@ -991,12 +995,14 @@ paths:
     # Retrieve all Custom Rules
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/custom"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/custom
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 1,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n      \"policyName\": \"custom1\",\r\n      \"displayName\": null,\r\n      \"description\": \"Allow 10 requests per minute for admin user\",\r\n      \"isDeployed\": true,\r\n      \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n      \"keyTemplate\": \"$userId\"\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:tier_view
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get all Custom Rules
       description: |
         Retrieves all Custom Rules.
@@ -1046,10 +1052,12 @@ paths:
     # Add a Custom Rule
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/22c71b7d-7013-4b80-bf7a-e86b471fb575\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"22c71b7d-7013-4b80-bf7a-e86b471fb575\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/custom -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/throttling/policies/custom\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/throttling/policies/custom/22c71b7d-7013-4b80-bf7a-e86b471fb575\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"22c71b7d-7013-4b80-bf7a-e86b471fb575\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Add a Custom Rule
       description: |
         Adds a new Custom Rule.
@@ -1109,12 +1117,14 @@ paths:
     # Retrieve a certain Custom Rule
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
-      x-scope: apim:tier_view
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get a Custom Rule
       description: |
         Retrieves a Custom Rule. We need to provide the policy Id as a path parameter.
@@ -1170,12 +1180,14 @@ paths:
     # Delete a Custom Rule
     #-----------------------------------------------------
     delete:
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
+        DELETE https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
         Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
       x-wso2-response: "HTTP/1.1 200 OK"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Delete a Custom Rule
       description: |
         Delete a Custom Rule. We need to provide the Id of the policy as a path parameter.
@@ -1210,10 +1222,12 @@ paths:
     # Update a Custom Rule
     #-----------------------------------------------------
     put:
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Update a Custom Rule
       description: |
         Updates an existing Custom Rule.
@@ -1289,12 +1303,14 @@ paths:
     # Retrieve all Advanced level policies
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer aa5195d9-3977-33f4-839e-5779dabfe826\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer aa5195d9-3977-33f4-839e-5779dabfe826\" https://localhost:9443/api/am/admin/v1/throttling/policies/advanced"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/advanced
         Authorization: Bearer aa5195d9-3977-33f4-839e-5779dabfe826
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 4,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"85c69cbe-05b7-4293-abff-56f424d51c9c\",\r\n      \"policyName\": \"50KPerMin\",\r\n      \"displayName\": \"50KPerMin\",\r\n      \"description\": \"Allows 50000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 50000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"46062a74-edfa-431a-a418-7cb52595baf8\",\r\n      \"policyName\": \"20KPerMin\",\r\n      \"displayName\": \"20KPerMin\",\r\n      \"description\": \"Allows 20000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 20000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"0637089f-2128-4a26-9bee-ffb6d85f0f81\",\r\n      \"policyName\": \"10KPerMin\",\r\n      \"displayName\": \"10KPerMin\",\r\n      \"description\": \"Allows 10000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 10000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"c461d87e-dba1-4f57-bc5a-67b97025c1c8\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      }\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:tier_view
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get all Advanced throttling policies.
       description: |
         Retrieves all existing Advanced level throttling policies.
@@ -1341,10 +1357,12 @@ paths:
     # Add an Advanced level throttling policy
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Location\",\r\n               \"headerValue\": \"google.com\"\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"lastAccess\",\r\n               \"parameterValue\": \"25-02-2016\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl1\",\r\n               \"attribute\": \"claimAttr\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      },\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\": [         {\r\n            \"type\": \"IPCondition\",\r\n            \"invertCondition\": true,\r\n            \"ipConditionType\": \"IPRange\",\r\n            \"specificIP\": null,\r\n            \"startingIP\": \"0.0.0.0\",\r\n            \"endingIP\": \"1.1.1.1\"\r\n         }],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"a0c9f368-b7d2-4eec-a757-f67034160208\",\r\n  \"policyName\": \"100KBP2Min\",\r\n  \"displayName\": \"100KBP2Min\",\r\n  \"description\": \"description of the policy\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"BandwidthLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 2,\r\n    \"dataAmount\": 100,\r\n    \"dataUnit\": \"KB\"\r\n  },\r\n  \"conditionalGroups\": [\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": false,\r\n          \"ipConditionType\": \"IPSpecific\",\r\n          \"specificIP\": \"10.100.1.22\",\r\n          \"startingIP\": null,\r\n          \"endingIP\": null\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Location\",\r\n          \"headerValue\": \"google.com\"\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Host\",\r\n          \"headerValue\": \"10.100.7.77\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"name\",\r\n          \"parameterValue\": \"admin\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"lastAccess\",\r\n          \"parameterValue\": \"25-02-2016\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl0\",\r\n          \"attribute\": \"claimAttr0\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl1\",\r\n          \"attribute\": \"claimAttr\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    },\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": true,\r\n          \"ipConditionType\": \"IPRange\",\r\n          \"specificIP\": null,\r\n          \"startingIP\": \"0.0.0.0\",\r\n          \"endingIP\": \"1.1.1.1\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:tier_manage
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/advanced -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/throttling/policies/advanced\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Location\",\r\n               \"headerValue\": \"google.com\"\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"lastAccess\",\r\n               \"parameterValue\": \"25-02-2016\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl1\",\r\n               \"attribute\": \"claimAttr\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      },\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\": [         {\r\n            \"type\": \"IPCondition\",\r\n            \"invertCondition\": true,\r\n            \"ipConditionType\": \"IPRange\",\r\n            \"specificIP\": null,\r\n            \"startingIP\": \"0.0.0.0\",\r\n            \"endingIP\": \"1.1.1.1\"\r\n         }],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"a0c9f368-b7d2-4eec-a757-f67034160208\",\r\n  \"policyName\": \"100KBP2Min\",\r\n  \"displayName\": \"100KBP2Min\",\r\n  \"description\": \"description of the policy\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"BandwidthLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 2,\r\n    \"dataAmount\": 100,\r\n    \"dataUnit\": \"KB\"\r\n  },\r\n  \"conditionalGroups\": [\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": false,\r\n          \"ipConditionType\": \"IPSpecific\",\r\n          \"specificIP\": \"10.100.1.22\",\r\n          \"startingIP\": null,\r\n          \"endingIP\": null\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Location\",\r\n          \"headerValue\": \"google.com\"\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Host\",\r\n          \"headerValue\": \"10.100.7.77\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"name\",\r\n          \"parameterValue\": \"admin\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"lastAccess\",\r\n          \"parameterValue\": \"25-02-2016\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl0\",\r\n          \"attribute\": \"claimAttr0\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl1\",\r\n          \"attribute\": \"claimAttr\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    },\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": true,\r\n          \"ipConditionType\": \"IPRange\",\r\n          \"specificIP\": null,\r\n          \"startingIP\": \"0.0.0.0\",\r\n          \"endingIP\": \"1.1.1.1\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    }\r\n  ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Add an Advanced Throttling Policy
       description: |
         Add a new Advanced level throttling policy.
@@ -1401,12 +1419,14 @@ paths:
     # Retrieve a certain Advanced Throttling Policy
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b
+        GET https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b
         Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"ea4ee02d-6cfb-4eea-9e30-3f548783160b\",\r\n  \"policyName\": \"50KPerMin\",\r\n  \"displayName\": \"50KPerMin\",\r\n  \"description\": \"Allows 50000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 50000\r\n  },\r\n  \"conditionalGroups\": []\r\n}\r\n"
-      x-scope: apim:tier_view
+      security:
+        - OAuth2Security:
+            - apim:tier_view
       summary: Get an Advanced Policy
       description: |
         Retrieves an Advanced Policy.
@@ -1459,12 +1479,14 @@ paths:
     # Delete an Advanced level throttling policy
     #-----------------------------------------------------
     delete:
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208"
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208
+        DELETE https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208
         Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7
       x-wso2-response: "HTTP/1.1 200 OK"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Delete an Advanced Throttling Policy
       description: |
         Deletes an Advanced level throttling policy.
@@ -1496,10 +1518,12 @@ paths:
     # Update an Advanced Throttling Policy
     #-----------------------------------------------------
     put:
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n      {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n      {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"a0c9f368-b7d2-4eec-a757-f67034160208\",\r\n  \"policyName\": \"100KBP2Min\",\r\n  \"displayName\": \"100KBP2Min\",\r\n  \"description\": \"description of the policy\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"BandwidthLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 2,\r\n    \"dataAmount\": 100,\r\n    \"dataUnit\": \"KB\"\r\n  },\r\n  \"conditionalGroups\": [\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": false,\r\n          \"ipConditionType\": \"IPSpecific\",\r\n          \"specificIP\": \"10.100.1.22\",\r\n          \"startingIP\": null,\r\n          \"endingIP\": null\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Host\",\r\n          \"headerValue\": \"10.100.7.77\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"name\",\r\n          \"parameterValue\": \"admin\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl0\",\r\n          \"attribute\": \"claimAttr0\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:tier_manage
+      security:
+        - OAuth2Security:
+            - apim:tier_manage
       summary: Update an Advanced Throttling Policy
       description: |
         Updates an existing Advanced level throttling policy.
@@ -1571,12 +1595,14 @@ paths:
     # Retrieve all Blocking conditions
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://localhost:9443/api/am/admin/v0.16/throttling/blacklist"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://localhost:9443/api/am/admin/v1/throttling/blacklist"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/blacklist
+        GET https://localhost:9443/api/am/admin/v1/throttling/blacklist
         Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 3,\r\n  \"list\": [\r\n    {\r\n      \"conditionId\": \"0b65b686-841b-48eb-b4c2-427d24584d71\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"127.0.0.332\"\r\n    },\r\n    {\r\n      \"conditionId\": \"3baa990c-f90b-4e3e-9db7-f29ee7f46f48\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"localhost\"\r\n    },\r\n    {\r\n      \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"10.100.7.77\"\r\n    }\r\n  ]\r\n}"
-      x-scope: apim:bl_view
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 3,\r\n  \"list\": [\r\n    {\r\n      \"conditionId\": \"0b65b686-841b-48eb-b4c2-427d24584d71\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"127.0.0.332\",\r\n      \"conditionStatus\": \"true\"\r\n    },\r\n    {\r\n      \"conditionId\": \"3baa990c-f90b-4e3e-9db7-f29ee7f46f48\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"localhost\",\r\n      \"conditionStatus\": \"false\"\r\n    },\r\n    {\r\n      \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"10.100.7.77\",\r\n      \"conditionStatus\": \"true\"\r\n    }\r\n  ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:bl_view
       summary: Get all blocking condtions
       description: |
         Retrieves all existing blocking condtions.
@@ -1623,10 +1649,12 @@ paths:
     # Add a Custom Rule
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/blacklist"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/throttling/blacklist\r\nAuthorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\r\nContent-Type: application/json\r\n\r\n{\r\n   \"conditionType\": \"IP\",\r\n   \"conditionValue\": \"10.100.7.77\"\r\n}\r\n"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v0.16/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\"\r\n}"
-      x-scope: apim:bl_manage
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/blacklist"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/throttling/blacklist\r\nAuthorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\r\nContent-Type: application/json\r\n\r\n{\r\n   \"conditionType\": \"IP\",\r\n   \"conditionValue\": \"10.100.7.77\",\r\n      \"conditionStatus\": \"false\"\r\n    }\r\n"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\",\r\n      \"conditionStatus\": \"false\"\r\n    }"
+      security:
+        - OAuth2Security:
+            - apim:bl_manage
       summary: Add a Blocking condition
       description: |
         Adds a new Blocking condition.
@@ -1683,12 +1711,14 @@ paths:
     # Retrieve a Blocking condition
     #-----------------------------------------------------
     get:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://localhost:9443/api/am/admin/v0.16/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c
+        GET https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c
         Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\"\r\n}"
-      x-scope: apim:bl_view
+      security:
+        - OAuth2Security:
+            - apim:bl_view
       summary: Get a Blocking Condition
       description: |
         Retrieves a Blocking Condition providing the condition Id
@@ -1741,12 +1771,14 @@ paths:
     # Delete a Blocking condition
     #-----------------------------------------------------
     delete:
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf"
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf"
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/admin/v0.16/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf
+        DELETE https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf
         Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
       x-wso2-response: "HTTP/1.1 200 OK"
-      x-scope: apim:bl_manage
+      security:
+        - OAuth2Security:
+            - apim:bl_manage
       summary: Delete a Blocking condition
       description: |
         Deletes an existing Blocking condition
@@ -1774,6 +1806,53 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+    #-----------------------------------------------------
+    # Update a blocking condition status
+    #-----------------------------------------------------
+    patch:
+      security:
+        - OAuth2Security:
+            - apim:bl_manage
+      x-wso2-curl: "curl -k -X PATCH -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf\r\nAuthorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\r\nContent-Type: application/json\r\n\r\n{\r\n    \"conditionStatus\": \"true\"\r\n    }\r\n"
+      x-wso2-response: "HTTP/1.1 200 Ok\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\",\r\n      \"conditionStatus\": \"true\"\r\n    }"
+      summary: Update a blocking condition
+      description: |
+        Update a blocking condition by Id
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - in: body
+          name: body
+          description: |
+            Blocking condition with updated status
+          required: true
+          schema:
+            $ref: '#/definitions/BlockingConditionStatus'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Blacklist (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully updated.
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
   ######################################################
   # The "Application Collection" resource APIs
   ######################################################
@@ -1783,11 +1862,13 @@ paths:
     # Retrieve a list of all applications of a certain subscriber
     #-----------------------------------------------------
     get:
-      x-scope: apim:app_owner_change
+      security:
+        - OAuth2Security:
+            - apim:app_owner_change
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/applications
+        GET https://localhost:9443/api/am/admin/v1/applications
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v0.16/applications\""
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v1/applications\""
       x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"previous\": \"\",\n   \"list\":    [\n            {\n         \"groupId\": \"\",\n         \"owner\": \"admin\",\n           \"applicationId\": \"367a2361-8db5-4140-8133-c6c8dc7fa0c4\",\n         \"status\": \"APPROVED\",\n         \"name\": \"app1\"\n      },\n            {\n         \"groupId\": \"\",\n         \"owner\": \"admin\",\n             \"applicationId\": \"896658a0-b4ee-4535-bbfa-806c894a4015\",\n          \"status\": \"APPROVED\",\n         \"name\": \"DefaultApplication\"\n      }\n   ],\n   \"count\": 2,\n   \"next\": \"\"\n}"
       summary: |
         Retrieve/Search applications
@@ -1851,10 +1932,12 @@ paths:
     # Change the owner of an Application
     #-----------------------------------------------------
     post:
-      x-scope: apim:app_owner_change
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://localhost:9443/api/am/admin/v0.16/applications/890a4f4d-09eb-4877-a323-57f6ce2ed79b/change-owner?owner=admin\""
+      security:
+        - OAuth2Security:
+            - apim:app_owner_change
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://localhost:9443/api/am/admin/v1/applications/890a4f4d-09eb-4877-a323-57f6ce2ed79b/change-owner?owner=admin\""
       x-wso2-request: |
-        POST https://localhost:9443/api/am/admin/v0.16/apis/change-owner?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish
+        POST https://localhost:9443/api/am/admin/v1/apis/change-owner?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Change Application Owner
@@ -1901,13 +1984,15 @@ paths:
   /export/applications:
 
     get:
-      x-scope: apim:app_import_export
+      security:
+        - OAuth2Security:
+            - apim:app_import_export
       produces:
         - application/json
         - application/zip
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/admin/v0.16/export/applications?appName=sampleApp&appOwner=admin > admin_sampleApp.zip"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/admin/v1/export/applications?appName=sampleApp&appOwner=admin > admin_sampleApp.zip"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/export/applications?appName=sampleApp&appOwner=admin
+        GET https://localhost:9443/api/am/admin/v1/export/applications?appName=sampleApp&appOwner=admin
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\n Connection: keep-alive\n  Content-Disposition: attachment; filename=\"exported-application.zip\"\n  Content-Type: application/zip"
       summary: Export an Application
@@ -1971,14 +2056,16 @@ paths:
   /import/applications:
 
     post:
-      x-scope: apim:app_import_export
+      security:
+        - OAuth2Security:
+            - apim:app_import_export
       consumes:
         - multipart/form-data
-      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v0.16/import/applications"
+      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v1/import/applications"
       x-wso2-request: |
-        POST https://localhost:9443/api/am/admin/v0.16/import/applications
+        POST https://localhost:9443/api/am/admin/v1/import/applications
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/admin/v0.16/applications/c30f3a6e-ffa4-4ae7-afce-224d1f820524\nContent-Type: application/json\n\n{\n   \"groupId\": \"\",\n   \"callbackUrl\": \"http://my.server.com/callback\",\n   \"owner\": \"admin\",\n   \"applicationId\": \"c30f3a6e-ffa4-4ae7-afce-224d1f820524\",\n   \"status\": \"APPROVED\",\n   \"name\": \"sampleapp\" \n}"
+      x-wso2-response: "HTTP/1.1 201 Created\nLocation: https://localhost:9443/api/am/admin/v1/applications/c30f3a6e-ffa4-4ae7-afce-224d1f820524\nContent-Type: application/json\n\n{\n   \"groupId\": \"\",\n   \"callbackUrl\": \"http://my.server.com/callback\",\n   \"owner\": \"admin\",\n   \"applicationId\": \"c30f3a6e-ffa4-4ae7-afce-224d1f820524\",\n   \"status\": \"APPROVED\",\n   \"name\": \"sampleapp\" \n}"
       summary: Import an Application
       description: |
         This operation can be used to import an Application.
@@ -2057,12 +2144,14 @@ paths:
   /import/api:
 
     post:
-      x-scope: apim:api_import_export
+      security:
+        - OAuth2Security:
+            - apim:api_import_export
       consumes:
         - multipart/form-data
-      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v0.16/import/api?preserveProvider=false&overwrite=false"
+      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v1/import/api?preserveProvider=false&overwrite=false"
       x-wso2-request: |
-        POST https://localhost:9443/api/am/admin/v0.16/import/apis
+        POST https://localhost:9443/api/am/admin/v1/import/apis
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\nAPI imported successfully."
       summary: Import an API
@@ -2125,12 +2214,14 @@ paths:
   /export/api:
 
     get:
-      x-scope: apim:api_import_export
+      security:
+        - OAuth2Security:
+            - apim:api_import_export
       produces:
         - application/zip
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/admin/v0.16/export/api?name=PizzaShackAPI&version=1.0.0&providerName=admin > exportAPI.zip"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/admin/v1/export/api?name=PizzaShackAPI&version=1.0.0&providerName=admin > exportAPI.zip"
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/export/api?name=SampleAPI&version=1.0.0&providerName=admin
+        GET https://localhost:9443/api/am/admin/v1/export/api?name=SampleAPI&version=1.0.0&providerName=admin
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
       x-wso2-response: "HTTP/1.1 200 OK\n Connection: keep-alive\n  Content-Disposition: attachment; filename=\"exported-api.zip\"\n  Content-Type: application/zip"
       summary: Export an API
@@ -2163,7 +2254,7 @@ paths:
           enum:
             - JSON
             - YAML
-          required: true
+          required: false
         - name: preserveStatus
           in: query
           description: |
@@ -2197,7 +2288,169 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-  ####################################################
+  ######################################################
+  # Import Resource API Product
+  ######################################################
+  /import/api-product:
+
+    post:
+      security:
+        - OAuth2Security:
+            - apim:api_product_import_export
+      consumes:
+        - multipart/form-data
+      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v1/import/api-product?preserveProvider=false&overwriteAPIs=false&overwriteAPIProduct=false"
+      x-wso2-request: |
+        POST https://localhost:9443/api/am/admin/v1/import/api-product
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-response: "HTTP/1.1 200 OK\nAPI Product imported successfully."
+      summary: Import an API Product
+      description: |
+        This operation can be used to import an API Product.
+      parameters:
+        - name: file
+          in: formData
+          description: |
+            Zip archive consisting on exported API Product configuration
+          required: true
+          type: file
+        - name: preserveProvider
+          in: query
+          description: |
+            Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider.
+          required: false
+          type: boolean
+        - name: importAPIs
+          in: query
+          description: |
+            Whether to import the dependent APIs or not.
+          required: false
+          type: boolean
+        - name: overwriteAPIProduct
+          in: query
+          description: |
+            Whether to update the API Product or not. This is used when updating already existing API Products.
+          required: false
+          type: boolean
+        - name: overwriteAPIs
+          in: query
+          description: |
+            Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.
+          required: false
+          type: boolean
+      tags:
+        - API Product (Individual)
+      responses:
+        200:
+          description: |
+            Created.
+            API Product Imported Successfully.
+        403:
+          description: |
+            Forbidden
+            Not Authorized to import.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API Product to update not found.
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: |
+            Conflict.
+            API Product to import already exists.
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: |
+            Internal Server Error.
+            Error in importing API Product.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
+  # Export Resource API Product
+  ######################################################
+  /export/api-product:
+
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_product_import_export
+      produces:
+        - application/zip
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/admin/v0.16/export/api-product?name=SampleAPIProduct&version=1.0.0&providerName=admin > exportAPIProduct.zip"
+      x-wso2-request: |
+        GET https://localhost:9443/api/am/admin/v0.16/export/api-product?name=SampleAPIProduct&version=1.0.0&providerName=admin
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-response: "HTTP/1.1 200 OK\n Connection: keep-alive\n  Content-Disposition: attachment; filename=\"exported-api-product.zip\"\n  Content-Type: application/zip"
+      summary: Export an API Product
+      description: |
+        This operation can be used to export the details of a particular API Product as a zip file.
+      parameters:
+        - name: name
+          in: query
+          description: |
+            API Product Name
+          required: true
+          type: string
+        - name: version
+          in: query
+          description: |
+            Version of the API Product
+          required: true
+          type: string
+        - name: providerName
+          in: query
+          description: |
+            Provider name of the API Product
+          required: false
+          type: string
+        - name: format
+          in: query
+          description: |
+            Format of output documents. Can be YAML or JSON.
+          type: string
+          enum:
+            - JSON
+            - YAML
+          required: false
+        - name: preserveStatus
+          in: query
+          description: |
+            Preserve API Product Status on export
+          required: false
+          type: boolean
+      tags:
+        - API Product (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+          schema:
+            type: file
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: |
+            Internal Server Error.
+            Error in exporting API Product.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
   # The "Label" resource API
   ######################################################
   /labels:
@@ -2206,12 +2459,14 @@ paths:
     # Retrieve all labels
     #-----------------------------------------------------
     get:
-      x-scope: apim:label_read
+      security:
+        - OAuth2Security:
+            - apim:label_read
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/labels
+        GET https://localhost:9443/api/am/admin/v1/labels
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v0.16/labels\""
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 1,\r\n  \"list\": [\r\n  {\r\n  \"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n  \"name\":\"internal\",\r\n  \"description\":\"label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v1/labels\""
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 1,\r\n  \"list\": [\r\n	{\r\n	\"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n	\"name\":\"internal\",\r\n	\"description\":\"label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
       summary: Get all registered Labels
       description: |
         Get all registered Labels
@@ -2229,10 +2484,12 @@ paths:
     # Add a Label
     #-----------------------------------------------------
     post:
-      x-scope: apim:label_manage
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://apis.wso2.com/api/am/admin/v0.16/labels -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/labels\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"internal\",\r\n  \"description\":\"label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n     }"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\n\r\n{\r\n  \"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n  \"name\":\"internal\",\r\n  \"description\":\"label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:label_manage
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://apis.wso2.com/api/am/admin/v1/labels -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/labels\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"internal\",\r\n	\"description\":\"label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n     }"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\n\r\n{\r\n	\"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n	\"name\":\"internal\",\r\n	\"description\":\"label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
       summary: Add a Label
       description: |
         Add a new gateway Label
@@ -2270,8 +2527,10 @@ paths:
   /botData/getEmailList:
 
     get:
-      x-scope: apim:bot_data
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 8739edc7-7c95-34d5-895a-398fe5dd5972\" https://localhost:9443/api/am/admin/v0.16/botData/getEmailList -H \"accept: application/json\""
+      security:
+        - OAuth2Security:
+            - apim:bot_data
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 8739edc7-7c95-34d5-895a-398fe5dd5972\" https://localhost:9443/api/am/admin/v1/botData/getEmailList -H \"accept: application/json\""
       produces:
         - application/json
       summary: |
@@ -2314,8 +2573,10 @@ paths:
   /botData/deleteEmail:
 
     delete:
-      x-scope: apim:bot_data
-      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 7469aa7c-5e29-3d2b-a144-5d8160c91176\" https://localhost:9443/api/am/admin/v0.16/botData/deleteEmail?uuid=23a2a896-bd58-46ec-83c7-2f2b5cc09284 -H \"accept: application/json\""
+      security:
+        - OAuth2Security:
+            - apim:bot_data
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 7469aa7c-5e29-3d2b-a144-5d8160c91176\" https://localhost:9443/api/am/admin/v1/botData/deleteEmail?uuid=23a2a896-bd58-46ec-83c7-2f2b5cc09284 -H \"accept: application/json\""
       summary: Delete an configured email.
       description: |
         Delete an configured email from DB by pasing uuid.
@@ -2349,7 +2610,9 @@ paths:
   /botData/addEmail:
 
     post:
-      x-scope: apim:bot_data
+      security:
+        - OAuth2Security:
+            - apim:bot_data
       summary: Add an Email
       description: |
         Here we can use this to configure email
@@ -2391,10 +2654,12 @@ paths:
     # Update a Label
     #-----------------------------------------------------
     put:
-      x-scope: apim:label_manage
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/labels/d7cf8523-9180-4255-84fa-6cb171c1f779 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/labels/d7cf8523-9180-4255-84fa-6cb171c1f779\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"update_internal\",\r\n  \"description\":\"Updated label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n     }"
-      x-wso2-response: "HTTP/1.1 200 Ok\r\nContent-Type: application/json\r\n\r\n{\r\n  \"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n  \"name\":\"updated_internal\",\r\n  \"description\":\"Updated label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:label_manage
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/labels/d7cf8523-9180-4255-84fa-6cb171c1f779 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/labels/d7cf8523-9180-4255-84fa-6cb171c1f779\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"update_internal\",\r\n	\"description\":\"Updated label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n     }"
+      x-wso2-response: "HTTP/1.1 200 Ok\r\nContent-Type: application/json\r\n\r\n{\r\n	\"id\":\"d7cf8523-9180-4255-84fa-6cb171c1f779\",\r\n	\"name\":\"updated_internal\",\r\n	\"description\":\"Updated label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n       }\r\n   ]\r\n}"
       summary: Update a Label
       description: |
         Update a Label by label Id
@@ -2432,7 +2697,9 @@ paths:
     # Delete a Label
     #-----------------------------------------------------
     delete:
-      x-scope: apim:label_manage
+      security:
+        - OAuth2Security:
+            - apim:label_manage
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Delete a Label
       description: |
@@ -2466,10 +2733,12 @@ paths:
     # Publish monetization related usage records
     #-----------------------------------------------------
     post:
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -X POST -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/monetization/publish-usage"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/monetization/publish-usage\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -X POST -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/monetization/publish-usage"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/monetization/publish-usage\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json"
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n\"status\":\"successfull\",\r\n\"message\":\"Records published successfully\"\r\n}"
-      x-scope: apim:monetization_usage_publish
+      security:
+        - OAuth2Security:
+            - apim:monetization_usage_publish
       summary: Publish Usage Records
       description: |
         Publish Usage Records of Monetized APIs
@@ -2501,11 +2770,13 @@ paths:
     # Retrieve the status monetization usage publsih job
     #-----------------------------------------------------
     get:
-      x-scope: apim:monetization_usage_publish
+      security:
+        - OAuth2Security:
+            - apim:monetization_usage_publish
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/monetization/publish-usage/status
+        GET https://localhost:9443/api/am/admin/v1/monetization/publish-usage/status
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v0.16/monetization/publish-usage/status\""
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v1/monetization/publish-usage/status\""
       x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"state\": \"RUNNING\",\r\n ,\"status\":\"SUCCESSFULL\",\r\n, \"started time\":\"12345678056L\",\r\n, \"last published time\":\"12345678056L\",\r\n}"
       summary: Get the status of Monetization usage publisher
       description: |
@@ -2529,9 +2800,11 @@ paths:
     # Resume the workflow by approving or rejecting the workflow request
     #-------------------------------------------------------------------
     post:
-      x-scope: apim:api_workflow
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/publisher/v0.16/workflows/update-workflow-status?workflowReferenceId=56e3a170-a7a7-45f8-b051-7e43a58a67e1\""
-      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v0.16/workflows/update-workflow-status?workflowReferenceId=56e3a170-a7a7-45f8-b051-7e43a58a67e1\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"status\" : \"APPROVED\",\n   \"attributes\" : {\n      \"apiCurrentState\": \"Created\",\n      \"apiLCAction\": \"Publish\",\n      \"apiName\":\"APIname\",\n      \"apiVersion\" : \"1.0.0\",\n      \"apiProvider\" : \"admin\",\n      \"invoker\": \"admin\"\n   }\n}"
+      security:
+        - OAuth2Security:
+            - apim:api_workflow
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://localhost:9443/api/am/publisher/v1/workflows/update-workflow-status?workflowReferenceId=56e3a170-a7a7-45f8-b051-7e43a58a67e1\""
+      x-wso2-request: "POST https://localhost:9443/api/am/publisher/v1/workflows/update-workflow-status?workflowReferenceId=56e3a170-a7a7-45f8-b051-7e43a58a67e1\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"status\" : \"APPROVED\",\n   \"attributes\" : {\n      \"apiCurrentState\": \"Created\",\n      \"apiLCAction\": \"Publish\",\n      \"apiName\":\"APIname\",\n      \"apiVersion\" : \"1.0.0\",\n      \"apiProvider\" : \"admin\",\n      \"invoker\": \"admin\"\n   }\n}"
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Update workflow status
       description: |
@@ -2580,9 +2853,11 @@ paths:
     # Retrieve tenant information of the given username
     #--------------------------------------------------------
     get:
-      x-scope: apim:tenantInfo
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X GET \"https://localhost:9443/api/am/admin/v0.16/tenant-info/john/info\""
-      x-wso2-request: "GET https://localhost:9443/api/am/admin/v0.16/tenant-info/john\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"tenantDomain\" : \"carbon.super\",\n   \"tenantId\" : -1234 \n}"
+      security:
+        - OAuth2Security:
+            - apim:tenantInfo
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X GET \"https://localhost:9443/api/am/admin/v1/tenant-info/john/info\""
+      x-wso2-request: "GET https://localhost:9443/api/am/admin/v1/tenant-info/john\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"tenantDomain\" : \"carbon.super\",\n   \"tenantId\" : -1234 \n}"
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: |
         Get tenant id of the user
@@ -2634,9 +2909,11 @@ paths:
     # Retrieve custom url information of the given tenant domain
     #----------------------------------------------------------
     get:
-      x-scope: apim:tenantInfo
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X GET \"https://localhost:9443/api/am/admin/v0.16/custom-url/foo.com\""
-      x-wso2-request: "GET https://localhost:9443/api/am/admin/v0.16/custom-url/foo.com\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"tenantDomain\" : \"foo.com\",\n}"
+      security:
+        - OAuth2Security:
+            - apim:tenantInfo
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" -X GET \"https://localhost:9443/api/am/admin/v1/custom-url/foo.com\""
+      x-wso2-request: "GET https://localhost:9443/api/am/admin/v1/custom-url/foo.com\nAuthorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\nContent-Type: application/json\n\n{\n   \"tenantDomain\" : \"foo.com\",\n}"
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: |
         Get custom-url info of a tenant domain
@@ -2686,12 +2963,14 @@ paths:
     # Retrieve all categories
     #-----------------------------------------------------
     get:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       x-wso2-request: |
-        GET https://localhost:9443/api/am/admin/v0.16/api-categories
+        GET https://localhost:9443/api/am/admin/v1/api-categories
         Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
-      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v0.16/api-categories\""
-      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n      }\r\n   ]\r\n}"
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" \"https://localhost:9443/api/am/admin/v1/api-categories\""
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n      \"numberOfAPIs\":1\r\n}\r\n   ]\r\n      }\r\n   ]\r\n}"
       summary: Get all API categories
       description: |
         Get all API categories
@@ -2709,10 +2988,12 @@ paths:
     # Add a Category
     #-----------------------------------------------------
     post:
-      x-scope: apim:admin_operations
-      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://apis.wso2.com/api/am/admin/v0.16/api-categories -d @data.json"
-      x-wso2-request: "POST https://localhost:9443/api/am/admin/v0.16/api-categories\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n -d  {\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n }"
-      x-wso2-response: "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n      }\r\n   ]\r\n}"
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://apis.wso2.com/api/am/admin/v1/api-categories -d @data.json"
+      x-wso2-request: "POST https://localhost:9443/api/am/admin/v1/api-categories\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n -d  {\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n }"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n }"
       summary: Add a new API Category
       description: |
         Add a new API Category
@@ -2750,9 +3031,11 @@ paths:
     # Update a Category
     #-----------------------------------------------------
     put:
-      x-scope: apim:admin_operations
-      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v0.16/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779 -d @data.json"
-      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v0.16/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"update_internal\",\r\n  \"description\":\"Updated label used for internal purpose\",\r\n  \"accessUrls\":[\r\n    \"https://localhost:9095\"\r\n         ]\r\n     }"
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://localhost:9443/api/am/admin/v1/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779 -d @data.json"
+      x-wso2-request: "PUT https://localhost:9443/api/am/admin/v1/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n   {\r\n       \"name\":\"update_internal\",\r\n	\"description\":\"Updated label used for internal purpose\",\r\n	\"accessUrls\":[\r\n	  \"https://localhost:9095\"\r\n         ]\r\n     }"
       x-wso2-response: "HTTP/1.1 200 Ok\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\":1,\r\n   \"list\":[\r\n      {\r\n         \"id\":\"463e2c9f-5e99-43c3-a66e-de7e0f367373\",\r\n         \"name\":\"Finance\",\r\n         \"description\":\"Finance related APIS\"\r\n      }\r\n   ]\r\n}"
       summary: Update an API Category
       description: |
@@ -2791,7 +3074,9 @@ paths:
     # Delete an API Category
     #-----------------------------------------------------
     delete:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       x-wso2-response: "HTTP/1.1 200 OK"
       summary: Delete an API Category
       description: |
@@ -2815,6 +3100,86 @@ paths:
             $ref: '#/definitions/Error'
 
   ######################################################
+  # The Admin settings List
+  ######################################################
+  /settings:
+    #-----------------------------------------------------
+    # Retrieve admin settings
+    #-----------------------------------------------------
+    get:
+      summary: Retreive admin settings
+      security:
+        - OAuth2Security:
+            - apim:admin_settings
+      description: |
+        Retreive admin settings
+      tags:
+        - Settings
+      responses:
+        200:
+          description: |
+            OK.
+            Settings returned
+          schema:
+            $ref: '#/definitions/Settings'
+        404:
+          description: |
+            Not Found.
+            Requested Settings does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
+  # The Tenant Theme resource APIs
+  ######################################################
+  /tenant-theme/import:
+
+    post:
+      security:
+        - OAuth2Security:
+            - apim:tenant_theme_manage
+      consumes:
+        - multipart/form-data
+      x-wso2-curl: "curl -k -F \"file=@exported.zip\" -X POST -H \"Authorization: Bearer
+      ae4eae22-3f65-387b-a171-d37eaa366fa8\" https://localhost:9443/api/am/admin/v1/tenant-theme/import"
+      x-wso2-request: |
+        POST https://localhost:9443/api/am/admin/v1/tenant-theme/import
+        Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8
+      x-wso2-response: "HTTP/1.1 200 OK\nTenant Theme imported successfully."
+      summary: Import a DevPortal Tenant Theme
+      description: |
+        This operation can be used to import a DevPortal tenant theme.
+      parameters:
+        - name: file
+          in: formData
+          description: |
+            Zip archive consisting of tenant theme configuration
+          required: true
+          type: file
+      responses:
+        200:
+          description: |
+            Ok.
+            Theme Imported Successfully.
+        403:
+          description: |
+            Forbidden.
+            Not Authorized to import.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Tenant does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: |
+            Internal Server Error.
+            Error in importing Theme.
+          schema:
+            $ref: '#/definitions/Error'
+  ######################################################
   # The "Key Manager Collection" resource API
   ######################################################
   /key-managers:
@@ -2823,7 +3188,10 @@ paths:
     # Retrieve all key managers
     #-----------------------------------------------------
     get:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
+
       summary: Get all Key managers
       description: |
         Get all Key managers
@@ -2841,7 +3209,9 @@ paths:
     # Add a Key Manager
     #-----------------------------------------------------
     post:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       summary: Add a new API Key Manager
       description: |
         Add a new API Key Manager
@@ -2879,7 +3249,9 @@ paths:
     # Retrieve a certain Key Manager Resource
     #-----------------------------------------------------
     get:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       summary: Get a Key Manager Configuration
       description: |
         Retrieve a single Key Manager Configuration. We should provide the Id of the KeyManager as a path parameter.
@@ -2917,7 +3289,9 @@ paths:
     # Update a Key Manager
     #-----------------------------------------------------
     put:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       summary: Update a Key Manager
       description: |
         Update a Key Manager by keyManager id
@@ -2955,7 +3329,9 @@ paths:
     # Delete a Key Manager
     #-----------------------------------------------------
     delete:
-      x-scope: apim:admin_operations
+      security:
+        - OAuth2Security:
+            - apim:admin_operations
       summary: Delete a Key Manager
       description: |
         Delete a Key Manager by keyManager id
@@ -2974,6 +3350,8 @@ paths:
             Key Manager to be deleted does not exist.
           schema:
             $ref: '#/definitions/Error'
+
+
 
 
 ######################################################
@@ -3216,6 +3594,7 @@ definitions:
   # The Throttling Policy resource
   #-----------------------------------------------------
   ThrottlePolicy :
+    discriminator: policyName
     title: Generic Throttling Policy
     required:
       - policyName
@@ -3250,7 +3629,7 @@ definitions:
       - $ref: '#/definitions/ThrottlePolicy'
       - properties:
           defaultLimit:
-            $ref: '#/definitions/ThrottleLimit'
+            $ref: '#/definitions/ThrottleLimitType'
 
   #-----------------------------------------------------
   # The Advanced Throttling Policy resource
@@ -3263,7 +3642,7 @@ definitions:
       - $ref: '#/definitions/ThrottlePolicy'
       - properties:
           defaultLimit:
-            $ref: '#/definitions/ThrottleLimit'
+            $ref: '#/definitions/ThrottleLimitType'
           conditionalGroups:
             type: array
             description: |
@@ -3309,7 +3688,7 @@ definitions:
       - $ref: '#/definitions/ThrottlePolicy'
       - properties:
           defaultLimit:
-            $ref: '#/definitions/ThrottleLimit'
+            $ref: '#/definitions/ThrottleLimitType'
 
   #-----------------------------------------------------
   # The Advanced Throttling Policy List resource
@@ -3336,9 +3715,10 @@ definitions:
       - defaultLimit
     allOf:
       - $ref: '#/definitions/ThrottlePolicy'
+      - $ref: '#/definitions/GraphQLQuery'
       - properties:
           defaultLimit:
-            $ref: '#/definitions/ThrottleLimit'
+            $ref: '#/definitions/ThrottleLimitType'
           monetization:
             $ref: '#/definitions/MonetizationInfo'
           rateLimitCount:
@@ -3368,6 +3748,19 @@ definitions:
             description: |
               define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
   #-----------------------------------------------------
+  # The GraphQL Query resource
+  #-----------------------------------------------------
+  GraphQLQuery:
+    title: GraphQL Query
+    properties:
+      graphQLMaxComplexity:
+        type: integer
+        description: Maximum Complexity of the GraphQL query
+        example: 400
+      graphQLMaxDepth:
+        type: integer
+        description: Maximum Depth of the GraphQL query
+        example: 10#-----------------------------------------------------
   # The Subscription Throttling Policy List resource
   #-----------------------------------------------------
   SubscriptionThrottlePolicyList:
@@ -3457,7 +3850,7 @@ definitions:
             }
           ]
       limit:
-        $ref: '#/definitions/ThrottleLimit'
+        $ref: '#/definitions/ThrottleLimitType'
 
   #-----------------------------------------------------
   # The Throttling Condition resource
@@ -3606,6 +3999,17 @@ definitions:
         example: 10
 
   #-----------------------------------------------------
+  # The Throttling Limit Type resource
+  #-----------------------------------------------------
+  ThrottleLimitType:
+    title: Application Throttling Policy Default Limit
+    properties:
+      requestCount:
+        $ref: '#/definitions/RequestCountLimit'
+      bandwidth:
+        $ref: '#/definitions/BandwidthLimit'
+
+  #-----------------------------------------------------
   # The Monetization Info resource
   #-----------------------------------------------------
   MonetizationInfo:
@@ -3684,6 +4088,10 @@ definitions:
         type: object
         description: Value of the blocking condition
         example: '{"fixedIp":"192.168.1.1":"invert":false}'
+      conditionStatus:
+        type: boolean
+        description: Status of the blocking condition
+        example: true
 
   #-----------------------------------------------------
   # The Throttling Blocking Condition List resource
@@ -3700,6 +4108,23 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/BlockingCondition'
+  #-----------------------------------------------------
+  # The Throttling Blocking Condition Status resource
+  #-----------------------------------------------------
+  BlockingConditionStatus:
+    title: Blocking Conditions Status
+    description: Blocking Conditions Status
+    required:
+      - conditionStatus
+    properties:
+      conditionId:
+        type: string
+        description: Id of the blocking condition
+        example: b513eb68-69e8-4c32-92cf-852c101363cf
+      conditionStatus:
+        type: boolean
+        description: Status of the blocking condition
+        example: true
 
   #-----------------------------------------------------
   # Custom Attribute object
@@ -4043,7 +4468,9 @@ definitions:
       description:
         type: string
         example: "Finance related APIs"
-
+      numberOfAPIs:
+        type: integer
+        example: 1
   #-----------------------------------------------------
   # The Category List resource
   #-----------------------------------------------------
@@ -4074,6 +4501,32 @@ definitions:
         type: string
         description: media-type of the file
         example: "image/jpeg"
+
+  #-----------------------------------------------------
+  # The Settings resource
+  #-----------------------------------------------------
+  Settings:
+    title: Settings
+    properties:
+      scopes:
+        type: array
+        items:
+          type: string
+      keyManagerConfiguration:
+        type: array
+        items:
+          properties:
+            type:
+              type: string
+              example: 'wso2is'
+            configurations:
+              type: array
+              items:
+                $ref: '#/definitions/KeyManagerConfiguration'
+      analyticsEnabled:
+        type: boolean
+        description: To determine whether analytics is enabled or not
+        example: false
 
   #-----------------------------------------------------
   # The KeyManager resource
@@ -4143,6 +4596,10 @@ definitions:
         type: boolean
         example: false
         default: false
+      enableOAuthAppCreation:
+        type: boolean
+        example: false
+        default: false
       enableSelfValidationJWT:
         type: boolean
         example: true
@@ -4151,8 +4608,16 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ClaimMappingEntry'
+      consumerKeyClaim:
+        type: string
+        example: 'azp'
+      scopesClaim:
+        type: string
+        example: 'scp'
       tokenValidation:
-        $ref: '#/definitions/TokenValidation'
+        type: array
+        items:
+          $ref: '#/definitions/TokenValidation'
       enabled:
         type: boolean
         example: true
@@ -4184,7 +4649,40 @@ definitions:
         type: boolean
         example: true
 
-
+  #-----------------------------------------------------
+  # The KeyManager resource
+  #-----------------------------------------------------
+  KeyManagerConfiguration:
+    title: Key Manager Configuration
+    properties:
+      name:
+        type: string
+        example: "consumer_key"
+      label:
+        type: string
+        example: "Consumer Key"
+      type:
+        type: string
+        example: "select"
+      required:
+        type: boolean
+        example: true
+      mask:
+        type: boolean
+        example: true
+      multiple:
+        type: boolean
+        example: true
+      tooltip:
+        type: string
+        example: "Entet username to connect to key manager"
+      default:
+        type: object
+        example: "admin"
+      values:
+        type: array
+        items:
+          type: object
 
   #-----------------------------------------------------
   # The KeyManager List resource
@@ -4218,6 +4716,8 @@ definitions:
   TokenValidation:
     title: Token handling Configuration
     properties:
+      id:
+        type: int
       enable:
         type: boolean
         example: false
@@ -4225,7 +4725,7 @@ definitions:
       type:
         type: string
         enum:
-          - REGEX
+          - REFERENCE
           - JWT
           - CUSTOM
       value:

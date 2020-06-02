@@ -23,6 +23,8 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * API definition information 
@@ -44,6 +46,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
 
   @SerializedName("openAPIVersion")
   private String openAPIVersion = null;
+
+  @SerializedName("endpoints")
+  private List<String> endpoints = null;
 
   public OpenAPIDefinitionValidationResponseInfoDTO name(String name) {
     this.name = name;
@@ -135,6 +140,32 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     this.openAPIVersion = openAPIVersion;
   }
 
+  public OpenAPIDefinitionValidationResponseInfoDTO endpoints(List<String> endpoints) {
+    this.endpoints = endpoints;
+    return this;
+  }
+
+  public OpenAPIDefinitionValidationResponseInfoDTO addEndpointsItem(String endpointsItem) {
+    if (this.endpoints == null) {
+      this.endpoints = new ArrayList<>();
+    }
+    this.endpoints.add(endpointsItem);
+    return this;
+  }
+
+   /**
+   * contains host/servers specified in the OpenAPI file/URL 
+   * @return endpoints
+  **/
+  @ApiModelProperty(value = "contains host/servers specified in the OpenAPI file/URL ")
+  public List<String> getEndpoints() {
+    return endpoints;
+  }
+
+  public void setEndpoints(List<String> endpoints) {
+    this.endpoints = endpoints;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -149,12 +180,13 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
         Objects.equals(this.version, openAPIDefinitionValidationResponseInfo.version) &&
         Objects.equals(this.context, openAPIDefinitionValidationResponseInfo.context) &&
         Objects.equals(this.description, openAPIDefinitionValidationResponseInfo.description) &&
-        Objects.equals(this.openAPIVersion, openAPIDefinitionValidationResponseInfo.openAPIVersion);
+        Objects.equals(this.openAPIVersion, openAPIDefinitionValidationResponseInfo.openAPIVersion) &&
+        Objects.equals(this.endpoints, openAPIDefinitionValidationResponseInfo.endpoints);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, version, context, description, openAPIVersion);
+    return Objects.hash(name, version, context, description, openAPIVersion, endpoints);
   }
 
 
@@ -168,6 +200,7 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    openAPIVersion: ").append(toIndentedString(openAPIVersion)).append("\n");
+    sb.append("    endpoints: ").append(toIndentedString(endpoints)).append("\n");
     sb.append("}");
     return sb.toString();
   }

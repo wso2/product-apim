@@ -32,6 +32,12 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationTokenDTO;
  */
 
 public class ApplicationKeyDTO {
+  @SerializedName("keyMappingId")
+  private String keyMappingId = null;
+
+  @SerializedName("keyManager")
+  private String keyManager = null;
+
   @SerializedName("consumerKey")
   private String consumerKey = null;
 
@@ -102,6 +108,45 @@ public class ApplicationKeyDTO {
 
   @SerializedName("token")
   private ApplicationTokenDTO token = null;
+
+  @SerializedName("additionalProperties")
+  private Object additionalProperties = null;
+
+  public ApplicationKeyDTO keyMappingId(String keyMappingId) {
+    this.keyMappingId = keyMappingId;
+    return this;
+  }
+
+   /**
+   * Key Manager Mapping UUID
+   * @return keyMappingId
+  **/
+  @ApiModelProperty(value = "Key Manager Mapping UUID")
+  public String getKeyMappingId() {
+    return keyMappingId;
+  }
+
+  public void setKeyMappingId(String keyMappingId) {
+    this.keyMappingId = keyMappingId;
+  }
+
+  public ApplicationKeyDTO keyManager(String keyManager) {
+    this.keyManager = keyManager;
+    return this;
+  }
+
+   /**
+   * Key Manager Name
+   * @return keyManager
+  **/
+  @ApiModelProperty(value = "Key Manager Name")
+  public String getKeyManager() {
+    return keyManager;
+  }
+
+  public void setKeyManager(String keyManager) {
+    this.keyManager = keyManager;
+  }
 
   public ApplicationKeyDTO consumerKey(String consumerKey) {
     this.consumerKey = consumerKey;
@@ -255,6 +300,24 @@ public class ApplicationKeyDTO {
     this.token = token;
   }
 
+  public ApplicationKeyDTO additionalProperties(Object additionalProperties) {
+    this.additionalProperties = additionalProperties;
+    return this;
+  }
+
+   /**
+   * additionalProperties (if any).
+   * @return additionalProperties
+  **/
+  @ApiModelProperty(value = "additionalProperties (if any).")
+  public Object getAdditionalProperties() {
+    return additionalProperties;
+  }
+
+  public void setAdditionalProperties(Object additionalProperties) {
+    this.additionalProperties = additionalProperties;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -265,19 +328,22 @@ public class ApplicationKeyDTO {
       return false;
     }
     ApplicationKeyDTO applicationKey = (ApplicationKeyDTO) o;
-    return Objects.equals(this.consumerKey, applicationKey.consumerKey) &&
+    return Objects.equals(this.keyMappingId, applicationKey.keyMappingId) &&
+        Objects.equals(this.keyManager, applicationKey.keyManager) &&
+        Objects.equals(this.consumerKey, applicationKey.consumerKey) &&
         Objects.equals(this.consumerSecret, applicationKey.consumerSecret) &&
         Objects.equals(this.supportedGrantTypes, applicationKey.supportedGrantTypes) &&
         Objects.equals(this.callbackUrl, applicationKey.callbackUrl) &&
         Objects.equals(this.keyState, applicationKey.keyState) &&
         Objects.equals(this.keyType, applicationKey.keyType) &&
         Objects.equals(this.groupId, applicationKey.groupId) &&
-        Objects.equals(this.token, applicationKey.token);
+        Objects.equals(this.token, applicationKey.token) &&
+        Objects.equals(this.additionalProperties, applicationKey.additionalProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consumerKey, consumerSecret, supportedGrantTypes, callbackUrl, keyState, keyType, groupId, token);
+    return Objects.hash(keyMappingId, keyManager, consumerKey, consumerSecret, supportedGrantTypes, callbackUrl, keyState, keyType, groupId, token, additionalProperties);
   }
 
 
@@ -286,6 +352,8 @@ public class ApplicationKeyDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class ApplicationKeyDTO {\n");
     
+    sb.append("    keyMappingId: ").append(toIndentedString(keyMappingId)).append("\n");
+    sb.append("    keyManager: ").append(toIndentedString(keyManager)).append("\n");
     sb.append("    consumerKey: ").append(toIndentedString(consumerKey)).append("\n");
     sb.append("    consumerSecret: ").append(toIndentedString(consumerSecret)).append("\n");
     sb.append("    supportedGrantTypes: ").append(toIndentedString(supportedGrantTypes)).append("\n");
@@ -294,6 +362,7 @@ public class ApplicationKeyDTO {
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
     sb.append("    groupId: ").append(toIndentedString(groupId)).append("\n");
     sb.append("    token: ").append(toIndentedString(token)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

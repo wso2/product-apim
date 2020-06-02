@@ -32,6 +32,7 @@ Name | Type | Description | Notes
 **avgRating** | **String** | The average rating of the API |  [optional]
 **advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
 **isSubscriptionAvailable** | **Boolean** |  |  [optional]
+**categories** | **List&lt;String&gt;** | API categories  |  [optional]
 
 
 

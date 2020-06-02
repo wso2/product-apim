@@ -300,7 +300,7 @@ public class APIProductDTO {
   }
 
   @SerializedName("subscriptionAvailability")
-  private SubscriptionAvailabilityEnum subscriptionAvailability = null;
+  private SubscriptionAvailabilityEnum subscriptionAvailability = SubscriptionAvailabilityEnum.ALL_TENANTS;
 
   @SerializedName("subscriptionAvailableTenants")
   private List<String> subscriptionAvailableTenants = null;
@@ -328,6 +328,9 @@ public class APIProductDTO {
 
   @SerializedName("scopes")
   private List<APIScopeDTO> scopes = null;
+
+  @SerializedName("categories")
+  private List<String> categories = null;
 
   public APIProductDTO id(String id) {
     this.id = id;
@@ -1019,6 +1022,32 @@ public class APIProductDTO {
     this.scopes = scopes;
   }
 
+  public APIProductDTO categories(List<String> categories) {
+    this.categories = categories;
+    return this;
+  }
+
+  public APIProductDTO addCategoriesItem(String categoriesItem) {
+    if (this.categories == null) {
+      this.categories = new ArrayList<>();
+    }
+    this.categories.add(categoriesItem);
+    return this;
+  }
+
+   /**
+   * API categories 
+   * @return categories
+  **/
+  @ApiModelProperty(value = "API categories ")
+  public List<String> getCategories() {
+    return categories;
+  }
+
+  public void setCategories(List<String> categories) {
+    this.categories = categories;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -1061,12 +1090,13 @@ public class APIProductDTO {
         Objects.equals(this.createdTime, apIProduct.createdTime) &&
         Objects.equals(this.lastUpdatedTime, apIProduct.lastUpdatedTime) &&
         Objects.equals(this.apis, apIProduct.apis) &&
-        Objects.equals(this.scopes, apIProduct.scopes);
+        Objects.equals(this.scopes, apIProduct.scopes) &&
+        Objects.equals(this.categories, apIProduct.categories);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes);
+    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
   }
 
 
@@ -1108,6 +1138,7 @@ public class APIProductDTO {
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    apis: ").append(toIndentedString(apis)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
+    sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("}");
     return sb.toString();
   }
