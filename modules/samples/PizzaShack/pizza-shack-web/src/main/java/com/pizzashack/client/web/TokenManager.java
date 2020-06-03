@@ -3,9 +3,9 @@ package com.pizzashack.client.web;
 
 import com.pizzashack.client.dto.Token;
 import org.apache.http.HttpResponse;
-import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
+import java.util.Base64;
 
 public class TokenManager {
 	
@@ -21,8 +21,9 @@ public class TokenManager {
         String consumerSecret = PizzaShackWebConfiguration.getInstance().getConsumerSecret();
         try {
             String applicationToken = consumerKey + ":" + consumerSecret;
-            BASE64Encoder base64Encoder = new BASE64Encoder();
-            applicationToken = "Basic " + base64Encoder.encode(applicationToken.getBytes()).trim();
+            Base64.Encoder base64 = Base64.getEncoder().withoutPadding();
+
+            applicationToken = "Basic " + base64.encodeToString(applicationToken.getBytes()).trim();
 
             String payload = "grant_type=password&username="+username+"&password="+password+"&scope="+scopes;
             HttpResponse httpResponse = httpClient.doPost(submitUrl,applicationToken,
@@ -44,8 +45,8 @@ public class TokenManager {
         String consumerSecret = PizzaShackWebConfiguration.getInstance().getConsumerSecret();
         try {
             String applicationToken = consumerKey + ":" + consumerSecret;
-            BASE64Encoder base64Encoder = new BASE64Encoder();
-            applicationToken = "Basic " + base64Encoder.encode(applicationToken.getBytes()).trim();
+            Base64.Encoder base64 = Base64.getEncoder().withoutPadding();
+            applicationToken = "Basic " + base64.encodeToString(applicationToken.getBytes()).trim();
 
             String payload = "grant_type=password&username="+username+"&password="+password+"&scope="+scopes;
             HttpResponse httpResponse = httpClient.doPost(submitUrl,applicationToken,

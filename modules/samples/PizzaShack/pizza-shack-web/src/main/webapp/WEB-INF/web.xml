@@ -17,11 +17,11 @@
     </context-param>
     <context-param>
         <param-name>consumerKey</param-name>
-        <param-value>p51ZBFaY_GD955qMjqSah76Pa_ca</param-value>
+        <param-value>3DWnfCPRLMBXlGop1YW92B4_xw8a</param-value>
     </context-param>
     <context-param>
         <param-name>consumerSecret</param-name>
-        <param-value>1Y_K6Zr_bQq8MfDBa31odFTa0BEa</param-value>
+        <param-value>9Xgk6hZyWvr9B4AYJkSYc3CLMpAa</param-value>
     </context-param>
 	
 </web-app>
