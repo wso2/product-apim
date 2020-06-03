@@ -399,9 +399,9 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
             Assert.assertEquals(e.getCode(), 400);
             ErrorDTO errorDTO = new Gson().fromJson(e.getResponseBody(), ErrorDTO.class);
-            Assert.assertEquals(errorDTO.getCode().longValue(), 901404);
-            Assert.assertEquals(errorDTO.getMessage(), "Key Manager doesn't support Oauth application generation");
-            Assert.assertEquals(errorDTO.getDescription(), "Key Manager doesn't support Oauth application generation");
+            Assert.assertEquals(errorDTO.getCode().longValue(), 901405);
+            Assert.assertEquals(errorDTO.getMessage(), "Key Manager doesn't support generating OAuth applications");
+            Assert.assertEquals(errorDTO.getDescription(), "Key Manager doesn't support generating OAuth applications");
         }
         restAPIStore.deleteApplication(appId);
     }
