@@ -27,18 +27,18 @@
     <modules>
 <!--        <module>tests-common</module>-->
         <module>scenarios-common</module>
-<!--        <module>1-manage-public-partner-private-apis</module>-->
-<!--        <module>2-collaborative-api-development</module>-->
+        <module>1-manage-public-partner-private-apis</module>
+        <module>2-collaborative-api-development</module>
         <!--<module>3-securing-an-api-with-different-security-protocols</module>-->
         <module>4-application-development-using-apis</module>
-<!--        <module>5-managing-api-lifecycle</module>-->
-<!--        <module>6-rollout-api-updates-seamlessly</module>-->
-<!--        <module>7-managing-api-traffic-based-on-various-conditions</module>-->
-<!--        <module>8-analyze-usage-of-apis-for-business-insights</module>-->
-<!--        <module>9-developer-community-building</module>-->
-<!--        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>-->
-<!--        <module>11-segregate-api-traffic</module>-->
-<!--        <module>14-receive-alerts-on-different-events-for-decision-making</module>-->
+        <module>5-managing-api-lifecycle</module>
+        <module>6-rollout-api-updates-seamlessly</module>
+        <module>7-managing-api-traffic-based-on-various-conditions</module>
+        <module>8-analyze-usage-of-apis-for-business-insights</module>
+        <module>9-developer-community-building</module>
+        <module>10-manage-security-resiliancy-other-aspects-of-service-endpoints</module>
+        <module>11-segregate-api-traffic</module>
+        <module>14-receive-alerts-on-different-events-for-decision-making</module>
     </modules>
 
     <repositories>
@@ -491,11 +491,6 @@
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-annotations</artifactId>
                 <version>${swagger-annotations-version}</version>
@@ -638,6 +633,8 @@
         <synapse.version>2.1.7-wso2v147</synapse.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <org.springframework.version>5.2.6.RELEASE</org.springframework.version>
+        <carbon.identity-inbound-auth-oauth.version>6.4.2</carbon.identity-inbound-auth-oauth.version>
     </properties>
 
 </project>
