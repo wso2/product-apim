@@ -81,7 +81,7 @@ public class APIRequest extends AbstractRequest {
     private String technicalOwnerEmail;
     private List<String> securityScheme;
     private List<String> apiCategories;
-
+    private List<String> keyManagers;
     public List<String> getSecurityScheme() {
         return securityScheme;
     }
@@ -140,6 +140,16 @@ public class APIRequest extends AbstractRequest {
 
     public void setWsdl(String wsdl) {
         this.wsdl = wsdl;
+    }
+
+    public List<String> getKeyManagers() {
+
+        return keyManagers;
+    }
+
+    public void setKeyManagers(List<String> keyManagers) {
+
+        this.keyManagers = keyManagers;
     }
 
     /**

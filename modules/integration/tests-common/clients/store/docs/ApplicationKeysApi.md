@@ -11,6 +11,11 @@ Method | HTTP request | Description
 [**applicationsApplicationIdKeysKeyTypePut**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypePut) | **PUT** /applications/{applicationId}/keys/{keyType} | Update grant types and callback url of an application 
 [**applicationsApplicationIdKeysKeyTypeRegenerateSecretPost**](ApplicationKeysApi.md#applicationsApplicationIdKeysKeyTypeRegenerateSecretPost) | **POST** /applications/{applicationId}/keys/{keyType}/regenerate-secret | Re-generate consumer secret 
 [**applicationsApplicationIdMapKeysPost**](ApplicationKeysApi.md#applicationsApplicationIdMapKeysPost) | **POST** /applications/{applicationId}/map-keys | Map application keys
+[**applicationsApplicationIdOauthKeysGet**](ApplicationKeysApi.md#applicationsApplicationIdOauthKeysGet) | **GET** /applications/{applicationId}/oauth-keys | Retrieve all application keys
+[**applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost**](ApplicationKeysApi.md#applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost) | **POST** /applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up | Clean up application keys
+[**applicationsApplicationIdOauthKeysKeyMappingIdGet**](ApplicationKeysApi.md#applicationsApplicationIdOauthKeysKeyMappingIdGet) | **GET** /applications/{applicationId}/oauth-keys/{keyMappingId} | Get key details of a given type 
+[**applicationsApplicationIdOauthKeysKeyMappingIdPut**](ApplicationKeysApi.md#applicationsApplicationIdOauthKeysKeyMappingIdPut) | **PUT** /applications/{applicationId}/oauth-keys/{keyMappingId} | Update grant types and callback url of an application 
+[**applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost**](ApplicationKeysApi.md#applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost) | **POST** /applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret | Re-generate consumer secret 
 
 
 <a name="applicationsApplicationIdGenerateKeysPost"></a>
@@ -391,6 +396,284 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ApplicationKeyDTO**](ApplicationKeyDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdOauthKeysGet"></a>
+# **applicationsApplicationIdOauthKeysGet**
+> ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(applicationId)
+
+Retrieve all application keys
+
+Retrieve keys (Consumer key/secret) of application 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+try {
+    ApplicationKeyListDTO result = apiInstance.applicationsApplicationIdOauthKeysGet(applicationId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysGet");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+
+### Return type
+
+[**ApplicationKeyListDTO**](ApplicationKeyListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost"></a>
+# **applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost**
+> applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost(applicationId, keyMappingId, ifMatch)
+
+Clean up application keys
+
+Clean up keys after failed key generation of an application 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+String keyMappingId = "keyMappingId_example"; // String | OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
+String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+try {
+    apiInstance.applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost(applicationId, keyMappingId, ifMatch);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **keyMappingId** | **String**| OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  |
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdOauthKeysKeyMappingIdGet"></a>
+# **applicationsApplicationIdOauthKeysKeyMappingIdGet**
+> ApplicationKeyDTO applicationsApplicationIdOauthKeysKeyMappingIdGet(applicationId, keyMappingId, groupId)
+
+Get key details of a given type 
+
+This operation can be used to retrieve key details of an individual application specifying the key type in the URI. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+String keyMappingId = "keyMappingId_example"; // String | OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
+String groupId = "groupId_example"; // String | Application Group Id 
+try {
+    ApplicationKeyDTO result = apiInstance.applicationsApplicationIdOauthKeysKeyMappingIdGet(applicationId, keyMappingId, groupId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysKeyMappingIdGet");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **keyMappingId** | **String**| OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  |
+ **groupId** | **String**| Application Group Id  | [optional]
+
+### Return type
+
+[**ApplicationKeyDTO**](ApplicationKeyDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdOauthKeysKeyMappingIdPut"></a>
+# **applicationsApplicationIdOauthKeysKeyMappingIdPut**
+> ApplicationKeyDTO applicationsApplicationIdOauthKeysKeyMappingIdPut(applicationId, keyMappingId, body)
+
+Update grant types and callback url of an application 
+
+This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+String keyMappingId = "keyMappingId_example"; // String | OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
+ApplicationKeyDTO body = new ApplicationKeyDTO(); // ApplicationKeyDTO | Grant types/Callback URL update request object 
+try {
+    ApplicationKeyDTO result = apiInstance.applicationsApplicationIdOauthKeysKeyMappingIdPut(applicationId, keyMappingId, body);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysKeyMappingIdPut");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **keyMappingId** | **String**| OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  |
+ **body** | [**ApplicationKeyDTO**](ApplicationKeyDTO.md)| Grant types/Callback URL update request object  |
+
+### Return type
+
+[**ApplicationKeyDTO**](ApplicationKeyDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost"></a>
+# **applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost**
+> ApplicationKeyReGenerateResponseDTO applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost(applicationId, keyMappingId)
+
+Re-generate consumer secret 
+
+This operation can be used to re generate consumer secret for an application for the give key type 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.store.api.ApiClient;
+//import org.wso2.am.integration.clients.store.api.ApiException;
+//import org.wso2.am.integration.clients.store.api.Configuration;
+//import org.wso2.am.integration.clients.store.api.auth.*;
+//import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApplicationKeysApi apiInstance = new ApplicationKeysApi();
+String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+String keyMappingId = "keyMappingId_example"; // String | OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
+try {
+    ApplicationKeyReGenerateResponseDTO result = apiInstance.applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost(applicationId, keyMappingId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **keyMappingId** | **String**| OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  |
+
+### Return type
+
+[**ApplicationKeyReGenerateResponseDTO**](ApplicationKeyReGenerateResponseDTO.md)
 
 ### Authorization
 

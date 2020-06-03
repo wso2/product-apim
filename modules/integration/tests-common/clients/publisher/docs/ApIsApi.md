@@ -16,6 +16,9 @@ Method | HTTP request | Description
 [**apisGet**](ApIsApi.md#apisGet) | **GET** /apis | Retrieve/Search APIs 
 [**apisImportGraphqlSchemaPost**](ApIsApi.md#apisImportGraphqlSchemaPost) | **POST** /apis/import-graphql-schema | Import API Definition
 [**apisPost**](ApIsApi.md#apisPost) | **POST** /apis | Create a new API
+[**generateMockScripts**](ApIsApi.md#generateMockScripts) | **POST** /apis/{apiId}/generate-mock-scripts | Generate mock response payloads
+[**getGeneratedMockScriptsOfAPI**](ApIsApi.md#getGeneratedMockScriptsOfAPI) | **GET** /apis/{apiId}/generated-mock-scripts | Generate mock response payloads
+[**getWSDLInfoOfAPI**](ApIsApi.md#getWSDLInfoOfAPI) | **GET** /apis/{apiId}/wsdl-info | Get WSDL definition
 [**getWSDLOfAPI**](ApIsApi.md#getWSDLOfAPI) | **GET** /apis/{apiId}/wsdl | Get WSDL definition
 [**importOpenAPIDefinition**](ApIsApi.md#importOpenAPIDefinition) | **POST** /apis/import-openapi | Import an OpenAPI Definition
 [**importWSDLDefinition**](ApIsApi.md#importWSDLDefinition) | **POST** /apis/import-wsdl | Import a WSDL Definition
@@ -605,7 +608,7 @@ Name | Type | Description  | Notes
 
 Import API Definition
 
-This operation can be used to create api from api definition.  API definition is GraphQL Schema 
+This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
 
 ### Example
 ```java
@@ -703,6 +706,169 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="generateMockScripts"></a>
+# **generateMockScripts**
+> String generateMockScripts(apiId, ifNoneMatch)
+
+Generate mock response payloads
+
+This operation can be used to generate mock responses from examples of swagger definition of an API. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApIsApi apiInstance = new ApIsApi();
+String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+try {
+    String result = apiInstance.generateMockScripts(apiId, ifNoneMatch);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApIsApi#generateMockScripts");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getGeneratedMockScriptsOfAPI"></a>
+# **getGeneratedMockScriptsOfAPI**
+> MockResponsePayloadListDTO getGeneratedMockScriptsOfAPI(apiId, ifNoneMatch)
+
+Generate mock response payloads
+
+This operation can be used to generate mock responses from examples of swagger definition of an API. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApIsApi apiInstance = new ApIsApi();
+String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+try {
+    MockResponsePayloadListDTO result = apiInstance.getGeneratedMockScriptsOfAPI(apiId, ifNoneMatch);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApIsApi#getGeneratedMockScriptsOfAPI");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+[**MockResponsePayloadListDTO**](MockResponsePayloadListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getWSDLInfoOfAPI"></a>
+# **getWSDLInfoOfAPI**
+> WSDLInfoDTO getWSDLInfoOfAPI(apiId)
+
+Get WSDL definition
+
+This operation can be used to retrieve the WSDL meta information of an API. It states whether the API is a SOAP API. If the API is a SOAP API, it states whether it has a single WSDL or a WSDL archive. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ApIsApi apiInstance = new ApIsApi();
+String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+try {
+    WSDLInfoDTO result = apiInstance.getWSDLInfoOfAPI(apiId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ApIsApi#getWSDLInfoOfAPI");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+[**WSDLInfoDTO**](WSDLInfoDTO.md)
 
 ### Authorization
 
@@ -981,7 +1147,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **file** | **File**| WSDL file or archive to upload |
+ **file** | **File**| WSDL file or archive to upload | [optional]
  **url** | **String**| WSDL Definition url | [optional]
  **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
 

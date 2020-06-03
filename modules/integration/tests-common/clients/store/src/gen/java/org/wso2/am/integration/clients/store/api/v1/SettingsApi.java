@@ -177,12 +177,13 @@ public class SettingsApi {
     }
     /**
      * Build call for settingsGet
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call settingsGetCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call settingsGetCall(String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -192,6 +193,8 @@ public class SettingsApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null)
+        localVarHeaderParams.put("X-WSO2-Tenant", apiClient.parameterToString(xWSO2Tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -224,10 +227,10 @@ public class SettingsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call settingsGetValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call settingsGetValidateBeforeCall(String xWSO2Tenant, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = settingsGetCall(progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = settingsGetCall(xWSO2Tenant, progressListener, progressRequestListener);
         return call;
 
     }
@@ -235,22 +238,24 @@ public class SettingsApi {
     /**
      * Retreive store settings
      * Retreive store settings 
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return SettingsDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public SettingsDTO settingsGet() throws ApiException {
-        ApiResponse<SettingsDTO> resp = settingsGetWithHttpInfo();
+    public SettingsDTO settingsGet(String xWSO2Tenant) throws ApiException {
+        ApiResponse<SettingsDTO> resp = settingsGetWithHttpInfo(xWSO2Tenant);
         return resp.getData();
     }
 
     /**
      * Retreive store settings
      * Retreive store settings 
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @return ApiResponse&lt;SettingsDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<SettingsDTO> settingsGetWithHttpInfo() throws ApiException {
-        com.squareup.okhttp.Call call = settingsGetValidateBeforeCall(null, null);
+    public ApiResponse<SettingsDTO> settingsGetWithHttpInfo(String xWSO2Tenant) throws ApiException {
+        com.squareup.okhttp.Call call = settingsGetValidateBeforeCall(xWSO2Tenant, null, null);
         Type localVarReturnType = new TypeToken<SettingsDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -258,11 +263,12 @@ public class SettingsApi {
     /**
      * Retreive store settings (asynchronously)
      * Retreive store settings 
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call settingsGetAsync(final ApiCallback<SettingsDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call settingsGetAsync(String xWSO2Tenant, final ApiCallback<SettingsDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -283,7 +289,7 @@ public class SettingsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = settingsGetValidateBeforeCall(progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = settingsGetValidateBeforeCall(xWSO2Tenant, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SettingsDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;

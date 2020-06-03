@@ -128,12 +128,10 @@
                     **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/devportal/**
                 </exclude>
                 <exclude>
-                  
-                  
-                    **/repository/components/features/org.wso2.carbon.apimgt.admin_${carbon.apimgt.version}/admin_new/**
+                    **/repository/components/features/org.wso2.carbon.apimgt.admin_${carbon.apimgt.version}/admin/**
                 </exclude>
                 <exclude>
-                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**
+                    **/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin-old/**
                 </exclude>
                 <exclude>
                     **/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**
@@ -353,9 +351,9 @@
 
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin-old/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-old</outputDirectory>
         </fileSet>
 
         <fileSet>
@@ -373,9 +371,9 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin_new/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin_new</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
         </fileSet>
         <!--  copying modules xml -->
         <fileSet>

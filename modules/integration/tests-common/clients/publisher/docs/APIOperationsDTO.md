@@ -11,6 +11,8 @@ Name | Type | Description | Notes
 **throttlingPolicy** | **String** |  |  [optional]
 **scopes** | **List&lt;String&gt;** |  |  [optional]
 **usedProductIds** | **List&lt;String&gt;** |  |  [optional]
+**amznResourceName** | **String** |  |  [optional]
+**amznResourceTimeout** | **Integer** |  |  [optional]
 
 
 

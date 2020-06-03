@@ -110,6 +110,9 @@ public class SubscriptionDTO {
   @SerializedName("status")
   private StatusEnum status = null;
 
+  @SerializedName("redirectionParams")
+  private String redirectionParams = null;
+
   public SubscriptionDTO subscriptionId(String subscriptionId) {
     this.subscriptionId = subscriptionId;
     return this;
@@ -254,6 +257,24 @@ public class SubscriptionDTO {
     this.status = status;
   }
 
+  public SubscriptionDTO redirectionParams(String redirectionParams) {
+    this.redirectionParams = redirectionParams;
+    return this;
+  }
+
+   /**
+   * A url and other parameters the subscriber can be redirected.
+   * @return redirectionParams
+  **/
+  @ApiModelProperty(value = "A url and other parameters the subscriber can be redirected.")
+  public String getRedirectionParams() {
+    return redirectionParams;
+  }
+
+  public void setRedirectionParams(String redirectionParams) {
+    this.redirectionParams = redirectionParams;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -271,12 +292,13 @@ public class SubscriptionDTO {
         Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
         Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
         Objects.equals(this.requestedThrottlingPolicy, subscription.requestedThrottlingPolicy) &&
-        Objects.equals(this.status, subscription.status);
+        Objects.equals(this.status, subscription.status) &&
+        Objects.equals(this.redirectionParams, subscription.redirectionParams);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, requestedThrottlingPolicy, status);
+    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, requestedThrottlingPolicy, status, redirectionParams);
   }
 
 
@@ -293,6 +315,7 @@ public class SubscriptionDTO {
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
     sb.append("    requestedThrottlingPolicy: ").append(toIndentedString(requestedThrottlingPolicy)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
+    sb.append("    redirectionParams: ").append(toIndentedString(redirectionParams)).append("\n");
     sb.append("}");
     return sb.toString();
   }
