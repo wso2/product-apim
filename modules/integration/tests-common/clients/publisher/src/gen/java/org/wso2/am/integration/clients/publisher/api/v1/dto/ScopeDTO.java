@@ -23,21 +23,49 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeBindingsDTO;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ScopeDTO
  */
 
 public class ScopeDTO {
+  @SerializedName("id")
+  private String id = null;
+
   @SerializedName("name")
   private String name = null;
+
+  @SerializedName("displayName")
+  private String displayName = null;
 
   @SerializedName("description")
   private String description = null;
 
   @SerializedName("bindings")
-  private ScopeBindingsDTO bindings = null;
+  private List<String> bindings = null;
+
+  @SerializedName("usageCount")
+  private Integer usageCount = null;
+
+  public ScopeDTO id(String id) {
+    this.id = id;
+    return this;
+  }
+
+   /**
+   * UUID of the Scope. Valid only for shared scopes. 
+   * @return id
+  **/
+  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the Scope. Valid only for shared scopes. ")
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   public ScopeDTO name(String name) {
     this.name = name;
@@ -48,13 +76,31 @@ public class ScopeDTO {
    * name of Scope 
    * @return name
   **/
-  @ApiModelProperty(example = "apim:api_view", value = "name of Scope ")
+  @ApiModelProperty(example = "apim:api_view", required = true, value = "name of Scope ")
   public String getName() {
     return name;
   }
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public ScopeDTO displayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+   /**
+   * display name of Scope 
+   * @return displayName
+  **/
+  @ApiModelProperty(example = "api_view", value = "display name of Scope ")
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
   public ScopeDTO description(String description) {
@@ -75,22 +121,48 @@ public class ScopeDTO {
     this.description = description;
   }
 
-  public ScopeDTO bindings(ScopeBindingsDTO bindings) {
+  public ScopeDTO bindings(List<String> bindings) {
     this.bindings = bindings;
     return this;
   }
 
+  public ScopeDTO addBindingsItem(String bindingsItem) {
+    if (this.bindings == null) {
+      this.bindings = new ArrayList<>();
+    }
+    this.bindings.add(bindingsItem);
+    return this;
+  }
+
    /**
-   * Get bindings
+   * role bindings list of the Scope 
    * @return bindings
   **/
-  @ApiModelProperty(value = "")
-  public ScopeBindingsDTO getBindings() {
+  @ApiModelProperty(example = "[\"admin\",\"Internal/creator\",\"Internal/publisher\"]", value = "role bindings list of the Scope ")
+  public List<String> getBindings() {
     return bindings;
   }
 
-  public void setBindings(ScopeBindingsDTO bindings) {
+  public void setBindings(List<String> bindings) {
     this.bindings = bindings;
+  }
+
+  public ScopeDTO usageCount(Integer usageCount) {
+    this.usageCount = usageCount;
+    return this;
+  }
+
+   /**
+   * usage count of Scope 
+   * @return usageCount
+  **/
+  @ApiModelProperty(example = "3", value = "usage count of Scope ")
+  public Integer getUsageCount() {
+    return usageCount;
+  }
+
+  public void setUsageCount(Integer usageCount) {
+    this.usageCount = usageCount;
   }
 
 
@@ -103,14 +175,17 @@ public class ScopeDTO {
       return false;
     }
     ScopeDTO scope = (ScopeDTO) o;
-    return Objects.equals(this.name, scope.name) &&
+    return Objects.equals(this.id, scope.id) &&
+        Objects.equals(this.name, scope.name) &&
+        Objects.equals(this.displayName, scope.displayName) &&
         Objects.equals(this.description, scope.description) &&
-        Objects.equals(this.bindings, scope.bindings);
+        Objects.equals(this.bindings, scope.bindings) &&
+        Objects.equals(this.usageCount, scope.usageCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, description, bindings);
+    return Objects.hash(id, name, displayName, description, bindings, usageCount);
   }
 
 
@@ -119,9 +194,12 @@ public class ScopeDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class ScopeDTO {\n");
     
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    bindings: ").append(toIndentedString(bindings)).append("\n");
+    sb.append("    usageCount: ").append(toIndentedString(usageCount)).append("\n");
     sb.append("}");
     return sb.toString();
   }

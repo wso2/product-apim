@@ -125,6 +125,9 @@ public class APIDTO {
   @SerializedName("isSubscriptionAvailable")
   private Boolean isSubscriptionAvailable = null;
 
+  @SerializedName("categories")
+  private List<String> categories = null;
+
   public APIDTO id(String id) {
     this.id = id;
     return this;
@@ -709,6 +712,32 @@ public class APIDTO {
     this.isSubscriptionAvailable = isSubscriptionAvailable;
   }
 
+  public APIDTO categories(List<String> categories) {
+    this.categories = categories;
+    return this;
+  }
+
+  public APIDTO addCategoriesItem(String categoriesItem) {
+    if (this.categories == null) {
+      this.categories = new ArrayList<>();
+    }
+    this.categories.add(categoriesItem);
+    return this;
+  }
+
+   /**
+   * API categories 
+   * @return categories
+  **/
+  @ApiModelProperty(value = "API categories ")
+  public List<String> getCategories() {
+    return categories;
+  }
+
+  public void setCategories(List<String> categories) {
+    this.categories = categories;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -746,12 +775,13 @@ public class APIDTO {
         Objects.equals(this.scopes, API.scopes) &&
         Objects.equals(this.avgRating, API.avgRating) &&
         Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
-        Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable);
+        Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable) &&
+        Objects.equals(this.categories, API.categories);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories);
   }
 
 
@@ -788,6 +818,7 @@ public class APIDTO {
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
     sb.append("    isSubscriptionAvailable: ").append(toIndentedString(isSubscriptionAvailable)).append("\n");
+    sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("}");
     return sb.toString();
   }

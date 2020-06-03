@@ -16,7 +16,6 @@
 
 package org.wso2.am.integration.test.impl;
 
-
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -30,26 +29,30 @@ import org.wso2.am.integration.clients.store.api.v1.ApiKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.store.api.v1.KeyManagersCollectionApi;
 import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
+import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
-import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -57,13 +60,14 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.xpath.XPathExpressionException;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -79,7 +83,7 @@ public class RestAPIStoreImpl {
     public SdKsApi sdKsApi = new SdKsApi();
     public ApiKeysApi apiKeysApi = new ApiKeysApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
-
+    public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
@@ -119,6 +123,8 @@ public class RestAPIStoreImpl {
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
         apiKeysApi.setApiClient(apiStoreClient);
+        keyManagersCollectionApi.setApiClient(apiStoreClient);
+        apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -127,11 +133,13 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setDebugging(true);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
+        keyManagersCollectionApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -236,6 +244,7 @@ public class RestAPIStoreImpl {
             subscription.setApplicationId(applicationId);
             subscription.setApiId(apiId);
             subscription.setThrottlingPolicy(subscriptionTier);
+            subscription.setRequestedThrottlingPolicy(subscriptionTier);
             SubscriptionDTO subscriptionResponse = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
 
             HttpResponse response = null;
@@ -287,6 +296,45 @@ public class RestAPIStoreImpl {
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
     }
+
+    public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
+                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+                                          List<String> grantTypes,Map<String,Object> additionalProperties,
+                                          String keyManager)
+            throws ApiException {
+        ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
+        applicationKeyGenerateRequest.setValidityTime(validityTime);
+        applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
+        applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
+        applicationKeyGenerateRequest.setScopes(scopes);
+        applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+        applicationKeyGenerateRequest.setAdditionalProperties(additionalProperties);
+        applicationKeyGenerateRequest.setKeyManager(keyManager);
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    public ApiResponse<ApplicationKeyDTO> generateKeysWithApiResponse(String applicationId, String validityTime,
+                                                           String callBackUrl,
+                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+                                                       List<String> grantTypes, Map<String,Object> additionalProperties,
+                                                       String keyManager)
+            throws ApiException {
+        ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
+        applicationKeyGenerateRequest.setValidityTime(validityTime);
+        applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
+        applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
+        applicationKeyGenerateRequest.setScopes(scopes);
+        applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+        applicationKeyGenerateRequest.setAdditionalProperties(additionalProperties);
+        applicationKeyGenerateRequest.setKeyManager(keyManager);
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        return response;
+    }
+
 
     public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod,
                                      String permittedIP, String permittedReferer) throws ApiException {
@@ -746,40 +794,10 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Add application with Group
-     *
-     * @param application - application  name
-     * @param tier        - throttling tier
-     * @param callbackUrl - callback url
-     * @param description - description of app
-     * @param groupId     - group to share
-     * @return - http response of add application
-     * @throws APIManagerIntegrationTestException - if fails to add application
-     */
-    public HttpResponse addApplicationWithGroup(String application, String tier, String callbackUrl,
-                                                String description, String groupId)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application + "&groupId=" + groupId), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to add application - " + application
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
      * Add application with token type
      *
      * @param application - application  name
      * @param tier        - throttling tier
-     * @param callbackUrl - callback url
      * @param description - description of app
      * @param tokenType   - token type of app (JWT ot DEFAULT)
      * @return - ApplicationDTO of add application
@@ -1707,5 +1725,36 @@ public class RestAPIStoreImpl {
             throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
                     "Error: " + e.getMessage(), e);
         }
+    }
+
+    public KeyManagerListDTO getKeyManagers() throws ApiException {
+        return keyManagersCollectionApi.keyManagersGet(tenantDomain);
+    }
+
+    public ApplicationKeyDTO getApplicationKeyByKeyMappingId(String applicationId, String keyMappingId)
+            throws ApiException {
+
+        return applicationKeysApi.applicationsApplicationIdOauthKeysKeyMappingIdGet(applicationId, keyMappingId, null);
+    }
+
+    public ApplicationKeyDTO updateApplicationKeyByKeyMappingId(String applicationId, String keyMappingId,
+                                                                ApplicationKeyDTO applicationKeyDTO)
+            throws ApiException {
+
+        return applicationKeysApi
+                .applicationsApplicationIdOauthKeysKeyMappingIdPut(applicationId, keyMappingId, applicationKeyDTO);
+    }
+
+    public ApplicationKeyListDTO getApplicationKeysByAppId(String jwtAppId) throws ApiException {
+
+        return applicationKeysApi.applicationsApplicationIdKeysGet(jwtAppId);
+    }
+
+    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String appid, String keyManager) throws ApiException {
+
+        ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
+                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
+                        ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
+        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
     }
 }

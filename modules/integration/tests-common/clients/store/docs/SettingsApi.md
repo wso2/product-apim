@@ -63,7 +63,7 @@ Name | Type | Description  | Notes
 
 <a name="settingsGet"></a>
 # **settingsGet**
-> SettingsDTO settingsGet()
+> SettingsDTO settingsGet(xWSO2Tenant)
 
 Retreive store settings
 
@@ -85,8 +85,9 @@ OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security")
 OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
 SettingsApi apiInstance = new SettingsApi();
+String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
 try {
-    SettingsDTO result = apiInstance.settingsGet();
+    SettingsDTO result = apiInstance.settingsGet(xWSO2Tenant);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SettingsApi#settingsGet");
@@ -95,7 +96,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
 
 ### Return type
 

@@ -10,7 +10,10 @@ Name | Type | Description | Notes
 **mapExistingAuthApps** | **Boolean** |  |  [optional]
 **apiGatewayEndpoint** | **String** |  |  [optional]
 **monetizationEnabled** | **Boolean** |  |  [optional]
+**recommendationEnabled** | **Boolean** |  |  [optional]
 **isUnlimitedTierPaid** | **Boolean** |  |  [optional]
+**identityProvider** | [**SettingsIdentityProviderDTO**](SettingsIdentityProviderDTO.md) |  |  [optional]
+**isAnonymousModeEnabled** | **Boolean** |  |  [optional]
 
 
 

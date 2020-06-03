@@ -60,14 +60,17 @@
     }
   },
   "endpointImplementationType": "ENDPOINT",
-  "scopes": [{
-    "name": "SwaggerPetstore_v2",
-    "description": "SwaggerPetstore_v2",
-    "bindings": {
-      "type": null,
-      "values": ["admin"]
+  "scopes": [
+    {
+      "scope": {
+        "name": "SwaggerPetstore_v2",
+        "description": "SwaggerPetstore_v2",
+        "bindings": [
+          "admin"
+        ]
+      }
     }
-  }],
+  ],
   "operations": [{
     "id": "",
     "target": "/pets",
@@ -81,7 +84,7 @@
     "verb": "POST",
     "authType": "Application & Application User",
     "throttlingPolicy": "Unlimited",
-    "scopes": []
+    "scopes": ["SwaggerPetstore_v2"]
   }, {
     "id": "",
     "target": "/pets/{petId}",

@@ -25,60 +25,61 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ClaimDTO;
 
 /**
- * ScopeBindingsDTO
+ * SubscriberInfoDTO
  */
 
-public class ScopeBindingsDTO {
-  @SerializedName("type")
-  private String type = null;
+public class SubscriberInfoDTO {
+  @SerializedName("name")
+  private String name = null;
 
-  @SerializedName("values")
-  private List<String> values = null;
+  @SerializedName("claims")
+  private List<ClaimDTO> claims = null;
 
-  public ScopeBindingsDTO type(String type) {
-    this.type = type;
+  public SubscriberInfoDTO name(String name) {
+    this.name = name;
     return this;
   }
 
    /**
-   * Type of binding role / permission 
-   * @return type
+   * Get name
+   * @return name
   **/
-  @ApiModelProperty(value = "Type of binding role / permission ")
-  public String getType() {
-    return type;
+  @ApiModelProperty(example = "admin", value = "")
+  public String getName() {
+    return name;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public ScopeBindingsDTO values(List<String> values) {
-    this.values = values;
+  public SubscriberInfoDTO claims(List<ClaimDTO> claims) {
+    this.claims = claims;
     return this;
   }
 
-  public ScopeBindingsDTO addValuesItem(String valuesItem) {
-    if (this.values == null) {
-      this.values = new ArrayList<>();
+  public SubscriberInfoDTO addClaimsItem(ClaimDTO claimsItem) {
+    if (this.claims == null) {
+      this.claims = new ArrayList<>();
     }
-    this.values.add(valuesItem);
+    this.claims.add(claimsItem);
     return this;
   }
 
    /**
-   * Get values
-   * @return values
+   * Get claims
+   * @return claims
   **/
   @ApiModelProperty(value = "")
-  public List<String> getValues() {
-    return values;
+  public List<ClaimDTO> getClaims() {
+    return claims;
   }
 
-  public void setValues(List<String> values) {
-    this.values = values;
+  public void setClaims(List<ClaimDTO> claims) {
+    this.claims = claims;
   }
 
 
@@ -90,24 +91,24 @@ public class ScopeBindingsDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ScopeBindingsDTO scopeBindings = (ScopeBindingsDTO) o;
-    return Objects.equals(this.type, scopeBindings.type) &&
-        Objects.equals(this.values, scopeBindings.values);
+    SubscriberInfoDTO subscriberInfo = (SubscriberInfoDTO) o;
+    return Objects.equals(this.name, subscriberInfo.name) &&
+        Objects.equals(this.claims, subscriberInfo.claims);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, values);
+    return Objects.hash(name, claims);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ScopeBindingsDTO {\n");
+    sb.append("class SubscriberInfoDTO {\n");
     
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    values: ").append(toIndentedString(values)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    claims: ").append(toIndentedString(claims)).append("\n");
     sb.append("}");
     return sb.toString();
   }
