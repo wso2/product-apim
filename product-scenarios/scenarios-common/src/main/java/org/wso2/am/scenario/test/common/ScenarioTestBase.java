@@ -29,11 +29,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
@@ -184,6 +186,22 @@ public class ScenarioTestBase {
             storeURLHttps = storeUrls.getWebAppURLHttps();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
+
+            String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
+
+            //DCR call for publisher app
+            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+                    RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
+                    RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                    APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+            ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+            //DCR call for dev portal app
+            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+                    RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                    RestAPIStoreImpl.username, RestAPIStoreImpl.password,
+                    APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+            ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),

@@ -18,10 +18,7 @@
 
 package org.wso2.am.scenario.tests.register.application;
 
-import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -91,9 +88,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
         verifyResponse(applicationResponse);
 
-        Gson g = new Gson();
-        ApplicationDTO applicationDTO = g.fromJson(restAPIStore
-                .getApplicationById(applicationResponse.getData()).getData(), ApplicationDTO.class);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationResponse.getData());
 
         assertEquals(applicationDTO.getName(), APPLICATION_NAME,
                 "Error in application creation with mandatory values. Application  : " + APPLICATION_NAME);
@@ -107,12 +102,12 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
     @Test(description = "4.1.1.2", dataProvider = "OptionalApplicationValuesDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
     public void testApplicationCreationWithMandatoryAndOptionalValues(String tokenType) throws Exception {
-        String applicationName = "AppToken";
+        String applicationName = "AppToken" + tokenType;
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 APPLICATION_DESCRIPTION, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         verifyResponse(applicationResponse);
-        JSONObject applicationData = new JSONObject(restAPIStore.getApplicationById(applicationResponse.getData()).getData());
+        JSONObject applicationData = new JSONObject(restAPIStore.getApplicationById(applicationResponse.getData()));
         String STATUS = "status";
         assertEquals(applicationData.get(STATUS), STATUS_APPROVED,
                 "Error in application creation with mandatory and optional values. Application STATUS");
@@ -123,8 +118,9 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(applicationData.get(THROTTLING_POLICY), APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 "Error in application creation with mandatory and optional values. Application TIER");
         String TOKEN_TYPE = "tokenType";
-        assertEquals(applicationData.get(TOKEN_TYPE), ApplicationDTO.TokenTypeEnum.OAUTH.getValue(),
+        assertEquals(((JSONObject) applicationData.get(TOKEN_TYPE)).get("value"), ApplicationDTO.TokenTypeEnum.OAUTH.getValue(),
                 "Error in application creation with mandatory and optional values. Application TOKEN_TYPE");
+
         restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
