@@ -294,7 +294,7 @@ public class ScenarioTestBase {
                 String[] urlProps3 = urlProps2[1].split(":9443/");
                 host = urlProps3[0];
             } else {
-                host = urlProps2[1];
+                host = StringUtils.removeEnd( urlProps2[1],"/");
             }
         } else {
             baseUrl = "https://localhost:9443/";
