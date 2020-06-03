@@ -20,7 +20,7 @@ under the License.
     <parent>
         <artifactId>integration</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>3.1.1-SNAPSHOT</version>
+        <version>3.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -37,6 +37,7 @@ under the License.
         <module>integration-test-extensions</module>
         <module>ui-pages</module>
         <module>clients</module>
+        <module>extenstions</module>
     </modules>
 
 </project>

@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **context** | **String** |  |  [optional]
 **description** | **String** |  |  [optional]
 **openAPIVersion** | **String** |  |  [optional]
+**endpoints** | **List&lt;String&gt;** | contains host/servers specified in the OpenAPI file/URL  |  [optional]
 
 
 

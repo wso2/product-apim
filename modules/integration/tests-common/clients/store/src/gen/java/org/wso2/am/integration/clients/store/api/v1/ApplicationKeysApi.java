@@ -995,4 +995,676 @@ public class ApplicationKeysApi {
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+    /**
+     * Build call for applicationsApplicationIdOauthKeysGet
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysGetCall(String applicationId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/oauth-keys"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdOauthKeysGetValidateBeforeCall(String applicationId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdOauthKeysGet(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysGetCall(applicationId, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Retrieve all application keys
+     * Retrieve keys (Consumer key/secret) of application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @return ApplicationKeyListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(String applicationId) throws ApiException {
+        ApiResponse<ApplicationKeyListDTO> resp = applicationsApplicationIdOauthKeysGetWithHttpInfo(applicationId);
+        return resp.getData();
+    }
+
+    /**
+     * Retrieve all application keys
+     * Retrieve keys (Consumer key/secret) of application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @return ApiResponse&lt;ApplicationKeyListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ApplicationKeyListDTO> applicationsApplicationIdOauthKeysGetWithHttpInfo(String applicationId) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, null, null);
+        Type localVarReturnType = new TypeToken<ApplicationKeyListDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Retrieve all application keys (asynchronously)
+     * Retrieve keys (Consumer key/secret) of application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysGetAsync(String applicationId, final ApiCallback<ApplicationKeyListDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ApplicationKeyListDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostCall(String applicationId, String keyMappingId, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyMappingId" + "\\}", apiClient.escapeString(keyMappingId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null)
+        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostValidateBeforeCall(String applicationId, String keyMappingId, String ifMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost(Async)");
+        }
+        
+        // verify the required parameter 'keyMappingId' is set
+        if (keyMappingId == null) {
+            throw new ApiException("Missing the required parameter 'keyMappingId' when calling applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostCall(applicationId, keyMappingId, ifMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Clean up application keys
+     * Clean up keys after failed key generation of an application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public void applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPost(String applicationId, String keyMappingId, String ifMatch) throws ApiException {
+        applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostWithHttpInfo(applicationId, keyMappingId, ifMatch);
+    }
+
+    /**
+     * Clean up application keys
+     * Clean up keys after failed key generation of an application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<Void> applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostWithHttpInfo(String applicationId, String keyMappingId, String ifMatch) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostValidateBeforeCall(applicationId, keyMappingId, ifMatch, null, null);
+        return apiClient.execute(call);
+    }
+
+    /**
+     * Clean up application keys (asynchronously)
+     * Clean up keys after failed key generation of an application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostAsync(String applicationId, String keyMappingId, String ifMatch, final ApiCallback<Void> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdCleanUpPostValidateBeforeCall(applicationId, keyMappingId, ifMatch, progressListener, progressRequestListener);
+        apiClient.executeAsync(call, callback);
+        return call;
+    }
+    /**
+     * Build call for applicationsApplicationIdOauthKeysKeyMappingIdGet
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdGetCall(String applicationId, String keyMappingId, String groupId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/oauth-keys/{keyMappingId}"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyMappingId" + "\\}", apiClient.escapeString(keyMappingId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (groupId != null)
+        localVarQueryParams.addAll(apiClient.parameterToPair("groupId", groupId));
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdGetValidateBeforeCall(String applicationId, String keyMappingId, String groupId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdOauthKeysKeyMappingIdGet(Async)");
+        }
+        
+        // verify the required parameter 'keyMappingId' is set
+        if (keyMappingId == null) {
+            throw new ApiException("Missing the required parameter 'keyMappingId' when calling applicationsApplicationIdOauthKeysKeyMappingIdGet(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdGetCall(applicationId, keyMappingId, groupId, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Get key details of a given type 
+     * This operation can be used to retrieve key details of an individual application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @return ApplicationKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApplicationKeyDTO applicationsApplicationIdOauthKeysKeyMappingIdGet(String applicationId, String keyMappingId, String groupId) throws ApiException {
+        ApiResponse<ApplicationKeyDTO> resp = applicationsApplicationIdOauthKeysKeyMappingIdGetWithHttpInfo(applicationId, keyMappingId, groupId);
+        return resp.getData();
+    }
+
+    /**
+     * Get key details of a given type 
+     * This operation can be used to retrieve key details of an individual application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @return ApiResponse&lt;ApplicationKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ApplicationKeyDTO> applicationsApplicationIdOauthKeysKeyMappingIdGetWithHttpInfo(String applicationId, String keyMappingId, String groupId) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdGetValidateBeforeCall(applicationId, keyMappingId, groupId, null, null);
+        Type localVarReturnType = new TypeToken<ApplicationKeyDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Get key details of a given type  (asynchronously)
+     * This operation can be used to retrieve key details of an individual application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdGetAsync(String applicationId, String keyMappingId, String groupId, final ApiCallback<ApplicationKeyDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdGetValidateBeforeCall(applicationId, keyMappingId, groupId, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ApplicationKeyDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for applicationsApplicationIdOauthKeysKeyMappingIdPut
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param body Grant types/Callback URL update request object  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdPutCall(String applicationId, String keyMappingId, ApplicationKeyDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/oauth-keys/{keyMappingId}"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyMappingId" + "\\}", apiClient.escapeString(keyMappingId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdPutValidateBeforeCall(String applicationId, String keyMappingId, ApplicationKeyDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdOauthKeysKeyMappingIdPut(Async)");
+        }
+        
+        // verify the required parameter 'keyMappingId' is set
+        if (keyMappingId == null) {
+            throw new ApiException("Missing the required parameter 'keyMappingId' when calling applicationsApplicationIdOauthKeysKeyMappingIdPut(Async)");
+        }
+        
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling applicationsApplicationIdOauthKeysKeyMappingIdPut(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdPutCall(applicationId, keyMappingId, body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Update grant types and callback url of an application 
+     * This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param body Grant types/Callback URL update request object  (required)
+     * @return ApplicationKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApplicationKeyDTO applicationsApplicationIdOauthKeysKeyMappingIdPut(String applicationId, String keyMappingId, ApplicationKeyDTO body) throws ApiException {
+        ApiResponse<ApplicationKeyDTO> resp = applicationsApplicationIdOauthKeysKeyMappingIdPutWithHttpInfo(applicationId, keyMappingId, body);
+        return resp.getData();
+    }
+
+    /**
+     * Update grant types and callback url of an application 
+     * This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param body Grant types/Callback URL update request object  (required)
+     * @return ApiResponse&lt;ApplicationKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ApplicationKeyDTO> applicationsApplicationIdOauthKeysKeyMappingIdPutWithHttpInfo(String applicationId, String keyMappingId, ApplicationKeyDTO body) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdPutValidateBeforeCall(applicationId, keyMappingId, body, null, null);
+        Type localVarReturnType = new TypeToken<ApplicationKeyDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Update grant types and callback url of an application  (asynchronously)
+     * This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param body Grant types/Callback URL update request object  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdPutAsync(String applicationId, String keyMappingId, ApplicationKeyDTO body, final ApiCallback<ApplicationKeyDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdPutValidateBeforeCall(applicationId, keyMappingId, body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ApplicationKeyDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostCall(String applicationId, String keyMappingId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret"
+            .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyMappingId" + "\\}", apiClient.escapeString(keyMappingId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostValidateBeforeCall(String applicationId, String keyMappingId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost(Async)");
+        }
+        
+        // verify the required parameter 'keyMappingId' is set
+        if (keyMappingId == null) {
+            throw new ApiException("Missing the required parameter 'keyMappingId' when calling applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostCall(applicationId, keyMappingId, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Re-generate consumer secret 
+     * This operation can be used to re generate consumer secret for an application for the give key type 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @return ApplicationKeyReGenerateResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApplicationKeyReGenerateResponseDTO applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPost(String applicationId, String keyMappingId) throws ApiException {
+        ApiResponse<ApplicationKeyReGenerateResponseDTO> resp = applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostWithHttpInfo(applicationId, keyMappingId);
+        return resp.getData();
+    }
+
+    /**
+     * Re-generate consumer secret 
+     * This operation can be used to re generate consumer secret for an application for the give key type 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @return ApiResponse&lt;ApplicationKeyReGenerateResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ApplicationKeyReGenerateResponseDTO> applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostWithHttpInfo(String applicationId, String keyMappingId) throws ApiException {
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostValidateBeforeCall(applicationId, keyMappingId, null, null);
+        Type localVarReturnType = new TypeToken<ApplicationKeyReGenerateResponseDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Re-generate consumer secret  (asynchronously)
+     * This operation can be used to re generate consumer secret for an application for the give key type 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostAsync(String applicationId, String keyMappingId, final ApiCallback<ApplicationKeyReGenerateResponseDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostValidateBeforeCall(applicationId, keyMappingId, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ApplicationKeyReGenerateResponseDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
 }

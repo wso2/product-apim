@@ -35,6 +35,9 @@ public class ApplicationKeyMappingRequestDTO {
   @SerializedName("consumerSecret")
   private String consumerSecret = null;
 
+  @SerializedName("keyManager")
+  private String keyManager = null;
+
   /**
    * Gets or Sets keyType
    */
@@ -112,13 +115,31 @@ public class ApplicationKeyMappingRequestDTO {
    * Consumer secret of the application
    * @return consumerSecret
   **/
-  @ApiModelProperty(required = true, value = "Consumer secret of the application")
+  @ApiModelProperty(value = "Consumer secret of the application")
   public String getConsumerSecret() {
     return consumerSecret;
   }
 
   public void setConsumerSecret(String consumerSecret) {
     this.consumerSecret = consumerSecret;
+  }
+
+  public ApplicationKeyMappingRequestDTO keyManager(String keyManager) {
+    this.keyManager = keyManager;
+    return this;
+  }
+
+   /**
+   * Key Manager Name
+   * @return keyManager
+  **/
+  @ApiModelProperty(value = "Key Manager Name")
+  public String getKeyManager() {
+    return keyManager;
+  }
+
+  public void setKeyManager(String keyManager) {
+    this.keyManager = keyManager;
   }
 
   public ApplicationKeyMappingRequestDTO keyType(KeyTypeEnum keyType) {
@@ -151,12 +172,13 @@ public class ApplicationKeyMappingRequestDTO {
     ApplicationKeyMappingRequestDTO applicationKeyMappingRequest = (ApplicationKeyMappingRequestDTO) o;
     return Objects.equals(this.consumerKey, applicationKeyMappingRequest.consumerKey) &&
         Objects.equals(this.consumerSecret, applicationKeyMappingRequest.consumerSecret) &&
+        Objects.equals(this.keyManager, applicationKeyMappingRequest.keyManager) &&
         Objects.equals(this.keyType, applicationKeyMappingRequest.keyType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consumerKey, consumerSecret, keyType);
+    return Objects.hash(consumerKey, consumerSecret, keyManager, keyType);
   }
 
 
@@ -167,6 +189,7 @@ public class ApplicationKeyMappingRequestDTO {
     
     sb.append("    consumerKey: ").append(toIndentedString(consumerKey)).append("\n");
     sb.append("    consumerSecret: ").append(toIndentedString(consumerSecret)).append("\n");
+    sb.append("    keyManager: ").append(toIndentedString(keyManager)).append("\n");
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
     sb.append("}");
     return sb.toString();
