@@ -17,4 +17,7 @@
 {% for key,value in synapse_properties.items() %}
 {{key}}={{value}}
 {% endfor %}
+{% if apim.gateway.sync.skip_local_copy is defined %}
+skipLocalCopy = {{apim.gateway.sync.skip_local_copy}}
+{% endif %}
 
