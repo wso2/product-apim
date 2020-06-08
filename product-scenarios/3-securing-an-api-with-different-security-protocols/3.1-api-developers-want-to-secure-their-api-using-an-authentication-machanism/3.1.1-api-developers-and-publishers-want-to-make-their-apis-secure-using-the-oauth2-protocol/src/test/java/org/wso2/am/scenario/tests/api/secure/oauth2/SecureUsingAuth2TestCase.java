@@ -25,22 +25,26 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.scenario.test.common.HttpClient;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.beans.APIManageBean;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,66 +52,96 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
 
 public class SecureUsingAuth2TestCase extends ScenarioTestBase {
-    private APIStoreRestClient apiStore;
     private static final Log log = LogFactory.getLog(SecureUsingAuth2TestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private final String SUBSCRIBER_USERNAME = "3.1.1-subscriber";
-    private final String SUBSCRIBER_PASSWORD = "password@123";
-    private final String ADMIN_LOGIN_USERNAME = "admin";
-    private final String ADMIN_PASSWORD = "admin";
+
     private final String API_DEVELOPER_USERNAME = "3.1.1-developer";
-    private final String API_DEVELOPER_PASSWORD = "password@123";
-    private final String CUSTOMER_ROLE = "customerRole";
-    private final String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private final String TEST_API_1_NAME = "PhoneVerifyAPI-1";
-    private final String TEST_API_1_CONTEXT = "/phone";
+    private final String TEST_API_1_CONTEXT = "phone";
+    private final String TEST_API_1_CONTEXT_TENANT = "t/wso2.com/phone";
     private final String TEST_API_1_VERSION = "1.0.0";
     private final String TEST_APPLICATION_NAME = "TestApp1";
-    private final String CUSTOM_AUTH_HEADER = "custom" ;
+    private final String CUSTOM_AUTH_HEADER = "custom";
+    private String tierCollection = "Gold,Bronze,Unlimited";
     private String accessToken;
     private String consumerKey;
     private String consumerSecret;
+    private static String apiId;
+    private static String applicationId;
+    private static String applicationId2;
 
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private final String RESPONSE_POST = "Tom";
+    private final String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private final String API_POST_ENDPOINT_METHOD = "/customers/name/";
+
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public SecureUsingAuth2TestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiStore = new APIStoreRestClient(storeURL);
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        createUserWithPublisherAndCreatorRole(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD, ADMIN_LOGIN_USERNAME,
-                ADMIN_PASSWORD);
-
-        apiStore.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        apiPublisher.login(API_DEVELOPER_USERNAME, API_DEVELOPER_PASSWORD);
-
-        // create and publish sample API
-        String swaggerFilePath = System.getProperty("framework.resource.location") + "swaggerFiles" + File.separator +
-                "phoneverify-swagger.json";
-        File swaggerFile = new File(swaggerFilePath);
-        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
-        JSONObject swaggerJson = new JSONObject(swaggerContent);
-
-        apiPublisher.developSampleAPI(swaggerJson, API_DEVELOPER_USERNAME, backendEndPoint, true, "public");
-        createApplication(TEST_APPLICATION_NAME);
-
-        // Check the visibility of the API in API store
-        isAPIVisibleInStore(TEST_API_1_NAME, apiStore);
-
-        // Add subscription to API
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEST_API_1_NAME, TEST_API_1_VERSION,
-                API_DEVELOPER_USERNAME,
-                TEST_APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-        HttpResponse addSubscriptionResponse = apiStore.subscribe(subscriptionRequest);
-        verifyResponse(addSubscriptionResponse);
-        if (log.isDebugEnabled()) {
-            log.debug(TEST_APPLICATION_NAME + " is subscribed to " + TEST_API_1_NAME);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
         }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
+        String apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(TEST_API_1_NAME, "/" + TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                "admin", new URL(apiEndPointUrl));
+
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        ArrayList<APIResourceBean> resourceBeanArrayList = new ArrayList<>();
+
+        resourceBeanArrayList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}"));
+
+        resourceBeanArrayList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_NONE, APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name/"));
+
+        apiCreationRequestBean.setResourceBeanList(resourceBeanArrayList);
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = apiDto.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(TEST_APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+
+        applicationId = applicationResponse.getData();
+        //Subscribe the API to the Application
+        restAPIStore.createSubscription(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
         accessToken = generateAppKeys();
     }
+
 
     @Test(description = "3.1.1.1", dataProvider = "AuthorizationHeadersDataProvider",
             dataProviderClass = ScenarioDataProvider.class)
@@ -116,15 +150,20 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, tokenPrefix + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumber");
+        String gatewayHttpsUrl = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT_TENANT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+
         if (log.isDebugEnabled()) {
             log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
         }
-        List<NameValuePair> urlParameters = new ArrayList<>();
-        urlParameters.add(new BasicNameValuePair("PhoneNumber", "18006785432"));
-        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
-        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
@@ -134,24 +173,45 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumber");
-        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumber=18006785432&LicenseKey=0",
-                requestHeaders);
+        String gatewayHttpsUrl = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT_TENANT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
     @Test(description = "3.1.1.3", dependsOnMethods = "testOAuth2Authorization")
     public void testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType() throws Exception {
-        String accessTokenWithPasswordGrantType = generateAccessTokenByPasswordGrantType();
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(TEST_APPLICATION_NAME + "2",
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+
+        applicationId2 = applicationResponse.getData();
+        //Subscribe the API to the Application
+        restAPIStore.createSubscription(apiId, applicationId2, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        String accessTokenWithPasswordGrantType = generateAccessTokenByPasswordGrantType(applicationId2);
         Map<String, String> requestHeaders = new HashMap();
         requestHeaders.put("Authorization", "Bearer " + accessTokenWithPasswordGrantType);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumbers");
-        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumbers=18006785432&LicenseKey=0",
-                requestHeaders);
+        String gatewayHttpsUrl = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT_TENANT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
@@ -178,36 +238,44 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         requestHeaders = new HashMap<>();
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
-        List<NameValuePair> urlParameters = new ArrayList<>();
-        urlParameters.add(new BasicNameValuePair("PhoneNumbers", "18006785432"));
-        urlParameters.add(new BasicNameValuePair("LicenseKey", "0"));
+        String gatewayHttpsUrl = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                    "/customers/name");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT_TENANT, TEST_API_1_VERSION,
+                    "/customers/name");
+        }
+        HashMap<String, String> requestHeadersPost = new HashMap<>();
+        requestHeadersPost.put("accept", "text/plain");
+        requestHeadersPost.put("Content-Type", "text/plain");
 
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumbers");
-        HttpResponse apiResponse = HttpClient.doPost(gatewayHttpsUrl, requestHeaders, urlParameters);
+        HttpResponse apiResponse = HttpRequestUtil.doPost(new URL(gatewayHttpsUrl), "id=25", requestHeadersPost);
+
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
     public void changeCustomAuthorizationHeaderInAPI(String customAuth) throws Exception {
-        HttpResponse getSwaggerResponse = apiPublisher.getSwagger("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME);
-        APIManageBean apiManageBean = new APIManageBean("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME,
-                "https", "disabled",
-                "resource_level", "Production and Sandbox", getSwaggerResponse.getData(),
-                "Unlimited,Gold,Bronze");
-
-        apiManageBean.setAuthorizationHeader(customAuth);
-        HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
-        verifyResponse(apiManageResponse);
-
-        APILifeCycleStateRequest updateLifeCycle =
-                new APILifeCycleStateRequest("PhoneVerifyAPI-1", API_DEVELOPER_USERNAME,
-                        APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishResponse);
-
-        waitForAPIDeploymentSync(apiManageBean.getProvider(), apiManageBean.getName(), apiManageBean.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+//        HttpResponse getSwaggerResponse = apiPublisher.getSwagger("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME);
+//        APIManageBean apiManageBean = new APIManageBean("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME,
+//                "https", "disabled",
+//                "resource_level", "Production and Sandbox", getSwaggerResponse.getData(),
+//                "Unlimited,Gold,Bronze");
+//
+//        apiManageBean.setAuthorizationHeader(customAuth);
+//        HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
+//        verifyResponse(apiManageResponse);
+//
+//        APILifeCycleStateRequest updateLifeCycle =
+//                new APILifeCycleStateRequest("PhoneVerifyAPI-1", API_DEVELOPER_USERNAME,
+//                        APILifeCycleState.PUBLISHED);
+//        HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
+//        verifyResponse(apiPublishResponse);
+//
+//        waitForAPIDeploymentSync(apiManageBean.getProvider(), apiManageBean.getName(), apiManageBean.getVersion(),
+//                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     public void createApplication(String applicationName) throws Exception {
@@ -221,43 +289,68 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     }
 
     public String generateAppKeys() throws Exception {
-        APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(TEST_APPLICATION_NAME);
-        HttpResponse keyGenerationResponse = null;
-        keyGenerationResponse = apiStore.generateApplicationKey(appKeyRequestGenerator);
-        log.info("Key generation response for application \'" + TEST_APPLICATION_NAME + "\' response data :"
-                + keyGenerationResponse.getData());
-        verifyResponse(keyGenerationResponse);
-        JSONObject keyGenerationRespData = new JSONObject(keyGenerationResponse.getData());
-
-        accessToken = (keyGenerationRespData.getJSONObject("data").getJSONObject("key"))
-                .get("accessToken").toString();
-        consumerKey = keyGenerationRespData.getJSONObject("data").getJSONObject("key").
-                getString("consumerKey");
-
-        consumerSecret = keyGenerationRespData.getJSONObject("data").getJSONObject("key").
-                getString("consumerSecret");
-
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //get access token
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
         return accessToken;
     }
 
-    public String generateAccessTokenByPasswordGrantType() throws Exception {
-        HttpResponse response;
-        String requestBody;
-        JSONObject accessTokenGenerationResponse;
+    public String generateAccessTokenByPasswordGrantType(String applicationId) throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //get access token
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+        consumerKey = applicationKeyDTO.getConsumerKey();
         URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
 
-        requestBody = "grant_type=password" + "&username=" + ADMIN_LOGIN_USERNAME + "&password=" + ADMIN_PASSWORD;
-        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
-        accessTokenGenerationResponse = new JSONObject(response.getData());
-
-        return accessTokenGenerationResponse.getString("access_token");
+        String requestBody = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            requestBody = "grant_type=password&username=andrew&password=Andrew#123&scope=PRODUCTION";
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            requestBody = "grant_type=password&username=andrew@wso2.com&password=Andrew#123&scope=PRODUCTION";
+        }
+        HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                tokenEndpointURL);
+        JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
+        //get an access token for the first time
+        return firstAccessTokenGenerationResponse.getString("access_token");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(TEST_APPLICATION_NAME);
-        apiPublisher.deleteAPI(TEST_API_1_NAME, TEST_API_1_VERSION, API_DEVELOPER_USERNAME);
-        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(API_DEVELOPER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        restAPIStore.deleteApplication(applicationId);
+        restAPIStore.deleteApplication(applicationId2);
+        restAPIPublisher.deleteAPI(apiId);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
