@@ -18,10 +18,10 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
-    <test name="3.1.1-Secure-an-application" preserve-order="true" verbose="2" parallel="false">
-        <!--        <classes>
+    <test name="3.1.1-Secure-an-application" preserve-order="true" verbose="2" parallel="false" group-by-instances="true">
+        <classes>
             <class name="org.wso2.am.scenario.tests.api.secure.oauth2.SecureUsingAuth2TestCase"/>
-        </classes>-->
+        </classes>
     </test>
 </suite>
 
