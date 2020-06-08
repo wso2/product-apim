@@ -110,7 +110,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         userManagementClient1.addUser(TENANT_USER1, TENANT_USER1_PWD, subscriberRole, TENANT_USER1);
         userManagementClient1.addUser(TENANT_USER2, TENANT_USER2_PWD, subscriberRole, TENANT_USER2);
         userManagementClient1.addUser(TENANT_USER3, TENANT_USER3_PWD, subscriberRole, TENANT_USER3);
-
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
@@ -119,6 +118,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         ApplicationDTO appOfJohnDTO = restAPIStoreClient1.addApplication(JOHN_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user John");
         appIdOfJohnApp = appOfJohnDTO.getApplicationId();
+        waitForKeyManagerDeployment(TENANT_DOMAIN,"Default");
         restAPIStoreClient1.generateKeys(appIdOfJohnApp,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );

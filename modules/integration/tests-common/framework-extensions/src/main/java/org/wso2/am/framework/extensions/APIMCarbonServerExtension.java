@@ -133,7 +133,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                     FileManager.copyJarFile(new File(getAMResourceLocation() + File.separator +
                                     "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"),
                             customHandlerTargetPath);
-                    String apimVersion = "3.1.1-SNAPSHOT";
+                    String apimVersion = System.getProperty("apim.server.version");
                     FileManager.copyJarFile(new File(
                             getAMResourceLocation() + File.separator + "configFiles" + File.separator + "idpjwt" +
                                     File.separator + "org.wso2.am.thirdparty.km-" + apimVersion + ".jar"), dropinsPath);
