@@ -46,6 +46,7 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
     private String tierCollection = "Gold,Bronze";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private int count = 0;
+    private static String apiID;
     private String apiRole;
 
     private static final Log log = LogFactory.getLog(PublisherAccessControlTestCase.class);
