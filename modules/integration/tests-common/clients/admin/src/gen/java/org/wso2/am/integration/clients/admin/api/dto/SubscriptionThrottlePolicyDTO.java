@@ -90,7 +90,7 @@ public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
    * Maximum Depth of the GraphQL query
    * @return graphQLMaxDepth
   **/
-  @ApiModelProperty(example = "10#-----------------------------------------------------", value = "Maximum Depth of the GraphQL query")
+  @ApiModelProperty(example = "10", value = "Maximum Depth of the GraphQL query")
   public Integer getGraphQLMaxDepth() {
     return graphQLMaxDepth;
   }

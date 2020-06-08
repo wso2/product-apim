@@ -23,13 +23,16 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionBaseDTO;
 
 /**
  * IPConditionDTO
  */
 
-public class IPConditionDTO extends ThrottleConditionDTO {
+public class IPConditionDTO {
+  @SerializedName("invertCondition")
+  private Boolean invertCondition = false;
+
   /**
    * Type of the IP condition. Allowed values are \&quot;IPRange\&quot; and \&quot;IPSpecific\&quot;
    */
@@ -88,6 +91,24 @@ public class IPConditionDTO extends ThrottleConditionDTO {
 
   @SerializedName("endingIP")
   private String endingIP = null;
+
+  public IPConditionDTO invertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+    return this;
+  }
+
+   /**
+   * Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value (&#39;true&#39; or &#39;false&#39;) for the same type of conditional group. 
+   * @return invertCondition
+  **/
+  @ApiModelProperty(value = "Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value ('true' or 'false') for the same type of conditional group. ")
+  public Boolean isInvertCondition() {
+    return invertCondition;
+  }
+
+  public void setInvertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+  }
 
   public IPConditionDTO ipConditionType(IpConditionTypeEnum ipConditionType) {
     this.ipConditionType = ipConditionType;
@@ -171,16 +192,16 @@ public class IPConditionDTO extends ThrottleConditionDTO {
       return false;
     }
     IPConditionDTO ipCondition = (IPConditionDTO) o;
-    return Objects.equals(this.ipConditionType, ipCondition.ipConditionType) &&
+    return Objects.equals(this.invertCondition, ipCondition.invertCondition) &&
+        Objects.equals(this.ipConditionType, ipCondition.ipConditionType) &&
         Objects.equals(this.specificIP, ipCondition.specificIP) &&
         Objects.equals(this.startingIP, ipCondition.startingIP) &&
-        Objects.equals(this.endingIP, ipCondition.endingIP) &&
-        super.equals(o);
+        Objects.equals(this.endingIP, ipCondition.endingIP);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(ipConditionType, specificIP, startingIP, endingIP, super.hashCode());
+    return Objects.hash(invertCondition, ipConditionType, specificIP, startingIP, endingIP);
   }
 
 
@@ -188,7 +209,8 @@ public class IPConditionDTO extends ThrottleConditionDTO {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class IPConditionDTO {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    
+    sb.append("    invertCondition: ").append(toIndentedString(invertCondition)).append("\n");
     sb.append("    ipConditionType: ").append(toIndentedString(ipConditionType)).append("\n");
     sb.append("    specificIP: ").append(toIndentedString(specificIP)).append("\n");
     sb.append("    startingIP: ").append(toIndentedString(startingIP)).append("\n");

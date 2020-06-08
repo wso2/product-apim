@@ -25,50 +25,50 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 
 /**
- * GraphQLQueryDTO
+ * AlertTypeDTO
  */
 
-public class GraphQLQueryDTO {
-  @SerializedName("graphQLMaxComplexity")
-  private Integer graphQLMaxComplexity = null;
+public class AlertTypeDTO {
+  @SerializedName("id")
+  private String id = null;
 
-  @SerializedName("graphQLMaxDepth")
-  private Integer graphQLMaxDepth = null;
+  @SerializedName("name")
+  private String name = null;
 
-  public GraphQLQueryDTO graphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  public AlertTypeDTO id(String id) {
+    this.id = id;
     return this;
   }
 
    /**
-   * Maximum Complexity of the GraphQL query
-   * @return graphQLMaxComplexity
+   * The alert Id
+   * @return id
   **/
-  @ApiModelProperty(example = "400", value = "Maximum Complexity of the GraphQL query")
-  public Integer getGraphQLMaxComplexity() {
-    return graphQLMaxComplexity;
+  @ApiModelProperty(example = "1", value = "The alert Id")
+  public String getId() {
+    return id;
   }
 
-  public void setGraphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  public void setId(String id) {
+    this.id = id;
   }
 
-  public GraphQLQueryDTO graphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
+  public AlertTypeDTO name(String name) {
+    this.name = name;
     return this;
   }
 
    /**
-   * Maximum Depth of the GraphQL query
-   * @return graphQLMaxDepth
+   * The name of the alert.
+   * @return name
   **/
-  @ApiModelProperty(example = "10", value = "Maximum Depth of the GraphQL query")
-  public Integer getGraphQLMaxDepth() {
-    return graphQLMaxDepth;
+  @ApiModelProperty(example = "AbnormalRequestTime", value = "The name of the alert.")
+  public String getName() {
+    return name;
   }
 
-  public void setGraphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
+  public void setName(String name) {
+    this.name = name;
   }
 
 
@@ -80,24 +80,24 @@ public class GraphQLQueryDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    GraphQLQueryDTO graphQLQuery = (GraphQLQueryDTO) o;
-    return Objects.equals(this.graphQLMaxComplexity, graphQLQuery.graphQLMaxComplexity) &&
-        Objects.equals(this.graphQLMaxDepth, graphQLQuery.graphQLMaxDepth);
+    AlertTypeDTO alertType = (AlertTypeDTO) o;
+    return Objects.equals(this.id, alertType.id) &&
+        Objects.equals(this.name, alertType.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(graphQLMaxComplexity, graphQLMaxDepth);
+    return Objects.hash(id, name);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLQueryDTO {\n");
+    sb.append("class AlertTypeDTO {\n");
     
-    sb.append("    graphQLMaxComplexity: ").append(toIndentedString(graphQLMaxComplexity)).append("\n");
-    sb.append("    graphQLMaxDepth: ").append(toIndentedString(graphQLMaxDepth)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("}");
     return sb.toString();
   }

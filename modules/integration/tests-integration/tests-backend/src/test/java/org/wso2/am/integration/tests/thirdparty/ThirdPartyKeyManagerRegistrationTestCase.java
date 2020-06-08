@@ -160,7 +160,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-876785.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-876785.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -199,7 +199,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-306722.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-306722.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -239,7 +239,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-306722.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-306722.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -295,7 +295,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-306722.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-306722.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -341,7 +341,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-306722.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-306722.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -385,7 +385,7 @@ public class ThirdPartyKeyManagerRegistrationTestCase extends APIManagerLifecycl
         keyManagerDTO.setIssuer("https://dev-306722.okta.com/oauth2/default");
         keyManagerDTO.setJwksEndpoint("https://dev-306722.okta.com/oauth2/default/v1/keys");
         keyManagerDTO.setEnableMapOAuthConsumerApps(false);
-        keyManagerDTO.setEnableTokenGneration(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
         keyManagerDTO.setEnableOAuthAppCreation(true);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));

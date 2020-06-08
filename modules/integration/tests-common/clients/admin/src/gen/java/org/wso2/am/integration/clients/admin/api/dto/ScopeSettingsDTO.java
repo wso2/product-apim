@@ -25,50 +25,29 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 
 /**
- * GraphQLQueryDTO
+ * ScopeSettingsDTO
  */
 
-public class GraphQLQueryDTO {
-  @SerializedName("graphQLMaxComplexity")
-  private Integer graphQLMaxComplexity = null;
+public class ScopeSettingsDTO {
+  @SerializedName("name")
+  private String name = null;
 
-  @SerializedName("graphQLMaxDepth")
-  private Integer graphQLMaxDepth = null;
-
-  public GraphQLQueryDTO graphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  public ScopeSettingsDTO name(String name) {
+    this.name = name;
     return this;
   }
 
    /**
-   * Maximum Complexity of the GraphQL query
-   * @return graphQLMaxComplexity
+   * Get name
+   * @return name
   **/
-  @ApiModelProperty(example = "400", value = "Maximum Complexity of the GraphQL query")
-  public Integer getGraphQLMaxComplexity() {
-    return graphQLMaxComplexity;
+  @ApiModelProperty(value = "")
+  public String getName() {
+    return name;
   }
 
-  public void setGraphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
-  }
-
-  public GraphQLQueryDTO graphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
-    return this;
-  }
-
-   /**
-   * Maximum Depth of the GraphQL query
-   * @return graphQLMaxDepth
-  **/
-  @ApiModelProperty(example = "10", value = "Maximum Depth of the GraphQL query")
-  public Integer getGraphQLMaxDepth() {
-    return graphQLMaxDepth;
-  }
-
-  public void setGraphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
+  public void setName(String name) {
+    this.name = name;
   }
 
 
@@ -80,24 +59,22 @@ public class GraphQLQueryDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    GraphQLQueryDTO graphQLQuery = (GraphQLQueryDTO) o;
-    return Objects.equals(this.graphQLMaxComplexity, graphQLQuery.graphQLMaxComplexity) &&
-        Objects.equals(this.graphQLMaxDepth, graphQLQuery.graphQLMaxDepth);
+    ScopeSettingsDTO scopeSettings = (ScopeSettingsDTO) o;
+    return Objects.equals(this.name, scopeSettings.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(graphQLMaxComplexity, graphQLMaxDepth);
+    return Objects.hash(name);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLQueryDTO {\n");
+    sb.append("class ScopeSettingsDTO {\n");
     
-    sb.append("    graphQLMaxComplexity: ").append(toIndentedString(graphQLMaxComplexity)).append("\n");
-    sb.append("    graphQLMaxDepth: ").append(toIndentedString(graphQLMaxDepth)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("}");
     return sb.toString();
   }

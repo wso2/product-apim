@@ -78,20 +78,6 @@ public class JSON {
                                            getDiscriminatorValue(readElement, "type"));
             }
           })
-          .registerTypeSelector(ThrottleConditionDTO.class, new TypeSelector() {
-            @Override
-            public Class getClassForElement(JsonElement readElement) {
-                Map classByDiscriminatorValue = new HashMap();
-                classByDiscriminatorValue.put("HeaderCondition".toUpperCase(), HeaderConditionDTO.class);
-                classByDiscriminatorValue.put("IPCondition".toUpperCase(), IPConditionDTO.class);
-                classByDiscriminatorValue.put("JWTClaimsCondition".toUpperCase(), JWTClaimsConditionDTO.class);
-                classByDiscriminatorValue.put("QueryParameterCondition".toUpperCase(), QueryParameterConditionDTO.class);
-                classByDiscriminatorValue.put("ThrottleConditionDTO".toUpperCase(), ThrottleConditionDTO.class);
-                return getClassByDiscriminator(
-                                           classByDiscriminatorValue,
-                                           getDiscriminatorValue(readElement, "type"));
-            }
-          })
         ;
         GsonBuilder builder = fireBuilder.createGsonBuilder();
         return builder;
