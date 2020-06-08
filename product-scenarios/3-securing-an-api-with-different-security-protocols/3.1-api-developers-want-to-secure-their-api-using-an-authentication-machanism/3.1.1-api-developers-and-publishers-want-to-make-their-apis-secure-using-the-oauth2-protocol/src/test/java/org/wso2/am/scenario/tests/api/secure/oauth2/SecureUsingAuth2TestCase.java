@@ -18,10 +18,9 @@
 
 package org.wso2.am.scenario.tests.api.secure.oauth2;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -48,7 +47,6 @@ import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -81,13 +79,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
     private static final String API_SUBSCRIBER_USERNAME = "andrew";
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final String RESPONSE_POST = "Tom";
-    private final String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final String API_POST_ENDPOINT_METHOD = "/customers/name/";
-
 
     @Factory(dataProvider = "userModeDataProvider")
     public SecureUsingAuth2TestCase(TestUserMode userMode) {
@@ -116,7 +108,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         super.init(userMode);
         String apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(TEST_API_1_NAME, "/" + TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "admin", new URL(apiEndPointUrl));
+                API_CREATOR_PUBLISHER_USERNAME, new URL(apiEndPointUrl));
 
         apiCreationRequestBean.setTiersCollection(tierCollection);
         ArrayList<APIResourceBean> resourceBeanArrayList = new ArrayList<>();
@@ -187,7 +179,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    @Test(description = "3.1.1.3", dependsOnMethods = "testOAuth2Authorization")
+    @Test(description = "3.1.1.3", dependsOnMethods = "testResourceSetSecurityTypeAsApplicationInvokeByClientCredentials")
     public void testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType() throws Exception {
 
         HttpResponse applicationResponse = restAPIStore.createApplication(TEST_APPLICATION_NAME + "2",
@@ -216,26 +208,30 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    // TODO: 2/27/19 Enable the test after identifying the cause of build failure
-    @Test(description = "3.1.1.4", enabled = false)
+    @Test(description = "3.1.1.4", enabled = true, dependsOnMethods = "testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader")
     public void testResourceApplicationInvokeByCustomAuthorization() throws Exception {
-        changeCustomAuthorizationHeaderInAPI(CUSTOM_AUTH_HEADER);
+        changeCustomAuthorizationHeaderInAPI(CUSTOM_AUTH_HEADER, apiId);
         Map<String, String> requestHeaders = new HashMap();
         requestHeaders.put(CUSTOM_AUTH_HEADER, "Bearer " + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-        String gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
-                "/CheckPhoneNumber");
-        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl + "?PhoneNumber=18006785432&LicenseKey=0",
-                requestHeaders);
+        String gatewayHttpsUrl = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            gatewayHttpsUrl = getHttpsAPIInvocationURL(TEST_API_1_CONTEXT_TENANT, TEST_API_1_VERSION,
+                    "/customers/123");
+        }
+        HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
-        changeCustomAuthorizationHeaderInAPI("");
+        changeCustomAuthorizationHeaderInAPI("Authorization", apiId);
     }
 
-    @Test(description = "3.1.1.7", dependsOnMethods = "testOAuth2Authorization")
+    @Test(description = "3.1.1.7", dependsOnMethods = "testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType")
     public void testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader() throws Exception {
-        Map<String, String> requestHeaders;
-        requestHeaders = new HashMap<>();
+        Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
         String gatewayHttpsUrl = null;
@@ -257,25 +253,17 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    public void changeCustomAuthorizationHeaderInAPI(String customAuth) throws Exception {
-//        HttpResponse getSwaggerResponse = apiPublisher.getSwagger("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME);
-//        APIManageBean apiManageBean = new APIManageBean("PhoneVerifyAPI-1", "1.0.0", API_DEVELOPER_USERNAME,
-//                "https", "disabled",
-//                "resource_level", "Production and Sandbox", getSwaggerResponse.getData(),
-//                "Unlimited,Gold,Bronze");
-//
-//        apiManageBean.setAuthorizationHeader(customAuth);
-//        HttpResponse apiManageResponse = apiPublisher.manageAPI(apiManageBean);
-//        verifyResponse(apiManageResponse);
-//
-//        APILifeCycleStateRequest updateLifeCycle =
-//                new APILifeCycleStateRequest("PhoneVerifyAPI-1", API_DEVELOPER_USERNAME,
-//                        APILifeCycleState.PUBLISHED);
-//        HttpResponse apiPublishResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-//        verifyResponse(apiPublishResponse);
-//
-//        waitForAPIDeploymentSync(apiManageBean.getProvider(), apiManageBean.getName(), apiManageBean.getVersion(),
-//                APIMIntegrationConstants.IS_API_EXISTS);
+    public void changeCustomAuthorizationHeaderInAPI(String customAuth, String apiId) throws Exception {
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        apidto.setAuthorizationHeader(customAuth);
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
+        restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
+        Thread.sleep(3000);
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDtoStore = restAPIStore.getAPI(apiId);
+        apiDtoStore.getAuthorizationHeader();
+        assertEquals(apiDtoStore.getAuthorizationHeader(), customAuth, "Authorization header update failed");
     }
 
     public void createApplication(String applicationName) throws Exception {
@@ -307,7 +295,6 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         //get access token
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         consumerKey = applicationKeyDTO.getConsumerKey();
         URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
