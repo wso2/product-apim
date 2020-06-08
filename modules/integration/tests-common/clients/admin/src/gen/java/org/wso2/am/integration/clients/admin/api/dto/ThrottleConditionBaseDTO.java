@@ -23,23 +23,16 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionBaseDTO;
 
 /**
- * QueryParameterConditionDTO
+ * ThrottleConditionBaseDTO
  */
 
-public class QueryParameterConditionDTO {
+public class ThrottleConditionBaseDTO {
   @SerializedName("invertCondition")
   private Boolean invertCondition = false;
 
-  @SerializedName("parameterName")
-  private String parameterName = null;
-
-  @SerializedName("parameterValue")
-  private String parameterValue = null;
-
-  public QueryParameterConditionDTO invertCondition(Boolean invertCondition) {
+  public ThrottleConditionBaseDTO invertCondition(Boolean invertCondition) {
     this.invertCondition = invertCondition;
     return this;
   }
@@ -57,42 +50,6 @@ public class QueryParameterConditionDTO {
     this.invertCondition = invertCondition;
   }
 
-  public QueryParameterConditionDTO parameterName(String parameterName) {
-    this.parameterName = parameterName;
-    return this;
-  }
-
-   /**
-   * Name of the query parameter
-   * @return parameterName
-  **/
-  @ApiModelProperty(value = "Name of the query parameter")
-  public String getParameterName() {
-    return parameterName;
-  }
-
-  public void setParameterName(String parameterName) {
-    this.parameterName = parameterName;
-  }
-
-  public QueryParameterConditionDTO parameterValue(String parameterValue) {
-    this.parameterValue = parameterValue;
-    return this;
-  }
-
-   /**
-   * Value of the query parameter to be matched
-   * @return parameterValue
-  **/
-  @ApiModelProperty(value = "Value of the query parameter to be matched")
-  public String getParameterValue() {
-    return parameterValue;
-  }
-
-  public void setParameterValue(String parameterValue) {
-    this.parameterValue = parameterValue;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -102,26 +59,22 @@ public class QueryParameterConditionDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    QueryParameterConditionDTO queryParameterCondition = (QueryParameterConditionDTO) o;
-    return Objects.equals(this.invertCondition, queryParameterCondition.invertCondition) &&
-        Objects.equals(this.parameterName, queryParameterCondition.parameterName) &&
-        Objects.equals(this.parameterValue, queryParameterCondition.parameterValue);
+    ThrottleConditionBaseDTO throttleConditionBase = (ThrottleConditionBaseDTO) o;
+    return Objects.equals(this.invertCondition, throttleConditionBase.invertCondition);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(invertCondition, parameterName, parameterValue);
+    return Objects.hash(invertCondition);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class QueryParameterConditionDTO {\n");
+    sb.append("class ThrottleConditionBaseDTO {\n");
     
     sb.append("    invertCondition: ").append(toIndentedString(invertCondition)).append("\n");
-    sb.append("    parameterName: ").append(toIndentedString(parameterName)).append("\n");
-    sb.append("    parameterValue: ").append(toIndentedString(parameterValue)).append("\n");
     sb.append("}");
     return sb.toString();
   }

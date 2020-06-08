@@ -332,7 +332,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setEnabled(true);
         keyManagerDTO.setIssuer("https://test.apim.integration");
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
-        keyManagerDTO.setEnableTokenGneration(false);
+        keyManagerDTO.setEnableTokenGeneration(false);
         keyManagerDTO.setEnableOAuthAppCreation(false);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -362,7 +362,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setIssuer("https://test2.apim.integration");
         keyManagerDTO.setJwksEndpoint("https://localhost:8743/jwks/1.0");
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
-        keyManagerDTO.setEnableTokenGneration(false);
+        keyManagerDTO.setEnableTokenGeneration(false);
         keyManagerDTO.setEnableOAuthAppCreation(false);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));

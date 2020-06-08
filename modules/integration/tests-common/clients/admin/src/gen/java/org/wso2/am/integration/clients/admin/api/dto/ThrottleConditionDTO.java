@@ -23,26 +23,29 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 
 /**
- * Throttling Conditions
+ * Conditions used for Throttling
  */
-@ApiModel(description = "Throttling Conditions")
-
+@ApiModel(description = "Conditions used for Throttling")
 
 public class ThrottleConditionDTO {
   /**
-   * Type of the thottling condition. Allowed values are HeaderCondition, IPCondition, JWTClaimsCondition, QueryParameterCondition 
+   * Type of the throttling condition. Allowed values are \&quot;HEADERCONDITION\&quot;, \&quot;IPCONDITION\&quot;, \&quot;JWTCLAIMSCONDITION\&quot; and \&quot;QUERYPARAMETERCONDITION\&quot;. 
    */
   @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
-    HEADERCONDITION("HeaderCondition"),
+    HEADERCONDITION("HEADERCONDITION"),
     
-    IPCONDITION("IPCondition"),
+    IPCONDITION("IPCONDITION"),
     
-    JWTCLAIMSCONDITION("JWTClaimsCondition"),
+    JWTCLAIMSCONDITION("JWTCLAIMSCONDITION"),
     
-    QUERYPARAMETERCONDITION("QueryParameterCondition");
+    QUERYPARAMETERCONDITION("QUERYPARAMETERCONDITION");
 
     private String value;
 
@@ -85,22 +88,28 @@ public class ThrottleConditionDTO {
   @SerializedName("type")
   private TypeEnum type = null;
 
-  @SerializedName("invertCondition")
-  private Boolean invertCondition = false;
+  @SerializedName("headerCondition")
+  private HeaderConditionDTO headerCondition = null;
 
-  public ThrottleConditionDTO() {
-    this.type = this.getType();
-  }
+  @SerializedName("ipCondition")
+  private IPConditionDTO ipCondition = null;
+
+  @SerializedName("jwtClaimsCondition")
+  private JWTClaimsConditionDTO jwtClaimsCondition = null;
+
+  @SerializedName("queryParameterCondition")
+  private QueryParameterConditionDTO queryParameterCondition = null;
+
   public ThrottleConditionDTO type(TypeEnum type) {
     this.type = type;
     return this;
   }
 
    /**
-   * Type of the thottling condition. Allowed values are HeaderCondition, IPCondition, JWTClaimsCondition, QueryParameterCondition 
+   * Type of the throttling condition. Allowed values are \&quot;HEADERCONDITION\&quot;, \&quot;IPCONDITION\&quot;, \&quot;JWTCLAIMSCONDITION\&quot; and \&quot;QUERYPARAMETERCONDITION\&quot;. 
    * @return type
   **/
-  @ApiModelProperty(required = true, value = "Type of the thottling condition. Allowed values are HeaderCondition, IPCondition, JWTClaimsCondition, QueryParameterCondition ")
+  @ApiModelProperty(required = true, value = "Type of the throttling condition. Allowed values are \"HEADERCONDITION\", \"IPCONDITION\", \"JWTCLAIMSCONDITION\" and \"QUERYPARAMETERCONDITION\". ")
   public TypeEnum getType() {
     return type;
   }
@@ -109,22 +118,76 @@ public class ThrottleConditionDTO {
     this.type = type;
   }
 
-  public ThrottleConditionDTO invertCondition(Boolean invertCondition) {
-    this.invertCondition = invertCondition;
+  public ThrottleConditionDTO headerCondition(HeaderConditionDTO headerCondition) {
+    this.headerCondition = headerCondition;
     return this;
   }
 
    /**
-   * Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value (&#x60;true&#x60; or &#x60;false&#x60;) for the same type of conditional group. 
-   * @return invertCondition
+   * Get headerCondition
+   * @return headerCondition
   **/
-  @ApiModelProperty(value = "Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value (`true` or `false`) for the same type of conditional group. ")
-  public Boolean isInvertCondition() {
-    return invertCondition;
+  @ApiModelProperty(value = "")
+  public HeaderConditionDTO getHeaderCondition() {
+    return headerCondition;
   }
 
-  public void setInvertCondition(Boolean invertCondition) {
-    this.invertCondition = invertCondition;
+  public void setHeaderCondition(HeaderConditionDTO headerCondition) {
+    this.headerCondition = headerCondition;
+  }
+
+  public ThrottleConditionDTO ipCondition(IPConditionDTO ipCondition) {
+    this.ipCondition = ipCondition;
+    return this;
+  }
+
+   /**
+   * Get ipCondition
+   * @return ipCondition
+  **/
+  @ApiModelProperty(value = "")
+  public IPConditionDTO getIpCondition() {
+    return ipCondition;
+  }
+
+  public void setIpCondition(IPConditionDTO ipCondition) {
+    this.ipCondition = ipCondition;
+  }
+
+  public ThrottleConditionDTO jwtClaimsCondition(JWTClaimsConditionDTO jwtClaimsCondition) {
+    this.jwtClaimsCondition = jwtClaimsCondition;
+    return this;
+  }
+
+   /**
+   * Get jwtClaimsCondition
+   * @return jwtClaimsCondition
+  **/
+  @ApiModelProperty(value = "")
+  public JWTClaimsConditionDTO getJwtClaimsCondition() {
+    return jwtClaimsCondition;
+  }
+
+  public void setJwtClaimsCondition(JWTClaimsConditionDTO jwtClaimsCondition) {
+    this.jwtClaimsCondition = jwtClaimsCondition;
+  }
+
+  public ThrottleConditionDTO queryParameterCondition(QueryParameterConditionDTO queryParameterCondition) {
+    this.queryParameterCondition = queryParameterCondition;
+    return this;
+  }
+
+   /**
+   * Get queryParameterCondition
+   * @return queryParameterCondition
+  **/
+  @ApiModelProperty(value = "")
+  public QueryParameterConditionDTO getQueryParameterCondition() {
+    return queryParameterCondition;
+  }
+
+  public void setQueryParameterCondition(QueryParameterConditionDTO queryParameterCondition) {
+    this.queryParameterCondition = queryParameterCondition;
   }
 
 
@@ -138,12 +201,15 @@ public class ThrottleConditionDTO {
     }
     ThrottleConditionDTO throttleCondition = (ThrottleConditionDTO) o;
     return Objects.equals(this.type, throttleCondition.type) &&
-        Objects.equals(this.invertCondition, throttleCondition.invertCondition);
+        Objects.equals(this.headerCondition, throttleCondition.headerCondition) &&
+        Objects.equals(this.ipCondition, throttleCondition.ipCondition) &&
+        Objects.equals(this.jwtClaimsCondition, throttleCondition.jwtClaimsCondition) &&
+        Objects.equals(this.queryParameterCondition, throttleCondition.queryParameterCondition);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, invertCondition);
+    return Objects.hash(type, headerCondition, ipCondition, jwtClaimsCondition, queryParameterCondition);
   }
 
 
@@ -153,7 +219,10 @@ public class ThrottleConditionDTO {
     sb.append("class ThrottleConditionDTO {\n");
     
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    invertCondition: ").append(toIndentedString(invertCondition)).append("\n");
+    sb.append("    headerCondition: ").append(toIndentedString(headerCondition)).append("\n");
+    sb.append("    ipCondition: ").append(toIndentedString(ipCondition)).append("\n");
+    sb.append("    jwtClaimsCondition: ").append(toIndentedString(jwtClaimsCondition)).append("\n");
+    sb.append("    queryParameterCondition: ").append(toIndentedString(queryParameterCondition)).append("\n");
     sb.append("}");
     return sb.toString();
   }

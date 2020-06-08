@@ -23,52 +23,63 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.am.integration.clients.admin.api.dto.AlertTypeDTO;
 
 /**
- * GraphQLQueryDTO
+ * AlertTypesListDTO
  */
 
-public class GraphQLQueryDTO {
-  @SerializedName("graphQLMaxComplexity")
-  private Integer graphQLMaxComplexity = null;
+public class AlertTypesListDTO {
+  @SerializedName("count")
+  private Integer count = null;
 
-  @SerializedName("graphQLMaxDepth")
-  private Integer graphQLMaxDepth = null;
+  @SerializedName("alerts")
+  private List<AlertTypeDTO> alerts = null;
 
-  public GraphQLQueryDTO graphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  public AlertTypesListDTO count(Integer count) {
+    this.count = count;
     return this;
   }
 
    /**
-   * Maximum Complexity of the GraphQL query
-   * @return graphQLMaxComplexity
+   * The number of alerts
+   * @return count
   **/
-  @ApiModelProperty(example = "400", value = "Maximum Complexity of the GraphQL query")
-  public Integer getGraphQLMaxComplexity() {
-    return graphQLMaxComplexity;
+  @ApiModelProperty(example = "3", value = "The number of alerts")
+  public Integer getCount() {
+    return count;
   }
 
-  public void setGraphQLMaxComplexity(Integer graphQLMaxComplexity) {
-    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  public void setCount(Integer count) {
+    this.count = count;
   }
 
-  public GraphQLQueryDTO graphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
+  public AlertTypesListDTO alerts(List<AlertTypeDTO> alerts) {
+    this.alerts = alerts;
+    return this;
+  }
+
+  public AlertTypesListDTO addAlertsItem(AlertTypeDTO alertsItem) {
+    if (this.alerts == null) {
+      this.alerts = new ArrayList<>();
+    }
+    this.alerts.add(alertsItem);
     return this;
   }
 
    /**
-   * Maximum Depth of the GraphQL query
-   * @return graphQLMaxDepth
+   * Get alerts
+   * @return alerts
   **/
-  @ApiModelProperty(example = "10", value = "Maximum Depth of the GraphQL query")
-  public Integer getGraphQLMaxDepth() {
-    return graphQLMaxDepth;
+  @ApiModelProperty(value = "")
+  public List<AlertTypeDTO> getAlerts() {
+    return alerts;
   }
 
-  public void setGraphQLMaxDepth(Integer graphQLMaxDepth) {
-    this.graphQLMaxDepth = graphQLMaxDepth;
+  public void setAlerts(List<AlertTypeDTO> alerts) {
+    this.alerts = alerts;
   }
 
 
@@ -80,24 +91,24 @@ public class GraphQLQueryDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    GraphQLQueryDTO graphQLQuery = (GraphQLQueryDTO) o;
-    return Objects.equals(this.graphQLMaxComplexity, graphQLQuery.graphQLMaxComplexity) &&
-        Objects.equals(this.graphQLMaxDepth, graphQLQuery.graphQLMaxDepth);
+    AlertTypesListDTO alertTypesList = (AlertTypesListDTO) o;
+    return Objects.equals(this.count, alertTypesList.count) &&
+        Objects.equals(this.alerts, alertTypesList.alerts);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(graphQLMaxComplexity, graphQLMaxDepth);
+    return Objects.hash(count, alerts);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLQueryDTO {\n");
+    sb.append("class AlertTypesListDTO {\n");
     
-    sb.append("    graphQLMaxComplexity: ").append(toIndentedString(graphQLMaxComplexity)).append("\n");
-    sb.append("    graphQLMaxDepth: ").append(toIndentedString(graphQLMaxDepth)).append("\n");
+    sb.append("    count: ").append(toIndentedString(count)).append("\n");
+    sb.append("    alerts: ").append(toIndentedString(alerts)).append("\n");
     sb.append("}");
     return sb.toString();
   }
