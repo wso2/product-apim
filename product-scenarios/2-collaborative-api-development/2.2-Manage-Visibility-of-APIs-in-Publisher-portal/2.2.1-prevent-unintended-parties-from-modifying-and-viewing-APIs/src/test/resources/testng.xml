@@ -20,9 +20,9 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="2.2.1-prevent-unintended-parties-from-modifying-and-viewing-APIs" preserve-order="true"
           verbose="2" parallel="false">
-        <!--        <classes>
+          <classes>
             <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.PublisherAccessControlTestCase"/>
-            <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.publisherAccessControlNegativeTestCase"/>
-        </classes>-->
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.publisherAccessControlNegativeTestCase"/>-->
+        </classes>
     </test>
 </suite>
