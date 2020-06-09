@@ -40,7 +40,6 @@ import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
@@ -247,8 +246,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         requestHeadersPost.put("accept", "text/plain");
         requestHeadersPost.put("Content-Type", "text/plain");
 
-        HttpResponse apiResponse = HttpRequestUtil.doPost(new URL(gatewayHttpsUrl), "id=25", requestHeadersPost);
-
+        HttpResponse apiResponse = HttpClient.doPost(new URL(gatewayHttpsUrl), "id=25", requestHeadersPost);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
@@ -264,16 +262,6 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDtoStore = restAPIStore.getAPI(apiId);
         apiDtoStore.getAuthorizationHeader();
         assertEquals(apiDtoStore.getAuthorizationHeader(), customAuth, "Authorization header update failed");
-    }
-
-    public void createApplication(String applicationName) throws Exception {
-        HttpResponse addApplicationResponse = null;
-        addApplicationResponse = apiStore.addApplication(applicationName,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "description");
-        verifyResponse(addApplicationResponse);
-        if (log.isDebugEnabled()) {
-            log.debug("Application - " + applicationName + "is created successfully");
-        }
     }
 
     public String generateAppKeys() throws Exception {
