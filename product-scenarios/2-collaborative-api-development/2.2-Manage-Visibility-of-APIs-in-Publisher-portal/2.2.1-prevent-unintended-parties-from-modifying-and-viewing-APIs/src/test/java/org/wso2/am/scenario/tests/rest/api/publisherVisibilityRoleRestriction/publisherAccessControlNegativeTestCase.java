@@ -74,10 +74,10 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         }
 
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // create user in wso2.com tenant
+//            create user in wso2.com tenant
             addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
-//                Add and activate wso2.com tenant
+//             Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                                                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,

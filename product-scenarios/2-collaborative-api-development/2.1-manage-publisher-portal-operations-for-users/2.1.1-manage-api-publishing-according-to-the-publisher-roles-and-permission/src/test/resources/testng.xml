@@ -20,8 +20,9 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="2.1.1-Manage-API-publishing-according-to-the-publisher-roles-and-permission" preserve-order="true"
           verbose="2" parallel="false">
-        <!--        <classes>
+        <classes>
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.publisherRoleAndPermission.PublishAPIByValidRolePermissionCategoryTestCase"/>-->
             <class name="org.wso2.am.scenario.tests.rest.api.publisherRoleAndPermission.PublishAPIByValidRolePermissionCategoryTestCase"/>
-        </classes>-->
+        </classes>
     </test>
 </suite>
