@@ -146,7 +146,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
             verifyResponse(keyGenerationResponse);
 
             // Check the visibility of the API in API store
-            isAPIVisibleInStore(apiName, apiStore);
+            //isAPIVisibleInStore(apiName, apiStore);
 
             // Add subscription to API
             SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, apiProvider,
