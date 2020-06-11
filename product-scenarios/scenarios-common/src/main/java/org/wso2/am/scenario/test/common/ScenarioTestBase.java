@@ -30,6 +30,9 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -600,32 +603,24 @@ public class ScenarioTestBase {
         }
     }
 
-    public void isAPIVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
-            throws APIManagerIntegrationTestException {
+    public void isAPIVisibleInStore(String apiId) throws ApiException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
-        HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
+        log.info("WAIT for availability of API: " + apiId);
         while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreRestClient.getAPIs();
-            if (apiResponseStore != null) {
-                if (apiResponseStore.getData().contains(apiName)) {
-                    log.info("API found in store : " + apiName);
-                    log.info(apiResponseStore.getData());
-                    verifyResponse(apiResponseStore);
+            APIDTO api = restAPIStore.getAPI(apiId);
+            if (api != null) {
+                if (api.getId().equals(apiId)) {
+                    log.info("API found in store : " + apiId);
                     break;
                 } else {
                     try {
-                        log.info("API : " + apiName + " not found in store yet.");
+                        log.info("API : " + apiId + " not found in store yet.");
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
 
                     }
                 }
             }
-        }
-        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
-            log.info("API :" + apiName + " was not found in store at the end of wait time.");
-            Assert.assertTrue(false, "API not found in store : " + apiName);
         }
     }
 
