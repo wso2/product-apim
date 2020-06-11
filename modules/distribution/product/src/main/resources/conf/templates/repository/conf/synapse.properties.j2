@@ -18,6 +18,6 @@
 {{key}}={{value}}
 {% endfor %}
 {% if apim.sync_runtime_artifacts.gateway.save_artifacts_locally is defined %}
-synapse.runtime_artifacts.save.local.file={{apim.sync_runtime_artifacts.gateway.save_artifacts_locally}}
+synapse.artifacts.file.storage.enabled={{apim.sync_runtime_artifacts.gateway.save_artifacts_locally}}
 {% endif %}
 
