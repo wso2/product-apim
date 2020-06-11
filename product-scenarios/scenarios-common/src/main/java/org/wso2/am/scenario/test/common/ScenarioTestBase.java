@@ -279,13 +279,15 @@ public class ScenarioTestBase {
                 String[] urlProps3 = urlProps2[1].split(":9443/");
                 host = urlProps3[0];
             } else {
-                host = urlProps2[1];
+                String[] urlProps4 = urlProps2[1].split("/");
+                host = urlProps4[0];
             }
         } else {
             baseUrl = "https://localhost:9443/";
             host = "localhost";
         }
         log.info("BASE_URL>>>>>" + baseUrl);
+        log.info("SERVICE URL>>>" + serviceEndpoint);
         log.info("HOST>>>>>" + host);
         setKeyStoreProperties();
     }
