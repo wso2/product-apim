@@ -18,33 +18,34 @@
 
 package org.wso2.am.scenario.tests.define.subscription.tiers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
-import org.testng.Assert;
+import com.google.gson.Gson;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
 import org.wso2.am.scenario.test.common.AdminDashboardRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.am.scenario.test.common.SubscriptionThrottlePolicyRequest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.testng.Assert.assertTrue;
 
 public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
-    private final Log log = LogFactory.getLog(SubscribeToAssignedTiersTestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
     private AdminDashboardRestClient adminDashboard;
     private APIRequest apiRequest;
 
@@ -62,12 +63,17 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private String silverTier = "Silver";
     private String multiTier = "Gold,Silver";
     private String apiVersion = "1.0.0";
-    private String apiVisibility = "public";
-    private String providerName = "admin";
-    private String apiResource = "/groups";
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
     private String customTier = "CustomTier";
+    private static String apiId1;
+    private static String apiId2;
+    private static String apiId3;
+    private static String apiId4;
+
+    private static String applicationId1;
+    private static String applicationId2;
+    private static String applicationId3;
+    private static String applicationId4;
+    private static String applicationId5;
 
     private String applicationNameSingleTier = "SingleTierApplication";
     private String applicationNameMultipleTier = "MultipleTierApplication";
@@ -76,189 +82,213 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private String applicationNameBeforeAPIRepublish = "BeforeRepublishApplication";
     private String applicationNameAfterAPIRepublish = "AfterRepublishApplication";
 
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public SubscribeToAssignedTiersTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiStore = new APIStoreRestClient(storeURL);
         adminDashboard = new AdminDashboardRestClient(adminURL);
-        apiPublisher.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        apiStore.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        adminDashboard.login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+            adminDashboard.login(ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+            adminDashboard.login(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+        }
+        super.init(userMode);
     }
 
     @Test(description = "7.1.1.1")
     public void testSingleTierSubscriptionAvailability() throws Exception {
-        apiRequest = new APIRequest(apiNameSingleTier, apiContextSingleTier, apiVisibility, apiVersion, apiResource,
-                singleTier, new URL(endpointUrl));
-        //Create API with single tier
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        //Publish API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNameSingleTier, providerName,
-                APILifeCycleState.PUBLISHED);
-        HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
-        
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameSingleTier, apiContextSingleTier, apiVersion,
+                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
+
+        apiCreationRequestBean.setSubPolicyCollection(singleTier);
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId1 = apiDto.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction(), null);
+
         // wait till API indexed in Store
-        isAPIVisibleInStore(apiNameSingleTier, apiStore);
+        isAPIVisibleInStore(apiId1);
 
         //Create Application for single tier
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationNameSingleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                        applicationDescription);
+        HttpResponse addApplicationResponse = restAPIStore.createApplication(applicationNameSingleTier,
+                applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId1 = addApplicationResponse.getData();
         verifyResponse(addApplicationResponse);
         //Subscribe to the API with single tier
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiNameSingleTier, apiVersion, providerName,
-                applicationNameSingleTier, goldTier);
-        HttpResponse subscriptionResponse = apiStore.subscribe(subscriptionRequest);
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId1, applicationId1, singleTier);
         verifyResponse(subscriptionResponse);
     }
 
-    @Test(description = "7.1.1.2")
+    @Test(description = "7.1.1.2", dependsOnMethods = "testSingleTierSubscriptionAvailability")
     public void testSingleCustomTierSubscriptionAvailability() throws Exception {
         SubscriptionThrottlePolicyRequest policyRequest = new SubscriptionThrottlePolicyRequest(customTier, null, "5",
                 "1", "min");
         HttpResponse addSubscriptionPolicyResponse = adminDashboard.addSubscriptionPolicy(policyRequest);
         verifyResponse(addSubscriptionPolicyResponse);
 
-        apiRequest = new APIRequest(apiNameCustomTier, apiContextCustomTier, apiVisibility, apiVersion, apiResource,
-                customTier, new URL(endpointUrl));
-        //Create API with custom tier
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        //Publish API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNameCustomTier, providerName,
-                APILifeCycleState.PUBLISHED);
-        HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameCustomTier, apiContextCustomTier, apiVersion,
+                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
 
-        // wait for API availability
-        isAPIVisibleInStore(apiNameCustomTier, apiStore);
+        apiCreationRequestBean.setSubPolicyCollection(customTier);
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId2 = apiDto.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        //Create Application for custom tier
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationNameCustomTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                        applicationDescription);
+        // wait till API indexed in Store
+        isAPIVisibleInStore(apiId2);
+
+        //Create Application for single tier
+        HttpResponse addApplicationResponse = restAPIStore.createApplication(applicationNameCustomTier,
+                applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
         verifyResponse(addApplicationResponse);
-        //Subscribe to the API with custom tier
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiNameCustomTier, apiVersion, providerName,
-                applicationNameCustomTier, customTier);
-        HttpResponse subscriptionResponse = apiStore.subscribe(subscriptionRequest);
+        applicationId2 = addApplicationResponse.getData();
+        //Subscribe to the API with single tier
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId2, applicationId2, customTier);
         verifyResponse(subscriptionResponse);
     }
 
-    @Test(description = "7.1.1.3")
+    @Test(description = "7.1.1.3", dependsOnMethods = "testSingleCustomTierSubscriptionAvailability")
     public void testMultipleTierSubscriptionAvailability() throws Exception {
-        apiRequest = new APIRequest(apiNameMultipleTier, apiContextMultipleTier, apiVisibility, apiVersion, apiResource,
-                multiTier, new URL(endpointUrl));
-        //Create API with multiple tiers
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        //Publish API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiNameMultipleTier, providerName,
-                APILifeCycleState.PUBLISHED);
-        HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameMultipleTier, apiContextMultipleTier, apiVersion,
+                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
+        apiCreationRequestBean.setSubPolicyCollection(multiTier);
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId3 = apiDto.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
-        isAPIVisibleInStore(apiNameMultipleTier, apiStore);
+        isAPIVisibleInStore(apiId3);
 
-        //Create Application for multiple tiers
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationNameMultipleTier, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                        applicationDescription);
+        //Create Application for single tier
+        HttpResponse addApplicationResponse = restAPIStore.createApplication(applicationNameMultipleTier,
+                applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
         verifyResponse(addApplicationResponse);
-        //Subscribe to the API with multiple tiers
-        //subscribe with gold tier
-        SubscriptionRequest subscriptionRequestGold = new SubscriptionRequest(apiNameMultipleTier, apiVersion,
-                providerName, applicationNameMultipleTier, goldTier);
-        HttpResponse subscriptionResponseGold = apiStore.subscribe(subscriptionRequestGold);
-        verifyResponse(subscriptionResponseGold);
-        //remove previous subscription
-        apiStore.removeAPISubscriptionByName(apiNameMultipleTier, apiVersion, providerName,
-                applicationNameMultipleTier);
-        //subscribe with silver tier
-        SubscriptionRequest subscriptionRequestSilver = new SubscriptionRequest(apiNameMultipleTier, apiVersion,
-                providerName, applicationNameMultipleTier, silverTier);
-        HttpResponse subscriptionResponseSilver = apiStore.subscribe(subscriptionRequestSilver);
-        verifyResponse(subscriptionResponseSilver);
+        applicationId3 = addApplicationResponse.getData();
+        //Subscribe to the API with single tier
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId3, applicationId3, goldTier);
+        verifyResponse(subscriptionResponse);
+        restAPIStore.removeSubscription(subscriptionResponse.getData());
+        HttpResponse subscriptionResponse2 = restAPIStore.createSubscription(apiId3, applicationId3, silverTier);
+        verifyResponse(subscriptionResponse2);
     }
 
-    @Test(description = "7.1.1.4")
+    @Test(description = "7.1.1.4", dependsOnMethods = "testMultipleTierSubscriptionAvailability")
     public void testRepublishWithDifferentTier() throws Exception {
-        apiRequest = new APIRequest(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, apiVisibility,
-                apiVersion, apiResource, goldTier, new URL(endpointUrl));
-        //Create API with gold tier first
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        //Publish API with gold tier
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiRepublishedWithDiffTier, providerName,
-                APILifeCycleState.PUBLISHED);
-        HttpResponse publishServiceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        Assert.assertTrue(publishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, apiVersion,
+                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
+
+        apiCreationRequestBean.setSubPolicyCollection(goldTier);
+        APIDTO apiDTO1 = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId4 = apiDTO1.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
-        isAPIVisibleInStore(apiRepublishedWithDiffTier, apiStore);
+        isAPIVisibleInStore(apiId4);
 
-        //Create Application to subscribe before republishing
-        HttpResponse addApplicationResponse = apiStore
-                .addApplication(applicationNameBeforeAPIRepublish, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "", applicationDescription);
+        //Create Application for single tier
+        HttpResponse addApplicationResponse = restAPIStore.createApplication(applicationNameBeforeAPIRepublish,
+                applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId4 = addApplicationResponse.getData();
         verifyResponse(addApplicationResponse);
-        //Subscribe to created API before republish
-        SubscriptionRequest subscriptionRequestGold = new SubscriptionRequest(apiRepublishedWithDiffTier, apiVersion,
-                providerName, applicationNameBeforeAPIRepublish, goldTier);
-        HttpResponse subscriptionResponseGold = apiStore.subscribe(subscriptionRequestGold);
-        verifyResponse(subscriptionResponseGold);
-        //Update API with silver tier
-        APIRequest requestUpdated = new APIRequest(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier,
-                apiVisibility, apiVersion, apiResource, silverTier, new URL(endpointUrl));
-        HttpResponse updateAPIResponse = apiPublisher.updateAPI(requestUpdated);
-        verifyResponse(updateAPIResponse);
-        //Republish API
-        APILifeCycleStateRequest republishRequest = new APILifeCycleStateRequest(apiRepublishedWithDiffTier,
-                providerName, APILifeCycleState.PUBLISHED);
-        HttpResponse rePublishServiceResponse = apiPublisher.changeAPILifeCycleStatus(republishRequest);
-        Assert.assertTrue(rePublishServiceResponse.getData().contains(APILifeCycleState.PUBLISHED.getState()));
+        //Subscribe to the API with single tier
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId4, addApplicationResponse.getData(), goldTier);
+        verifyResponse(subscriptionResponse);
 
-        isChangeVisibleInStore(apiRepublishedWithDiffTier, apiStore, silverTier, "carbon.super");
+        //Update API with silver tier
+        HttpResponse response = restAPIPublisher.getAPI(apiId4);
+        Gson g = new Gson();
+        APIDTO apiDTO2 = g.fromJson(response.getData(), APIDTO.class);
+        List<String> tierList = new ArrayList<>();
+        tierList.add(silverTier);
+        apiDTO2.setPolicies(tierList);
+        restAPIPublisher.updateAPI(apiDTO2, apiId4);
+        //Republish API
+        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
 
         //Create new application to subscribe to updated API
-        HttpResponse newAddApplicationResponse = apiStore
-                .addApplication(applicationNameAfterAPIRepublish, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        "", applicationDescription);
+        HttpResponse newAddApplicationResponse = restAPIStore.createApplication(applicationNameAfterAPIRepublish,
+                applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        applicationId5 = newAddApplicationResponse.getData();
         verifyResponse(newAddApplicationResponse);
+
         //subscribe new app to updated tier
-        SubscriptionRequest subscriptionRequestSilver = new SubscriptionRequest(apiRepublishedWithDiffTier, apiVersion,
-                providerName, applicationNameAfterAPIRepublish, silverTier);
-        HttpResponse subscriptionResponseSilver = apiStore.subscribe(subscriptionRequestSilver);
+        HttpResponse subscriptionResponseSilver = restAPIStore.createSubscription(apiId4, applicationId5, silverTier);
         verifyResponse(subscriptionResponseSilver);
-        //check which tier the previous application has
-        HttpResponse subscriptionTierResponse = apiStore
-                .getAllSubscriptionsOfApplication(applicationNameBeforeAPIRepublish);
-        JSONObject responseData = new JSONObject(subscriptionTierResponse.getData());
-        JSONObject applicationData = responseData.getJSONObject("subscriptions").getJSONArray("applications")
-                .getJSONObject(0);
-        JSONObject subscriptionOfApplication = applicationData.getJSONArray("subscriptions").getJSONObject(0);
-        Assert.assertEquals(applicationData.getString("name"), applicationNameBeforeAPIRepublish);
-        Assert.assertEquals(subscriptionOfApplication.getString("tier"), goldTier);
+
+        SubscriptionListDTO subscriptionListDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId5);
+        assertTrue(subscriptionListDTO.getList().get(0).getApplicationInfo().getName().equals(applicationNameAfterAPIRepublish));
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //Remove single tier artifacts
-        apiStore.removeApplication(applicationNameSingleTier);
-        apiPublisher.deleteAPI(apiNameSingleTier, apiVersion, providerName);
-        //Remove multiple tier artifacts
-        apiStore.removeApplication(applicationNameMultipleTier);
-        apiPublisher.deleteAPI(apiNameMultipleTier, apiVersion, providerName);
-        //Remove artifacts used for republish test
-        apiStore.removeApplication(applicationNameBeforeAPIRepublish);
-        apiStore.removeApplication(applicationNameAfterAPIRepublish);
-        apiPublisher.deleteAPI(apiRepublishedWithDiffTier, apiVersion, providerName);
-        //Remove custom tier artifacts
-        apiStore.removeApplication(applicationNameCustomTier);
-        apiPublisher.deleteAPI(apiNameCustomTier, apiVersion, providerName);
+        restAPIStore.deleteApplication(applicationId1);
+        restAPIStore.deleteApplication(applicationId2);
+        restAPIStore.deleteApplication(applicationId3);
+        restAPIStore.deleteApplication(applicationId4);
+        restAPIStore.deleteApplication(applicationId5);
+
+        restAPIPublisher.deleteAPI(apiId1);
+        restAPIPublisher.deleteAPI(apiId2);
+        restAPIPublisher.deleteAPI(apiId3);
+        restAPIPublisher.deleteAPI(apiId4);
         adminDashboard.deleteSubscriptionPolicy(customTier);
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+
     }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
+    }
+
+
 }
