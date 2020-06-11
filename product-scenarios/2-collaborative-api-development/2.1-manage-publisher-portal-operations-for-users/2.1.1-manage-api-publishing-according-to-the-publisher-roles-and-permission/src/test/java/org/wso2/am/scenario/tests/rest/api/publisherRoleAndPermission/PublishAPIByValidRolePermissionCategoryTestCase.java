@@ -26,7 +26,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -78,10 +77,10 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         }
 
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // create user in wso2.com tenant
+//           create user in wso2.com tenant
             addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
-//                Add and activate wso2.com tenant
+//           Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                                                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
@@ -108,7 +107,6 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         apiID = apiDto.getId();
         assertNotNull(apiDto.getId(), "API creation fails");
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiID,false);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUser(devPortalUser, "password123$", new String[]{role},
@@ -119,10 +117,12 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
-        RestAPIStoreImpl restAPIStoreImplNew;
-        restAPIStoreImplNew = new RestAPIStoreImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), storeURLHttps);
+        RestAPIPublisherImpl restAPIPublisherNew;
+        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
-        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStoreImplNew.getAPI(apiDto.getId());
+        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID,false);
+
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
         restAPIPublisher.deleteAPI(apiDto.getId());
@@ -139,8 +139,8 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
           dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAPIByValidPermissionUser(String[] permissionList) throws Exception {
 
-        apiName = "API_Permission_" + count;
-        apiContext = "/verifyPermission"+ count;
+        apiName = "API_1.2_" + count;
+        apiContext = "/verify1.2_"+ count;
         devPortalUser = devPortalUser+count;
         userRole = "role" + count;
         count++;
@@ -152,23 +152,27 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         apiID = apiDto.getId();
         assertNotNull(apiDto.getId(), "API creation failed");
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiID,false);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionList);
             createUser(devPortalUser, "password123$", new String[]{userRole},
                        ADMIN_USERNAME, ADMIN_PW);
+            updateUser(devPortalUser,new String[]{ScenarioTestConstants.PUBLISHER_ROLE},new String[]{null},ADMIN_USERNAME,ADMIN_PW);
+
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionList);
             createUser(devPortalUser, "password123$", new String[]{userRole},
                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            updateUser(devPortalUser,new String[]{ScenarioTestConstants.PUBLISHER_ROLE},new String[]{null},TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
-        RestAPIStoreImpl restAPIStoreImplNew;
-        restAPIStoreImplNew = new RestAPIStoreImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), storeURLHttps);
+        RestAPIPublisherImpl restAPIPublisherNew;
+        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
-        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStoreImplNew.getAPI(apiDto.getId());
+        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID,false);
+
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
         restAPIPublisher.deleteAPI(apiDto.getId());
