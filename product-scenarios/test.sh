@@ -106,9 +106,7 @@ cd $HOME
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
 
-mvn clean install
-
-#sleep 10800
+mvn clean install -fae
 
 #=============== Copy Surefire Reports ===========================================
 
