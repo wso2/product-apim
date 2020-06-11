@@ -220,6 +220,24 @@
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
         </classes>
     </test>
+
+    <!-- Disabling APIM Publisher/Store v0.16 REST API test cases
+    <test name="rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            &lt;!&ndash; Following two test cases should be uncommented only when APIM is released under a kernel version which have
+                CARBON-15759 and ESBJAVA-4386 fi&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCas&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCas&ndash;&gt;
+            <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationRegenerateConsumerSecretTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.GIT_1638_UrlEncodedApiNameTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationScopeValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>
+        </classes>
+    </test>-->
     <test name="apim-mediation-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
@@ -247,6 +265,21 @@
             <class name="org.wso2.am.integration.tests.other.GIT2231HeadRequestNPEErrorTestCase"/>
         </classes>
     </test>
+
+    <!-- Disabling APIM Publisher/Store v0.16 REST API test cases
+    <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.MultipleSubscriptionsTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>
+            &lt;!&ndash;class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/&ndash;&gt;
+                &lt;!&ndash;Disable following test cases, since old throttling engine is deprecated &ndash;&gt;
+                &lt;!&ndash;<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>&ndash;&gt;
+                &lt;!&ndash;<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>&ndash;&gt;
+        </classes>
+    </test>-->
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
