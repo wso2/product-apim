@@ -279,6 +279,12 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #if($enableSchemaValidation)
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.SchemaValidator"/>
 #end
+#if(!$enableStore)
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler">
+    <property name="AuthorizationHeader" value="Authorization"/>
+    <property name="APISecurity" value="oauth_basic_auth_api_key_mandatory,basic_auth"/>
+</handler>
+#end
 </handlers>
         #end
         #end
