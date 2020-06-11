@@ -23,18 +23,39 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionBaseDTO;
 
 /**
  * JWTClaimsConditionDTO
  */
 
-public class JWTClaimsConditionDTO extends ThrottleConditionDTO {
+public class JWTClaimsConditionDTO {
+  @SerializedName("invertCondition")
+  private Boolean invertCondition = false;
+
   @SerializedName("claimUrl")
   private String claimUrl = null;
 
   @SerializedName("attribute")
   private String attribute = null;
+
+  public JWTClaimsConditionDTO invertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+    return this;
+  }
+
+   /**
+   * Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value (&#39;true&#39; or &#39;false&#39;) for the same type of conditional group. 
+   * @return invertCondition
+  **/
+  @ApiModelProperty(value = "Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value ('true' or 'false') for the same type of conditional group. ")
+  public Boolean isInvertCondition() {
+    return invertCondition;
+  }
+
+  public void setInvertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+  }
 
   public JWTClaimsConditionDTO claimUrl(String claimUrl) {
     this.claimUrl = claimUrl;
@@ -82,14 +103,14 @@ public class JWTClaimsConditionDTO extends ThrottleConditionDTO {
       return false;
     }
     JWTClaimsConditionDTO jwTClaimsCondition = (JWTClaimsConditionDTO) o;
-    return Objects.equals(this.claimUrl, jwTClaimsCondition.claimUrl) &&
-        Objects.equals(this.attribute, jwTClaimsCondition.attribute) &&
-        super.equals(o);
+    return Objects.equals(this.invertCondition, jwTClaimsCondition.invertCondition) &&
+        Objects.equals(this.claimUrl, jwTClaimsCondition.claimUrl) &&
+        Objects.equals(this.attribute, jwTClaimsCondition.attribute);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(claimUrl, attribute, super.hashCode());
+    return Objects.hash(invertCondition, claimUrl, attribute);
   }
 
 
@@ -97,7 +118,8 @@ public class JWTClaimsConditionDTO extends ThrottleConditionDTO {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class JWTClaimsConditionDTO {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    
+    sb.append("    invertCondition: ").append(toIndentedString(invertCondition)).append("\n");
     sb.append("    claimUrl: ").append(toIndentedString(claimUrl)).append("\n");
     sb.append("    attribute: ").append(toIndentedString(attribute)).append("\n");
     sb.append("}");

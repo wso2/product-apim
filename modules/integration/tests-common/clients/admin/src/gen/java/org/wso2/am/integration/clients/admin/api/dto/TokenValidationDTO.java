@@ -29,6 +29,9 @@ import java.io.IOException;
  */
 
 public class TokenValidationDTO {
+  @SerializedName("id")
+  private Integer id = null;
+
   @SerializedName("enable")
   private Boolean enable = true;
 
@@ -86,6 +89,24 @@ public class TokenValidationDTO {
 
   @SerializedName("value")
   private Object value = null;
+
+  public TokenValidationDTO id(Integer id) {
+    this.id = id;
+    return this;
+  }
+
+   /**
+   * Get id
+   * @return id
+  **/
+  @ApiModelProperty(value = "")
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
   public TokenValidationDTO enable(Boolean enable) {
     this.enable = enable;
@@ -151,14 +172,15 @@ public class TokenValidationDTO {
       return false;
     }
     TokenValidationDTO tokenValidation = (TokenValidationDTO) o;
-    return Objects.equals(this.enable, tokenValidation.enable) &&
+    return Objects.equals(this.id, tokenValidation.id) &&
+        Objects.equals(this.enable, tokenValidation.enable) &&
         Objects.equals(this.type, tokenValidation.type) &&
         Objects.equals(this.value, tokenValidation.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(enable, type, value);
+    return Objects.hash(id, enable, type, value);
   }
 
 
@@ -167,6 +189,7 @@ public class TokenValidationDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class TokenValidationDTO {\n");
     
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    enable: ").append(toIndentedString(enable)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");

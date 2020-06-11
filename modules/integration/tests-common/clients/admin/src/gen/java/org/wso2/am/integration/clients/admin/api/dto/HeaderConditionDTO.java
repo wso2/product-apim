@@ -23,18 +23,39 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionBaseDTO;
 
 /**
  * HeaderConditionDTO
  */
 
-public class HeaderConditionDTO extends ThrottleConditionDTO {
+public class HeaderConditionDTO {
+  @SerializedName("invertCondition")
+  private Boolean invertCondition = false;
+
   @SerializedName("headerName")
   private String headerName = null;
 
   @SerializedName("headerValue")
   private String headerValue = null;
+
+  public HeaderConditionDTO invertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+    return this;
+  }
+
+   /**
+   * Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value (&#39;true&#39; or &#39;false&#39;) for the same type of conditional group. 
+   * @return invertCondition
+  **/
+  @ApiModelProperty(value = "Specifies whether inversion of the condition to be matched against the request.  **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the same value ('true' or 'false') for the same type of conditional group. ")
+  public Boolean isInvertCondition() {
+    return invertCondition;
+  }
+
+  public void setInvertCondition(Boolean invertCondition) {
+    this.invertCondition = invertCondition;
+  }
 
   public HeaderConditionDTO headerName(String headerName) {
     this.headerName = headerName;
@@ -82,14 +103,14 @@ public class HeaderConditionDTO extends ThrottleConditionDTO {
       return false;
     }
     HeaderConditionDTO headerCondition = (HeaderConditionDTO) o;
-    return Objects.equals(this.headerName, headerCondition.headerName) &&
-        Objects.equals(this.headerValue, headerCondition.headerValue) &&
-        super.equals(o);
+    return Objects.equals(this.invertCondition, headerCondition.invertCondition) &&
+        Objects.equals(this.headerName, headerCondition.headerName) &&
+        Objects.equals(this.headerValue, headerCondition.headerValue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(headerName, headerValue, super.hashCode());
+    return Objects.hash(invertCondition, headerName, headerValue);
   }
 
 
@@ -97,7 +118,8 @@ public class HeaderConditionDTO extends ThrottleConditionDTO {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class HeaderConditionDTO {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    
+    sb.append("    invertCondition: ").append(toIndentedString(invertCondition)).append("\n");
     sb.append("    headerName: ").append(toIndentedString(headerName)).append("\n");
     sb.append("    headerValue: ").append(toIndentedString(headerValue)).append("\n");
     sb.append("}");
