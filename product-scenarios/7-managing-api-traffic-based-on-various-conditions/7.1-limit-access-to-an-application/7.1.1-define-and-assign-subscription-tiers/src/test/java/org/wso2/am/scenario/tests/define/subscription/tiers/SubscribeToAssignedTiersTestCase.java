@@ -143,7 +143,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         applicationId1 = addApplicationResponse.getData();
         verifyResponse(addApplicationResponse);
         //Subscribe to the API with single tier
-        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId1, addApplicationResponse.getData(), singleTier);
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId1, applicationId1, singleTier);
         verifyResponse(subscriptionResponse);
     }
 
@@ -172,7 +172,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         verifyResponse(addApplicationResponse);
         applicationId2 = addApplicationResponse.getData();
         //Subscribe to the API with single tier
-        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId2, addApplicationResponse.getData(), customTier);
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId2, applicationId2, customTier);
         verifyResponse(subscriptionResponse);
     }
 
@@ -195,14 +195,14 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         verifyResponse(addApplicationResponse);
         applicationId3 = addApplicationResponse.getData();
         //Subscribe to the API with single tier
-        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId3, addApplicationResponse.getData(), goldTier);
+        HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId3, applicationId3, goldTier);
         verifyResponse(subscriptionResponse);
         restAPIStore.removeSubscription(subscriptionResponse.getData());
-        HttpResponse subscriptionResponse2 = restAPIStore.createSubscription(apiId3, addApplicationResponse.getData(), silverTier);
+        HttpResponse subscriptionResponse2 = restAPIStore.createSubscription(apiId3, applicationId3, silverTier);
         verifyResponse(subscriptionResponse2);
     }
 
-    @Test(description = "7.1.1.4")
+    @Test(description = "7.1.1.4", dependsOnMethods = "testMultipleTierSubscriptionAvailability")
     public void testRepublishWithDifferentTier() throws Exception {
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, apiVersion,
@@ -238,22 +238,18 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
 
         //Create new application to subscribe to updated API
-
         HttpResponse newAddApplicationResponse = restAPIStore.createApplication(applicationNameAfterAPIRepublish,
                 applicationDescription, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
-        applicationId5 = addApplicationResponse.getData();
+        applicationId5 = newAddApplicationResponse.getData();
         verifyResponse(newAddApplicationResponse);
 
         //subscribe new app to updated tier
-        HttpResponse subscriptionResponseSilver = restAPIStore.createSubscription(apiId4, newAddApplicationResponse.getData(), silverTier);
+        HttpResponse subscriptionResponseSilver = restAPIStore.createSubscription(apiId4, applicationId5, silverTier);
         verifyResponse(subscriptionResponseSilver);
 
-        SubscriptionListDTO subscriptionListDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId4);
-        assertTrue(subscriptionListDTO.getList().get(0).getApplicationInfo().getName().equals(applicationNameBeforeAPIRepublish));
-
-        SubscriptionListDTO subscriptionListDTO2 = restAPIStore.getAllSubscriptionsOfApplication(applicationId5);
-        assertTrue(subscriptionListDTO2.getList().get(0).getApplicationInfo().getName().equals(applicationNameAfterAPIRepublish));
+        SubscriptionListDTO subscriptionListDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId5);
+        assertTrue(subscriptionListDTO.getList().get(0).getApplicationInfo().getName().equals(applicationNameAfterAPIRepublish));
     }
 
     @AfterClass(alwaysRun = true)
