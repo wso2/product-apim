@@ -17,7 +17,7 @@
 {% for key,value in synapse_properties.items() %}
 {{key}}={{value}}
 {% endfor %}
-{% if apim.gateway.sync.skip_local_copy is defined %}
-skipLocalCopy = {{apim.gateway.sync.skip_local_copy}}
+{% if apim.sync_runtime_artifacts.gateway.save_artifacts_locally is defined %}
+synapse.runtime_artifacts.save.local.file={{apim.sync_runtime_artifacts.gateway.save_artifacts_locally}}
 {% endif %}
 
