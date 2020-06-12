@@ -39,6 +39,9 @@ public class KeyManagerDTO {
   @SerializedName("name")
   private String name = null;
 
+  @SerializedName("displayName")
+  private String displayName = null;
+
   @SerializedName("type")
   private String type = null;
 
@@ -145,6 +148,24 @@ public class KeyManagerDTO {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public KeyManagerDTO displayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+   /**
+   * display name of Key Manager to  show in UI 
+   * @return displayName
+  **/
+  @ApiModelProperty(example = "KeyManager1", value = "display name of Key Manager to  show in UI ")
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
   public KeyManagerDTO type(String type) {
@@ -615,6 +636,7 @@ public class KeyManagerDTO {
     KeyManagerDTO keyManager = (KeyManagerDTO) o;
     return Objects.equals(this.id, keyManager.id) &&
         Objects.equals(this.name, keyManager.name) &&
+        Objects.equals(this.displayName, keyManager.displayName) &&
         Objects.equals(this.type, keyManager.type) &&
         Objects.equals(this.description, keyManager.description) &&
         Objects.equals(this.introspectionEndpoint, keyManager.introspectionEndpoint) &&
@@ -643,7 +665,7 @@ public class KeyManagerDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type, description, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, userInfoEndpoint, authorizeEndpoint, jwksEndpoint, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
+    return Objects.hash(id, name, displayName, type, description, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, userInfoEndpoint, authorizeEndpoint, jwksEndpoint, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
   }
 
 
@@ -654,6 +676,7 @@ public class KeyManagerDTO {
     
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    introspectionEndpoint: ").append(toIndentedString(introspectionEndpoint)).append("\n");
