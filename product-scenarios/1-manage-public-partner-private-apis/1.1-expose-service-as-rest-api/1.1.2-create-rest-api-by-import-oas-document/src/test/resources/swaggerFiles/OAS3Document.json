@@ -9,7 +9,7 @@
       "url": "http://petstore.swagger.io/v1"
     }
   ],
-  "basePath": "/contextJsonV3",
+  "x-wso2-basePath": "/contextJsonV3",
   "paths": {
     "/pets": {
       "post": {

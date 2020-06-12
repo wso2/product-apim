@@ -62,11 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class ScenarioTestBase {
 
@@ -617,17 +613,24 @@ public class ScenarioTestBase {
      * @throws Exception
      * */
     public void verifyTagsUpdatedInPublisherAPI(HttpResponse apiUpdateResponsePublisher, String apiName, String tags) {
-        String updatedTags = (new JSONObject(apiUpdateResponsePublisher.getData()).getJSONObject("api"))
-                .get("tags").toString();
+        JSONObject responseJson = new JSONObject(apiUpdateResponsePublisher.getData());
+        List<String> updatedTags = new ArrayList<>();
+        JSONArray jsonArray = responseJson.getJSONArray("tags");
+        if (jsonArray != null) {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                updatedTags.add(jsonArray.getString(i));
+            }
+        }
         List<String> tagsList = Arrays.asList(tags.split(","));
         if (updatedTags != null) {
-            if (updatedTags.contains(",")) {
-                String[] updatedTagsArray = updatedTags.split(",");
-                for (String t : updatedTagsArray) {
+            if (updatedTags.size() > 1) {
+                for (String t : updatedTags) {
                     Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
                 }
+            } else if (updatedTags.size() == 1){
+                Assert.assertTrue(tags.equals(updatedTags.get(0)), "Tags of the " + apiName + " is not updated");
             } else {
-                Assert.assertTrue(updatedTags.equals(tags), "Tags of the " + apiName + " is not updated");
+                Assert.assertTrue(tags.equals(""), "Tags of the " + apiName + " is not updated");
             }
         }
     }
