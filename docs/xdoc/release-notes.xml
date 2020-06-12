@@ -23,7 +23,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v3.2.0 Alpha - 18th January 2020</title>
+    <title>WSO2 API Manager v3.2.0 Alpha - 12th June 2020</title>
 </head>
 <body>
 <div id="main-content">
@@ -43,7 +43,7 @@
 <ul>
     <li><b>API Designer and Publisher:</b> Allows API creators to design, implement and document APIs and <br/>
     allows API product managers to manage the lifecycle of APIs and create API products by using one or more APIs.</li><br/>
-    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/> 
+    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/>
     subscribe, test and consume APIs through their applications.</li><br/>
     <li><b>API Gateway:</b> Allows access to APIs/services by routing application traffic to the relevant endpoints. <br/>
     The API Gateway is the component that enforces security, rate-limiting and transformations on API requests while <br/>
