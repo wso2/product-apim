@@ -1,14 +1,19 @@
 package org.wso2.am.scenario.tests.update.published.api.using.publisher;
 
 import io.swagger.models.HttpMethod;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.*;
 import org.wso2.am.scenario.test.common.swagger.*;
 import org.wso2.am.scenario.test.common.swagger.Parameters;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -17,155 +22,161 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertNotNull;
+
 public class UpdatePublishedAPITest extends ScenarioTestBase {
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-    private List<APIIdentifier> createdAPIs = new ArrayList<>();
-
-    private String providerUsername;
-    private String providerPassword;
-    private String subscriberUserName;
-    private String subscriberPassword;
-    private String adminUsername;
-    private String adminPassword;
-
-
-    private static final String ADD_RESOURCE = "/add";
-    private static final String RETRIEVE_RESOURCE = "/retrieve";
     private static final String UPDATE_RESOURCE = "/update";
+    private static final String API_VERSION = "1.0.0";
 
-    private static final String API_KEY = "api";
-    private static final String TEMPLATES_KEY = "templates";
-    private static final String RESOURCES_KEY = "resources";
 
 
     private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-    private static final String PROVIDER_USERNAME = "creator";
-    private static final String PROVIDER_PASSWORD = "creator@123";
-
-    public static final String SUBSCRIBER_USERNAME = "subscriber";
-    public static final String SUBSCRIBER_PASSWORD = "subscriber@123";
-
-    // All tests in this class will run with a super tenant API creator and a tenant API creator.
     @Factory(dataProvider = "userModeDataProvider")
-    public UpdatePublishedAPITest(String providerUsername, String providerPassword, String subscriberUserName,
-                                  String subscriberPassword, String adminUsername, String adminPassword) {
-        this.providerUsername = providerUsername;
-        this.providerPassword = providerPassword;
-        this.subscriberUserName = subscriberUserName;
-        this.subscriberPassword = subscriberPassword;
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
+    public UpdatePublishedAPITest(TestUserMode userMode) {
+        this.userMode = userMode;
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiStore = new APIStoreRestClient(storeURL);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
-        apiStore.login(subscriberUserName, subscriberPassword);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
     }
 
     @Test(description = "6.1.1.1")
     public void testAddNewResourceToAlreadyPublishedAPI() throws Exception {
-        String provider = providerUsername;
-        String apiName = UUID.randomUUID().toString();
-        String apiVersion = "1.0.0";
-        String endpointUrl = "http://test";
 
-        Swagger2Builder swagger = buildSwagger(apiName, apiVersion);
-
-        apiPublisher.login(providerUsername, providerPassword);
-
-        APIIdentifier apiIdentifier = addAPI(provider, apiName, apiVersion, endpointUrl, swagger);
-
-        publishAPI(apiIdentifier);
-
-        // Get published API in store
-        HttpResponse apiResponse = apiStore.getAPI(provider, apiName, apiVersion);
-
-        JSONObject api = new JSONObject(apiResponse.getData());
-
-        JSONArray apiTemplates = api.getJSONObject(API_KEY).getJSONArray(TEMPLATES_KEY);
-        String apiResources = api.getJSONObject(API_KEY).getString(RESOURCES_KEY);
-
-        Assert.assertEquals(apiTemplates.length(), 2);
-        Assert.assertTrue(apiResources.contains(ADD_RESOURCE));
-        Assert.assertTrue(apiResources.contains(RETRIEVE_RESOURCE));
-
-        // Add a new resource to existing swagger
-        addNewResourceToSwagger(swagger);
-
-        // Update API
-        updateAPI(apiName, apiVersion, endpointUrl, swagger);
-
-        // Check new resource in store
-        HttpResponse updatedApiResponse = apiStore.getAPI(provider, apiName, apiVersion);
-
-        JSONObject updatedApi = new JSONObject(updatedApiResponse.getData());
-
-        JSONArray updatedApiTemplates = updatedApi.getJSONObject(API_KEY).getJSONArray(TEMPLATES_KEY);
-        String updatedApiResources = updatedApi.getJSONObject(API_KEY).getString(RESOURCES_KEY);
-
-        Assert.assertEquals(updatedApiTemplates.length(), 3);
-        Assert.assertTrue(updatedApiResources.contains(ADD_RESOURCE));
-        Assert.assertTrue(updatedApiResources.contains(RETRIEVE_RESOURCE));
-        Assert.assertTrue(updatedApiResources.contains(UPDATE_RESOURCE));
-
-        int matchingTemplateCount = 0;
-        JSONArray newTemplate = new JSONArray();
-
-        for (int i = 0; i < apiTemplates.length(); ++i) {
-            JSONArray apiTemplate = (JSONArray) apiTemplates.get(i);
-
-            for (int j = 0; j < updatedApiTemplates.length(); ++j) {
-                JSONArray updatedApiTemplate = (JSONArray) updatedApiTemplates.get(j);
-
-                if (apiTemplate.toString().equals(updatedApiTemplate.toString())) {
-                    ++matchingTemplateCount;
-                    break;
-                } else {
-                    newTemplate = updatedApiTemplate;
-                }
-            }
+        String apiName = "APIResourceAPI";
+        String apiId = createApi(apiName);
+        publishAPI(apiId);
+        String storeSwagger = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            storeSwagger = restAPIStore.getSwaggerByID(apiId,"carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            storeSwagger = restAPIStore.getSwaggerByID(apiId,"wso2.com");
         }
 
-        Assert.assertEquals(matchingTemplateCount, 2);
-        Assert.assertTrue(newTemplate.toString().contains(UPDATE_RESOURCE));
+        // Get published API in store
+        String publisherSwagger = restAPIPublisher.getSwaggerByID(apiId);
+
+        String modifiedResource = "{\n" +
+                "  \"openapi\" : \"3.0.1\",\n" +
+                "  \"info\" : {\n" +
+                "    \"title\" : \"APIResourceTestAPI\",\n" +
+                "    \"description\" : \"description\",\n" +
+                "    \"version\" : \"1.0.0\"\n" +
+                "  },\n" +
+                "  \"servers\" : [ {\n" +
+                "    \"url\" : \"https://localhost:8243/menu/1.0.0\"\n" +
+                "  }, {\n" +
+                "    \"url\" : \"http://localhost:8280/menu/1.0.0\"\n" +
+                "  } ],\n" +
+                "  \"security\" : [ {\n" +
+                "    \"default\" : [ ]\n" +
+                "  } ],\n" +
+                "  \"paths\" : {\n" +
+                "    \"/*\" : {\n" +
+                "      \"get\" : {\n" +
+                "        \"responses\" : {\n" +
+                "          \"200\" : {\n" +
+                "            \"description\" : \"OK\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"security\" : [ {\n" +
+                "          \"default\" : [ ]\n" +
+                "        } ],\n" +
+                "        \"x-auth-type\" : \"Application & Application User\",\n" +
+                "        \"x-throttling-tier\" : \"Unlimited\"\n" +
+                "      }\n" +
+                "    },\n" +
+                "    \"/updatedPath\" : {\n" +
+                "      \"get\" : {\n" +
+                "        \"responses\" : {\n" +
+                "          \"200\" : {\n" +
+                "            \"description\" : \"OK\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"security\" : [ {\n" +
+                "          \"default\" : [ ]\n" +
+                "        } ],\n" +
+                "        \"x-auth-type\" : \"Application & Application User\",\n" +
+                "        \"x-throttling-tier\" : \"Unlimited\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  },\n" +
+                "  \"components\" : {\n" +
+                "    \"securitySchemes\" : {\n" +
+                "      \"default\" : {\n" +
+                "        \"type\" : \"oauth2\",\n" +
+                "        \"flows\" : {\n" +
+                "          \"implicit\" : {\n" +
+                "            \"authorizationUrl\" : \"https://localhost:8243/authorize\",\n" +
+                "            \"scopes\" : { }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+
+        String publisherSwaggerUpdated = restAPIPublisher.updateSwagger(apiId, modifiedResource);
+        assertNotNull(publisherSwaggerUpdated);
+        publishAPI(apiId);
+        String storeSwaggerUpdated = null;
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            storeSwaggerUpdated = restAPIStore.getSwaggerByID(apiId,"carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            storeSwaggerUpdated = restAPIStore.getSwaggerByID(apiId,"wso2.com");
+        }
+
+        publisherSwaggerUpdated = restAPIPublisher.getSwaggerByID(apiId);
+        assertTrue(storeSwaggerUpdated.contains("updatedPath"));
+        assertNotEquals(storeSwagger, storeSwaggerUpdated);
+        assertNotEquals(publisherSwagger, publisherSwaggerUpdated);
+        restAPIPublisher.deleteAPI(apiId);
+
     }
 
-    private APIIdentifier addAPI(String provider, String apiName, String apiVersion,
-                                 String endpointUrl, Swagger2Builder swagger) throws Exception {
-        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", apiVersion, "dummy",
-                "Unlimited", new URL(endpointUrl));
-        apiRequest.setSwagger(swagger.getSwaggerJSON());
-        //Create API
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
+    private String createApi(String apiName) throws Exception {
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, "/menu", API_VERSION,
+                "admin", new URL("https://localhost:9443/am/sample/pizzashack/v1/api/"));
 
-        APIIdentifier apiIdentifier = new APIIdentifier(provider, apiName, apiVersion);
-
-        // Store created API so we can delete it at the end of the test
-        createdAPIs.add(apiIdentifier);
-
-        return apiIdentifier;
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        assertTrue(StringUtils.isNotEmpty(apiDto.getId()), "Error occurred when creating api");
+        return apiDto.getId();
     }
 
-    private void publishAPI(APIIdentifier apiIdentifier) throws Exception {
-        apiPublisher.changeAPILifeCycleStatusToPublish(apiIdentifier, true);
-    }
-
-    private void updateAPI(String apiName, String apiVersion,
-                           String endpointUrl, Swagger2Builder swagger) throws Exception {
-        APIRequest apiRequest = new APIRequest(apiName, "/" + apiName, "public", apiVersion, "dummy",
-                "Unlimited", new URL(endpointUrl));
-        apiRequest.setSwagger(swagger.getSwaggerJSON());
-
-        HttpResponse serviceResponse = apiPublisher.updateAPI(apiRequest);
-        verifyResponse(serviceResponse);
+    private void publishAPI(String apiID) throws Exception {
+        restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
     }
 
     private void addNewResourceToSwagger(Swagger2Builder swagger) {
@@ -186,80 +197,28 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
         swagger.createResourcePaths(resourcePaths);
     }
 
-    private Swagger2Builder buildSwagger(String apiName, String version) {
-        Swagger2Builder swagger2Builder = new Swagger2Builder(apiName, version);
-
-        Responses addResourceResponses = new Responses();
-        addResourceResponses.addResponse("201", "Added");
-
-        ResourcePaths resourcePaths = new ResourcePaths();
-        resourcePaths.addResourcePath(ADD_RESOURCE, HttpMethod.POST, addResourceResponses);
-
-        Responses retrieveResourceResponses = new Responses();
-        retrieveResourceResponses.addResponse("200", "Returned");
-
-        Parameters parameters = new Parameters();
-        parameters.addQueryParameter("id", "Query Id", true);
-
-        resourcePaths.addResourcePath(RETRIEVE_RESOURCE, HttpMethod.GET, parameters, retrieveResourceResponses);
-
-        swagger2Builder.createResourcePaths(resourcePaths);
-
-        return swagger2Builder;
-    }
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //Remove created APIs
-        for (APIIdentifier apiIdentifier : createdAPIs) {
-            apiPublisher.deleteAPI(apiIdentifier.getApiName(),
-                    apiIdentifier.getVersion(), apiIdentifier.getProviderName());
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
-
-        deleteUser(MultitenantUtils.getTenantAwareUsername(providerUsername), adminUsername, adminPassword);
-        deleteUser(MultitenantUtils.getTenantAwareUsername(subscriberUserName), adminUsername, adminPassword);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
     }
 
-    // This method runs prior to the @BeforeClass method.
-    // Create users and tenants needed or the tests in here. Try to reuse the TENANT_WSO2 as much as possible to avoid the number of tenants growing.
     @DataProvider
-    public static Object[][] userModeDataProvider() throws Exception {
+    public static Object[][] userModeDataProvider() {
         setup();
-        //Add and activate wso2.com tenant
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        // create provider user in super tenant
-        createUserWithPublisherAndCreatorRole(PROVIDER_USERNAME, PROVIDER_PASSWORD, ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        // create provider user in wso2.com tenant
-        createUserWithPublisherAndCreatorRole(PROVIDER_USERNAME, PROVIDER_PASSWORD, appendTenant(ADMIN_USERNAME),
-                ADMIN_PASSWORD);
-
-        // create subscriber user in super tenant
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        // create subscriber user in wso2.com tenant
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, appendTenant(ADMIN_USERNAME),
-                ADMIN_PASSWORD);
-
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator
-        return new Object[][] {
-                {
-                    PROVIDER_USERNAME, PROVIDER_PASSWORD,
-                    SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD,
-                    ADMIN_USERNAME, ADMIN_PASSWORD
-                },
-                {
-                    appendTenant(PROVIDER_USERNAME), PROVIDER_PASSWORD,
-                    appendTenant(SUBSCRIBER_USERNAME), SUBSCRIBER_PASSWORD,
-                    appendTenant(ADMIN_USERNAME), ADMIN_PASSWORD
-                }
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
         };
-    }
-
-    private static String appendTenant(String userName) {
-        return userName + '@' + ScenarioTestConstants.TENANT_WSO2;
     }
 }

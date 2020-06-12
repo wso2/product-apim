@@ -78,7 +78,6 @@ done
 echo "working Directory : ${HOME}"
 echo "input directory : ${INPUT_DIR}"
 echo "output directory : ${OUTPUT_DIR}"
-
 export DATA_BUCKET_LOCATION=${INPUT_DIR}
 
 # Retrieve specific property from deployment.properties file
@@ -103,11 +102,12 @@ mvn clean install -Dmaven.test.skip=true
 cd $HOME
 
 #=============== Execute Scenarios ===============================================
-mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
--DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
--fae -B -f pom.xml
+#mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+#-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
+#-fae -B -f pom.xml
+sleep 18000
+mvn clean install -fae
 
-sleep 10800
 
 #=============== Copy Surefire Reports ===========================================
 

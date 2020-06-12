@@ -19,8 +19,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="6.1.1-update-published-api-using-api-publisher" preserve-order="true" verbose="2" parallel="false">
-        <!--        <classes>
+        <classes>
             <class name="org.wso2.am.scenario.tests.update.published.api.using.publisher.UpdatePublishedAPITest"/>
-        </classes>-->
+        </classes>
     </test>
 </suite>

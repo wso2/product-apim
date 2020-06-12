@@ -29,6 +29,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -73,6 +76,8 @@ public class ScenarioTestBase {
     protected static String gatewayHttpsURL;
     protected static String serviceEndpoint;
     protected static String adminURL;
+    protected static String baseUrl;
+    protected static String host;
     private static Properties infraProperties;
     public static final String PUBLISHER_URL = "PublisherUrl";
     public static final String STORE_URL = "StoreUrl";
@@ -166,7 +171,7 @@ public class ScenarioTestBase {
                     APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                     TestUserMode.SUPER_TENANT_ADMIN);
 
-            if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+            if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                 keymanagerSessionCookie = createSession(keyManagerContext);
             }
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -181,19 +186,19 @@ public class ScenarioTestBase {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                    publisherContext.getContextTenant().getDomain(), baseUrl);
             restAPIStore =
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+                            storeContext.getContextTenant().getDomain(), baseUrl);
             log.info("Logging URL's");
-            log.info(publisherURLHttps +  "publisherURLHttps");
-            log.info(storeURLHttps +  "storeURLHttps");
+            log.info(baseUrl + "baseUrl");
+            log.info(storeURLHttps + "storeURLHttps");
             log.info("Logging URL's ENDED");
 
             try {
-                if(userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
+                if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                     keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
                     userManagementClient = new UserManagementClient(
                             keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
@@ -260,6 +265,26 @@ public class ScenarioTestBase {
         if (adminURL == null) {
             adminURL = "https://localhost:9443/admin";
         }
+
+
+        if(StringUtils.isNotEmpty(System.getenv("DATA_BUCKET_LOCATION"))){
+            String[] urlProps = keyManagerURL.split("services/");
+            baseUrl = urlProps[0];
+            String[] urlProps2 = urlProps[0].split("https://");
+            if(StringUtils.contains(urlProps2[1], "944")) {
+                String[] urlProps3 = urlProps2[1].split(":9443/");
+                host = urlProps3[0];
+            } else {
+                String[] urlProps4 = urlProps2[1].split("/");
+                host = urlProps4[0];
+            }
+        } else {
+            baseUrl = "https://localhost:9443/";
+            host = "localhost";
+        }
+        log.info("BASE_URL>>>>>" + baseUrl);
+        log.info("SERVICE URL>>>" + serviceEndpoint);
+        log.info("HOST>>>>>" + host);
         setKeyStoreProperties();
     }
 
@@ -385,12 +410,12 @@ public class ScenarioTestBase {
         }
     }
 
-    private String login(String host, String username, String password) throws APIManagementException {
+    protected String login(String serviceEndpoint, String username, String password) throws APIManagementException {
         AuthenticatorClient authenticatorClient = null;
 
         try {
-            authenticatorClient = new AuthenticatorClient(host);
-            String sessionCookie = authenticatorClient.login(username, password, "localhost");
+            authenticatorClient = new AuthenticatorClient(serviceEndpoint);
+            String sessionCookie = authenticatorClient.login(username, password, host);
 
             return sessionCookie;
         } catch (Exception e) {
@@ -423,7 +448,9 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
+                userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
+            }
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with creator role " + username, e);
         }
@@ -435,7 +462,7 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
 
-            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.CREATOR_ROLE)) {
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
                 userManagementClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
                                 ScenarioTestConstants.PUBLISHER_ROLE}, username);
@@ -466,7 +493,7 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            if(!userManagementClient.userNameExists(username, ScenarioTestConstants.SUBSCRIBER_ROLE)) {
+            if (!userManagementClient.userNameExists(ScenarioTestConstants.SUBSCRIBER_ROLE, username)) {
                 userManagementClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
             }
@@ -556,32 +583,24 @@ public class ScenarioTestBase {
         }
     }
 
-    public void isAPIVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
-            throws APIManagerIntegrationTestException {
+    public void isAPIVisibleInStore(String apiId) throws ApiException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
-        HttpResponse apiResponseStore = null;
-        log.info("WAIT for availability of API: " + apiName);
+        log.info("WAIT for availability of API: " + apiId);
         while (waitTime > System.currentTimeMillis()) {
-            apiResponseStore = apiStoreRestClient.getAPIs();
-            if (apiResponseStore != null) {
-                if (apiResponseStore.getData().contains(apiName)) {
-                    log.info("API found in store : " + apiName);
-                    log.info(apiResponseStore.getData());
-                    verifyResponse(apiResponseStore);
+            APIDTO api = restAPIStore.getAPI(apiId);
+            if (api != null) {
+                if (api.getId().equals(apiId)) {
+                    log.info("API found in store : " + apiId);
                     break;
                 } else {
                     try {
-                        log.info("API : " + apiName + " not found in store yet.");
+                        log.info("API : " + apiId + " not found in store yet.");
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
 
                     }
                 }
             }
-        }
-        if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
-            log.info("API :" + apiName + " was not found in store at the end of wait time.");
-            Assert.assertTrue(false, "API not found in store : " + apiName);
         }
     }
 

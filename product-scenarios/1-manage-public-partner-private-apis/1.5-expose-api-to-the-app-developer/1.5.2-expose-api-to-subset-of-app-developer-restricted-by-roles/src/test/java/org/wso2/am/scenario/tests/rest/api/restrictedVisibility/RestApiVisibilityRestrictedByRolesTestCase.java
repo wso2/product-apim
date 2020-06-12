@@ -163,7 +163,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
-
     }
 
     @Test(description = "1.5.2.2")
@@ -233,7 +232,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
-
     }
 
 //    todo need to config a secondary userstore to check roles with spaces
@@ -253,7 +251,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 //        getAPI(PUBLISHER_CREATOR_USERNAME);
 //        publishAPI(apiName, ADMIN_LOGIN_USERNAME);
 //        loginToStore(SUBSCRIBER_USERNAME, SUBSCRIBER_PW);
-//        isAPIVisibleInStore(apiName, apiStoreClient);
+//        //isAPIVisibleInStore(apiName, apiStoreClient);
 //    }
 
     @Test(description = "1.5.2.7")
@@ -299,7 +297,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
-
     }
 
     @Test(description = "1.5.2.8")
@@ -374,7 +371,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
-
     }
 
     @Test(description = "1.5.2.9")
@@ -385,7 +381,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.SUBSCRIBER_ROLE.getBytes()));
         restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.CREATOR_ROLE.getBytes()));
-
         APICreationRequestBean apiCreationRequestBeanCreator = new APICreationRequestBean(apiName, "/" + apiName, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBeanCreator.setRoles(ScenarioTestConstants.CREATOR_ROLE);
         apiCreationRequestBeanCreator.setVisibility(VISIBILITY_TYPE);
