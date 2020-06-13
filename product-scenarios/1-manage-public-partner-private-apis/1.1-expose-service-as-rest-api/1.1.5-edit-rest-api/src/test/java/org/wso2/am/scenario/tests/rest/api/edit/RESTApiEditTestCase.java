@@ -177,7 +177,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      *  Tests for Edit api using OAS JSON
      *
      * */
-    @Test(description = "1.1.5.3", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.5.3", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class
+            , dependsOnMethods = "testRESTAPIEditAlreadyCreatedApi")
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
@@ -231,7 +232,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      *  Tests for Edit api using OAS YAML
      *
      * */
-    @Test(description = "1.1.5.7", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.5.7", dataProvider = "OASDocsWithYAMLFiles", dataProviderClass = ScenarioDataProvider.class
+            , dependsOnMethods = "testRESTAPIEditUsingOASJSON")
     public void testRESTAPIEditUsingOASYAML(String fileName) throws Exception {
 
         //Check availability of the API in publisher
@@ -283,7 +285,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         }
     }
 
-    @Test(description = "1.1.5.8", dataProvider = "APITags", dataProviderClass = ScenarioDataProvider.class)
+    @Test(description = "1.1.5.8", dataProvider = "APITags", dataProviderClass = ScenarioDataProvider.class
+            , dependsOnMethods = "testRESTAPIEditUsingOASYAML")
     public void testRESTAPIEditTags(String tags) throws Exception {
 
         String apiName = "TestTagsUpdateAPI";
@@ -331,7 +334,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         verifyResponse(serviceResponse);
     }
 
-    @Test(description = "1.1.5.9")
+    @Test(description = "1.1.5.9"
+            , dependsOnMethods = "testRESTAPIEditTags")
     public void testRESTAPIEditAddMoreTags() throws Exception {
 
         String apiName = "TestTagsUpdateAPI";
