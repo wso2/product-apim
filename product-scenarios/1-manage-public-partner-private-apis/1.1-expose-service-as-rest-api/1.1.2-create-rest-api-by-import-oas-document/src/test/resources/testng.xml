@@ -19,9 +19,9 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.2-create-rest-api-by-import-aos-document" preserve-order="true" verbose="2" parallel="false">
-        <!--        <classes>
+        <classes>
             <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocTestCase"/>
-            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocNegativeTestCase"/>
-        </classes>-->
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocNegativeTestCase"/>-->
+        </classes>
     </test>
 </suite>
