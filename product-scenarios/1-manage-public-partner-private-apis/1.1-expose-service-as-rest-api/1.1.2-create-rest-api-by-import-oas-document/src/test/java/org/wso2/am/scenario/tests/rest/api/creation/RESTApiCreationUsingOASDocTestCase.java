@@ -462,10 +462,6 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        clean the data
-        for (String apiId : apiIdList) {
-            restAPIPublisher.deleteAPI(apiId);
-        }
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
             deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
