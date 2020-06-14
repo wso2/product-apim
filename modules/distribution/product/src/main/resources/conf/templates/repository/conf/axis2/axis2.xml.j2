@@ -328,16 +328,30 @@
         </parameter>
     </transportSender>
 
-{% if transport.jms.sender.connection_factories is defined %}
-     <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
-         {% for connection_factory in transport.jms.sender.connection_factories %}
-             <parameter name="{{transport.jms.sender[connection_factory].name}}" locked="false">
-             {% for name,value in transport.jms.sender[connection_factory].parameters.items() %}
-                     <parameter name="{{name}}" locked="false">{{value}}</parameter>
-              {% endfor %}
-             </parameter>
+{% if transport.jms.sender_enable is defined %}
+    {% if transport.jms.sender_enable and transport.jms.sender|length==0 %}
+    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender"/>
+    {% elif transport.jms.sender_enable %}
+    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
+        {% for sender in transport.jms.sender %}
+        <parameter name="{{sender.name}}" locked="false">
+            {% for name,value in sender.parameter.items() %}
+            <parameter name="{{name}}" locked="false">{{value}}</parameter>
             {% endfor %}
-      </transportSender>
+        </parameter>
+        {% endfor %}
+    </transportSender>
+    {% endif %}
+{% elif transport.jms.sender|length>0 %}
+    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
+        {% for sender in transport.jms.sender %}
+        <parameter name="{{sender.name}}" locked="false">
+            {% for name,value in sender.parameter.items() %}
+            <parameter name="{{name}}" locked="false">{{value}}</parameter>
+            {% endfor %}
+        </parameter>
+        {% endfor %}
+    </transportSender>
 {% endif %}
 
 {% if transport.ws.sender.enable %}
