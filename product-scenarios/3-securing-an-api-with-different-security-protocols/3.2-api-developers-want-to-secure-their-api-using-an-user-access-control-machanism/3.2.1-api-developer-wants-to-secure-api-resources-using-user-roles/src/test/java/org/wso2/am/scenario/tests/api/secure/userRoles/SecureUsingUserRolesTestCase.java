@@ -18,289 +18,302 @@
 
 package org.wso2.am.scenario.tests.api.secure.userRoles;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeBindingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.ScenarioTestUtils;
-import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.ws.rs.core.Response;
-
-import static org.testng.Assert.assertEquals;
-import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
 
-    private APIStoreRestClient apiStore;
-    private APIPublisherRestClient apiPublisher;
-    private APIPublisherRestClient apiPublisherAdmin;
-    private List<String> applicationsList = new ArrayList<>();
-    private static final Log log = LogFactory.getLog(SecureUsingUserRolesTestCase.class);
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String LOGIN_PERMISSION = "/permission/admin/login";
-    private static final String API_ADMIN_PERMISSION = "/permission/admin";
-    private static final String API_PUBLISHER_PERMISSION = "/permission/admin/manage/api/publish";
-    private static final String API_CREATOR_PERMISSION = "/permission/admin/manage/api/create";
-    private static final String API_SUBSCRIBER_PERMISSION = "/permission/admin/manage/api/subscribe";
-    private static final String MANAGER_ROLE = "managerRole";
-    private static final String MANAGER_LOGIN_PW = "manager";
-    private static final String AGENT_ROLE = "agentRole";
-    private static final String AGENT_LOGIN_PW = "agent";
-    private static final String CUSTOMER_ROLE = "customerRole";
-    private static final String CUSTOMER_LOGIN_PW = "customer";
-    private static final String MANAGER = "Alex";
-    private static final String AGENT = "Paul";
-    private static final String CUSTOMER = "Rick";
-    private static final String SUPER_USER = "Harry";
-    private static final String SUPER_USER_LOGIN_PW = "super";
-    private static final String ITEM_VIEW = "item_view";
-    private static final String ITEM_ADD = "item_add";
-    private static final String ORDER_VIEW = "order_view";
-    private static final String ORDER_ADD = "order_add";
-    private static final String SCOPE_EXISTANCE = "isScopeExist";
-    private static final String ROLE_EXISTANCE = "isRoleExist";
+    APIDTO apiDto;
+    private APIDTO response;
+
+
+    private String devPortalUser;
+    private String apiID;
     private String apiVersion = "1.0.0";
-    private String apiVisibility = "public";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private String apiName = "APIScopeTestAPI";
-    private String applicationName = "TestApplication";
+    private String apiContext = "testContext";
 
-    List<String> userList = new ArrayList();
-    List<String> roleList = new ArrayList();
-    File swaggerFile;
-    String resourceLocation = System.getProperty("test.resource.location");
+    List<APIOperationsDTO> operationsDTOS;
 
-    @DataProvider(name = "ScopeAndValidRoleDataProvider")
-    public static Object[][] ValidRoleDataProvider() {
-        return new Object[][]{
-                {MANAGER_ROLE, ITEM_ADD},
-                {AGENT_ROLE, ORDER_ADD},
-                {CUSTOMER_ROLE, ORDER_VIEW}
-        };
-    }
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-    @DataProvider(name = "SwaggerFilesAndVerb")
-    public static Object[][] SwaggerFileAndHttpVerb() {
-        ArrayList<String> httpverb1 = new ArrayList<>() ;
-        httpverb1.add("PUT");
-        ArrayList<String> httpverb2 = new ArrayList<>() ;
-        httpverb2.add("PUT");
-        httpverb2.add("GET");
-        return new Object[][]{
-                {"APIScopeTest1.json", httpverb1},
-                {"APIScopeTest2.json", httpverb2}
-        };
-    }
-
-    @DataProvider(name="StoreUserDataProvider")
-    public static  Object[][] storeUserDataProvider() {
-        return new Object[][]{
-                {AGENT, AGENT_LOGIN_PW},
-                {CUSTOMER, CUSTOMER_LOGIN_PW}
-        };
-    }
-
-    private void setupUserData() {
-        try {
-            createRoles();
-            createUsers();
-        } catch (APIManagementException ex) {
-            log.error("Users or roles creation failed.", ex);
-        }
-    }
-
-    private void createRoles() throws APIManagementException {
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, MANAGER_ROLE, new String[]{API_ADMIN_PERMISSION});
-        roleList.add(MANAGER_ROLE);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, AGENT_ROLE, new String[]{API_PUBLISHER_PERMISSION,
-                API_CREATOR_PERMISSION, API_SUBSCRIBER_PERMISSION, LOGIN_PERMISSION});
-        roleList.add(AGENT_ROLE);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, CUSTOMER_ROLE,
-                new String[] { LOGIN_PERMISSION, API_SUBSCRIBER_PERMISSION });
-        roleList.add(CUSTOMER_ROLE);
-    }
-
-    private void createUsers() throws APIManagementException {
-        createUser(MANAGER, MANAGER_LOGIN_PW, new String[]{MANAGER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        userList.add(MANAGER);
-        createUser(AGENT, AGENT_LOGIN_PW, new String[]{AGENT_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        userList.add(AGENT);
-        createUser(CUSTOMER, CUSTOMER_LOGIN_PW, new String[]{CUSTOMER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        userList.add(CUSTOMER);
-        createUser(SUPER_USER, SUPER_USER_LOGIN_PW, new String[]{MANAGER_ROLE, AGENT_ROLE}, ADMIN_LOGIN_USERNAME,
-                ADMIN_LOGIN_PW);
-        userList.add(SUPER_USER);
-    }
-
-    private void createNewApplicationAndSubscribe(String user, String password) throws Exception {
-        apiStore.login(user, password);
-        apiStore.addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
-
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, SUPER_USER);
-        subscriptionRequest.setApplicationName(applicationName);
-        apiStore.subscribe(subscriptionRequest);
-    }
-
-    private String generateKeysAndAccessToken(String user, String password) throws Exception {
-        //Generate production token and invoke with that
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
-
-        // get Consumer Key and Consumer Secret
-        String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
-        String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
-
-        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
-        HttpResponse response;
-        String requestBody;
-        JSONObject accessTokenGenerationResponse;
-
-        //Obtain user access token for user
-        requestBody = "grant_type=password&username=" + user + "&password=" + password + "&scope=order_view";
-        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
-        accessTokenGenerationResponse = new JSONObject(response.getData());
-        return accessTokenGenerationResponse.getString("access_token");
-    }
-
-    private void deleteUsers() throws APIManagementException {
-        if (userList.size() > 0) {
-            for (String username : userList) {
-                deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-            }
-        }
-    }
-
-    private void deleteRoles() throws APIManagementException {
-        if (roleList.size() > 0) {
-            for (String role : roleList) {
-                deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-            }
-        }
+    @Factory(dataProvider = "userModeDataProvider")
+    public SecureUsingUserRolesTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        setupUserData();
-        apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(SUPER_USER, SUPER_USER_LOGIN_PW);
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
-        apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
-        apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        // create and publish sample API
-        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
-        File swaggerFile = new File(swaggerFilePath);
-        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
-        JSONObject swaggerJson = new JSONObject(swaggerContent);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                  ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+            devPortalUser = "adminUser1";
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+//           create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+//           Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                                             TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
+    }
+
+    @Test(description = "3.2.1.1")
+    public void testScopeCreationWithValidValues() throws Exception {
+        String userRole = "role" ;
+        String scopeName = "valid_scope";
+        String apiName = "testAPI";
+
+        String[] permissionArray = new String[]{"/permission/admin/login", "/permission/admin/manage/api/publish"};
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionArray);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionArray);
+        }
+
+        createApiWithScope(apiName,userRole,scopeName);
+        response = restAPIPublisher.addAPI(apiDto, "3.0");
+        assertNotNull(response.getId());
+        apiID = response.getId();
+
         try {
-            apiPublisher.developSampleAPI(swaggerJson, SUPER_USER, backendEndPoint, true, apiVisibility);
-        } catch (Exception ex) {
-            log.error("API publication failed", ex);
+            restAPIPublisher.changeAPILifeCycleStatus(response.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
+        } catch (ApiException e) {
+            assertTrue(e.getResponseBody().contains("Error"));
+        }
+        restAPIPublisher.deleteAPI(apiID);
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
     }
 
-    @Test(description = "3.2.1.1", dataProvider = "ScopeAndValidRoleDataProvider",
-            dataProviderClass = SecureUsingUserRolesTestCase.class)
-    public void testScopeCreationWithValidValues(String role, String scope) throws Exception {
-        HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
-        verifyResponse(httpResponse);
-        assertEquals(new JSONObject(httpResponse.getData()).get(SCOPE_EXISTANCE).toString(), "false",
-                "Error in scope creation with valid values. Scope  : " + scope);
-        assertEquals(new JSONObject(httpResponse.getData()).get(ROLE_EXISTANCE).toString(), "true",
-                "Error in scope creation with valid values. Role  : " + role);
+    @Test(description = "3.2.1.2")
+    public void testScopeAssigningToMultipleResources() throws Exception {
+        String userRole = "role" ;
+        String scopeName = "valid_scope";
+        String apiName = "testAPIwithMultipleResources";
+
+        String[] permissionArray = new String[]{"/permission/admin/login", "/permission/admin/manage/api/publish"};
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionArray);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionArray);
+        }
+
+        createApiWithScope(apiName,userRole,scopeName);
+
+        APIOperationsDTO anotherOperationsDTO = new APIOperationsDTO();
+
+        anotherOperationsDTO.setVerb("PUT");
+        anotherOperationsDTO.setTarget("http://dummy.restapiexample.com/api/v1/employees");
+        List<String> scopes = new ArrayList<>();
+        scopes.add(scopeName);
+        anotherOperationsDTO.setScopes(scopes);
+
+        operationsDTOS.add(anotherOperationsDTO);
+        apiDto.setOperations(operationsDTOS);
+
+        response = restAPIPublisher.addAPI(apiDto, "3.0");
+        assertNotNull(response.getId());
+
+        try {
+            restAPIPublisher.changeAPILifeCycleStatus(response.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
+        } catch (ApiException e) {
+            assertTrue(e.getResponseBody().contains("Error"));
+        }
+
+        restAPIPublisher.deleteAPI(response.getId());
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+        }
 
     }
 
-    @Test(description = "3.2.1.2", dataProvider = "SwaggerFilesAndVerb",
-            dataProviderClass = SecureUsingUserRolesTestCase.class)
-    public void testScopeAssigningToMultipleResources(String file, ArrayList<String> httpVerbs) throws Exception {
-        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/"+file);
-        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
-        HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
-        verifyResponse(updateResponse);
-        HttpResponse updatedResponse = apiPublisher.getAPI(apiName, SUPER_USER, apiVersion);
-        JSONObject jasonPayload = new JSONObject(updatedResponse.getData());
-        for (String httpverb: httpVerbs) {
-            String scope = new JSONObject(
-                    new JSONObject(
-                            (new JSONObject(
-                                    new JSONArray(
-                                            jasonPayload.getJSONObject("api").
-                                                    get("resources").toString()
-                                    ).get(0).toString()
-                            ).get("http_verbs")
-                            ).toString()
-                    ).get(httpverb).toString()
-            ).get("scope").toString();
-            assertEquals(ITEM_VIEW, scope);
+    @Test(description = "3.2.1.3")
+    public void testScopeWithMultipleRoles() throws Exception {
+
+        String userRole = "role" ;
+        String secondRole = "secondRole" ;
+        String scopeName = "valid_scope";
+        String secscopeName = "Second_valid_scope";
+        String apiName = "testAPIMultipleRoles";
+
+        String[] permissionArray = new String[]{"/permission/admin/login", "/permission/admin/manage/api/publish"};
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createRole(ADMIN_USERNAME, ADMIN_PW, secondRole, permissionArray);
+            createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionArray);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionArray);
+            createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, secondRole, permissionArray);
+        }
+
+        createApiWithScope(apiName,userRole,scopeName);
+
+        ScopeDTO firstscopeDTO = new ScopeDTO();
+        firstscopeDTO.setName(scopeName);
+        firstscopeDTO.setDescription("First Scope test Description");
+        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
+        scopeBindingsDTO.setType(null);
+        List<String> bindingList = new ArrayList<>();
+        bindingList.add(userRole);
+        scopeBindingsDTO.setValues(bindingList);
+        firstscopeDTO.setBindings(scopeBindingsDTO);
+
+        ScopeDTO secondscopeDTO = new ScopeDTO();
+        secondscopeDTO.setName(secscopeName);
+        secondscopeDTO.setDescription("Second Scope test Description");
+        ScopeBindingsDTO secscopeBindingsDTO = new ScopeBindingsDTO();
+        secscopeBindingsDTO.setType(null);
+        List<String> secbindingList = new ArrayList<>();
+        secbindingList.add(userRole);
+        secscopeBindingsDTO.setValues(secbindingList);
+        secondscopeDTO.setBindings(secscopeBindingsDTO);
+
+        List<ScopeDTO> scopeDTOList = new ArrayList<>();
+        scopeDTOList.add(firstscopeDTO);
+        scopeDTOList.add(secondscopeDTO);
+
+        apiDto.setScopes(scopeDTOList);
+
+        response = restAPIPublisher.addAPI(apiDto, "3.0");
+        assertNotNull(response.getId());
+
+        try {
+            restAPIPublisher.changeAPILifeCycleStatus(response.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
+        } catch (ApiException e) {
+            assertTrue(e.getResponseBody().contains("Error"));
+        }
+        restAPIPublisher.deleteAPI(response.getId());
+
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
+            deleteRole(secondRole, ADMIN_USERNAME, ADMIN_PW);
+
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteRole(secondRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
-    // TODO: 2/27/19 Enable the test after identifying the cause of build failure
-    @Test(description = "3.2.1.3", dataProvider = "StoreUserDataProvider",
-            dataProviderClass = SecureUsingUserRolesTestCase.class, enabled = false)
-    public void testScopeWithMultipleRoles(String user, String password) throws Exception {
-        //Adding a scope with two roles
-        HttpResponse httpResponse = apiPublisher.validateScope(ORDER_VIEW, AGENT_ROLE + "," + CUSTOMER_ROLE);
-        verifyResponse(httpResponse);
+    private APIDTO createApiWithScope(String apiName, String role, String scopeName) throws ApiException {
+        apiDto = new APIDTO();
+        String verb = "GET";
+        String tier = "Gold";
+        apiDto.setName(apiName);
+        apiDto.setContext(apiContext);
+        apiDto.setVersion(apiVersion);
 
-        //Updating the resource with the new scope
-        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest3.json");
-        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
-        HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
-        verifyResponse(updateResponse);
+        org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+        sandUrl.put("url", backendEndPoint);
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        apiDto.setEndpointConfig(jsonObject);
+        ArrayList<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add("Production and Sandbox");
+        apiDto.setGatewayEnvironments(gatewayEnvironments);
+        ArrayList<String> policies = new ArrayList<>();
+        policies.add(tier);
+        apiDto.setPolicies(policies);
+        ScopeDTO scopeDTO = new ScopeDTO();
+        scopeDTO.setName(scopeName);
+        scopeDTO.setDescription("Scope test Description");
+        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
+        scopeBindingsDTO.setType(null);
+        List<String> bindingList = new ArrayList<>();
+        bindingList.add(role);
+        scopeBindingsDTO.setValues(bindingList);
+        scopeDTO.setBindings(scopeBindingsDTO);
+        List<ScopeDTO> scopeDTOList = new ArrayList<>();
+        scopeDTOList.add(scopeDTO);
+        apiDto.setScopes(scopeDTOList);
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb(verb);
+        apiOperationsDTO.setTarget(backendEndPoint);
+        List<String> scopes = new ArrayList<>();
+        scopes.add(scopeName);
+        apiOperationsDTO.setScopes(scopes);
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiDto.setOperations(operationsDTOS);
 
-        createNewApplicationAndSubscribe(user, password);
-
-        String accessToken = generateKeysAndAccessToken(user, password);
-        Map<String, String> requestHeaders;
-        HttpResponse response;
-        requestHeaders = new HashMap<String, String>();
-
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        response = HttpRequestUtil
-                .doGet(gatewayHttpsURL + "/contextJsonV2/" + apiVersion, requestHeaders);
-        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Admin user cannot access the GET Method");
-        apiStore.removeAPISubscriptionByName(apiName, apiVersion, SUPER_USER, applicationName);
-        apiStore.removeApplication(applicationName);
+        return apiDto;
     }
+
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws APIManagerIntegrationTestException {
-        for (String name : applicationsList) {
-            apiStore.removeApplication(name);
+    public void destroy() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
-        applicationsList.clear();
-        try {
-            deleteUsers();
-            deleteRoles();
-        } catch (APIManagementException ex) {
-            log.error("Users or role deletion failed", ex);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
-        apiPublisherAdmin.deleteAPI(apiName, apiVersion, SUPER_USER);
     }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][] {
+            new Object[] {TestUserMode.SUPER_TENANT_USER},
+            new Object[] {TestUserMode.TENANT_USER},
+            };
+    }
+
 }
