@@ -111,6 +111,14 @@ public class ScenarioDataProvider {
         };
     }
 
+    @DataProvider(name = "testinvalidRoleDataProvider")
+    public static Object[][] testinvalidRoleDataProvider() {
+        return new Object[][]{
+            { "internal/creator"},
+            { "internal/subscriber"}
+        };
+    }
+
     @DataProvider(name = "ValidPermissionDataProvider")
     public static Object[][] validPermissionDataProvider() {
 
