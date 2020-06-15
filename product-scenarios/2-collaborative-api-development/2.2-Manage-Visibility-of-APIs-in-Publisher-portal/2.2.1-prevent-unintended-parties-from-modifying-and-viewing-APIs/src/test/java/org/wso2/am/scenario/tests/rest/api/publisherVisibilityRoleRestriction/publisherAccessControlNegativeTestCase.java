@@ -16,153 +16,152 @@
 
 package org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
 
-    private String apiProvider;
+    private String secondUser;
     private String apiName;
     private String apiContext;
-    private String apiVersion;
-    private String visibilityType = "publisher";
-    private APIPublisherRestClient apiPublisherRestClient;
+    private String apiVersion = "1.0.0";
+    private String tierCollection = "Gold,Bronze";
+    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private int count = 0;
+    private static String apiID;
     private String apiRole;
-    private List<Map<String, String>> apisToDeleteList = new ArrayList<>();
-    private List<String> rolesToDeleteList = new ArrayList<>();
-    private List<String> usersToDeleteList = new ArrayList<>();
 
-    private static final String CREATOR_PUBLISHER_USERNAME = "creatorPublisherUser";
-    private static final String TEST_PUBLISHER_USERNAME = "creatorPublisherUser2";
-    private static final String PUBLISHER_ROLE = "publisherTestRole";
-    private static final String PASSWORD = "Wso2123!";
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    
-    @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagementException {
+    private static final Log log = LogFactory.getLog(PublisherAccessControlTestCase.class);
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-        String apiPublishPermission = "/permission/admin/manage/api/publish";
-        String apiCreatePermission = "/permission/admin/manage/api/create";
-        String loginPermission = "/permission/admin/login";
-
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, PUBLISHER_ROLE, new String[]{apiPublishPermission,
-                apiCreatePermission, loginPermission});
-        createUser(CREATOR_PUBLISHER_USERNAME, PASSWORD, new String[]{PUBLISHER_ROLE},
-                ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        usersToDeleteList.add(CREATOR_PUBLISHER_USERNAME);
-        rolesToDeleteList.add(PUBLISHER_ROLE);
-        apiPublisherRestClient = new APIPublisherRestClient(publisherURL);
+    @Factory(dataProvider = "userModeDataProvider")
+    public publisherAccessControlNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
     }
-    
-    @Test(description = "2.2.1.1")
-    private void testAccessControlUsingNoneExistingRoles() throws APIManagerIntegrationTestException {
 
-        apiProvider = CREATOR_PUBLISHER_USERNAME;
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                  ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+            secondUser = "adminUser1";
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+//            create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+//             Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                                             TENANT_ADMIN_PW);
+            }
+            secondUser = "adminUser1"+ "@" + ScenarioTestConstants.TENANT_WSO2;
+        }
+        super.init(userMode);
+    }
+
+    @Test(description = "2.2.1.1")
+    public void testAccessControlUsingNoneExistingRoles() throws Exception {
         apiName = "testAccessControlUsingNoneExistingRoles";
         apiContext = "/testAccessControlUsingNoneExistingRoles";
         apiRole = "somerole";
         apiVersion = "1.0.0";
 
-        apiPublisherRestClient.login(CREATOR_PUBLISHER_USERNAME, PASSWORD);
-        assertTrue(validateRoles(apiRole).getData().contains("false"));
-        apiPublisherRestClient.logout();
+//        assertTrue(validateRoles(apiRole).getData().contains("false"));
+        assertTrue(restAPIPublisher.validateRoles(apiRole).getData().toString().contains("false"));
     }
 
-    @Test(description = "2.2.1.2")
-    private void testVisibilityOfRestrictedApi() throws MalformedURLException, APIManagerIntegrationTestException,
-            APIManagementException {
+    @Test(description = "2.2.1.1")
+    public void testVisibilityOfRestrictedApi() throws Exception {
 
-        apiProvider = CREATOR_PUBLISHER_USERNAME;
-        apiName = "testVisibilityOfRestrictedApi";
-        apiContext = "/testVisibilityOfRestrictedApi";
-        apiVersion = "1.0.0";
-        apiRole = PUBLISHER_ROLE;
+        apiName = "Restricted_API_" + count;
+        apiContext = "/Restrict_"+ count;
+        count++;
 
-        Map<String, String> apiDeleteParams = new HashMap<>();
-        apiDeleteParams.put("apiName", apiName);
-        apiDeleteParams.put("apiProvider", apiProvider);
-        apiDeleteParams.put("apiVersion", apiVersion);
-        apisToDeleteList.add(apiDeleteParams);
-        apiPublisherRestClient.login(CREATOR_PUBLISHER_USERNAME, PASSWORD);
-        verifyResponse(createRestrictedApi(apiPublisherRestClient));
-        apiPublisherRestClient.logout();
-        createUserWithPublisherAndCreatorRole(TEST_PUBLISHER_USERNAME, PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        usersToDeleteList.add(TEST_PUBLISHER_USERNAME);
-        apiPublisherRestClient.login(TEST_PUBLISHER_USERNAME, PASSWORD);
-        assertFalse(isApiAvailable(apiName, apiPublisherRestClient));
-        apiPublisherRestClient.logout();
-    }
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,"admin", new URL(backendEndPoint));
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        apiCreationRequestBean.setRoles(ScenarioTestConstants.PUBLISHER_ROLE);
+        apiCreationRequestBean.setVisibility(APIDTO.VisibilityEnum.RESTRICTED.getValue());
+        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
 
-    private boolean isApiAvailable(String apiName, APIPublisherRestClient client) throws
-            APIManagerIntegrationTestException {
+        apiID = apiDto.getId();
+        assertNotNull(apiDto.getId(), "API creation fails");
 
-        HttpResponse api = client.getAllAPIs();
-        verifyResponse(api);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithSubscriberRole(secondUser, "password123$",
+                                         ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            createUserWithSubscriberRole(secondUser, "password123$",
+                                         TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+        }
 
-        return api.getData().contains(apiName);
-    }
+        RestAPIPublisherImpl restAPIPublisherNew;
+        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
-    private HttpResponse validateRoles(String roles) throws APIManagerIntegrationTestException {
+        HttpResponse apiResponseGetAPI = restAPIPublisherNew.getAPI(apiDto.getId());
+        assertFalse(apiResponseGetAPI.getData().contains(apiName), apiName + " is visible in publisher");
 
-        HttpResponse checkValidationRole = apiPublisherRestClient.validateRoles(roles);
-        verifyResponse(checkValidationRole);
-        return checkValidationRole;
-    }
+        restAPIPublisher.deleteAPI(apiDto.getId());
 
-    private HttpResponse createRestrictedApi(APIPublisherRestClient client) throws MalformedURLException,
-            APIManagerIntegrationTestException {
-
-        String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-        String apiResource = "/find";
-        String apiVisibility = "restricted";
-        String tierCollection = "Silver";
-
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiRole, visibilityType,
-                apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
-
-        return client.addAPI(apiRequest);
-    }
-
-    private HttpResponse deleteApi(String apiName, String apiVersion, String apiProvider,
-                                   APIPublisherRestClient client) throws APIManagerIntegrationTestException {
-
-        return client.deleteAPI(apiName, apiVersion, apiProvider);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+        }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
-        apiPublisherRestClient.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        for (Map<String, String> api : apisToDeleteList) {
-            deleteApi(api.get("apiName"), api.get("apiVersion"), api.get("apiProvider"), apiPublisherRestClient);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
-
-        for (String user : usersToDeleteList) {
-            deleteUser(user, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
+    }
 
-        for (String role : rolesToDeleteList) {
-            deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        }
-        apiPublisherRestClient.logout();
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+            new Object[]{TestUserMode.SUPER_TENANT_USER},
+            new Object[]{TestUserMode.TENANT_USER},
+            };
     }
 }

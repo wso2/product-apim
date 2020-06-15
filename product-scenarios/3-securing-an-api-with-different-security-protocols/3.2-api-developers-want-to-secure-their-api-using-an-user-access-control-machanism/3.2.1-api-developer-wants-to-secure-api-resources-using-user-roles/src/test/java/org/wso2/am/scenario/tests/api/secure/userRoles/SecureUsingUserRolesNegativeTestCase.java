@@ -17,170 +17,222 @@
  */
 package org.wso2.am.scenario.tests.api.secure.userRoles;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import static junit.framework.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
 
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.ScenarioTestUtils;
-import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
-import static org.wso2.am.scenario.test.common.ScenarioTestUtils.readFromFile;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeBindingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+
+import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
 
-    private static final Log log = LogFactory.getLog(SecureUsingUserRolesNegativeTestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private APIPublisherRestClient apiPublisherAdmin;
-    private static final String ADMIN_LOGIN_USERNAME = "admin";
-    private static final String ADMIN_LOGIN_PW = "admin";
-    private static final String API_ADMIN_PERMISSION = "/permission/admin";
-    private static final String API_PUBLISHER_PERMISSION = "/permission/admin/manage/api/publish";
-    private static final String API_CREATOR_PERMISSION = "/permission/admin/manage/api/create";
-    private static final String MANAGER_ROLE = "managerRole";
-    private static final String AGENT_ROLE = "agentRole";
-    private static final String SUPER_USER = "Harry";
-    private static final String SUPER_USER_LOGIN_PW = "super";
-    private static final String ITEM_VIEW = "item_view";
+    APIDTO apiDto;
+    private APIDTO response;
+
+    private String apiVersion = "1.0.0";
+    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
+    private String apiContext = "testContext";
+
+    List<APIOperationsDTO> operationsDTOS;
+
     private static final String ITEM_ADD = "item_add";
     private static final String ORDER_VIEW = "order_view";
     private static final String ORDER_ADD = "order_add";
-    private static final String SCOPE_EXISTANCE = "isScopeExist";
-    private static final String ROLE_EXISTANCE = "isRoleExist";
-    List<String> userList = new ArrayList();
-    List<String> roleList = new ArrayList();
-    private String apiVersion = "1.0.0";
-    private String apiVisibility = "public";
-    private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private String apiName = "APIScopeTestAPI";
-    private File swaggerFile;
-    String resourceLocation = System.getProperty("test.resource.location");
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-    private void setupUserData() {
+    @Factory(dataProvider = "userModeDataProvider")
+    public SecureUsingUserRolesNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                  ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+//           create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+//           Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                                             TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
+    }
+
+    @Test(description = "3.2.1.9", dataProvider = "ScopeAndInValidRoleDataProvider",
+          dataProviderClass = SecureUsingUserRolesNegativeTestCase.class)
+    public void testScopeCreationWithInValidRoles(String role, String scope) throws Exception {
+        String apiName = "testAPI_1.9";
+
+        createApiWithScope(apiName,role,scope);
+
         try {
-            createRoles();
-            createUsers();
-        } catch (APIManagementException ex) {
-            log.error("Users or roles creation failed.", ex);
+            response = restAPIPublisher.addAPI(apiDto, "3.0");
+        } catch (ApiException e) {
+            assertTrue("Invalid Role was added successfully!", e.getResponseBody().contains("Role '"+ role +"' does not exist."));
         }
     }
 
-    private void createRoles() throws APIManagementException {
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, MANAGER_ROLE, new String[]{API_ADMIN_PERMISSION});
-        roleList.add(MANAGER_ROLE);
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW, AGENT_ROLE, new String[]{API_PUBLISHER_PERMISSION,
-                API_CREATOR_PERMISSION});
-        roleList.add(AGENT_ROLE);
-    }
+    @Test(description = "3.2.1.13")
+    public void testScopeWithDuplicateKey() throws Exception {
 
-    private void createUsers() throws APIManagementException {
-        createUser(SUPER_USER, SUPER_USER_LOGIN_PW, new String[]{MANAGER_ROLE, AGENT_ROLE}, ADMIN_LOGIN_USERNAME,
-                ADMIN_LOGIN_PW);
-        userList.add(SUPER_USER);
-    }
+        String userRole = "admin" ;
+        String scopeName = "duplicate_scope";
+        String apiName = "testAPIWithDuplicateKey";
+        String firstScopeDescription = "First Scope test Description";
+        String secondScopeDescription = "Second Scope test Description";
 
-    private void deleteUsers() throws APIManagementException {
-        if (userList.size() > 0) {
-            for (String username : userList) {
-                this.deleteUser(username, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-            }
+        createApiWithScope(apiName,userRole,scopeName);
+
+        ScopeDTO firstscopeDTO = new ScopeDTO();
+        firstscopeDTO.setName(scopeName);
+        firstscopeDTO.setDescription(firstScopeDescription);
+        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
+        scopeBindingsDTO.setType(null);
+        List<String> bindingList = new ArrayList<>();
+        bindingList.add(userRole);
+        scopeBindingsDTO.setValues(bindingList);
+        firstscopeDTO.setBindings(scopeBindingsDTO);
+
+        ScopeDTO secondscopeDTO = new ScopeDTO();
+        secondscopeDTO.setName(scopeName);
+        secondscopeDTO.setDescription(secondScopeDescription);
+        ScopeBindingsDTO secscopeBindingsDTO = new ScopeBindingsDTO();
+        secscopeBindingsDTO.setType(null);
+        List<String> secbindingList = new ArrayList<>();
+        secbindingList.add(userRole);
+        secscopeBindingsDTO.setValues(secbindingList);
+        secondscopeDTO.setBindings(secscopeBindingsDTO);
+
+        List<ScopeDTO> scopeDTOList = new ArrayList<>();
+        scopeDTOList.add(firstscopeDTO);
+        scopeDTOList.add(secondscopeDTO);
+
+        apiDto.setScopes(scopeDTOList);
+
+        try {
+            response = restAPIPublisher.addAPI(apiDto, "3.0");
+        } catch (ApiException e) {
+            assertFalse( e.getResponseBody().contains("Error"), e.getResponseBody());
         }
+
+        boolean duplicateScope = false;
+        if(response.getScopes().toString().contains(firstScopeDescription) && response.getScopes().toString().contains(secondScopeDescription)){
+            duplicateScope = true;
+        }
+        assertFalse(duplicateScope,"Duplicate Scopes were added.");
+
+        restAPIPublisher.deleteAPI(response.getId());
+
     }
 
-    private void deleteRoles() throws APIManagementException {
-        if (roleList.size() > 0) {
-            for (String role : roleList) {
-                this.deleteRole(role, ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-            }
+    private APIDTO createApiWithScope(String apiName, String role, String scopeName) throws ApiException {
+        apiDto = new APIDTO();
+        String verb = "GET";
+        String tier = "Gold";
+        apiDto.setName(apiName);
+        apiDto.setContext(apiContext);
+        apiDto.setVersion(apiVersion);
+
+        org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+        sandUrl.put("url", backendEndPoint);
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        apiDto.setEndpointConfig(jsonObject);
+        ArrayList<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add("Production and Sandbox");
+        apiDto.setGatewayEnvironments(gatewayEnvironments);
+        ArrayList<String> policies = new ArrayList<>();
+        policies.add(tier);
+        apiDto.setPolicies(policies);
+        ScopeDTO scopeDTO = new ScopeDTO();
+        scopeDTO.setName(scopeName);
+        scopeDTO.setDescription("Scope test Description");
+        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
+        scopeBindingsDTO.setType(null);
+        List<String> bindingList = new ArrayList<>();
+        bindingList.add(role);
+        scopeBindingsDTO.setValues(bindingList);
+        scopeDTO.setBindings(scopeBindingsDTO);
+        List<ScopeDTO> scopeDTOList = new ArrayList<>();
+        scopeDTOList.add(scopeDTO);
+        apiDto.setScopes(scopeDTOList);
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb(verb);
+        apiOperationsDTO.setTarget(backendEndPoint);
+        List<String> scopes = new ArrayList<>();
+        scopes.add(scopeName);
+        apiOperationsDTO.setScopes(scopes);
+        operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiDto.setOperations(operationsDTOS);
+
+        return apiDto;
+    }
+
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 
     @DataProvider(name = "ScopeAndInValidRoleDataProvider")
     public static Object[][] ValidRoleDataProvider() {
         return new Object[][]{
-                {"everyone", ITEM_ADD},
-                {"admn", ORDER_ADD},
-                {"Internal/Craetor", ORDER_VIEW}
+            {"everyone", ITEM_ADD},
+            {"admn", ORDER_ADD},
+            {"Internal/Craetor", ORDER_VIEW}
         };
     }
 
-    @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        setupUserData();
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiPublisher.login(SUPER_USER, SUPER_USER_LOGIN_PW);
-        apiPublisherAdmin = new APIPublisherRestClient(publisherURL);
-        apiPublisherAdmin.login(ADMIN_LOGIN_USERNAME, ADMIN_LOGIN_PW);
-        // create and publish sample API
-        String swaggerFilePath = resourceLocation + "swaggerFiles" + File.separator + "APIScopeTest1.json";
-        File swaggerFile = new File(swaggerFilePath);
-        String swaggerContent = readFromFile(swaggerFile.getAbsolutePath());
-        JSONObject swaggerJson = new JSONObject(swaggerContent);
-        String apiContext = swaggerJson.get("basePath").toString();
-
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, apiVersion, "", "Gold",
-                new URL(backendEndPoint));
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-
-        APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, SUPER_USER,
-                        APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
-
-        waitForAPIDeploymentSync(SUPER_USER, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
-
-    }
-
-    @Test(description = "3.2.1.9", dataProvider = "ScopeAndInValidRoleDataProvider",
-            dataProviderClass = SecureUsingUserRolesNegativeTestCase.class)
-    public void testScopeCreationWithInValidRoles(String role, String scope) throws Exception {
-        HttpResponse httpResponse = apiPublisher.validateScope(scope, role);
-        verifyResponse(httpResponse);
-        assertEquals(new JSONObject(httpResponse.getData()).get(ROLE_EXISTANCE).toString(), "false",
-                "Error in scope creation with Invalid values. Role  : " + role);
-    }
-
-    @Test(description = "3.2.1.13")
-    public void testScopeWithDuplicateKey() throws Exception {
-        // This swagger will create "item_view" scope and assign it to a resource.
-        swaggerFile = new File(resourceLocation + File.separator + "swaggerFiles/APIScopeTest1.json");
-        String payload = ScenarioTestUtils.readFromFile(swaggerFile.getAbsolutePath());
-        HttpResponse updateResponse = apiPublisher.updateResourceOfAPI(SUPER_USER, apiName, apiVersion, payload);
-        verifyResponse(updateResponse);
-        // Redeclare scope with item_view key.
-        HttpResponse httpResponse = apiPublisher.validateScope(ITEM_VIEW, AGENT_ROLE);
-        verifyResponse(httpResponse);
-        assertEquals(new JSONObject(httpResponse.getData()).get(SCOPE_EXISTANCE).toString(), "true",
-                "Error in scope creation with duplicate key : " + ITEM_VIEW);
-    }
-
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws APIManagerIntegrationTestException {
-        try {
-            deleteUsers();
-            deleteRoles();
-        } catch (APIManagementException ex) {
-            log.error("Users or role deletion failed", ex);
-        }
-        apiPublisherAdmin.deleteAPI(apiName, apiVersion, SUPER_USER);
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][] {
+            new Object[] {TestUserMode.SUPER_TENANT_USER},
+            new Object[] {TestUserMode.TENANT_USER},
+            };
     }
 }
