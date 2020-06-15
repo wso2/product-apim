@@ -16,46 +16,43 @@
  */
 package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 
-import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.scenario.test.common.APIConstants;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.URL;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.fail;
 
 public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends ScenarioTestBase {
 
-    private APIPublisherRestClient apiPublisher;
     private String apiName;
     private String apiContext;
     private String apiVersion = "1.0.0";
 
     private String apiName2 = "RestrictedAPITagTest";
     private String apiContext2 = "/tag-test";
-    private String apiVersion2 = "1.0.0";
-
-    private String apiVisibility = "restricted";
-    private String apiResource = "/find";
-    private String tierCollection = "Gold,Bronze";
+    private String apiContext3 = "/tag-test3";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
 
     private final String ADMIN_LOGIN_USERNAME = "admin";
     private final String ADMIN_PASSWORD = "admin";
-    private final String SUBSCRIBER_USERNAME = "subscriberUser2";
-    private final String SUBSCRIBER_PASSWORD = "password@123";
     private final String SUPER_TENANT_USER_USERNAME = "APIVisiSuperTenantUserNeg";
     private final String SUPER_TENANT_USER_PASSWORD = "APIVisiSuperTenantUserNeg";
     private final String TENANT_SUBSCRIBER_USERNAME = "APIVisiTenantSubscriberNeg";
@@ -64,127 +61,227 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String CREATOR_ROLE = "Creator";
     private final String SUBSCRIBER_ROLE = "Subscriber";
 
-    private final String API_DEVELOPER_USER = "api-dev-user1";
-    private final String API_DEVELOPER_USER_PWD = "api-dev-user1";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
+    private static String apiID1;
+    private static String apiID2;
+    private static String apiID3;
 
-    private APIStoreRestClient apiStoreClient;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public RESTApiVisibilityRestrictedByRolesNegativeTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiStoreClient = new APIStoreRestClient(storeURL);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
-        String[] permission = new String[]{"/permission/admin/login",
-                "/permission/admin/manage/api/subscribe"};
-        
-        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER_ROLE, permission);
-        createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        createUserWithPublisherAndCreatorRole(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+//                Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
+        super.init(userMode);
     }
+
 
     @Test(description = "1.5.2.3")
     public void testVisibilityOfAPISLoginUserWithIncompatibleRole() throws Exception {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
 
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource,
-                tierCollection, new URL(backendEndPoint));
+        APIDTO apiDto = new APIDTO();
+        apiDto.setName(apiName);
+        apiDto.setContext(apiContext);
+        apiDto.setVersion(apiVersion);
+        List<String> visibleRoles = new ArrayList<>();
+        visibleRoles.add(SUBSCRIBER_ROLE);
+        apiDto.setVisibility(APIDTO.VisibilityEnum.RESTRICTED);
+        apiDto.setVisibleRoles(visibleRoles);
 
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(apiCreationResponse);
+        org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+        sandUrl.put("url", backendEndPoint);
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        apiDto.setEndpointConfig(jsonObject);
+        List<String> policies = new ArrayList<>();
+        policies.add("Gold");
+        policies.add("Unlimited");
+        apiDto.setPolicies(policies);
+        APIDTO apiDtoResponse = restAPIPublisher.addAPI(apiDto, "3.0");
+        apiID1 = apiDtoResponse.getId();
 
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, API_DEVELOPER_USER, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiID1);
         verifyResponse(apiResponsePublisher);
         assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
 
-        APILifeCycleStateRequest updateLifeCycle =
-                new APILifeCycleStateRequest(apiName, API_DEVELOPER_USER, APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishStatusResponse);
-        assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
-
-        apiStoreClient.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
-        verifyResponse(apiResponseStore);
-        assertFalse(apiResponseStore.getData().contains(apiName));
+        restAPIPublisher
+                .changeAPILifeCycleStatus(apiID1, APILifeCycleAction.PUBLISH.getAction(), null);
+        try {
+            org.wso2.am.integration.clients.store.api.v1.dto.APIDTO api = restAPIStore.getAPI(apiID1);
+            fail("API can be retrieved by restricted users. ");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpURLConnection.HTTP_NOT_FOUND, "API can be retrieved by restricted users. ");
+        }
     }
 
-    @Test(description = "1.5.2.6")
+    @Test(description = "1.5.2.6", dependsOnMethods = "testVisibilityOfAPISLoginUserWithIncompatibleRole")
     public void testTagCloudContainsRestrictedTag() throws Exception {
         final String restrictedTag = "restricted-tag";
-        APIRequest apiRequest = new APIRequest(apiName2, apiContext2, apiVisibility, ADMIN_LOGIN_USERNAME, apiVersion,
-                apiResource, "",
-                restrictedTag, tierCollection, backendEndPoint, "", "", "", "", "",
-                "", "", "", APIConstants.DefaultVersion.ENABLED, APIConstants.ResponseCaching.DISABLED, "0",
-                APIConstants.SubscriptionAvailability.ALL_TENANTS, APIConstants.TRANSPORT.HTTP, "", "", "");
 
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        apiPublisher
-                .changeAPILifeCycleStatusToPublish(new APIIdentifier(API_DEVELOPER_USER, apiName2, apiVersion2), false);
+        APIDTO apiDto = new APIDTO();
+        apiDto.setName(apiName2);
+        apiDto.setContext(apiContext2);
+        apiDto.setVersion(apiVersion);
+        List<String> tags = new ArrayList<>();
+        tags.add(restrictedTag);
+        apiDto.setTags(tags);
+        List<String> visibleRoles = new ArrayList<>();
+        visibleRoles.add(SUBSCRIBER_ROLE);
+        apiDto.setVisibility(APIDTO.VisibilityEnum.RESTRICTED);
+        apiDto.setVisibleRoles(visibleRoles);
 
-        apiStoreClient.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        HttpResponse serviceResponseGetAllTags = apiStoreClient.getAllTags();
-        verifyResponse(serviceResponseGetAllTags);
+        org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+        sandUrl.put("url", backendEndPoint);
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        apiDto.setEndpointConfig(jsonObject);
+        List<String> policies = new ArrayList<>();
+        policies.add("Gold");
+        policies.add("Unlimited");
+        apiDto.setPolicies(policies);
+        APIDTO apiDtoResponse = restAPIPublisher.addAPI(apiDto, "3.0");
+        apiID2 = apiDtoResponse.getId();
 
-        JSONObject tagsResponseData = new JSONObject(serviceResponseGetAllTags.getData());
-        assertFalse(isTagsResponseContainsTag(tagsResponseData, restrictedTag), "Restricted tag was"
-                + " returned in the tag cloud but it is not expected to be returned.");
+        restAPIPublisher
+                .changeAPILifeCycleStatus(apiID2, APILifeCycleAction.PUBLISH.getAction(), null);
+
+        TagListDTO allTags = restAPIStore.getAllTags();
+
+        if (allTags.getCount().equals(0)) {
+            assertEquals((int) allTags.getCount(), 0, "Restricted tag was"
+                    + " returned in the tag cloud but it is not expected to be returned.");
+        } else {
+            for (TagDTO tag : allTags.getList()) {
+                if (tag.getValue().equals(restrictedTag)) {
+                    fail("Restricted tag was  returned in the tag cloud but it is not expected to be returned.");
+                }
+            }
+        }
     }
 
-    @Test(description = "1.5.2.2")
+    @Test(description = "1.5.2.2", dependsOnMethods = "testAPIVisibilityRestrictedByRoleAndTenantType")
     public void testCreateAPIWithInvalidRoleInStoreVisibility() throws Exception {
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse checkValidationRole = apiPublisher.validateRoles(CREATOR_ROLE);
-        assertFalse(checkValidationRole.getData().contains("true"));
-        verifyResponse(checkValidationRole);
+        try {
+            HttpResponse response = restAPIPublisher.validateRoles(Base64.getEncoder().encodeToString(CREATOR_ROLE.getBytes()));
+            if (response.getResponseCode() == 200) {
+                fail("Incorrect role validated successfully");
+            }
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            assertEquals(e.getCode(), HttpURLConnection.HTTP_NOT_FOUND);
+        }
+
     }
 
-    @Test(description = "1.5.2.11")
+    @Test(description = "1.5.2.11", dependsOnMethods = "testTagCloudContainsRestrictedTag")
     public void testAPIVisibilityRestrictedByRoleAndTenantType() throws Exception {
-        //Add and activate wso2.com tenant
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        createUser(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD, new String[]{
-                ScenarioTestConstants.CREATOR_ROLE, ScenarioTestConstants.PUBLISHER_ROLE,
-                ScenarioTestConstants.SUBSCRIBER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        // create user in wso2.com tenant
-        createUserWithSubscriberRole(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD,
-                ADMIN_LOGIN_USERNAME + "@" + ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
+        String tenantDomain = "abc.com";
 
-        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        APIRequest apiRequest = new APIRequest("APIVisibility_ByRoleAndTenant", apiContext, apiVisibility,
-                SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(apiCreationResponse);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            addTenantAndActivate(tenantDomain, ADMIN_USERNAME, TENANT_ADMIN_PW);
+            //Add and activate wso2.com tenant
+            createUserWithPublisherAndCreatorRole(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD,
+                    ADMIN_LOGIN_USERNAME + "@" + tenantDomain, TENANT_ADMIN_PW);
+            // create user in wso2.com tenant
+            createUserWithSubscriberRole(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD,
+                    ADMIN_LOGIN_USERNAME + "@" + tenantDomain, TENANT_ADMIN_PW);
 
-        APILifeCycleStateRequest updateLifeCycle =
-                new APILifeCycleStateRequest("APIVisibility_ByRoleAndTenant", SUPER_TENANT_USER_USERNAME,
-                        APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishStatusResponse);
-        assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
+            APIDTO apiDto = new APIDTO();
+            apiDto.setName("APIVisibility_ByRoleAndTenant");
+            apiDto.setContext(apiContext3);
+            apiDto.setVersion(apiVersion);
+            List<String> visibleRoles = new ArrayList<>();
+            visibleRoles.add(SUBSCRIBER_ROLE);
+            apiDto.setVisibility(APIDTO.VisibilityEnum.RESTRICTED);
+            apiDto.setVisibleRoles(visibleRoles);
+            List<String> visibleTenants = new ArrayList<>();
+            visibleTenants.add("abc.com");
+            visibleTenants.add("wso2.com");
+            apiDto.setVisibleTenants(visibleTenants);
 
-        apiStoreClient.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        isAPIVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
-        apiStoreClient.login(TENANT_SUBSCRIBER_USERNAME+ "@" + ScenarioTestConstants.TENANT_WSO2,
-                TENANT_SUBSCRIBER_PASSWORD);
-        isAPINotVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
+            org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+            jsonObject.put("endpoint_type", "http");
+            org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+            sandUrl.put("url", backendEndPoint);
+            jsonObject.put("sandbox_endpoints", sandUrl);
+            jsonObject.put("production_endpoints", sandUrl);
+            apiDto.setEndpointConfig(jsonObject);
+            List<String> policies = new ArrayList<>();
+            policies.add("Gold");
+            policies.add("Unlimited");
+            apiDto.setPolicies(policies);
+            APIDTO apiDtoResponse = restAPIPublisher.addAPI(apiDto, "3.0");
+            apiID3 = apiDtoResponse.getId();
+
+            restAPIPublisher
+                    .changeAPILifeCycleStatus(apiID3, APILifeCycleAction.PUBLISH.getAction(), null);
+
+            try {
+                org.wso2.am.integration.clients.store.api.v1.dto.APIDTO api = restAPIStore.getAPI(apiID3);
+                fail("API can be retrieved by restricted users. ");
+            } catch (ApiException e) {
+                assertEquals(e.getCode(), HttpURLConnection.HTTP_NOT_FOUND, "API can be retrieved by restricted users. ");
+            }
+
+        }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        apiPublisher.deleteAPI(apiName, apiVersion, API_DEVELOPER_USER);
-        apiPublisher.deleteAPI(apiName2, apiVersion2, API_DEVELOPER_USER);
-        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        apiPublisher.deleteAPI("APIVisibility_ByRoleAndTenant", apiVersion, SUPER_TENANT_USER_USERNAME);
-        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(SUPER_TENANT_USER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(TENANT_SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME + "@" +
-                ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
-        deleteRole(SUBSCRIBER_ROLE, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        restAPIPublisher.deleteAPI(apiID1);
+        restAPIPublisher.deleteAPI(apiID2);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIPublisher.deleteAPI(apiID3);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
