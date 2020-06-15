@@ -65,8 +65,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
-    private String apiName = UUID.randomUUID().toString();
-    private String apiContext = "/" + UUID.randomUUID();
+    private String apiName = "RESTApiEditTestCaseApi";
+    private String apiContext = "/test5";
     private String apiVersion = "1.0.0";
     private final String admin = "admin";
     private String APICreator = "APICreatorEdit";
