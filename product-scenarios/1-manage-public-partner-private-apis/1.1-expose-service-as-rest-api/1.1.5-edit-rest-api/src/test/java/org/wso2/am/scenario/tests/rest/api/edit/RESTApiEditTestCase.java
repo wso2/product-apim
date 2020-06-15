@@ -62,8 +62,8 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private static final String API_SUBSCRIBER_USERNAME = "andrew";
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
-    private String apiName = UUID.randomUUID().toString();
-    private String apiContext = "/" + UUID.randomUUID();
+    private String apiName = "RESTApiEditTestCaseApi";
+    private String apiContext = "/test5";
     private String apiVersion = "1.0.0";
     private String APICreator = "APICreatorEdit";
     private String pw = "wso2123$";
