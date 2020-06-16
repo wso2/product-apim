@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.admin.api.dto.ClaimMappingEntryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.TokenValidationDTO;
 
 /**
@@ -66,8 +67,8 @@ public class KeyManagerDTO {
   @SerializedName("authorizeEndpoint")
   private String authorizeEndpoint = null;
 
-  @SerializedName("jwksEndpoint")
-  private String jwksEndpoint = null;
+  @SerializedName("certificates")
+  private KeyManagerCertificatesDTO certificates = null;
 
   @SerializedName("issuer")
   private String issuer = null;
@@ -312,22 +313,22 @@ public class KeyManagerDTO {
     this.authorizeEndpoint = authorizeEndpoint;
   }
 
-  public KeyManagerDTO jwksEndpoint(String jwksEndpoint) {
-    this.jwksEndpoint = jwksEndpoint;
+  public KeyManagerDTO certificates(KeyManagerCertificatesDTO certificates) {
+    this.certificates = certificates;
     return this;
   }
 
    /**
-   * Get jwksEndpoint
-   * @return jwksEndpoint
+   * Get certificates
+   * @return certificates
   **/
-  @ApiModelProperty(example = "", value = "")
-  public String getJwksEndpoint() {
-    return jwksEndpoint;
+  @ApiModelProperty(value = "")
+  public KeyManagerCertificatesDTO getCertificates() {
+    return certificates;
   }
 
-  public void setJwksEndpoint(String jwksEndpoint) {
-    this.jwksEndpoint = jwksEndpoint;
+  public void setCertificates(KeyManagerCertificatesDTO certificates) {
+    this.certificates = certificates;
   }
 
   public KeyManagerDTO issuer(String issuer) {
@@ -645,7 +646,7 @@ public class KeyManagerDTO {
         Objects.equals(this.revokeEndpoint, keyManager.revokeEndpoint) &&
         Objects.equals(this.userInfoEndpoint, keyManager.userInfoEndpoint) &&
         Objects.equals(this.authorizeEndpoint, keyManager.authorizeEndpoint) &&
-        Objects.equals(this.jwksEndpoint, keyManager.jwksEndpoint) &&
+        Objects.equals(this.certificates, keyManager.certificates) &&
         Objects.equals(this.issuer, keyManager.issuer) &&
         Objects.equals(this.scopeManagementEndpoint, keyManager.scopeManagementEndpoint) &&
         Objects.equals(this.availableGrantTypes, keyManager.availableGrantTypes) &&
@@ -665,7 +666,7 @@ public class KeyManagerDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, displayName, type, description, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, userInfoEndpoint, authorizeEndpoint, jwksEndpoint, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
+    return Objects.hash(id, name, displayName, type, description, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
   }
 
 
@@ -685,7 +686,7 @@ public class KeyManagerDTO {
     sb.append("    revokeEndpoint: ").append(toIndentedString(revokeEndpoint)).append("\n");
     sb.append("    userInfoEndpoint: ").append(toIndentedString(userInfoEndpoint)).append("\n");
     sb.append("    authorizeEndpoint: ").append(toIndentedString(authorizeEndpoint)).append("\n");
-    sb.append("    jwksEndpoint: ").append(toIndentedString(jwksEndpoint)).append("\n");
+    sb.append("    certificates: ").append(toIndentedString(certificates)).append("\n");
     sb.append("    issuer: ").append(toIndentedString(issuer)).append("\n");
     sb.append("    scopeManagementEndpoint: ").append(toIndentedString(scopeManagementEndpoint)).append("\n");
     sb.append("    availableGrantTypes: ").append(toIndentedString(availableGrantTypes)).append("\n");

@@ -5014,9 +5014,16 @@ definitions:
       authorizeEndpoint:
         type: string
         example: ""
-      jwksEndpoint:
-        type: string
-        example: ""
+      certificates:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - JWKS
+              - PEM
+          value:
+            type: string
       issuer:
         type: string
         example: ""
