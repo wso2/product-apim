@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project version="4" relativePaths="false"> 
+  <component name="ProjectRootManager" version="2" assert-keyword="true" project-jdk-name="1.8" jdk-15="true"/>  
+  <component name="CodeStyleManager"> 
+    <option name="USE_DEFAULT_CODE_STYLE_SCHEME" value="true"/>  
+    <option name="CODE_STYLE_SCHEME" value=""/> 
+  </component>  
+  <component name="libraryTable"/>  
+  <component name="CompilerConfiguration"> 
+    <option name="DEFAULT_COMPILER" value="Javac"/>  
+    <option name="CLEAR_OUTPUT_DIRECTORY" value="false"/>  
+    <!--
+    <wildcardResourcePatterns>
+      <entry name="${wildcardResourcePattern}"/>
+    </wildcardResourcePatterns>
+    -->  
+    <wildcardResourcePatterns>
+      <entry name="!?*.java"/>
+    </wildcardResourcePatterns>
+  </component>  
+  <component name="JavacSettings"> 
+    <option name="DEBUGGING_INFO" value="true"/>  
+    <option name="GENERATE_NO_WARNINGS" value="false"/>  
+    <option name="DEPRECATION" value="true"/>  
+    <option name="ADDITIONAL_OPTIONS_STRING" value=""/>  
+    <option name="MAXIMUM_HEAP_SIZE" value="128"/>  
+    <option name="USE_GENERICS_COMPILER" value="false"/> 
+  </component>  
+  <component name="JikesSettings"> 
+    <option name="DEBUGGING_INFO" value="true"/>  
+    <option name="DEPRECATION" value="true"/>  
+    <option name="GENERATE_NO_WARNINGS" value="false"/>  
+    <option name="GENERATE_MAKE_FILE_DEPENDENCIES" value="false"/>  
+    <option name="DO_FULL_DEPENDENCE_CHECK" value="false"/>  
+    <option name="IS_INCREMENTAL_MODE" value="false"/>  
+    <option name="IS_EMACS_ERRORS_MODE" value="true"/>  
+    <option name="ADDITIONAL_OPTIONS_STRING" value=""/>  
+    <option name="MAXIMUM_HEAP_SIZE" value="128"/> 
+  </component>  
+  <component name="AntConfiguration"> 
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false"/>  
+    <option name="FILTER_TARGETS" value="false"/> 
+  </component>  
+  <component name="JavadocGenerationManager"> 
+    <option name="OUTPUT_DIRECTORY"/>  
+    <option name="OPTION_SCOPE" value="protected"/>  
+    <option name="OPTION_HIERARCHY" value="false"/>  
+    <option name="OPTION_NAVIGATOR" value="false"/>  
+    <option name="OPTION_INDEX" value="false"/>  
+    <option name="OPTION_SEPARATE_INDEX" value="false"/>  
+    <option name="OPTION_USE_1_1" value="false"/>  
+    <option name="OPTION_DOCUMENT_TAG_USE" value="false"/>  
+    <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="false"/>  
+    <option name="OPTION_DOCUMENT_TAG_VERSION" value="false"/>  
+    <option name="OPTION_DOCUMENT_TAG_DEPRECATED" value="false"/>  
+    <option name="OPTION_DEPRECATED_LIST" value="false"/>  
+    <option name="OTHER_OPTIONS"/>  
+    <option name="HEAP_SIZE"/>  
+    <option name="OPEN_IN_BROWSER" value="false"/> 
+  </component>  
+  <component name="JUnitProjectSettings"> 
+    <option name="TEST_RUNNER" value="UI"/> 
+  </component>  
+  <component name="EntryPointsManager"> 
+    <entry_points/> 
+  </component>  
+  <component name="DataSourceManager"/>  
+  <component name="ExportToHTMLSettings"> 
+    <option name="PRINT_LINE_NUMBERS" value="false"/>  
+    <option name="OPEN_IN_BROWSER" value="false"/>  
+    <option name="OUTPUT_DIRECTORY"/> 
+  </component>  
+  <component name="ImportConfiguration"> 
+    <option name="VENDOR"/>  
+    <option name="RELEASE_TAG"/>  
+    <option name="LOG_MESSAGE"/>  
+    <option name="CHECKOUT_AFTER_IMPORT" value="true"/> 
+  </component>  
+  <component name="ProjectModuleManager"> 
+    <modules> 
+      <!-- module filepath="$$PROJECT_DIR$$/${pom.artifactId}.iml"/ -->  
+      <module filepath="$PROJECT_DIR$/product-scenarios.iml"/>
+      <module filepath="$PROJECT_DIR$/scenarios-common/scenarios-common.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1.1-create-rest-api-from-scratch/1.1.1-create-rest-api-from-scratch.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.1-expose-service-as-rest-api/1.1-expose-service-as-rest-api.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.4-delete-an-existing-api/1.4.1-delete-an-existing-api/1.4.1-delete-an-existing-api.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.4-delete-an-existing-api/1.4-delete-an-existing-api.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.5-expose-api-to-the-app-developer/1.5.1-expose-api-visible-to-all-public-app-developer-without-restriction/1.5.1-expose-api-visible-to-all-public-app-developer-without-restriction.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.5-expose-api-to-the-app-developer/1.5.2-expose-api-to-subset-of-app-developer-restricted-by-roles/1.5.2-expose-api-to-subset-of-app-developer-restricted-by-roles.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1.5-expose-api-to-the-app-developer/1.5-expose-api-to-the-app-developer.iml"/>
+      <module filepath="$PROJECT_DIR$/1-manage-public-partner-private-apis/1-manage-public-partner-private-apis.iml"/>
+      <module filepath="$PROJECT_DIR$/2-collaborative-api-development/2.1-manage-publisher-portal-operations-for-users/2.1.1-manage-api-publishing-according-to-the-publisher-roles-and-permission/2.1.1-manage-api-publishing-according-to-the-publisher-roles-and-permission.iml"/>
+      <module filepath="$PROJECT_DIR$/2-collaborative-api-development/2.1-manage-publisher-portal-operations-for-users/2.1-manage-publisher-portal-operations-for-users.iml"/>
+      <module filepath="$PROJECT_DIR$/2-collaborative-api-development/2.2-manage-visibility-of-apis-in-publisher-portal/2.2.1-prevent-unintended-parties-from-modifying-and-viewing-APIs/2.2.1-prevent-unintended-parties-from-modifying-and-viewing-APIs.iml"/>
+      <module filepath="$PROJECT_DIR$/2-collaborative-api-development/2.2-manage-visibility-of-apis-in-publisher-portal/2.2-manage-visibility-of-APIs-in-Publisher-portal.iml"/>
+      <module filepath="$PROJECT_DIR$/2-collaborative-api-development/2-collaborative-api-development.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.1-application-developers-should-be-able-to-use-apis-in-their-applications/4.1.1-registering-an-application/4.1.1-registering-an-application.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.1-application-developers-should-be-able-to-use-apis-in-their-applications/4.1.3-delete-registered-application/4.1.3-delete-registered-application.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.1-application-developers-should-be-able-to-use-apis-in-their-applications/4.1-application-developers-should-be-able-to-use-apis-in-their-applications.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.2-develop-a-non-secured-application/4.2-develop-a-non-secured-application.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.3-develop-an-application-secured-with-an-external-idp/4.3-develop-an-application-secured-with-an-external-idp.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.4-developing-an-application-secured-with-a-local-idp/4.4-developing-an-application-secured-with-a-local-idp.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.5-application-developers-should-be-able-to-easily-integrate-apis-to-their-applications/4.5-application-developers-should-be-able-to-easily-integrate-apis-to-their-applications.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.6-application-developers-should-be-able-to-try-out-apis/4.6-application-developers-should-be-able-to-try-out-apis.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.7-application-developers-should-be-facilitated-with-collaborative-application-development/4.7-application-developers-should-be-facilitated-with-collaborative-application-development.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.8-on-boarding-application-developers/4.8-on-boarding-application-developers.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.10-external-users-should-be-able-to-use-exposed-apis-through-applications/4.10-external-users-should-be-able-to-use-exposed-apis-through-applications.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.11-localization-in-developer-portal/4.11-localization-in-developer-portal.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4.12-developer-portal-theming/4.12-developer-portal-theming.iml"/>
+      <module filepath="$PROJECT_DIR$/4-application-development-using-apis/4-application-development-using-apis.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time/5.1.1-api-lifecycle-state-can-be-changed-from-one-state-to-another/5.1.1-api-lifecycle-state-can-be-changed-from-one-state-to-another.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time/5.1.2-published-and-prototyped-apis-should-be-visible-in-store/5.1.2-published-and-prototyped-apis-should-be-visible-in-store.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time/5.1.3-published-and-prototyped-apis-should-be-invocable-at-the-gateway/5.1.3-published-and-prototyped-apis-should-be-invocable-at-the-gateway.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time/5.1.4-lifecycle-history-should-be-correctly-shown/5.1.4-lifecycle-history-should-be-correctly-shown.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time/5.1-an-api-should-have-a-lifecycle-with-a-set-of-defined-lifecycle-states-so-that-api-developer-can-set-one-state-at-a-given-time.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.2-ability-to-have-custom-api-states-to-cater-different-use-cases/5.2.1-admins-should-be-able-to-configure-a-new-Life-cycle-status-for-apis/5.2.1-admins-should-be-able-to-configure-a-new-Life-cycle-status-for-apis.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.2-ability-to-have-custom-api-states-to-cater-different-use-cases/5.2-ability-to-have-custom-api-states-to-cater-different-use-cases.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.3-approvals-for-api-state-changes/5.3.1-api-state-changes-should-be-approved-by-an-admin-users/5.3.1-api-state-changes-should-be-approved-by-an-admin-users.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5.3-approvals-for-api-state-changes/5.3-approvals-for-api-state-changes.iml"/>
+      <module filepath="$PROJECT_DIR$/5-managing-api-lifecycle/5-managing-api-lifecycle.iml"/>
+      <module filepath="$PROJECT_DIR$/6-rollout-api-updates-seamlessly/6.1-rollout-api-updates-to-existing-api/6.1.1-update-published-api-using-api-publisher/6.1.1-update-published-api-using-api-publisher.iml"/>
+      <module filepath="$PROJECT_DIR$/6-rollout-api-updates-seamlessly/6.1-rollout-api-updates-to-existing-api/6.1-rollout-api-updates-to-existing-api.iml"/>
+      <module filepath="$PROJECT_DIR$/6-rollout-api-updates-seamlessly/6-rollout-api-updates-seamlessly.iml"/>
+      <module filepath="$PROJECT_DIR$/7-managing-api-traffic-based-on-various-conditions/7.1-limit-access-to-an-application/7.1.1-define-and-assign-subscription-tiers/7.1.1-define-and-assign-subscription-tiers.iml"/>
+      <module filepath="$PROJECT_DIR$/7-managing-api-traffic-based-on-various-conditions/7.1-limit-access-to-an-application/7.1-limit-access-to-an-application.iml"/>
+      <module filepath="$PROJECT_DIR$/7-managing-api-traffic-based-on-various-conditions/7-managing-api-traffic-based-on-various-conditions.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1.1-view-successful-request-count-vs-throttled-out-request-count-analysis/8.1.1-view-successful-request-count-vs-throttled-out-request-count-analysis.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1.2-view-successful-request-count-vs-invocation-faults-count-analysis/8.1.2-view-successful-request-count-vs-invocation-faults-count-analysis.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1.3-view-api-response-latency-breakdown/8.1.3-view-api-response-latency-breakdown.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1.4-view-analysis-on-faulty-api-invocations-through-a-particular-application/8.1.4-view-analysis-on-faulty-api-invocations-through-a-particular-application.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1.5-view-the-most-frequently-accessed-apis-list/8.1.5-view-the-most-frequently-accessed-apis-list.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.1-business-insights-for-an-api-develeoper-based-on-performance/8.1-business-insights-for-an-api-develeoper-based-on-performance.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity/8.2.1-view-sucscription-count-breakdown-of-an-api-based-on-version/8.2.1-view-sucscription-count-breakdown-of-an-api-based-on-version.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity/8.2.2-view-api-user-analysis-based-on-geographical-location/8.2.2-view-api-user-analysis-based-on-geographical-location.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity/8.2.3-view-newly-created-application-count-during-a-time-period-and-how-many-of-them-have-active-subscriptions-to-an-api/8.2.3-view-newly-created-application-count-during-a-time-period-and-how-many-of-them-have-active-subscriptions-to-an-api.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity/8.2.4-view-the-userbase-breakdown-for-an-api-based-on-api-versions/8.2.4-view-the-userbase-breakdown-for-an-api-based-on-api-versions.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity/8.2-business-insights-for-an-api-develeoper-based-on-api-popularity.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.3-business-insights-for-an-api-develeoper-based-on-api-usage/8.3.1-view-api-last-access-time-and-corresponding-user/8.3.1-view-api-last-access-time-and-corresponding-user.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.3-business-insights-for-an-api-develeoper-based-on-api-usage/8.3.2-view-most-frequently-accessed-api-resources/8.3.2-view-most-frequently-accessed-api-resources.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.3-business-insights-for-an-api-develeoper-based-on-api-usage/8.3.3-view-most-frequently-accessed-apis/8.3.3-view-most-frequently-accessed-apis.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.3-business-insights-for-an-api-develeoper-based-on-api-usage/8.3.4-view-from-what-type-of-devices-an-api-get-the-highest-number-of-requests/8.3.4-view-from-what-type-of-devices-an-api-get-the-highest-number-of-requests.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.3-business-insights-for-an-api-develeoper-based-on-api-usage/8.3-business-insights-for-an-api-develeoper-based-on-api-usage.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.4-business-insights-for-an-api-develeoper-based-on-general-details/8.4.1-view-published-apis-count-during-a-selected-time-period/8.4.1-view-published-apis-count-during-a-selected-time-period.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.4-business-insights-for-an-api-develeoper-based-on-general-details/8.4-business-insights-for-an-api-develeoper-based-on-general-details.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.5-business-insights-for-an-app-developer/8.5.1-view-api-usage-by-applications/8.5.1-view-api-usage-by-applications.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.5-business-insights-for-an-app-developer/8.5.2-view-which-user-makes-the-most-number-of-api-invocations/8.5.2-view-which-user-makes-the-most-number-of-api-invocations.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.5-business-insights-for-an-app-developer/8.5.3-view-api-resource-usage-through-a-particular-application/8.5.3-view-api-resource-usage-through-a-particular-application.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.5-business-insights-for-an-app-developer/8.5.4-view-faulty-invovation-count-through-a-particular-application/8.5.4-view-faulty-invovation-count-through-a-particular-application.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8.5-business-insights-for-an-app-developer/8.5-business-insights-for-an-app-developer.iml"/>
+      <module filepath="$PROJECT_DIR$/8-analyze-usage-of-apis-for-business-insights/8-analyze-usage-of-apis-for-business-insights.iml"/>
+      <module filepath="$PROJECT_DIR$/9-developer-community-building/9.1-allow-community-to-actively-contribute-to-application-development/9.1-allow-community-to-actively-contribute-to-application-development.iml"/>
+      <module filepath="$PROJECT_DIR$/9-developer-community-building/9.2-allow-users-to-try-out-an-api-by-sharing-the-uri/9.2-allow-users-to-try-out-an-api-by-sharing-the-uri.iml"/>
+      <module filepath="$PROJECT_DIR$/9-developer-community-building/9-developer-community-building.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1.2-expose-service-secured-via-basic-authentication-with-encrypted-password-in-api-definition/10.1.2-expose-service-secured-via-basic-authentication-with-encrypted-password-in-api-definition.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1.3-expose-service-secured-via-digest-authentication/10.1.3-expose-service-secured-via-digest-authentication.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1.4-expose-service-secured-via-digest-authentication-with-encrypted-password-in-api-definition/10.1.4-expose-service-secured-via-digest-authentication-with-encrypted-password-in-api-definition.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1.5-expose-service-backend-with-self-signed-certs/10.1.5-expose-service-backend-with-self-signed-certs.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1.6-support-mutual-ssl-between-gateway-and-backend/10.1.6-support-mutual-ssl-between-gateway-and-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.1-expose-service-with-secured-backend/10.1-expose-service-with-secured-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.2-expose-service-with-multiple-instances-of-same-service-implementation/10.2.1-equally-distribute-requests-among-clustered-same-service-backends/10.2.1-equally-distribute-requests-among-clustered-same-service-backends.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.2-expose-service-with-multiple-instances-of-same-service-implementation/10.2.2-route-requests-to-secondary-backend-when-primary-fails/10.2.2-route-requests-to-secondary-backend-when-primary-fails.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.2-expose-service-with-multiple-instances-of-same-service-implementation/10.2-expose-service-with-multiple-instances-of-same-service-implementation.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.3-handle-service-endpoint-resiliency/10.3.1-handle-request-when-backend-not-responding/10.3.1-handle-request-when-backend-not-responding.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.3-handle-service-endpoint-resiliency/10.3.2-handle-request-when-backend-connection-takes-long-time/10.3.2-handle-request-when-backend-connection-takes-long-time.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.3-handle-service-endpoint-resiliency/10.3-handle-service-endpoint-resiliency.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.4-expose-service-with-mock-backend/10.4.1-create-api-with-endpoint-mock-backend/10.4.1-create-api-with-endpoint-mock-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.4-expose-service-with-mock-backend/10.4.2-edit-api-with-endpoint-mock-backend/10.4.2-edit-api-with-endpoint-mock-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.4-expose-service-with-mock-backend/10.4.3-create-api-with-inline-script-mock-backend/10.4.3-create-api-with-inline-script-mock-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.4-expose-service-with-mock-backend/10.4.4-edit-api-with-inline-script-mock-backend/10.4.4-edit-api-with-inline-script-mock-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10.4-expose-service-with-mock-backend/10.4-expose-service-with-mock-backend.iml"/>
+      <module filepath="$PROJECT_DIR$/10-manage-security-resiliancy-other-aspects-of-service-endpoints/10-manage-security-resiliancy-other-aspects-of-service-endpoints.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11.1-deploy-api-with-multiple-options/11.1.1-manage-multiple-gateway-environments/11.1.1-manage-multiple-gateway-environments.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11.1-deploy-api-with-multiple-options/11.1.2-categorize-apis-by-label/11.1.2-categorize-apis-by-label.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11.1-deploy-api-with-multiple-options/11.1-deploy-api-with-multiple-options.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11.2-provide-availability-guarantee-of-services/11.2.1-deploy-apim-in-multi-data-centers/11.2.1-deploy-apim-in-multi-data-centers.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11.2-provide-availability-guarantee-of-services/11.2-provide-availability-guarantee-of-services.iml"/>
+      <module filepath="$PROJECT_DIR$/11-segregate-api-traffic/11-segregate-api-traffic.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.1-ability-to-retrieve-operational-alerts-for-administrators/14.1.1-get-alerts-on-sudden-increases-in-response-time/14.1.1-get-alerts-on-sudden-increases-in-response-time.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.1-ability-to-retrieve-operational-alerts-for-administrators/14.1.2-get-alerts-on-response-delay-due-to-backend-slowness/14.1.2-get-alerts-on-response-delay-due-to-backend-slowness.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.1-ability-to-retrieve-operational-alerts-for-administrators/14.1.3-get-alerts-on-api-health/14.1.3-get-alerts-on-api-health.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.1-ability-to-retrieve-operational-alerts-for-administrators/14.1-ability-to-retrieve-operational-alerts-for-administrators.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators/14.2.1-get-alerts-on-sudden-spikes-in-incoming-request-count/14.2.1-get-alerts-on-sudden-spikes-in-incoming-request-count.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators/14.2.2-get-alerts-on-abnormal-resource-usage-patterns/14.2.2-get-alerts-on-abnormal-resource-usage-patterns.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators/14.2.3-get-alerts-if-requests-get-throttled-out-frequently-due-to-reaching-subscribed-tier-limit/14.2.3-get-alerts-if-requests-get-throttled-out-frequently-due-to-reaching-subscribed-tier-limit.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators/14.2-ability-to-retrieve-abnormality-detection-alerts-for-administrators.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.3-ability-to-retrieve-fraud-detection-alerts-for-administrators/14.3.1-get-alerts-if-an-api-receives-a-request-from-an-unseen-ip-address/14.3.1-get-alerts-if-an-api-receives-a-request-from-an-unseen-ip-address.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.3-ability-to-retrieve-fraud-detection-alerts-for-administrators/14.3-ability-to-retrieve-fraud-detection-alerts-for-administrators.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.4-ability-to-retrieve-alerts-for-api-developers/14.4.1-get-alerts-on-sudden-increases-in-response-time/14.4.1-get-alerts-on-sudden-increases-in-response-time.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.4-ability-to-retrieve-alerts-for-api-developers/14.4.2-get-alerts-on-response-delays-due-to-backend-slowness/14.4.2-get-alerts-on-response-delays-due-to-backend-slowness.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.4-ability-to-retrieve-alerts-for-api-developers/14.4.3-get-alerts-on-api-health/14.4.3-get-alerts-on-api-health.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.4-ability-to-retrieve-alerts-for-api-developers/14.4-ability-to-retrieve-alerts-for-api-developers.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.5-ability-to-retrieve-alerts-for-app-developers/14.5.1-get-alerts-on-sudden-spikes-in-incoming-request-count/14.5.1-get-alerts-on-sudden-spikes-in-incoming-request-count.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.5-ability-to-retrieve-alerts-for-app-developers/14.5.2-get-alerts-on-abnormal-resource-usage-patterns/14.5.2-get-alerts-on-abnormal-resource-usage-patterns.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.5-ability-to-retrieve-alerts-for-app-developers/14.5.3-get-alerts-if-an-api-receives-a-request-from-an-unseen-ip-address/14.5.3-get-alerts-if-an-api-receives-a-request-from-an-unseen-ip-address.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.5-ability-to-retrieve-alerts-for-app-developers/14.5.4-get-alerts-if-requests-get-throttled-out-frequently-due-to-reaching-subscribed-tier-limit/14.5.4-get-alerts-if-requests-get-throttled-out-frequently-due-to-reaching-subscribed-tier-limit.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14.5-ability-to-retrieve-alerts-for-app-developers/14.5-ability-to-retrieve-alerts-for-app-developers.iml"/>
+      <module filepath="$PROJECT_DIR$/14-receive-alerts-on-different-events-for-decision-making/14-receive-alerts-on-different-events-for-decision-making.iml"/>
+    </modules> 
+  </component>  
+  <UsedPathMacros> 
+    <!--<macro name="cargo"></macro>--> 
+  </UsedPathMacros> 
+</project>
