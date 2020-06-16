@@ -280,3 +280,8 @@ enable = true
 
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer"
+persist_access_token_alias = false
