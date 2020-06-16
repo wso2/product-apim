@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -37,6 +38,7 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.APIManagementException;
@@ -62,13 +64,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class ScenarioTestBase {
 
     private static final String INPUTS_LOCATION = System.getenv("DATA_BUCKET_LOCATION");
     private static final String INFRASTRUCTURE_PROPERTIES = "deployment.properties";
-    private static final Log log = LogFactory.getLog(org.wso2.am.scenario.test.common.ScenarioTestBase.class);
+    private static final Log log = LogFactory.getLog(ScenarioTestBase.class);
     private static final long WAIT_TIME = 45 * 1000;
     protected static String publisherURL;
     protected static String storeURL;
@@ -183,6 +190,22 @@ public class ScenarioTestBase {
             storeURLHttps = storeUrls.getWebAppURLHttps();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
+
+            String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
+
+            //DCR call for publisher app
+            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+                                                                        RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
+                                                                        RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                                                                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+            ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+            //DCR call for dev portal app
+            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+                                                                        RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                                                                        RestAPIStoreImpl.username, RestAPIStoreImpl.password,
+                                                                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+            ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+
             restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
