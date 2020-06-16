@@ -18,11 +18,8 @@ package org.wso2.am.scenario.tests.rest.api.restrictedVisibility;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
@@ -31,6 +28,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -41,9 +39,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(RestApiVisibilityRestrictedByRolesTestCase.class);
@@ -100,6 +96,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             }
         }
 
+        setup();
         super.init(userMode);
 
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
@@ -168,7 +165,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         }
     }
 
-    @Test(description = "1.5.2.2", dependsOnMethods = "testVisibilityOfAPISRestrictedByRoles")
+    @Test(description = "1.5.2.2")
     public void testVisibilityOfAPISRestrictedByMultipleRoles() throws Exception {
 
         subscribeRole = "NewRole1";
@@ -257,7 +254,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 //        //isAPIVisibleInStore(apiName, apiStoreClient);
 //    }
 
-    @Test(description = "1.5.2.7", dependsOnMethods = "testVisibilityOfAPISRestrictedByMultipleRoles")
+    @Test(description = "1.5.2.7")
     public void testVisibilityOfAPITags() throws Exception {
         apiName = "APIVisibility_tags";
         String tag = "tagA";
@@ -302,7 +299,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         }
     }
 
-    @Test(description = "1.5.2.8", dependsOnMethods = "testVisibilityOfAPITags")
+    @Test(description = "1.5.2.8")
     public void testVisibilityOfAPITagsWithRestrictedAndPublicAPIs() throws Exception {
         apiName = "APIVisibility_tagsPublicAndRestricted1";
         String tag = "tagsPublicAndRestricted";
@@ -337,12 +334,20 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
 
         try {
-            org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdPublic);
-            assertEquals(apiResponseStore.getId(), apiIdPublic, "Response object API ID mismatch");
+            if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+                org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdPublic);
+                assertEquals(apiResponseStore.getId(), apiIdPublic, "Response object API ID mismatch");
 
-            ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-            assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
+                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+            }
+            if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+                org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.apIsApi.apisApiIdGet(apiIdPublic, "wso2.com", null);
+                assertEquals(apiResponseStore.getId(), apiIdPublic, "Response object API ID mismatch");
 
+                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
+                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+            }
         } catch (ApiException e) {
             assertTrue(false, "Cannot get the API from the store for role " + ScenarioTestConstants.CREATOR_ROLE);
         }
@@ -366,10 +371,9 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
-        restAPIStore.apIsApi.setApiClient(existingAPIClient);
     }
 
-    @Test(description = "1.5.2.9", dependsOnMethods = "testVisibilityOfAPITagsWithRestrictedAndPublicAPIs")
+    @Test(description = "1.5.2.9")
     public void testVisibilityOfTagsUsedByMultipleAPIsWithDistinctRoles() throws Exception {
         apiName = "APIVisibility_tagsDistinctRoles1";
         String tag = "tagsDistinctRoles";
@@ -401,15 +405,23 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         getAPI(apiIdSub);
         publishAPI(apiIdSub);
         // Wait until the tags are indexed in store
-        Thread.sleep(15000);
+        Thread.sleep(100000);
 
         try {
-            org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdSub);
-            assertEquals(apiResponseStore.getId(), apiIdSub, "Response object API ID mismatch");
+            if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+                org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdSub);
+                assertEquals(apiResponseStore.getId(), apiIdSub, "Response object API ID mismatch");
 
-            ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-            assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
+                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+            }
+            if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+                org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.apIsApi.apisApiIdGet(apiIdSub, "wso2.com", null);
+                assertEquals(apiResponseStore.getId(), apiIdSub, "Response object API ID mismatch");
 
+                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
+                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+            }
         } catch (ApiException e) {
             assertTrue(false, "Cannot get the API from the store for role " + ScenarioTestConstants.SUBSCRIBER_ROLE);
         }
@@ -480,3 +492,4 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         };
     }
 }
+

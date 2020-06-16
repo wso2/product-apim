@@ -15,60 +15,62 @@
  */
 package org.wso2.am.scenario.tests.rest.api.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.testng.Assert;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.scenario.test.common.APIPublisherRestClient;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.APIStoreRestClient;
-import org.wso2.am.scenario.test.common.ScenarioDataProvider;
-import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.am.scenario.test.common.ScenarioTestConstants;
-import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.apimgt.api.APIProvider;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
-import org.yaml.snakeyaml.Yaml;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
-import javax.ws.rs.core.Response;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
+import org.wso2.am.scenario.test.common.ScenarioTestBase;
+import org.wso2.am.scenario.test.common.ScenarioTestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.yaml.snakeyaml.Yaml;
 
 public class RESTApiEditTestCase extends ScenarioTestBase {
+    private static final Log log = LogFactory.getLog(RESTApiEditTestCase.class);
 
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private APICreationRequestBean apiCreationRequestBean;
+    private APIDTO apidto;
+
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
+    private static final String TENANT_ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
     private String apiName = UUID.randomUUID().toString();
     private String apiContext = "/" + UUID.randomUUID();
     private String apiVersion = "1.0.0";
-    private final String admin = "admin";
     private String APICreator = "APICreatorEdit";
     private String pw = "wso2123$";
     private String APISubscriber = "APISubscriber";
@@ -80,30 +82,58 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     private String bizOwnerMail = "wso2test@gmail.com";
     private String techOwner = "wso2";
     private String techOwnerMail = "wso2@gmail.com";
-    private String defaultVersionChecked = "default_version";
+    private String defaultVersionChecked = "true";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
-    private APICreationRequestBean apiCreationRequestBean;
+
+    private String apiProductionEndPointUrl;
+    private String apiProviderName;
+    private String apiId;
+    private String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" + "customerservice/customers/123";
+    private List<String> apiIdList = new ArrayList<>();
+
     private File swaggerFile;
     String resourceLocation = System.getProperty("test.resource.location");
-    private static final Log log = LogFactory.getLog(RESTApiEditTestCase.class);
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public RESTApiEditTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
+    public void setEnvironment() throws Exception {
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                    ADMIN_USERNAME, ADMIN_PW);
+            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
+        }
 
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        createUsers();
-        apiPublisher.login(APICreator, pw);
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            // create user in wso2.com tenant
+            addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
+                        TENANT_ADMIN_PW);
+            }
+        }
 
-        apiStore = new APIStoreRestClient(storeURL);
-        apiStore.login(APISubscriber, subscriberPw);
+        setup();
+        super.init(userMode);
+
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
+
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
+                apiProductionEndpointPostfixUrl;
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         //Create an API
-        try {
-            apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, APICreator,
-                    new URL(backendEndPoint));
-        } catch (MalformedURLException e) {
-            throw new APIManagerIntegrationTestException("MalformedURLException for URL : " + backendEndPoint);
-        }
+        apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, apiProviderName, new URL(backendEndPoint));
         apiCreationRequestBean.setTags(tag);
         apiCreationRequestBean.setDescription(description);
         apiCreationRequestBean.setTiersCollection(tierCollection);
@@ -113,43 +143,40 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         apiCreationRequestBean.setBizOwnerMail(bizOwnerMail);
         apiCreationRequestBean.setTechOwner(techOwner);
         apiCreationRequestBean.setTechOwnerMail(techOwnerMail);
+
+        apidto = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = apidto.getId();
+        apiIdList.add(apiId);
+        assertTrue(StringUtils.isNotEmpty(apiId), "Error occured when creating api");
     }
 
     @Test(description = "1.1.5.1")
     public void testRESTAPIEditAlreadyCreatedApi() throws Exception {
 
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBean);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
-
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
         verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
+        JSONObject resJson = new JSONObject(apiResponsePublisher.getData());
+        assertEquals(resJson.get("name"), apiName, apiName + " is not visible in publisher");
 
         //Update API with the description and tiersCollection & validate the result
-        apiCreationRequestBean.setDescription("Description Changed");
-        apiCreationRequestBean.setTiersCollection("Unlimited,Gold,Bronze");
+        apidto.setDescription("Description Changed");
+        List<String> tiersCollectionList = new ArrayList<>();
+        tiersCollectionList.add("Unlimited");
+        tiersCollectionList.add("Gold");
+        tiersCollectionList.add("Bronze");
+        apidto.setPolicies(tiersCollectionList);
 
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(apiUpdateResponse);
+        APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidto);
+        assertNotNull(apidtoResponse, "Response object is null");
 
         //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
-        assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
-                apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Description Changed"),
-                "Description of the " + apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Unlimited"),
-                "Tier Collection of the " + apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Bronze"),
-                "Tier Collection of the " + apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains("Gold"),
-                "Tier Collection of the " + apiName + " is not updated");
-
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(apiId);
+        verifyResponse(apiUpdateResponsePublisher);
+        JSONObject responseJson = new JSONObject(apiUpdateResponsePublisher.getData());
+        assertEquals(responseJson.get("name").toString(), apiName, apiName + " is not updated");
+        assertEquals(responseJson.get("description").toString(), "Description Changed", "Description of the " + apiName + " is not updated");
+        assertEquals(responseJson.getJSONArray("policies").length(), 3, "Tier Collection of the " + apiName + " is not updated");
     }
 
     /*
@@ -161,9 +188,10 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
         verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
+        JSONObject resJson = new JSONObject(apiResponsePublisher.getData());
+        assertEquals(resJson.get("name"), apiName, apiName + " is not visible in publisher");
 
         swaggerFile = new File(resourceLocation + File.separator + fileName);
 
@@ -172,32 +200,38 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         JSONObject json = new JSONObject(payload);
         String description = json.getJSONObject("info").get("description").toString();
         JSONObject paths = json.getJSONObject("paths");
-        APIResourceBean resourceBean = null;
-        ArrayList<APIResourceBean> resourceBeanArrayList = new ArrayList<>();
+
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+
         Iterator<String> keys = paths.keys();
         String resourcePath = "";
         while (keys.hasNext()) {
+            APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
             resourcePath = keys.next();
-            String method = paths.getJSONObject(resourcePath).keys().next().toString();
-            resourceBean = new APIResourceBean(method, "Any", "Unlimitted", resourcePath);
-            resourceBeanArrayList.add(resourceBean);
+            String method = paths.getJSONObject(resourcePath).keys().next().toString().toUpperCase();
+            apiOperationsDTO.setVerb(method);
+            apiOperationsDTO.setTarget(resourcePath);
+            apiOperationsDTOs.add(apiOperationsDTO);
         }
 
         //Update API with the description and resources & validate the result
-        apiCreationRequestBean.setDescription(description);
-        apiCreationRequestBean.setResourceBeanList(resourceBeanArrayList);
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(apiUpdateResponse);
+        apidto.setDescription(description);
+        apidto.setOperations(apiOperationsDTOs);
+
+        APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidto);
+        assertNotNull(apidtoResponse, "Response object is null");
 
         //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
-        assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
-                apiName + " is not updated"); // Name should not get changed.
-        assertTrue(apiUpdateResponsePublisher.getData().contains("This is a sample for OAS JSON document"),
-                "Description of the " + apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains(resourcePath),
-                "Resources of the " + apiName + " is not updated");
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(apiId);
+        verifyResponse(apiResponsePublisher);
+        JSONObject responseJson = new JSONObject(apiUpdateResponsePublisher.getData());
+        assertEquals(responseJson.get("name").toString(), apiName, apiName + " is not updated");
+        assertEquals(responseJson.get("description").toString(), description, "Description of the " + apiName + " is not updated");
+        if (responseJson.getJSONArray("operations").length() > 1) {
+            assertEquals(responseJson.getJSONArray("operations").getJSONObject(1).get("target"), resourcePath, "Resources of the " + apiName + " is not updated");
+        } else {
+            assertEquals(responseJson.getJSONArray("operations").getJSONObject(0).get("target"), resourcePath, "Resources of the " + apiName + " is not updated");
+        }
     }
 
     /*
@@ -209,9 +243,10 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
     public void testRESTAPIEditUsingOASYAML(String fileName) throws Exception {
 
         //Check availability of the API in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiId);
         verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
+        JSONObject resJson = new JSONObject(apiResponsePublisher.getData());
+        assertEquals(resJson.get("name"), apiName, apiName + " is not visible in publisher");
 
         swaggerFile = new File(resourceLocation + File.separator + fileName);
 
@@ -222,32 +257,38 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         JSONObject json = new JSONObject(map);
         String description = json.getJSONObject("info").get("description").toString();
         JSONObject paths = json.getJSONObject("paths");
-        APIResourceBean resourceBean = null;
-        ArrayList<APIResourceBean> resourceBeanArrayList = new ArrayList<>();
+
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+
         Iterator<String> keys = paths.keys();
         String resourcePath = "";
         while (keys.hasNext()) {
+            APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
             resourcePath = keys.next();
-            String method = paths.getJSONObject(resourcePath).keys().next().toString();
-            resourceBean = new APIResourceBean(method, "Any", "Unlimitted", resourcePath);
-            resourceBeanArrayList.add(resourceBean);
+            String method = paths.getJSONObject(resourcePath).keys().next().toString().toUpperCase();
+            apiOperationsDTO.setVerb(method);
+            apiOperationsDTO.setTarget(resourcePath);
+            apiOperationsDTOs.add(apiOperationsDTO);
         }
 
         //Update API with the description and resources & validate the result
-        apiCreationRequestBean.setDescription(description);
-        apiCreationRequestBean.setResourceBeanList(resourceBeanArrayList);
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(apiUpdateResponse);
+        apidto.setDescription(description);
+        apidto.setOperations(apiOperationsDTOs);
+
+        APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidto);
+        assertNotNull(apidtoResponse, "Response object is null");
 
         //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
-        assertTrue(apiUpdateResponsePublisher.getData().contains(apiName),
-                apiName + " is not updated"); // Name should not get changed.
-        assertTrue(apiUpdateResponsePublisher.getData().contains("This is a sample for OAS YAML document"),
-                "Description of the " + apiName + " is not updated");
-        assertTrue(apiUpdateResponsePublisher.getData().contains(resourcePath),
-                "Resources of the " + apiName + " is not updated");
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(apiId);
+        verifyResponse(apiUpdateResponsePublisher);
+        JSONObject responseJson = new JSONObject(apiUpdateResponsePublisher.getData());
+        assertEquals(responseJson.get("name").toString(), apiName, apiName + " is not updated");
+        assertEquals(responseJson.get("description").toString(), description, "Description of the " + apiName + " is not updated");
+        if (responseJson.getJSONArray("operations").length() > 1) {
+            assertEquals(responseJson.getJSONArray("operations").getJSONObject(1).get("target"), resourcePath, "Resources of the " + apiName + " is not updated");
+        } else {
+            assertEquals(responseJson.getJSONArray("operations").getJSONObject(0).get("target"), resourcePath, "Resources of the " + apiName + " is not updated");
+        }
     }
 
     @Test(description = "1.1.5.8", dataProvider = "APITags", dataProviderClass = ScenarioDataProvider.class
@@ -257,36 +298,45 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         String apiName = "TestTagsUpdateAPI";
         String apiContext = "/ctx";
         String apiVersion = "1.0.0";
-        APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
-                apiVersion, APICreator, new URL(backendEndPoint));
-        apiCreationRequestBeanObj.setTags(tag);
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
+
+        APIDTO apiCreationDTOObj = new APIDTO();
+        apiCreationDTOObj.setName(apiName);
+        apiCreationDTOObj.setContext(apiContext);
+        apiCreationDTOObj.setVersion(apiVersion);
+        apiCreationDTOObj.setProvider(apiProviderName);
+
+        List<String> tagList = new ArrayList<>();
+        tagList.add(tag);
+
+        apiCreationDTOObj.setTags(tagList);
+
+        APIDTO apidtoCreate = restAPIPublisher.addAPI(apiCreationDTOObj, "v3");
+        String apiIdNew = apidtoCreate.getId();
+        assertTrue(StringUtils.isNotEmpty(apiIdNew), "Error occured when creating api");
 
         //Check availability of the API and the tag in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiIdNew);
         verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
+        JSONObject responseJson = new JSONObject(apiResponsePublisher.getData());
+
+        assertEquals(responseJson.getJSONArray("tags").get(0), tag, apiName + " does not have the tag " + tag);
 
         //remove tags from the API and update with new tags
-        apiCreationRequestBeanObj.setTags(tags);
+        List<String> newTagList = Arrays.asList(tags.split(","));
+        apidtoCreate.setTags(newTagList);
 
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBeanObj);
-        verifyResponse(apiUpdateResponse);
+        APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidtoCreate);
+        assertNotNull(apidtoResponse, "Response object is null");
 
         //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
-                (apiName, APICreator, apiVersion);
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(apiIdNew);
+        verifyResponse(apiUpdateResponsePublisher);
         verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher, apiName, tags);
 
         // Verify new tags are updated in the store
-        isTagsVisibleInStore(APICreator, apiName, apiVersion, tags, apiStore);
+//        isTagsVisibleInStore(apiProviderName, apiName, apiVersion, tags, apiStore);
 
-        apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(apiIdNew);
         verifyResponse(serviceResponse);
     }
 
@@ -297,48 +347,44 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         String apiName = "TestTagsUpdateAPI";
         String apiContext = "/ctx";
         String apiVersion = "1.0.0";
-        APICreationRequestBean apiCreationRequestBeanObj = new APICreationRequestBean(apiName, apiContext,
-                apiVersion, APICreator, new URL(backendEndPoint));
-        apiCreationRequestBeanObj.setTags(tag);
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiCreationRequestBeanObj);
-        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code miss matched when creating the API");
-        verifyResponse(apiCreationResponse);
+
+        APIDTO apiCreationDTOObj = new APIDTO();
+        apiCreationDTOObj.setName(apiName);
+        apiCreationDTOObj.setContext(apiContext);
+        apiCreationDTOObj.setVersion(apiVersion);
+        apiCreationDTOObj.setProvider(apiProviderName);
+
+        List<String> tagList = new ArrayList<>();
+        tagList.add(tag);
+
+        apiCreationDTOObj.setTags(tagList);
+
+        APIDTO apidto = restAPIPublisher.addAPI(apiCreationDTOObj, "v3");
+        String apiIdNew = apidto.getId();
+        assertTrue(StringUtils.isNotEmpty(apiIdNew), "Error occured when creating api");
 
         //Check availability of the API and the tag in publisher
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, APICreator, apiVersion);
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(apiIdNew);
         verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(tag), apiName + " does not have the tag " + tag);
+        JSONObject responseJson = new JSONObject(apiResponsePublisher.getData());
+        assertEquals(responseJson.getJSONArray("tags").get(0), tag, apiName + " does not have the tag " + tag);
 
         // add more tags
-        String newTagAdded = apiCreationRequestBeanObj.getTags() + ",additionalTag";
-        apiCreationRequestBeanObj.setTags(newTagAdded);
-        //Check whether API is updated from the above request
-        HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBeanObj);
-        verifyResponse(apiUpdateResponse);
-        HttpResponse apiUpdateResponsePublisher2 = apiPublisher.getAPI(apiName, APICreator, apiVersion);
-        verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher2, apiName, newTagAdded);
+        Gson g = new Gson();
+        apidto = g.fromJson(apiResponsePublisher.getData(), APIDTO.class);
+        List<String> tagListNew = apidto.getTags();
+        tagListNew.add("additionalTag");
+        apidto.setTags(tagListNew);
 
-        apiCreationRequestBeanObj.setTags(tag); //reset to default tag value
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
+        APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidto);
+        assertNotNull(apidtoResponse, "Response object is null");
+
+        HttpResponse apiUpdateResponsePublisher2 = restAPIPublisher.getAPI(apiIdNew);
+        verifyResponse(apiUpdateResponsePublisher2);
+        verifyTagsUpdatedInPublisherAPI(apiUpdateResponsePublisher2, apiName, tag + ",additionalTag");
+
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(apiIdNew);
         verifyResponse(serviceResponse);
-    }
-
-    /*
-     *  Create Users that can be used in each test case in this class
-     *  @throws APIManagerIntegrationTestException
-     * */
-    private void createUsers() throws APIManagerIntegrationTestException {
-
-        try {
-            createUser(APICreator, pw,
-                    new String[]{ScenarioTestConstants.CREATOR_ROLE}, admin, admin);
-            createUser(APISubscriber, subscriberPw,
-                    new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, admin, admin);
-
-        } catch (APIManagementException e) {
-            throw new APIManagerIntegrationTestException("Error occurred while creating users", e);
-        }
     }
 
     /*
@@ -360,11 +406,31 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
+        for (String apiId : apiIdList) {
+            restAPIPublisher.deleteAPI(apiId);
+        }
 
-        apiPublisher.login(APICreator, pw);
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, apiVersion, APICreator);
-        verifyResponse(serviceResponse);
-        deleteUser(APICreator, admin, admin);
-        deleteUser(APISubscriber, admin, admin);
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+        }
+//        verifyResponse(serviceResponse);
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() throws Exception {
+        setup();
+        // return the relevant parameters for each test run
+        // 1) Super tenant API creator
+        // 2) Tenant API creator
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 }
