@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.5-create-edit-rest-api" preserve-order="true" verbose="2" parallel="false" group-by-instances="true">
         <classes>
-            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditTestCase"/>
-            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditNegativeTestCase"/>
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditTestCase"/>-->
+<!--            <class name="org.wso2.am.scenario.tests.rest.api.edit.RESTApiEditNegativeTestCase"/>-->
         </classes>
     </test>
 </suite>
