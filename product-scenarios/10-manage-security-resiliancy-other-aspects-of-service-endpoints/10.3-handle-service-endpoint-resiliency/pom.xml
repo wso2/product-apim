@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>10-manage-security-resiliancy-other-aspects-of-service-endpoints</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>3.2.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>10.3-handle-service-endpoint-resiliency</artifactId>
+    <name>[APIM][SCENARIO_10][SUBSCENARIO_3] - Handle service endpoint resiliency</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>10.3.1-handle-request-when-backend-not-responding</module>
+        <module>10.3.2-handle-request-when-backend-connection-takes-long-time</module>
+    </modules>
+
+</project>
