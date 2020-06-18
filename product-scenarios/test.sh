@@ -105,7 +105,7 @@ cd $HOME
 #mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
-# sleep 18000
+sleep 18000
 mvn clean install -fae
 
 
