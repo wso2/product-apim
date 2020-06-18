@@ -26,7 +26,12 @@ import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
-import org.wso2.am.integration.clients.admin.api.dto.*;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
+import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
+import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
+import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 

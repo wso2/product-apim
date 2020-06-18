@@ -95,8 +95,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER }
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_USER}
         };
     }
 
