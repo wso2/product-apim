@@ -2876,14 +2876,15 @@ paths:
           required: false
           type: string
           enum:
-            - AM_APPLICATION_CREATION
-            - AM_SUBSCRIPTION_CREATION
-            - AM_USER_SIGNUP
-            - AM_APPLICATION_REGISTRATION_PRODUCTION
-            - AM_APPLICATION_REGISTRATION_SANDBOX
-            - AM_SUBSCRIPTION_DELETION
-            - AM_APPLICATION_DELETION
-            - AM_API_STATE
+            - APPLICATION_CREATION
+            - SUBSCRIPTION_CREATION
+            - USER_SIGNUP
+            - APPLICATION_REGISTRATION_PRODUCTION
+            - APPLICATION_REGISTRATION_SANDBOX
+            - SUBSCRIPTION_DELETION
+            - APPLICATION_DELETION
+            - API_STATE
+            - SUBSCRIPTION_UPDATE
       tags:
         - Workflow (Collection)
       responses:
