@@ -32,6 +32,7 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -127,8 +128,7 @@ public class HttpClient {
         int timeout = 7;
         RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 10000).
                 setConnectionRequestTimeout(timeout * 10000).setSocketTimeout(timeout * 10000).build();
-        CloseableHttpClient httpClient = HttpClients.custom().disableRedirectHandling().
-                setDefaultRequestConfig(config).setHostnameVerifier(SSLConnectionSocketFactory.
+        CloseableHttpClient httpClient = HttpClients.custom().setRedirectStrategy((new LaxRedirectStrategy())).setDefaultRequestConfig(config).setHostnameVerifier(SSLConnectionSocketFactory.
                 ALLOW_ALL_HOSTNAME_VERIFIER).build();
         return httpClient;
     }
