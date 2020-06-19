@@ -18,12 +18,6 @@
 
 package org.wso2.am.scenario.tests.api.secure.userRoles;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -35,10 +29,15 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
 
@@ -72,7 +71,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
     public void setEnvironment() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                                                  ADMIN_USERNAME, ADMIN_PW);
+                    ADMIN_USERNAME, ADMIN_PW);
             createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
             devPortalUser = "adminUser1";
         }
@@ -83,9 +82,9 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
             if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
 //           Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
-                                             TENANT_ADMIN_PW);
+                        TENANT_ADMIN_PW);
             }
         }
         super.init(userMode);
@@ -93,7 +92,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
 
     @Test(description = "3.2.1.1")
     public void testScopeCreationWithValidValues() throws Exception {
-        String userRole = "role" ;
+        String userRole = "role";
         String scopeName = "valid_scope";
         String apiName = "testAPI";
 
@@ -106,7 +105,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionArray);
         }
 
-        createApiWithScope(apiName,userRole,scopeName);
+        createApiWithScope(apiName, userRole, scopeName);
         response = restAPIPublisher.addAPI(apiDto, "3.0");
         assertNotNull(response.getId());
         apiID = response.getId();
@@ -129,7 +128,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
 
     @Test(description = "3.2.1.2")
     public void testScopeAssigningToMultipleResources() throws Exception {
-        String userRole = "role" ;
+        String userRole = "role";
         String scopeName = "valid_scope";
         String apiName = "testAPIwithMultipleResources";
 
@@ -142,7 +141,7 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionArray);
         }
 
-        createApiWithScope(apiName,userRole,scopeName);
+        createApiWithScope(apiName, userRole, scopeName);
 
         APIOperationsDTO anotherOperationsDTO = new APIOperationsDTO();
 
@@ -178,8 +177,8 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
     @Test(description = "3.2.1.3")
     public void testScopeWithMultipleRoles() throws Exception {
 
-        String userRole = "role" ;
-        String secondRole = "secondRole" ;
+        String userRole = "role";
+        String secondRole = "secondRole";
         String scopeName = "valid_scope";
         String secscopeName = "Second_valid_scope";
         String apiName = "testAPIMultipleRoles";
@@ -195,33 +194,31 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, secondRole, permissionArray);
         }
 
-        createApiWithScope(apiName,userRole,scopeName);
+        createApiWithScope(apiName, userRole, scopeName);
 
         ScopeDTO firstscopeDTO = new ScopeDTO();
         firstscopeDTO.setName(scopeName);
         firstscopeDTO.setDescription("First Scope test Description");
-        APIScopeDTO scopeBindingsDTO = new ScopeBindingsDTO();
-        scopeBindingsDTO.setType(null);
         List<String> bindingList = new ArrayList<>();
         bindingList.add(userRole);
-        scopeBindingsDTO.setValues(bindingList);
-        firstscopeDTO.setBindings(scopeBindingsDTO);
 
         ScopeDTO secondscopeDTO = new ScopeDTO();
         secondscopeDTO.setName(secscopeName);
         secondscopeDTO.setDescription("Second Scope test Description");
-        ScopeBindingsDTO secscopeBindingsDTO = new ScopeBindingsDTO();
-        secscopeBindingsDTO.setType(null);
         List<String> secbindingList = new ArrayList<>();
         secbindingList.add(userRole);
-        secscopeBindingsDTO.setValues(secbindingList);
-        secondscopeDTO.setBindings(secscopeBindingsDTO);
 
-        List<ScopeDTO> scopeDTOList = new ArrayList<>();
-        scopeDTOList.add(firstscopeDTO);
-        scopeDTOList.add(secondscopeDTO);
+        APIScopeDTO firstAPIScopeDTO = new APIScopeDTO();
+        firstAPIScopeDTO.setScope(firstscopeDTO);
 
-        apiDto.setScopes(scopeDTOList);
+        APIScopeDTO secondAPIScopeDTO = new APIScopeDTO();
+        secondAPIScopeDTO.setScope(secondscopeDTO);
+
+        List<APIScopeDTO> apiScopeDTOS = new ArrayList<>();
+        apiScopeDTOS.add(firstAPIScopeDTO);
+        apiScopeDTOS.add(secondAPIScopeDTO);
+
+        apiDto.setScopes(apiScopeDTOS);
 
         response = restAPIPublisher.addAPI(apiDto, "3.0");
         assertNotNull(response.getId());
@@ -268,15 +265,18 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
         ScopeDTO scopeDTO = new ScopeDTO();
         scopeDTO.setName(scopeName);
         scopeDTO.setDescription("Scope test Description");
-        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
-        scopeBindingsDTO.setType(null);
         List<String> bindingList = new ArrayList<>();
         bindingList.add(role);
-        scopeBindingsDTO.setValues(bindingList);
-        scopeDTO.setBindings(scopeBindingsDTO);
         List<ScopeDTO> scopeDTOList = new ArrayList<>();
         scopeDTOList.add(scopeDTO);
-        apiDto.setScopes(scopeDTOList);
+
+        APIScopeDTO firstAPIScopeDTO = new APIScopeDTO();
+        firstAPIScopeDTO.setScope(scopeDTO);
+
+        List<APIScopeDTO> apiScopeDTOS = new ArrayList<>();
+        apiScopeDTOS.add(firstAPIScopeDTO);
+
+        apiDto.setScopes(apiScopeDTOS);
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb(verb);
         apiOperationsDTO.setTarget(backendEndPoint);
@@ -310,10 +310,10 @@ public class SecureUsingUserRolesTestCase extends ScenarioTestBase {
         // return the relevant parameters for each test run
         // 1) Super tenant API creator
         // 2) Tenant API creator
-        return new Object[][] {
-            new Object[] {TestUserMode.SUPER_TENANT_USER},
-            new Object[] {TestUserMode.TENANT_USER},
-            };
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
 
 }
