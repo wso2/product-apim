@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeBindingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
@@ -98,8 +98,9 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         try {
             response = restAPIPublisher.addAPI(apiDto, "3.0");
         } catch (ApiException e) {
-            assertTrue("Invalid Role was added successfully!", e.getResponseBody().contains("Role '"+ role +"' does not exist."));
+            assertTrue("Invalid Role was added successfully!  " + e.getResponseBody(), e.getResponseBody().contains("Role '"+ role +"' does not exist."));
         }
+        restAPIPublisher.deleteAPI(response.getId());
     }
 
     @Test(description = "3.2.1.13")
@@ -116,28 +117,27 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         ScopeDTO firstscopeDTO = new ScopeDTO();
         firstscopeDTO.setName(scopeName);
         firstscopeDTO.setDescription(firstScopeDescription);
-        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
-        scopeBindingsDTO.setType(null);
         List<String> bindingList = new ArrayList<>();
         bindingList.add(userRole);
-        scopeBindingsDTO.setValues(bindingList);
-        firstscopeDTO.setBindings(scopeBindingsDTO);
 
         ScopeDTO secondscopeDTO = new ScopeDTO();
         secondscopeDTO.setName(scopeName);
         secondscopeDTO.setDescription(secondScopeDescription);
-        ScopeBindingsDTO secscopeBindingsDTO = new ScopeBindingsDTO();
-        secscopeBindingsDTO.setType(null);
+
         List<String> secbindingList = new ArrayList<>();
         secbindingList.add(userRole);
-        secscopeBindingsDTO.setValues(secbindingList);
-        secondscopeDTO.setBindings(secscopeBindingsDTO);
 
-        List<ScopeDTO> scopeDTOList = new ArrayList<>();
-        scopeDTOList.add(firstscopeDTO);
-        scopeDTOList.add(secondscopeDTO);
+        APIScopeDTO firstAPIScopeDTO = new APIScopeDTO();
+        firstAPIScopeDTO.setScope(firstscopeDTO);
 
-        apiDto.setScopes(scopeDTOList);
+        APIScopeDTO secondAPIScopeDTO = new APIScopeDTO();
+        secondAPIScopeDTO.setScope(secondscopeDTO);
+
+        List<APIScopeDTO> apiScopeDTOS = new ArrayList<>();
+        apiScopeDTOS.add(firstAPIScopeDTO);
+        apiScopeDTOS.add(secondAPIScopeDTO);
+
+        apiDto.setScopes(apiScopeDTOS);
 
         try {
             response = restAPIPublisher.addAPI(apiDto, "3.0");
@@ -179,15 +179,18 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         ScopeDTO scopeDTO = new ScopeDTO();
         scopeDTO.setName(scopeName);
         scopeDTO.setDescription("Scope test Description");
-        ScopeBindingsDTO scopeBindingsDTO = new ScopeBindingsDTO();
-        scopeBindingsDTO.setType(null);
         List<String> bindingList = new ArrayList<>();
         bindingList.add(role);
-        scopeBindingsDTO.setValues(bindingList);
-        scopeDTO.setBindings(scopeBindingsDTO);
         List<ScopeDTO> scopeDTOList = new ArrayList<>();
         scopeDTOList.add(scopeDTO);
-        apiDto.setScopes(scopeDTOList);
+
+        APIScopeDTO firstAPIScopeDTO = new APIScopeDTO();
+        firstAPIScopeDTO.setScope(scopeDTO);
+
+        List<APIScopeDTO> apiScopeDTOS = new ArrayList<>();
+        apiScopeDTOS.add(firstAPIScopeDTO);
+
+        apiDto.setScopes(apiScopeDTOS);
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb(verb);
         apiOperationsDTO.setTarget(backendEndPoint);
@@ -218,7 +221,7 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
     @DataProvider(name = "ScopeAndInValidRoleDataProvider")
     public static Object[][] ValidRoleDataProvider() {
         return new Object[][]{
-            {"everyone", ITEM_ADD},
+            {"eveyone", ITEM_ADD},
             {"admn", ORDER_ADD},
             {"Internal/Craetor", ORDER_VIEW}
         };
