@@ -25,26 +25,18 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 
 /**
- * TokenValidationDTO
+ * KeyManagerCertificatesDTO
  */
 
-public class TokenValidationDTO {
-  @SerializedName("id")
-  private Integer id = null;
-
-  @SerializedName("enable")
-  private Boolean enable = true;
-
+public class KeyManagerCertificatesDTO {
   /**
    * Gets or Sets type
    */
   @JsonAdapter(TypeEnum.Adapter.class)
   public enum TypeEnum {
-    REFERENCE("REFERENCE"),
+    JWKS("JWKS"),
     
-    JWT("JWT"),
-    
-    CUSTOM("CUSTOM");
+    PEM("PEM");
 
     private String value;
 
@@ -88,45 +80,9 @@ public class TokenValidationDTO {
   private TypeEnum type = null;
 
   @SerializedName("value")
-  private Object value = null;
+  private String value = null;
 
-  public TokenValidationDTO id(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @ApiModelProperty(value = "")
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public TokenValidationDTO enable(Boolean enable) {
-    this.enable = enable;
-    return this;
-  }
-
-   /**
-   * Get enable
-   * @return enable
-  **/
-  @ApiModelProperty(example = "false", value = "")
-  public Boolean isEnable() {
-    return enable;
-  }
-
-  public void setEnable(Boolean enable) {
-    this.enable = enable;
-  }
-
-  public TokenValidationDTO type(TypeEnum type) {
+  public KeyManagerCertificatesDTO type(TypeEnum type) {
     this.type = type;
     return this;
   }
@@ -144,7 +100,7 @@ public class TokenValidationDTO {
     this.type = type;
   }
 
-  public TokenValidationDTO value(Object value) {
+  public KeyManagerCertificatesDTO value(String value) {
     this.value = value;
     return this;
   }
@@ -154,11 +110,11 @@ public class TokenValidationDTO {
    * @return value
   **/
   @ApiModelProperty(value = "")
-  public Object getValue() {
+  public String getValue() {
     return value;
   }
 
-  public void setValue(Object value) {
+  public void setValue(String value) {
     this.value = value;
   }
 
@@ -171,26 +127,22 @@ public class TokenValidationDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    TokenValidationDTO tokenValidation = (TokenValidationDTO) o;
-    return Objects.equals(this.id, tokenValidation.id) &&
-        Objects.equals(this.enable, tokenValidation.enable) &&
-        Objects.equals(this.type, tokenValidation.type) &&
-        Objects.equals(this.value, tokenValidation.value);
+    KeyManagerCertificatesDTO keyManagerCertificates = (KeyManagerCertificatesDTO) o;
+    return Objects.equals(this.type, keyManagerCertificates.type) &&
+        Objects.equals(this.value, keyManagerCertificates.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, enable, type, value);
+    return Objects.hash(type, value);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class TokenValidationDTO {\n");
+    sb.append("class KeyManagerCertificatesDTO {\n");
     
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    enable: ").append(toIndentedString(enable)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("}");

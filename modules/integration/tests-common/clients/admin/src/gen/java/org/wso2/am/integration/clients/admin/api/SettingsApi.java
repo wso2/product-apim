@@ -28,6 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.admin.api.dto.ErrorDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ScopeSettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 
 import java.lang.reflect.Type;
@@ -165,6 +166,140 @@ public class SettingsApi {
 
         com.squareup.okhttp.Call call = settingsGetValidateBeforeCall(progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SettingsDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for settingsScopesScopeGet
+     * @param username  (required)
+     * @param scope scope name to be validated  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call settingsScopesScopeGetCall(String username, String scope, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/settings/scopes/{scope}"
+            .replaceAll("\\{" + "scope" + "\\}", apiClient.escapeString(scope.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (username != null)
+        localVarQueryParams.addAll(apiClient.parameterToPair("username", username));
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call settingsScopesScopeGetValidateBeforeCall(String username, String scope, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'username' is set
+        if (username == null) {
+            throw new ApiException("Missing the required parameter 'username' when calling settingsScopesScopeGet(Async)");
+        }
+        
+        // verify the required parameter 'scope' is set
+        if (scope == null) {
+            throw new ApiException("Missing the required parameter 'scope' when calling settingsScopesScopeGet(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = settingsScopesScopeGetCall(username, scope, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Retrieve scopes for a particular user
+     * This operation will return the scope list of particular user In order to get it, we need to pass the userId as a query parameter 
+     * @param username  (required)
+     * @param scope scope name to be validated  (required)
+     * @return ScopeSettingsDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ScopeSettingsDTO settingsScopesScopeGet(String username, String scope) throws ApiException {
+        ApiResponse<ScopeSettingsDTO> resp = settingsScopesScopeGetWithHttpInfo(username, scope);
+        return resp.getData();
+    }
+
+    /**
+     * Retrieve scopes for a particular user
+     * This operation will return the scope list of particular user In order to get it, we need to pass the userId as a query parameter 
+     * @param username  (required)
+     * @param scope scope name to be validated  (required)
+     * @return ApiResponse&lt;ScopeSettingsDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<ScopeSettingsDTO> settingsScopesScopeGetWithHttpInfo(String username, String scope) throws ApiException {
+        com.squareup.okhttp.Call call = settingsScopesScopeGetValidateBeforeCall(username, scope, null, null);
+        Type localVarReturnType = new TypeToken<ScopeSettingsDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Retrieve scopes for a particular user (asynchronously)
+     * This operation will return the scope list of particular user In order to get it, we need to pass the userId as a query parameter 
+     * @param username  (required)
+     * @param scope scope name to be validated  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call settingsScopesScopeGetAsync(String username, String scope, final ApiCallback<ScopeSettingsDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = settingsScopesScopeGetValidateBeforeCall(username, scope, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<ScopeSettingsDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }

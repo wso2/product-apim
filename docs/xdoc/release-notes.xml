@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v3.1.0 - 20th March 2020</title>
+    <title>WSO2 API Manager v3.2.0 Alpha - 12th June 2020</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Manager 3.1.0 Released!</h1>
+<h1>WSO2 API Manager 3.2.0 Alpha Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 3.1.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 3.2.0 of
     the Open Source API Manager.
 </p>
 
@@ -43,7 +43,7 @@
 <ul>
     <li><b>API Designer and Publisher:</b> Allows API creators to design, implement and document APIs and <br/>
     allows API product managers to manage the lifecycle of APIs and create API products by using one or more APIs.</li><br/>
-    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/> 
+    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/>
     subscribe, test and consume APIs through their applications.</li><br/>
     <li><b>API Gateway:</b> Allows access to APIs/services by routing application traffic to the relevant endpoints. <br/>
     The API Gateway is the component that enforces security, rate-limiting and transformations on API requests while <br/>
@@ -61,7 +61,7 @@
 <p>
     For more information on WSO2 API Manager please visit <a href="https://wso2.com/api-management/">
     https://wso2.com/api-management/</a>. Also take a look at the online product
-    <a href="https://apim.docs.wso2.com/en/3.1.0/">documentation</a>.
+    <a href="https://apim.docs.wso2.com/en/latest/">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
@@ -77,9 +77,9 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>Bug Fixes And Improvements in 3.1.0</h2>
+    <h2>Bug Fixes And Improvements in 3.2.0</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aissue+is%3Aclosed+closed%3A%3E2019-11-01+label%3A3.1.0">product-apim</a>)
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aissue+is%3Aclosed+closed%3A%3E2020-03-21+label%3A3.2.0+">product-apim</a>)
         </li>
     </ul>
 
@@ -114,11 +114,21 @@
         <a href="http://wso2.org/mailarchive/user/">Mail Archive</a>
     </li>
 </ul>
+
+    <br/>
+    <a href="https://wso2-apim.slack.com/">Join Us on Slack</a>
+    |
+    <a href="https://join.slack.com/t/wso2-apim/shared_invite/enQtNzEzMzk5Njc5MzM0LTgwODI3NmQ1MjI0ZDQyMGNmZGI4ZjdkZmI1ZWZmMjNkY2E0NmY3ZmExYjkxYThjNzNkOTU2NWJmYzM4YzZiOWU?src=sidebar">join us</a>
+    <br/><br/>
 <h3>
     Reporting Issues
 </h3>
 <p>
     We encourage you to report issues, documentation faults, and feature requests regarding WSO2 API Manager through the public <a href="https://github.com/wso2/product-apim/issues">API Manager Git Repo</a>.
+</p>
+
+<p>
+    And please be advised that, security issues must be reported to <a href="mailto:security@wso2.com">security@wso2.com</a>, not as a GitHub issue, in order to reach proper audience. We strongly advise following the <a href="https://docs.wso2.com/display/Security/WSO2+Security+Vulnerability+Reporting+Guidelines">WSO2 Security Vulnerability Reporting Guidelines</a> when reporting the security issues.
 </p>
 
 <p>

@@ -37,6 +37,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.api.dto.ClaimMappingEntryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.TokenValidationDTO;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -332,7 +333,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setEnabled(true);
         keyManagerDTO.setIssuer("https://test.apim.integration");
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
-        keyManagerDTO.setEnableTokenGneration(false);
+        keyManagerDTO.setEnableTokenGeneration(false);
         keyManagerDTO.setEnableOAuthAppCreation(false);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
@@ -360,9 +361,12 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setDescription("This is Key Manager");
         keyManagerDTO.setEnabled(true);
         keyManagerDTO.setIssuer("https://test2.apim.integration");
-        keyManagerDTO.setJwksEndpoint("https://localhost:8743/jwks/1.0");
+        KeyManagerCertificatesDTO keyManagerCertificatesDTO = new KeyManagerCertificatesDTO();
+        keyManagerCertificatesDTO.setType(KeyManagerCertificatesDTO.TypeEnum.JWKS);
+        keyManagerCertificatesDTO.setValue("https://localhost:8743/jwks/1.0");
+        keyManagerDTO.setCertificates(keyManagerCertificatesDTO);
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
-        keyManagerDTO.setEnableTokenGneration(false);
+        keyManagerDTO.setEnableTokenGeneration(false);
         keyManagerDTO.setEnableOAuthAppCreation(false);
         keyManagerDTO
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));

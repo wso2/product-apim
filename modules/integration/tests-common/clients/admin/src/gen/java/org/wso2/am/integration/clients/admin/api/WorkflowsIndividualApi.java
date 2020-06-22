@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.admin.api.dto.ErrorDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
+import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -55,6 +56,135 @@ public class WorkflowsIndividualApi {
         this.apiClient = apiClient;
     }
 
+    /**
+     * Build call for workflowsExternalWorkflowRefGet
+     * @param externalWorkflowRef from the externel workflow reference we decide what is the the pending request that the are requesting.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call workflowsExternalWorkflowRefGetCall(String externalWorkflowRef, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/workflows/{externalWorkflowRef}"
+            .replaceAll("\\{" + "externalWorkflowRef" + "\\}", apiClient.escapeString(externalWorkflowRef.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null)
+        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call workflowsExternalWorkflowRefGetValidateBeforeCall(String externalWorkflowRef, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'externalWorkflowRef' is set
+        if (externalWorkflowRef == null) {
+            throw new ApiException("Missing the required parameter 'externalWorkflowRef' when calling workflowsExternalWorkflowRefGet(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = workflowsExternalWorkflowRefGetCall(externalWorkflowRef, ifNoneMatch, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Get details of a the pending workflow request according to the External Workflow Reference. 
+     * Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it. 
+     * @param externalWorkflowRef from the externel workflow reference we decide what is the the pending request that the are requesting.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @return WorkflowInfoDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public WorkflowInfoDTO workflowsExternalWorkflowRefGet(String externalWorkflowRef, String ifNoneMatch) throws ApiException {
+        ApiResponse<WorkflowInfoDTO> resp = workflowsExternalWorkflowRefGetWithHttpInfo(externalWorkflowRef, ifNoneMatch);
+        return resp.getData();
+    }
+
+    /**
+     * Get details of a the pending workflow request according to the External Workflow Reference. 
+     * Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it. 
+     * @param externalWorkflowRef from the externel workflow reference we decide what is the the pending request that the are requesting.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @return ApiResponse&lt;WorkflowInfoDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<WorkflowInfoDTO> workflowsExternalWorkflowRefGetWithHttpInfo(String externalWorkflowRef, String ifNoneMatch) throws ApiException {
+        com.squareup.okhttp.Call call = workflowsExternalWorkflowRefGetValidateBeforeCall(externalWorkflowRef, ifNoneMatch, null, null);
+        Type localVarReturnType = new TypeToken<WorkflowInfoDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Get details of a the pending workflow request according to the External Workflow Reference.  (asynchronously)
+     * Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it. 
+     * @param externalWorkflowRef from the externel workflow reference we decide what is the the pending request that the are requesting.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call workflowsExternalWorkflowRefGetAsync(String externalWorkflowRef, String ifNoneMatch, final ApiCallback<WorkflowInfoDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = workflowsExternalWorkflowRefGetValidateBeforeCall(externalWorkflowRef, ifNoneMatch, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<WorkflowInfoDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
     /**
      * Build call for workflowsUpdateWorkflowStatusPost
      * @param workflowReferenceId Workflow reference id  (required)
