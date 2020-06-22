@@ -228,6 +228,7 @@
                 CARBON-15759 and ESBJAVA-4386 fi-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCas-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCas-->
+            <!-- Disabling the deprecated Store, Publisher test cases
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
@@ -236,7 +237,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1638_UrlEncodedApiNameTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationScopeValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>-->
         </classes>
     </test>
     <test name="apim-mediation-tests" preserve-order="true" parallel="false" group-by-instances="true">
@@ -270,12 +271,13 @@
     <!--Can remove the following-->
     <test name="apim-integration-tests-without-advance-throttling" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
+            <!-- Disabling the deprecated Store, Publisher test cases
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.MultipleSubscriptionsTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.OnHoldSubscriptionWorkflowIdTestCase"/>-->
             <!--class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/-->
             <!--Disable following test cases, since old throttling engine is deprecated -->
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
