@@ -97,6 +97,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
+    private final String applicationJWTName = "WebSocketJWTTypeApplication";
     private final String testMessage = "Web Socket Test Message";
     private String apiEndPoint;
     private APIPublisherRestClient apiPublisher;
@@ -118,6 +119,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private String wsThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml";
     private String websocketAPIID;
     String appId;
+    String appJWTId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -235,6 +237,39 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(description = "Create JWT Type Application and subscribe", dependsOnMethods = "publishWebSocketAPI")
+    public void testWebSocketAPIJWTApplicationSubscription() throws Exception {
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationJWTName,
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
+        appJWTId = applicationResponse.getData();
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, appJWTId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        //Validate Subscription of the API
+        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
+    }
+
+    @Test(description = "Invoke API using token", dependsOnMethods = "testWebSocketAPIJWTApplicationSubscription")
+    public void testWebSocketAPIInvocationWithJWTToken() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        //consumerKey = applicationKeyDTO.getConsumerKey();
+        //consumerSecret = applicationKeyDTO.getConsumerSecret();
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.HEADER);
+            invokeAPI(client, accessToken, AUTH_IN.QUERY);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
     @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
         // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
