@@ -409,7 +409,7 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
             restAPIPublisherNew.updateAPI(apidto, apiId);
             fail("API Creator role was able to update the authorization header");
         } catch (ApiException e) {
-            assertTrue(e.getResponseBody().contains("Error while updating API : " + apiId));
+            assertTrue(e.getResponseBody().contains("Error while updating the API : " + apiId));
         }
     }
 
