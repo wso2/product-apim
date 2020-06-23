@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -44,6 +45,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +285,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test(groups = { "wso2.am" }, description = "Test Application Creation without callback URL",
-            dependsOnMethods = "testImplicit")
+            dependsOnMethods = "testImplicit", expectedExceptions = ApiException.class)
     public void testApplicationCreationWithoutCallBackURL() throws Exception {
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(CALLBACK_URL_UPDATE_APP_NAME,
@@ -306,16 +308,12 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
 
         //generate the key for the subscription
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationIdWithoutCallback, "3600", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
-                        null, grantTypes);
+        ApiResponse<ApplicationKeyDTO> response = restAPIStore
+                .generateKeysWithApiResponse(applicationIdWithoutCallback, "3600", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes, Collections.emptyMap(),null);
 
-        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
-
-        consumerKey = applicationKeyDTO.getConsumerKey();
-        consumerSecret = applicationKeyDTO.getConsumerSecret();
-        Assert.assertNotNull(consumerKey, "Consumer Key not found");
-        Assert.assertNotNull(consumerSecret, "Consumer Secret not found ");
+        assertEquals(response.getStatusCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Test Application Creation without callback URL not successful");
     }
 
     @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",
@@ -331,28 +329,6 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         String locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
         Assert.assertTrue(locationHeader.contains("oauthErrorCode"), "Redirection page should be a error page");
-    }
-
-    @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",
-            dependsOnMethods = "testAuthRequestWithoutCallbackURL")
-    public void testApplicationUpdateAndTestKeyGeneration() throws Exception {
-
-        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
-        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
-        applicationKeyDTO.setCallbackUrl(CALLBACK_URL);
-        applicationKeyDTO.setSupportedGrantTypes(grantTypes);
-
-        ApiResponse<ApplicationKeyDTO> updateResponse = restAPIStore
-                .updateKeys(applicationIdWithoutCallback, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        applicationKeyDTO);
-        assertEquals(updateResponse.getStatusCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when adding an application");
-
-
-        //Test the Authorization Code key generation with updates values
-        testAuthCode();
-        //Test the Implicit key generation with updates values
-        testImplicit();
     }
 
     @AfterClass(alwaysRun = true)
