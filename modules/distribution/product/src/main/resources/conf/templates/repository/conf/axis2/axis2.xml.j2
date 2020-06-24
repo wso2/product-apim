@@ -220,12 +220,15 @@
     <!--             Transport Ins (Listeners)             -->
     <!-- ================================================= -->
 
+    {% if transport.passthru_http.listener.enable %}
     <transportReceiver name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpListener">
      {% for parameter_key,parameter_value in transport.passthru_http.listener.parameters.items() %}
         <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
     {% endfor %}
     </transportReceiver>
+    {% endif %}
 
+    {% if transport.passthru_https.listener.enable %}
    <transportReceiver name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener">
      {% for parameter_key,parameter_value in transport.passthru_https.listener.parameters.items() %}
         <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
@@ -254,7 +257,7 @@
            <fileReadInterval>{{transport.passthru_https.listener.ssl_profile_interval}}</fileReadInterval>
        </parameter>
     </transportReceiver>
-
+    {% endif %}
 
     <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
 
@@ -290,15 +293,17 @@
     <!--             Transport Outs (Senders)              -->
     <!-- ================================================= -->
 
+    {% if transport.passthru_http.sender.enable %}
     <transportSender name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpSender">
          {% for parameter_key,parameter_value in transport.passthru_http.sender.parameters.items() %}
             <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
         {% endfor %}
     </transportSender>
+    {% endif %}
 
     <transportSender name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportSender"/>
 
-
+    {% if transport.passthru_https.sender.enable %}
     <transportSender name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpSSLSender">
          {% for parameter_key,parameter_value in transport.passthru_https.sender.parameters.items() %}
             <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
@@ -327,6 +332,7 @@
             <fileReadInterval>{{transport.passthru_https.sender.ssl_profile.interval}}</fileReadInterval>
         </parameter>
     </transportSender>
+    {% endif %}
 
 {% if transport.jms.sender_enable is defined %}
     {% if transport.jms.sender_enable and transport.jms.sender|length==0 %}
