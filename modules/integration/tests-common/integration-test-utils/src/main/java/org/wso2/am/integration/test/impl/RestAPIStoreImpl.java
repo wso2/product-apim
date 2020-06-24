@@ -329,7 +329,9 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
         applicationKeyGenerateRequest.setAdditionalProperties(additionalProperties);
-        applicationKeyGenerateRequest.setKeyManager(keyManager);
+        if (StringUtils.isNotEmpty(keyManager)) {
+            applicationKeyGenerateRequest.setKeyManager(keyManager);
+        }
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
         return response;
