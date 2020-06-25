@@ -1221,19 +1221,19 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.24</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.25</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.7.30</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.32</carbon.registry.version>
+        <carbon.registry.version>4.7.34</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.14</carbon.governance.version>
+        <carbon.governance.version>4.8.18</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.6.0</carbon.kernel.version>
@@ -1242,7 +1242,7 @@
 
 	    <cipher.tool.version>1.1.9</cipher.tool.version>
 
-        <carbon.commons.version>4.7.31</carbon.commons.version>
+        <carbon.commons.version>4.7.32</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
