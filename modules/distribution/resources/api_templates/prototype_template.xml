@@ -213,7 +213,7 @@ url-mapping="$resource.getUriTemplate()"
 methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     #if(!$resource.getMediationScript().equalsIgnoreCase("null"))
-            <property name="AcceptHeader" expression="$trp:Accept"/>
+    <property name="AcceptHeader" expression="$trp:Accept"/>
     <script language="js">
         <![CDATA[
                         $resource.getMediationScript()
