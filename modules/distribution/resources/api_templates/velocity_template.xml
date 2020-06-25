@@ -257,6 +257,9 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>
 #end
+#if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+#end
 <send/>
 </outSequence>
         </resource>
