@@ -157,7 +157,7 @@ call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b') do (
+for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "internal"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%

@@ -190,7 +190,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'internal#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -277,7 +277,7 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'internal#data#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

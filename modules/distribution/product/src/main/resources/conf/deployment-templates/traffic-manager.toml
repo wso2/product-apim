@@ -19,6 +19,14 @@ port = "3306"
 username = "shareduser"
 password = "shareduser"
 
+[database.apim_db]
+type = "mysql"
+hostname = "apim.mysql"
+name = "apimgt_db"
+port = "3306"
+username = "apimuser"
+password = "apimuser"
+
 [keystore.tls]
 file_name =  "wso2carbon.jks"
 type =  "JKS"
@@ -30,3 +38,13 @@ key_password =  "wso2carbon"
 file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
+
+# key manager implementation
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+
+[apim.oauth_config]
+revoke_endpoint = "https://localhost:9443/oauth/revoke"
+enable_token_encryption = false
+enable_token_hashing = false

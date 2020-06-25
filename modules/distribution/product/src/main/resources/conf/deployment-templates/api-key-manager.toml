@@ -39,15 +39,6 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
-[[apim.gateway.environment]]
-name= "Production and Sandbox"
-type= "hybrid"
-display_in_api_console= true
-description= "This is a hybrid gateway that handles both production and sandbox token traffic."
-service_url= "https://gw.mgt.wso2.com:443/services/"
-username= "${admin.username}"
-password= "${admin.password}"
-
 # Caches
 [apim.cache.km_token]
 enable = false
@@ -81,3 +72,11 @@ traffic_manager_auth_urls=["ssl://tm2.local:9711"]
 [[event_handler]]
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
+
+[apim.event_hub]
+service_url = "https://tm1.local:9443"
+event_listening_endpoints = ["tcp://tm1.local:5672"]
+
+[[apim.event_hub.publish.url_group]]
+url = ["tcp://tm1.local:9611"]
+auth_url = ["ssl://tm1.local:9711"]
