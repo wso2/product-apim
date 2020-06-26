@@ -29,6 +29,10 @@ pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
 pathToAxis2TMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_TM.xml.j2'
 pathToAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_KM.xml.j2'
 pathToTenantAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_KM.xml.j2'
+pathToAxis2PublisherXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_Publisher.xml.j2'
+pathToTenantAxis2PublisherXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_Publisher.xml.j2'
+pathToAxis2DevportalXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_Devportal.xml.j2'
+pathToTenantAxis2DevportalXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_Devportal.xml.j2'
 pathToRegistryTMTemplate='../repository/resources/conf/templates/repository/conf/registry_TM.xml.j2'
 pathToAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/axis2.xml.j2.backup'
 pathToTenantAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2.xml.j2.backup'
@@ -190,7 +194,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'throttle#data#v*.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'internal#data#v*.war'-o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' -o -name 'api#identity#oauth2#dcr#v*.war '\) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -217,6 +221,8 @@ case $1 in
 		replaceDeploymentConfiguration api-publisher $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
+    replaceAxis2TemplateFile $pathToAxis2PublisherXmlTemplate
+		replaceTenantAxis2TemplateFile $pathToTenantAxis2PublisherXmlTemplate
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
 			rm -r $i
@@ -245,6 +251,8 @@ case $1 in
 		replaceDeploymentConfiguration api-devportal $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
+    replaceAxis2TemplateFile $pathToAxis2DevportalXmlTemplate
+		replaceTenantAxis2TemplateFile $pathToTenantAxis2DevportalXmlTemplate
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
 			rm -r $i
@@ -277,7 +285,7 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'internal#data#v*.war'); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

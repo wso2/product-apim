@@ -52,11 +52,6 @@ http_endpoint = "http://api.gw.wso2.com:8280/"
 https_endpoint = "https://api.gw.wso2.com:8243/"
 show_as_token_endpoint_url = true
 
-[apim.key_manager]
-service_url = "https://km.wso2.com:443/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
 username= "$ref{super_admin.username}"
@@ -79,11 +74,6 @@ enable = true
 [apim.cache.tags]
 expiry_time = 120000
 
-[apim.oauth_config]
-revoke_endpoint = "https://localhost:8243/revoke"
-enable_token_encryption = false
-enable_token_hashing = false
-
 [apim.devportal]
 enable_application_sharing = true
 application_sharing_type = "default" #changed to type, saml, default
@@ -97,3 +87,11 @@ enable_forum = true
 [[event_handler]]
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
+
+[apim.event_hub]
+service_url = "https://tm1.local:9443"
+event_listening_endpoints = ["tcp://tm1.local:5672"]
+
+[[apim.event_hub.publish.url_group]]
+url = ["tcp://localhost:9611"]
+auth_url = ["ssl://localhost:9711"]

@@ -96,3 +96,11 @@ token_endpoint = "https://localhost:8243/token"
 client_registration_endpoint = "https://localhost:9443/client-registration/v0.16/register"
 client_registration_username = "$ref{super_admin.username}"
 client_registration_password = "$ref{super_admin.password}"
+
+[apim.event_hub]
+service_url = "https://tm1.local:9443"
+event_listening_endpoints = ["tcp://tm1.local:5672"]
+
+[[apim.event_hub.publish.url_group]]
+url = ["tcp://tm1.local:9611"]
+auth_url = ["ssl://tm1.local:9711"]

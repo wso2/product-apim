@@ -308,6 +308,9 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
                                 </featureArtifactDef>
 
@@ -529,9 +532,6 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttling.siddhi.extension.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.jms.listener.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
                                 <!-- MB Features -->
@@ -1117,7 +1117,7 @@
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                
+
                                 <!--Registry Feature-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
@@ -1365,6 +1365,10 @@
                                     <id>org.wso2.identity.apps.recovery.portal.server.feature.group</id>
                                     <version>${identity.apps.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1455,6 +1459,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.output.adapter.email.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
@@ -1657,6 +1665,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -1920,55 +1932,13 @@
                                     <id>org.wso2.carbon.event.output.adapter.jms.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-                                
-                                <feature>
-                                    <id>org.apache.synapse.wso2.feature.group</id>
-                                    <version>${synapse.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.apache.synapse.transport.nhttp.feature.group</id>
-                                    <version>${synapse.version}</version>
-                                </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.task.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.initializer.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.integrator.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.admin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.application.mgt.synapse.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.application.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.server.feature.group</id>
@@ -2006,16 +1976,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.registry.resource.properties.feature.group</id>
                                     <version>${carbon.registry.version}</version>
-                                </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.mediators.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                           
-                                <feature>
-                                    <id>org.wso2.carbon.relay.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
@@ -2115,11 +2075,6 @@
                                     <id>org.jaggeryjs.modules.ws.feature.group</id>
                                     <version>${ws.feature.version}</version>
                                 </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -2133,11 +2088,11 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
+                                    <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
+                                    <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2258,15 +2213,11 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.publishevent.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2439,56 +2390,12 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.apache.synapse.wso2.feature.group</id>
-                                    <version>${synapse.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.apache.synapse.transport.nhttp.feature.group</id>
-                                    <version>${synapse.version}</version>
-
-                                </feature>
-                              
-                                <feature>
-                                    <id>org.wso2.carbon.task.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.initializer.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.integrator.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                              
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.admin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.application.mgt.synapse.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.application.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.server.feature.group</id>
@@ -2528,15 +2435,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                               
-                                <feature>
-                                    <id>org.wso2.carbon.mediators.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.relay.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
@@ -2637,15 +2535,15 @@
                                     <version>${ws.feature.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.keymanager.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2774,10 +2672,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.event.output.adapter.jms.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
 
                                 <!-- Consent Management dependency -->
@@ -2961,6 +2855,11 @@
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
@@ -3183,6 +3082,10 @@
                                     <id>org.wso2.carbon.apimgt.tracing.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 				                <feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
@@ -3301,6 +3204,11 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+
+                                <feature>
                                     <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
@@ -3370,11 +3278,7 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                             
-                                <feature>
-                                    <id>org.wso2.carbon.relay.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
+
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -3390,38 +3294,7 @@
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                               
-                                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                
-                                <!-- Dashboard Related feature-->
-                                <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
-                                    <version>${jaggery.modules.carbon.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${jaggery.modules.process.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
-                                    <version>${jaggery.modules.sso.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${jaggery.modules.i18n.feature.version}</version>
-                                </feature>
-                                
+
                                 <!--Identity Feature-->
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -3563,6 +3436,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
                                     <version>${carbon.identity.auth.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
