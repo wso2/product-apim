@@ -4985,6 +4985,11 @@ definitions:
       name:
         type: string
         example: "WSO2 IS"
+      displayName:
+        type: string
+        description: |
+          display name of Key Manager to  show in UI
+        example: KeyManager1
       type:
         type: string
         example: "IS"
@@ -5009,9 +5014,16 @@ definitions:
       authorizeEndpoint:
         type: string
         example: ""
-      jwksEndpoint:
-        type: string
-        example: ""
+      certificates:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - JWKS
+              - PEM
+          value:
+            type: string
       issuer:
         type: string
         example: ""
@@ -5276,6 +5288,7 @@ definitions:
           - APPLICATION_DELETION
           - API_STATE
           - SUBSCRIPTION_DELETION
+          - SUBSCRIPTION_UPDATE
         example: APPLICATION_CREATION
         description: |
           Type of the Workflow Request. It shows which type of request is it.
