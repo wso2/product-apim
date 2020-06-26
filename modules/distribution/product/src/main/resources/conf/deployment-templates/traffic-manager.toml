@@ -45,6 +45,6 @@ service_url = "https://km.wso2.com:443/services/"
 username= "$ref{super_admin.username}"
 
 [apim.oauth_config]
-revoke_endpoint = "https://localhost:9443/oauth/revoke"
+revoke_endpoint = "https://km.wso2.com:9443/oauth2/revoke"
 enable_token_encryption = false
 enable_token_hashing = false
