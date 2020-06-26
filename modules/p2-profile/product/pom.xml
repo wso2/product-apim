@@ -533,9 +533,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttling.siddhi.extension.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.jms.listener.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
 
                                 <!-- MB Features -->
                                 <featureArtifactDef>
@@ -1120,7 +1117,7 @@
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                
+
                                 <!--Registry Feature-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
@@ -1462,6 +1459,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.output.adapter.email.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
@@ -2212,6 +2213,10 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.identity.mgt.feature.group</id>
@@ -2530,15 +2535,15 @@
                                     <version>${ws.feature.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2850,6 +2855,11 @@
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
@@ -3193,6 +3203,11 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
