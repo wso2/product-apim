@@ -29,7 +29,7 @@
             <send>
                 <endpoint>
                     <http method="POST"
-                          uri-template="https://localhost:9443/api/am/admin/v0.16/workflows/update-workflow-status?workflowReferenceId={uri.var.workflowRef}"/>
+                          uri-template="https://localhost:9443/api/am/admin/v0.17/workflows/update-workflow-status?workflowReferenceId={uri.var.workflowRef}"/>
                 </endpoint>
             </send>
         </inSequence>
