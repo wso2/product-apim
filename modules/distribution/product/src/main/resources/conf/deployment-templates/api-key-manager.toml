@@ -78,10 +78,8 @@ service_url = "https://tm1.local:9443"
 event_listening_endpoints = ["tcp://tm1.local:5672"]
 
 [[apim.event_hub.publish.url_group]]
-url = ["tcp://tm1.local:9611"]
-auth_url = ["ssl://tm1.local:9711"]
+urls = ["tcp://tm1.local:9611"]
+auth_urls = ["ssl://tm1.local:9711"]
 
-[[oauth.extensions.token_types]]
-name = "JWT"
-issuer = "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer"
-persist_access_token_alias = false
+[oauth.oidc.id_token]
+issuer = "https://apim.am.wso2.com/oauth2/token"

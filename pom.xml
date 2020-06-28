@@ -1224,7 +1224,7 @@
         <carbon.analytics.common.version>5.2.25</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.7.38</carbon.apimgt.version>
+        <carbon.apimgt.version>6.7.42</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1237,7 +1237,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.6.0</carbon.kernel.version>
-	<apimserver.version>3.2.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>3.2.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
 	    <cipher.tool.version>1.1.9</cipher.tool.version>
