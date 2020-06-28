@@ -89,3 +89,11 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
+
+[apim.event_hub]
+service_url = "https://tm1.local:9443"
+event_listening_endpoints = ["tcp://tm1.local:5672"]
+
+[[apim.event_hub.publish.url_group]]
+url = ["tcp://tm1.local:9611"]
+auth_url = ["ssl://tm1.local:9711"]
