@@ -102,5 +102,5 @@ service_url = "https://tm1.local:9443"
 event_listening_endpoints = ["tcp://tm1.local:5672"]
 
 [[apim.event_hub.publish.url_group]]
-url = ["tcp://tm1.local:9611"]
-auth_url = ["ssl://tm1.local:9711"]
+urls = ["tcp://tm1.local:9611"]
+auth_urls = ["ssl://tm1.local:9711"]

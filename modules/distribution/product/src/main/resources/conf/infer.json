@@ -25,7 +25,7 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "indexing.enable": false,
-      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer",
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
       "system.parameter.profile": "api-key-manager",
       "apim.key_manager.enable_registration": false,
       "apim.key_manager.enable_retriever": true,
@@ -98,7 +98,7 @@
       "apim.throttling.enable_blacklist_condition": false
     },
     "default": {
-      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer",
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
       "enabled_global_handlers": [
         "external_call_logger",
         "open_tracing"

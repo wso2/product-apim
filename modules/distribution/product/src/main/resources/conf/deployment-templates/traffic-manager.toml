@@ -48,3 +48,6 @@ username= "$ref{super_admin.username}"
 revoke_endpoint = "https://km.wso2.com:9443/oauth2/revoke"
 enable_token_encryption = false
 enable_token_hashing = false
+
+[oauth.oidc.id_token]
+issuer = "https://apim.am.wso2.com/oauth2/token"

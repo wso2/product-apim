@@ -192,6 +192,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
             " after the API context change", dependsOnMethods = "testEditAPIContext")
     public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
         //Invoke  new context
+        waitForAPIDeployment();
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
