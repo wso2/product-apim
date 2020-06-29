@@ -142,12 +142,7 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         String jwtString = APIMTestCaseUtils.getDecodedJWT(accessToken);
         JSONObject jwtObject = new JSONObject(jwtString);
         log.info("Decoded JWT token: " + jwtString);
-        
-        JSONObject tierInfo = (JSONObject)jwtObject.get("application");
-        Assert.assertEquals(tierInfo.has("tierQuotaType"), true, "tierQuotaType property does not exist in the JWT");
-        Assert.assertEquals(tierInfo.get("tierQuotaType"), "bandwidthVolume",
-                "tierQuotaType property does not match 'bandwidthVolume' in the JWT");
-        
+
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "text/xml");
@@ -188,11 +183,6 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         String jwtString = APIMTestCaseUtils.getDecodedJWT(accessToken);
         JSONObject jwtObject = new JSONObject(jwtString);
         log.info("Decoded JWT token: " + jwtString);
-        JSONObject tierInfo = (JSONObject)((JSONObject)jwtObject.get("tierInfo")).get(subPolicyName);
-        Assert.assertEquals(tierInfo.has("tierQuotaType"), true, "tierQuotaType property does not exist in the JWT");
-        Assert.assertEquals(tierInfo.get("tierQuotaType"), "bandwidthVolume",
-                "tierQuotaType property does not match 'bandwidthVolume' in the JWT");
-        
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "text/xml");

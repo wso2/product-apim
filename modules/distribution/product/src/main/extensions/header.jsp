@@ -19,6 +19,7 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
+<%@ page import="java.io.File" %>
 <%@ page import="java.io.FileReader" %>
 <%@ page import="org.json.simple.parser.JSONParser"%>
 <%@ page import="org.json.simple.JSONObject"%>

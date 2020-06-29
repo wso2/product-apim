@@ -24,6 +24,8 @@ set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
 set pathToAxis2TMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_TM.xml.j2
 set pathToAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_KM.xml.j2
+set pathToAxis2PublisherXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_Publisher.xml.j2
+set pathToAxis2DevportalXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_Devportal.xml.j2
 set pathToRegistryTMTemplate=..\repository\resources\conf\templates\repository\conf\registry_TM.xml.j2
 set axis2XMLBackupTemplate=axis2.xml.j2.backup
 set registryBackupTemplate=registry.xml.j2.backup
@@ -39,7 +41,8 @@ set tenantAxis2TXmlTemplateBackup=tenant-axis2.xml.j2.backup
 set pathToTenantAxis2XMLTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2.xml.j2
 set tenantAxis2XMLTemplate=tenant-axis2.xml.j2
 set pathToTenantAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_KM.xml.j2
-
+set pathToTenantAxis2PublisherXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_Publisher.xml.j2
+set pathToTenantAxis2DevportalXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_Devportal.xml.j2
 cd /d %~dp0
 
 set profileConfigurationToml=%pathToDeploymentTemplates%\%2.toml
@@ -96,6 +99,8 @@ goto finishOptimization
 echo Starting to optimize API Manager for the API Publisher profile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
+call :replaceAxis2TemplateFile %pathToAxis2PublisherXmlTemplate%
+call :replaceTenantAxis2TemplateFile %pathToTenantAxis2PublisherXmlTemplate%
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war"') do (
@@ -125,6 +130,8 @@ echo Starting to optimize API Manager for the Developer Portal profile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :replaceDeploymentConfiguration
+call :replaceAxis2TemplateFile %pathToAxis2DevportalXmlTemplate%
+call :replaceTenantAxis2TemplateFile %pathToTenantAxis2DevportalXmlTemplate%
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#store#v.*war api#am#store.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war"') do (
 	del /f %pathToWebapps%\%%i
@@ -157,7 +164,7 @@ call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b') do (
+for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "internal"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
