@@ -718,7 +718,16 @@
                 <include>client-registration#v0.16.war</include>
             </includes>
         </fileSet>
-
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>scim2.war</include>
+            </includes>
+        </fileSet>
 
         <!-- Copy sample calculator api webapp-->
         <fileSet>
@@ -1066,7 +1075,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
         <!--End of claim management feature-->
-
+        <!--SCIM2 related feature-->
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/scim2-schema-extension.config
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+        </file>
 
         <!-- using the event-broker config file from carbon mediation>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>

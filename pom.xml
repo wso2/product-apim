@@ -1214,6 +1214,12 @@
                 <artifactId>org.wso2.am.integration.clients.admin.api</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
+                <artifactId>org.wso2.carbon.identity.scim2.common</artifactId>
+                <version>${identity.inbound.provisioning.scim2.version}</version>
+                <scope>compile</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1414,6 +1420,8 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
+
+        <identity.inbound.provisioning.scim2.version>1.5.1</identity.inbound.provisioning.scim2.version>
     </properties>
 
 </project>

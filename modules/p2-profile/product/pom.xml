@@ -629,6 +629,10 @@
                                 <featureArtifactDef>
                                     org.wso2.identity.apps:org.wso2.identity.apps.recovery.portal.server.feature:${identity.apps.version}
                                 </featureArtifactDef>
+                                <!-- SCIM2 feature -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.inbound.provisioning.scim2:org.wso2.carbon.identity.scim2.server.feature:${identity.inbound.provisioning.scim2.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1368,6 +1372,11 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <!-- SCIM2 feature -->
+                                <feature>
+                                    <id>org.wso2.carbon.identity.scim2.server.feature.group</id>
+                                    <version>${identity.inbound.provisioning.scim2.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -3136,6 +3145,11 @@
                                 <feature>
                                     <id>org.wso2.identity.apps.recovery.portal.server.feature.group</id>
                                     <version>${identity.apps.version}</version>
+                                </feature>
+                                <!-- SCIM2 feature -->
+                                <feature>
+                                    <id>org.wso2.carbon.identity.scim2.server.feature.group</id>
+                                    <version>${identity.inbound.provisioning.scim2.version}</version>
                                 </feature>
                             </features>
                         </configuration>
