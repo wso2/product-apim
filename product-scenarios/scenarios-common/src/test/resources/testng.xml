@@ -20,7 +20,7 @@
 <suite name="Scenario-Test-Initializer">
     <test name="Deploy-WebApps" verbose="2" parallel="false">
         <classes>
-            <class name="org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase"/>
+<!--            <class name="org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase"/>-->
         </classes>
     </test>
 </suite>
