@@ -50,7 +50,7 @@ public class RestAPIAdminImpl {
     public RestAPIAdminImpl(String username, String password, String tenantDomain, String adminURl) {
         // token/DCR of Publisher node itself will be used
         String tokenURL = adminURl + "oauth2/token";
-        String dcrURL = adminURl + "client-registration/v0.16/register";
+        String dcrURL = adminURl + "client-registration/v0.17/register";
         String accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:admin_operations",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain,
