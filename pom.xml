@@ -1415,6 +1415,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.0.1</wso2is.km.version>
+        <okta.keymanager.feature.version>3.0.0</okta.keymanager.feature.version>
     </properties>
 
 </project>
