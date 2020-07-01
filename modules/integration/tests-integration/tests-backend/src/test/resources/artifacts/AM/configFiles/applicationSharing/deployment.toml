@@ -69,8 +69,3 @@ period = "1m"
 
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
-
-[[oauth.extensions.token_types]]
-name = "JWT"
-issuer = "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer"
-persist_access_token_alias = false

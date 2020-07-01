@@ -160,26 +160,14 @@
                               class="{{message_formatter.application_xml}}"/>
     <messageFormatter contentType="text/xml"
                               class="{{message_formatter.text_xml}}"/>
-    <messageFormatter contentType="application/soap+xml"
-                              class="{{message_formatter.soap_xml}}"/>
-    <messageFormatter contentType="application/json"
-                              class="{{message_formatter.json}}"/>
     <messageFormatter contentType="application/json/badgerfish"
                               class="{{message_formatter.json_badgerfish}}"/>
     <messageFormatter contentType="text/javascript"
                               class="{{message_formatter.text_javascript}}"/>
     <messageFormatter contentType="text/plain"
-                         class="{{message_formatter.text_plain}}"/>
-
-        <messageFormatter contentType="text/html"
+                         class="{{message_formatter.text_plain}}"/>ß
+    <messageFormatter contentType="text/html"
                           class="{{message_formatter.text_html}}"/>
-
-        <messageFormatter contentType="application/octet-stream"
-                          class="{{message_formatter.octet_stream}}"/>
-   {% for message_formatter in custom_message_formatters %}
-        <messageFormatter contentType="{{message_formatter.content_type}}"
-                          class="{{message_formatter.class}}"/>
-     {% endfor %}
 
     </messageFormatters>
 
@@ -193,191 +181,70 @@
     <messageBuilders>
     <messageBuilder contentType="application/xml"
                             class="{{message_builder.application_xml}}"/>
-    <messageBuilder contentType="application/x-www-form-urlencoded"
-                            class="{{message_builder.form_urlencoded}}"/>
-
     <messageBuilder contentType="multipart/form-data"
                             class="{{message_builder.multipart_form_data}}"/>
-    <messageBuilder contentType="application/json"
-                            class="{{message_builder.json}}"/>
     <messageBuilder contentType="application/json/badgerfish"
                             class="{{message_builder.json_badgerfish}}"/>
     <messageBuilder contentType="text/javascript"
                             class="{{message_builder.text_javascript}}"/>
-    <messageBuilder contentType="text/html"
-                        class="{{message_builder.text_html}}"/>
-        <messageBuilder contentType="text/plain"
-                        class="{{message_builder.text_plain}}"/>
-        <messageBuilder contentType="application/octet-stream"
-                        class="{{message_builder.octet_stream}}"/>
-   {% for message_builder in custom_message_builders %}
-    <messageBuilder contentType="{{message_builder.content_type}}"
-                          class="{{message_builder.class}}"/>
-     {% endfor %}
     </messageBuilders>
 
     <!-- ================================================= -->
     <!--             Transport Ins (Listeners)             -->
     <!-- ================================================= -->
 
-    {% if transport.passthru_http.listener.enable %}
-    <transportReceiver name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpListener">
-     {% for parameter_key,parameter_value in transport.passthru_http.listener.parameters.items() %}
-        <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
-    {% endfor %}
-    </transportReceiver>
-    {% endif %}
+    <transportReceiver name="http"
+                       class="org.wso2.carbon.core.transports.http.HttpTransportListener">
+        <!--
+           Uncomment the following if you are deploying this within an application server. You
+           need to specify the HTTP port of the application server
+        -->
+        <parameter name="port">9763</parameter>
 
-    {% if transport.passthru_https.listener.enable %}
-   <transportReceiver name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpMultiSSLListener">
-     {% for parameter_key,parameter_value in transport.passthru_https.listener.parameters.items() %}
-        <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
-    {% endfor %}
-            <parameter name="keystore" locked="false">
-            <KeyStore>
-                <Location>{{transport.passthru_https.listener.key_store.location}}</Location>
-                <Type>{{transport.passthru_https.listener.key_store.type}}</Type>
-                <Password>{{transport.passthru_https.listener.key_store.password}}</Password>
-                <KeyPassword>{{transport.passthru_https.listener.key_store.key_password}}</KeyPassword>
-            </KeyStore>
-        </parameter>
-        <parameter name="truststore" locked="false">
-            <TrustStore>
-                <Location>{{transport.passthru_https.listener.trust_store.location}}</Location>
-                <Type>{{transport.passthru_https.listener.trust_store.type}}</Type>
-                <Password>{{transport.passthru_https.listener.trust_store.password}}</Password>
-            </TrustStore>
-        </parameter>
-       <!-- ============================================== -->
-       <!-- Configuration for Listener Dynamic SSL Profile loading. -->
-       <!-- Configured for 10 mins. -->
-       <!-- ============================================== -->
-       <parameter name="dynamicSSLProfilesConfig">
-           <filePath>repository/resources/security/listenerprofiles.xml</filePath>
-           <fileReadInterval>{{transport.passthru_https.listener.ssl_profile_interval}}</fileReadInterval>
-       </parameter>
+        <!--
+       Uncomment the following to enable any proxy like Apache2 mod_proxy or any load balancer. The port on the proxy server like Apache is 80
+       in this case.
+        -->
+        <!--<parameter name="proxyPort">80</parameter>-->
     </transportReceiver>
-    {% endif %}
+
+    <transportReceiver name="https"
+                       class="org.wso2.carbon.core.transports.http.HttpsTransportListener">
+        <!--
+           Uncomment the following if you are deploying this within an application server. You
+           need to specify the HTTPS port of the application server
+        -->
+        <parameter name="port">9443</parameter>
+
+        <!--
+       Uncomment the following to enable any proxy like Apache2 mod_proxy or any load balancer. The port on a proxy server like Apache is 443
+       in this case.
+        -->
+        <!--<parameter name="proxyPort">443</parameter>-->
+    </transportReceiver>
 
     <transportReceiver name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportReceiver"/>
-
-    <!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)-->
-    {% if transport.jms.listener_enable is defined %}
-        {% if transport.jms.listener_enable and transport.jms.listener|length==0 %}
-    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener"/>
-        {% elif transport.jms.listener_enable %}
-    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener">
-            {% for listener in transport.jms.listener %}
-        <parameter name="{{listener.name}}" locked="false">
-                {% for name,value in listener.parameter.items() %}
-            <parameter name="{{name}}" locked="false">{{value}}</parameter>
-                {% endfor %}
-        </parameter>
-            {% endfor %}
-    </transportReceiver>
-        {% endif %}
-    {% elif transport.jms.listener|length>0 %}
-    <transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener">
-        {% for listener in transport.jms.listener %}
-        <parameter name="{{listener.name}}" locked="false">
-            {% for name,value in listener.parameter.items() %}
-            <parameter name="{{name}}" locked="false">{{value}}</parameter>
-            {% endfor %}
-        </parameter>
-        {% endfor %}
-    </transportReceiver>
-    {% endif %}
-
 
     <!-- ================================================= -->
     <!--             Transport Outs (Senders)              -->
     <!-- ================================================= -->
 
-    {% if transport.passthru_http.sender.enable %}
-    <transportSender name="http" class="org.apache.synapse.transport.passthru.PassThroughHttpSender">
-         {% for parameter_key,parameter_value in transport.passthru_http.sender.parameters.items() %}
-            <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
-        {% endfor %}
-    </transportSender>
-    {% endif %}
-
     <transportSender name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportSender"/>
 
-    {% if transport.passthru_https.sender.enable %}
-    <transportSender name="https" class="org.apache.synapse.transport.passthru.PassThroughHttpSSLSender">
-         {% for parameter_key,parameter_value in transport.passthru_https.sender.parameters.items() %}
-            <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
-        {% endfor %}
-        <parameter name="keystore" locked="false">
-            <KeyStore>
-                <Location>{{transport.passthru_https.sender.key_store.location}}</Location>
-                <Type>{{transport.passthru_https.sender.key_store.type}}</Type>
-                <Password>{{transport.passthru_https.sender.key_store.password}}</Password>
-                <KeyPassword>{{transport.passthru_https.sender.key_store.key_password}}</KeyPassword>
-            </KeyStore>
-        </parameter>
-        <parameter name="truststore" locked="false">
-            <TrustStore>
-                <Location>{{transport.passthru_https.sender.trust_store.location}}</Location>
-                <Type>{{transport.passthru_https.sender.trust_store.type}}</Type>
-                <Password>{{transport.passthru_https.sender.trust_store.password}}</Password>
-            </TrustStore>
-        </parameter>
-        <!-- ============================================== -->
-        <!-- Configuration for Dynamic SSL Profile loading. -->
-        <!-- Configured for 10 mins. -->
-        <!-- ============================================== -->
-        <parameter name="dynamicSSLProfilesConfig">
-            <filePath>{{transport.passthru_https.sender.ssl_profile.file_path}}</filePath>
-            <fileReadInterval>{{transport.passthru_https.sender.ssl_profile.interval}}</fileReadInterval>
-        </parameter>
+    <transportSender name="http"
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
+        <parameter name="PROTOCOL">HTTP/1.1</parameter>
+        <parameter name="Transfer-Encoding">chunked</parameter>
+        <!-- This parameter has been added to overcome problems encounted in SOAP action parameter -->
+        <parameter name="OmitSOAP12Action">true</parameter>
     </transportSender>
-    {% endif %}
-
-{% if transport.jms.sender_enable is defined %}
-    {% if transport.jms.sender_enable and transport.jms.sender|length==0 %}
-    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender"/>
-    {% elif transport.jms.sender_enable %}
-    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
-        {% for sender in transport.jms.sender %}
-        <parameter name="{{sender.name}}" locked="false">
-            {% for name,value in sender.parameter.items() %}
-            <parameter name="{{name}}" locked="false">{{value}}</parameter>
-            {% endfor %}
-        </parameter>
-        {% endfor %}
+    <transportSender name="https"
+                     class="org.apache.axis2.transport.http.CommonsHTTPTransportSender">
+        <parameter name="PROTOCOL">HTTP/1.1</parameter>
+        <parameter name="Transfer-Encoding">chunked</parameter>
+        <!-- This parameter has been added to overcome problems encounted in SOAP action parameter -->
+        <parameter name="OmitSOAP12Action">true</parameter>
     </transportSender>
-    {% endif %}
-{% elif transport.jms.sender|length>0 %}
-    <transportSender name="jms" class="org.apache.axis2.transport.jms.JMSSender">
-        {% for sender in transport.jms.sender %}
-        <parameter name="{{sender.name}}" locked="false">
-            {% for name,value in sender.parameter.items() %}
-            <parameter name="{{name}}" locked="false">{{value}}</parameter>
-            {% endfor %}
-        </parameter>
-        {% endfor %}
-    </transportSender>
-{% endif %}
-
-{% if transport.ws.sender.enable %}
-    <transportSender name="ws" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
-             {% for name,value in transport.ws.sender.parameters.items() %}
-                     <parameter name="{{name}}" locked="false">{{value}}</parameter>
-              {% endfor %}
-    </transportSender>
-{%endif%}
-{%if transport.wss.sender.enable %}
-    <transportSender name="wss" class="org.wso2.carbon.websocket.transport.WebsocketTransportSender">
-  {% for name,value in transport.wss.sender.parameters.items() %}
-        <parameter name="{{name}}" locked="false">{{value}}</parameter>
-   {% endfor %}
-        <parameter name="ws.trust.store" locked="false">
-            <ws.trust.store.location>{{transport.wss.sender.trust_store.location}}</ws.trust.store.location>
-            <ws.trust.store.Password>{{transport.wss.sender.trust_store.password}}</ws.trust.store.Password>
-        </parameter>
-    </transportSender>
-{%endif%}
 
     <!-- ================================================= -->
     <!--             Global Engaged Modules                -->
@@ -385,10 +252,6 @@
 
     <!-- Comment this out to disable Addressing -->
     <module ref="addressing"/>
-
-    {% for module in server.globally_engaged_modules %}
-    <module ref="{{module}}"/>
-    {% endfor %}
 
     <!--
     Uncomment out the following entry if SOAP (text/xml and application/soap+xml) messages
@@ -552,10 +415,7 @@
 
            NOTE: This should be the very first phase in this flow
         -->
-	<phase name="MsgInObservation">
-		<handler name="TraceMessageBuilderDispatchHandler"
-                 	 class="org.apache.synapse.transport.passthru.util.TraceMessageBuilderDispatchHandler"/>
-	</phase>
+	<phase name="MsgInObservation"/>
 	<phase name="Validation"/>
         <phase name="Transport">
             <!--TEMPORALY-->
@@ -567,8 +427,6 @@
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher">
                 <order phase="Transport"/>
             </handler>
-	    <handler name="CarbonContextConfigurator"
-		class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
             <handler name="SOAPActionBasedDispatcher"
                      class="org.apache.axis2.dispatchers.SOAPActionBasedDispatcher">
                 <order phase="Transport"/>
@@ -577,11 +435,6 @@
                      class="org.wso2.carbon.core.transports.smtp.SMTPFaultHandler">
                 <order phase="Transport"/>
             </handler-->
-            <!-- TEMPORALY-->
-            <!--handler name="CacheMessageBuilderDispatchandler"
-                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/-->
-            <handler name="CarbonContentConfigurator"
-                     class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
         </phase>
         <phase name="Addressing">
             <handler name="AddressingBasedDispatcher"
@@ -606,10 +459,6 @@
                      class="org.apache.axis2.dispatchers.HTTPLocationBasedDispatcher"/>
             <handler name="MultitenantDispatcher"
                      class="org.wso2.carbon.tenant.dispatcher.MultitenantDispatcher"/>
-            <handler name="SynapseDispatcher"
-                     class="org.apache.synapse.core.axis2.SynapseDispatcher"/>
-            <handler name="SynapseMustUnderstandHandler"
-                     class="org.apache.synapse.core.axis2.SynapseMustUnderstandHandler"/>
         </phase>
         <!--  System pre defined phases       -->
         <phase name="RMPhase"/>
@@ -631,11 +480,8 @@
         <!--system predefined phase-->
         <!--these phase will run irrespective of the service-->
         <phase name="PolicyDetermination"/>
-		<!--security handler for pass through -->
-		<phase name="PTSecurityOutPhase">
-			<handler name="RelaySecuirtyMessageBuilderDispatchandler"
-                     class="org.apache.synapse.transport.passthru.util.RelaySecuirtyMessageBuilderDispatchandler"/>
-        </phase>
+	<!--security handler for pass through -->
+	<phase name="PTSecurityOutPhase" />
         <phase name="MessageOut"/>
         <phase name="Security"/>
 
@@ -669,8 +515,6 @@
                      class="org.apache.axis2.dispatchers.SOAPActionBasedDispatcher">
                 <order phase="Transport"/>
             </handler>
-	    <handler name="CarbonContentConfigurator"
-            class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
            </phase>
 
            <phase name="Addressing">

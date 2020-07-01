@@ -232,7 +232,6 @@
   "apim.throttling.enable_data_publishing": false,
   "apim.throttling.enable_decision_connection": false,
   "apim.throttling.enable_blacklist_condition": false,
-  "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer",
   "transport.https.sslHostConfig.properties.certificateVerification": "want",
   "event.default_listener.mutual_tls_authenticator": {
     "priority": "",
