@@ -629,6 +629,16 @@
                                 <featureArtifactDef>
                                     org.wso2.identity.apps:org.wso2.identity.apps.recovery.portal.server.feature:${identity.apps.version}
                                 </featureArtifactDef>
+                                <!-- WSO2 IS key manager feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.wso2is:wso2is.key.manager.feature:${wso2is.km.version}
+                                </featureArtifactDef>
+
+                                <!-- Recovery portal feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.okta:okta.key.manager.feature:${okta.keymanager.feature.version}
+                                </featureArtifactDef>
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1369,6 +1379,14 @@
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>okta.key.manager.feature.group</id>
+                                    <version>${okta.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1769,6 +1787,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.email.mgt.feature.group</id>
                                     <version>${carbon.identity.event.handler.notification.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>okta.key.manager.feature.group</id>
+                                    <version>${okta.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2256,6 +2282,14 @@
                                     <id>org.wso2.identity.apps.recovery.portal.server.feature.group</id>
                                     <version>${identity.apps.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>okta.key.manager.feature.group</id>
+                                    <version>${okta.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2703,6 +2737,14 @@
                                 <feature>
                                     <id>org.wso2.identity.apps.recovery.portal.server.feature.group</id>
                                     <version>${identity.apps.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>okta.key.manager.feature.group</id>
+                                    <version>${okta.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>

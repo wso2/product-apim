@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                   "url": "api/am/admin/v0.16/throttling/policies/subscription",
+                   "url": "api/am/admin/v0.17/throttling/policies/subscription",
                    "query-parameters": "",
                    "request-headers": {
                        "Authorization": "Bearer"
@@ -245,7 +245,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/admin/v0.16/throttling/policies/subscription/{policyId}",
+                    "url": "api/am/admin/v0.17/throttling/policies/subscription/{policyId}",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
