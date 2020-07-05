@@ -134,7 +134,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
-#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
