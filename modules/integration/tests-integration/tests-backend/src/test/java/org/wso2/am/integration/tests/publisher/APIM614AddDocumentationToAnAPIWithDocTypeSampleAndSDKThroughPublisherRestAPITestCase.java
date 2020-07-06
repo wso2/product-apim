@@ -116,7 +116,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.addDocument(apiId, documentDTO);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while add documentation to API");
+                "Error while adding file-based documentation to API");
         fileTypeDocumentId = documentationResponse.getData();
     }
 
@@ -127,8 +127,8 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
 
         String fileNameAPIM614 = "APIM614.txt";
         String docName = "APIM614PublisherTestHowTo-File-summary";
-        String filePathAPIM614 =TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                File.separator + "AM" + File.separator + "lifecycletest" +File.separator + fileNameAPIM614;
+        String filePathAPIM614 = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                File.separator + "AM" + File.separator + "lifecycletest" + File.separator + fileNameAPIM614;
         File file = new File(filePathAPIM614);
 
         //Update Type and update document
