@@ -15,11 +15,14 @@
  */
 package org.wso2.am.scenario.tests.rest.api.creation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -31,10 +34,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.scenario.test.common.ScenarioDataProvider;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.am.scenario.test.common.ScenarioTestUtils;
@@ -65,6 +69,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     private String description;
     private String APICreator = "APICreator";
     private String pw = "wso2123$";
+    private String link;
 
     private String apiId;
     private String apiProviderName;
@@ -86,35 +91,22 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
     public void setEnvironment() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                    ADMIN_USERNAME, ADMIN_PW);
+                                                  ADMIN_USERNAME, ADMIN_PW);
             createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
         }
 
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // create user in wso2.com tenant
+//           create user in wso2.com tenant
             addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
-                //Add and activate wso2.com tenant
+//           Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
-                        TENANT_ADMIN_PW);
+                                             TENANT_ADMIN_PW);
             }
         }
-
-        setup();
         super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new org.wso2.am.integration.test.utils.clients.APIPublisherRestClient(publisherURLHttp);
-
-        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
-                apiProductionEndpointPostfixUrl;
-        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
-
     }
 
     @Test(description = "1.1.2.1")
@@ -330,111 +322,118 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     }
 
-    // TODO: 23/05/2020 should be tested once the swagger from the url is set up properly
-//    @Test(description = "1.1.2.5", dataProvider = "OASDocsWithJsonURL", dataProviderClass = ScenarioDataProvider.class)
-//    public void testCreateApiUsingValidOASDocumentFromJsonURL(String url) throws Exception {
-//
-//        swaggerUrl = url;
-//
-//        APIDTO apiDTO = new APIDTO();
-//        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
-//        List<String> tagList = new ArrayList<>();
-//        String swaggerVersion;
-//
-//        String payload = ScenarioTestUtils.readFromURL(swaggerUrl);
-//        JSONObject json = new JSONObject(payload);
-//        if (json.get("swagger") != null) {
-//            swaggerVersion = OAS_V2;
-//            apiContext = json.get("basePath").toString();
-//        } else {
-//            swaggerVersion = OAS_V3;
-//            apiContext = json.get("x-wso2-basePath").toString();
-//        }
-//        apiName = json.getJSONObject("info").get("title").toString();
-//        apiVersion = json.getJSONObject("info").get("version").toString();
-//
-//        apiDTO.setName(apiName);
-//        apiDTO.setContext(apiContext);
-//        apiDTO.setVersion(apiVersion);
-//
-//        APIDTO responseAPIDTO = restAPIPublisher.addAPI(apiDTO, swaggerVersion);
-//        apiId = responseAPIDTO.getId();
-//        apiIdList.add(apiId);
-//        Assert.assertEquals(responseAPIDTO.getLifeCycleStatus(), "CREATED");
-//
-//        String swaggerResponse = restAPIPublisher.updateSwagger(apiId, payload);
-//
-//        HttpResponse getResponse = restAPIPublisher.getAPI(apiId);
-//        JSONObject updatedResponse = new JSONObject(getResponse.getData());
-//        JSONArray resources = updatedResponse.getJSONArray("operations");
-//        Assert.assertTrue(resources != null, "API resources not imported correctly");
-//
-//        Assert.assertEquals(updatedResponse.get("name"), apiName, "API name was not imported correctly");
-//        if (userMode.toString().equals("TENANT_USER")) {
-//            Assert.assertEquals(updatedResponse.get("context"), "/t/wso2.com" + apiContext, "API context was not imported correctly");
-//        } else {
-//            Assert.assertEquals(updatedResponse.get("context"), apiContext, "API context was not imported correctly");
-//        }
-//        Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
-//
-//        HttpResponse response = restAPIPublisher.deleteAPI(apiId);
-//        verifyResponse(response);
-//
-//    }
+    @Test(description = "1.1.2.5")
+    public void testCreateApiUsingValidOASDocumentFromJsonURL() throws Exception {
+        String swaggerFileName = "OAS2Document.json";
 
-    // TODO: 23/05/2020 should be tested once the swagger from the url is set up properly
-//    @Test(description = "1.1.2.6", dataProvider = "OASDocsWithYamlURL", dataProviderClass = ScenarioDataProvider.class)
-//    public void testCreateApiUsingValidOASDocumentFromYamlURL(String url) throws Exception {
-//
-//        swaggerUrl = url;
-//
-//        APIDTO apiDTO = new APIDTO();
-//        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
-//        List<String> tagList = new ArrayList<>();
-//        String swaggerVersion;
-//
-//        String payload = ScenarioTestUtils.readFromURL(swaggerUrl);
-//        Yaml yaml = new Yaml();
-//        Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
-//        JSONObject jsonPayload = new JSONObject(map);
-//        if (jsonPayload.get("swagger") != null) {
-//            swaggerVersion = OAS_V2;
-//            apiContext = jsonPayload.get("basePath").toString();
-//        } else {
-//            swaggerVersion = OAS_V3;
-//            apiContext = jsonPayload.get("x-wso2-basePath").toString();
-//        }
-//        apiName = jsonPayload.getJSONObject("info").get("title").toString();
-//        apiVersion = jsonPayload.getJSONObject("info").get("version").toString();
-//
-//        apiDTO.setName(apiName);
-//        apiDTO.setContext(apiContext);
-//        apiDTO.setVersion(apiVersion);
-//
-//        APIDTO responseAPIDTO = restAPIPublisher.addAPI(apiDTO, swaggerVersion);
-//        apiId = responseAPIDTO.getId();
-//        apiIdList.add(apiId);
-//        Assert.assertEquals(responseAPIDTO.getLifeCycleStatus(), "CREATED");
-//
-//        String swaggerResponse = restAPIPublisher.updateSwagger(apiId, payload);
-//
-//        HttpResponse getResponse = restAPIPublisher.getAPI(apiId);
-//        JSONObject updatedResponse = new JSONObject(getResponse.getData());
-//        JSONArray resources = updatedResponse.getJSONArray("operations");
-//        Assert.assertTrue(resources != null, "API resources not imported correctly");
-//
-//        Assert.assertEquals(updatedResponse.get("name"), apiName, "API name was not imported correctly");
-//        if (userMode.toString().equals("TENANT_USER")) {
-//            Assert.assertEquals(updatedResponse.get("context"), "/t/wso2.com" + apiContext, "API context was not imported correctly");
-//        } else {
-//            Assert.assertEquals(updatedResponse.get("context"), apiContext, "API context was not imported correctly");
-//        }
-//        Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
-//
-//        HttpResponse response = restAPIPublisher.deleteAPI(apiId);
-//        verifyResponse(response);
-//
-//    }
+        uploadFile(swaggerFileName);
+        APIDTO apiDTO = new APIDTO();
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        List<String> tagList = new ArrayList<>();
+        String swaggerVersion;
+
+        String payload = ScenarioTestUtils.readFromURL(link);
+
+        JSONObject json = new JSONObject(payload);
+        if (json.get("swagger") != null) {
+            swaggerVersion = OAS_V2;
+            apiContext = json.get("basePath").toString();
+        } else {
+            swaggerVersion = OAS_V3;
+            apiContext = json.get("x-wso2-basePath").toString();
+        }
+        apiName = json.getJSONObject("info").get("title").toString();
+        apiVersion = json.getJSONObject("info").get("version").toString();
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            apiName=apiName+TestUserMode.TENANT_USER;
+            apiContext=apiContext+TestUserMode.TENANT_USER;}
+
+        apiDTO.setName(apiName);
+        apiDTO.setContext(apiContext);
+        apiDTO.setVersion(apiVersion);
+
+        APIDTO responseAPIDTO = restAPIPublisher.addAPI(apiDTO, swaggerVersion);
+        apiId = responseAPIDTO.getId();
+        apiIdList.add(apiId);
+        Assert.assertEquals(responseAPIDTO.getLifeCycleStatus(), "CREATED");
+
+        String swaggerResponse = restAPIPublisher.updateSwagger(apiId, payload);
+
+        HttpResponse getResponse = restAPIPublisher.getAPI(apiId);
+        JSONObject updatedResponse = new JSONObject(getResponse.getData());
+        JSONArray resources = updatedResponse.getJSONArray("operations");
+        Assert.assertTrue(resources != null, "API resources not imported correctly");
+
+        Assert.assertEquals(updatedResponse.get("name"), apiName, "API name was not imported correctly");
+        if (userMode.toString().equals("TENANT_USER")) {
+            Assert.assertEquals(updatedResponse.get("context"), "/t/wso2.com" + apiContext, "API context was not imported correctly");
+        } else {
+            Assert.assertEquals(updatedResponse.get("context"), apiContext, "API context was not imported correctly");
+        }
+        Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
+
+        HttpResponse response = restAPIPublisher.deleteAPI(apiId);
+        verifyResponse(response);
+
+    }
+
+    @Test(description = "1.1.2.6")
+    public void testCreateApiUsingValidOASDocumentFromYamlURL() throws Exception {
+        String swaggerFileName = "OAS2Document.yaml";
+
+        uploadFile(swaggerFileName);
+        APIDTO apiDTO = new APIDTO();
+        List<APIOperationsDTO> apiOperationsDTOs = new ArrayList<>();
+        List<String> tagList = new ArrayList<>();
+        String swaggerVersion;
+
+        String payload = ScenarioTestUtils.readFromURL(link);
+        Yaml yaml = new Yaml();
+            Map<String, Object> map = (Map<String, Object>) yaml.load(payload);
+        JSONObject jsonPayload = new JSONObject(map);
+        if (jsonPayload.get("swagger") != null) {
+            swaggerVersion = OAS_V2;
+            apiContext = jsonPayload.get("basePath").toString();
+        } else {
+            swaggerVersion = OAS_V3;
+            apiContext = jsonPayload.get("x-wso2-basePath").toString();
+        }
+        apiName = jsonPayload.getJSONObject("info").get("title").toString();
+        apiVersion = jsonPayload.getJSONObject("info").get("version").toString();
+
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            apiName=apiName+"tenant_API";
+            apiContext=apiContext+"tenant_API";}
+
+        apiDTO.setName(apiName);
+        apiDTO.setContext(apiContext);
+        apiDTO.setVersion(apiVersion);
+
+        APIDTO responseAPIDTO = restAPIPublisher.addAPI(apiDTO, swaggerVersion);
+        apiId = responseAPIDTO.getId();
+        apiIdList.add(apiId);
+        Assert.assertEquals(responseAPIDTO.getLifeCycleStatus(), "CREATED");
+
+        String swaggerResponse = restAPIPublisher.updateSwagger(apiId, payload);
+
+        HttpResponse getResponse = restAPIPublisher.getAPI(apiId);
+        JSONObject updatedResponse = new JSONObject(getResponse.getData());
+        JSONArray resources = updatedResponse.getJSONArray("operations");
+        Assert.assertTrue(resources != null, "API resources not imported correctly");
+
+        Assert.assertEquals(updatedResponse.get("name"), apiName, "API name was not imported correctly");
+        if (userMode.toString().equals("TENANT_USER")) {
+            Assert.assertEquals(updatedResponse.get("context"), "/t/wso2.com" + apiContext, "API context was not imported correctly");
+        } else {
+            Assert.assertEquals(updatedResponse.get("context"), apiContext, "API context was not imported correctly");
+        }
+        Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
+
+        HttpResponse response = restAPIPublisher.deleteAPI(apiId);
+        verifyResponse(response);
+
+    }
 
     private void assertGETResource(JSONObject resource) throws JSONException {
         String path = resource.get("target").toString();
@@ -458,11 +457,45 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(authType, "Application & Application User", "API resource's authType not imported correctly");
     }
 
+    private String uploadFile(String uploadfile){
+        String file = resourceLocation+ File.separator +"swaggerFiles/"+uploadfile;
+        String[] command = {"curl", "-k", "-v", "-F","file=@"+file ,"https://file.io"};
+
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.redirectErrorStream(true);
+
+        String curlResult = "";
+        String line = "";
+
+        try {
+            Process process = builder.start();
+            BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            while (true) {
+                line = r.readLine();
+                if (line == null) {
+                    break;
+                }
+                curlResult = curlResult + line;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String  filename=StringUtils.substringBetween(curlResult, "link\":\"https://file.io/", "\",\"expiry\"");
+        link = "https://file.io/"+filename;
+        return link ;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 //        clean the data
-        for (String apiId : apiIdList) {
-            restAPIPublisher.deleteAPI(apiId);
+        try {
+            for (String apiId : apiIdList) {
+                restAPIPublisher.deleteAPI(apiId);
+            }
+        } catch (ApiException e) {
+            e.printStackTrace();
         }
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
