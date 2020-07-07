@@ -32,7 +32,7 @@ import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -112,6 +112,7 @@ public class ScenarioTestBase {
     protected org.wso2.am.integration.test.utils.clients.APIStoreRestClient apiStore;
     protected RestAPIPublisherImpl restAPIPublisher;
     protected RestAPIStoreImpl restAPIStore;
+    protected RestAPIAdminImpl restAPIAdmin;
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected User user;
@@ -191,7 +192,7 @@ public class ScenarioTestBase {
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
 
-            String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
+            String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.17/register";
 
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
@@ -206,6 +207,14 @@ public class ScenarioTestBase {
                                                                         APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
+            //DCR call for dev portal app
+            DCRParamRequest adminPortalParamRequest = new DCRParamRequest(RestAPIAdminImpl.appName, RestAPIAdminImpl.callBackURL,
+                    RestAPIAdminImpl.tokenScope, RestAPIAdminImpl.appOwner, RestAPIAdminImpl.grantType, dcrURL,
+                    RestAPIAdminImpl.username, RestAPIAdminImpl.password,
+                    APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+
+            ClientAuthenticator.makeDCRRequest(adminPortalParamRequest);
+
             restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
@@ -215,6 +224,12 @@ public class ScenarioTestBase {
                     storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                     storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
                     storeContext.getContextTenant().getDomain(), baseUrl);
+
+            restAPIAdmin = new RestAPIAdminImpl(
+                    storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
+                    storeContext.getContextTenant().getTenantAdmin().getPassword(),
+                    storeContext.getContextTenant().getDomain(), baseUrl);
+
             log.info("Logging URL's");
             log.info(baseUrl + "baseUrl");
             log.info(storeURLHttps + "storeURLHttps");

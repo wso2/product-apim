@@ -112,3 +112,19 @@ java.net.ConnectException: Connection refused (Connection refused)
 2020-06-16 14:18:35,060 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
 2020-06-16 14:18:35,060 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
 2020-06-16 14:18:51,744 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 16642 millis
+2020-06-16 14:35:14,150 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-06-16 14:35:14,155 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2020-06-16 14:35:14,156 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2020-06-16 14:35:14,156 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2020-06-16 14:35:14,229 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-06-16 14:35:14,229 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2020-06-16 14:35:14,229 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2020-06-16 14:35:14,229 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2020-06-16 14:35:14,229 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - /Users/prasanna/temp/product-apim/product-scenarios/scenarios-common/src/test/resources/
+2020-06-16 14:35:14,229 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - Start deploying Web Apps
+2020-06-16 14:35:14,412 WARN  [org.apache.axiom.util.stax.dialect.StAXDialectDetector] - Unable to determine dialect of the StAX implementation at jar:file:/Users/prasanna/Software/maven/repo_3.3.1/org/apache/ws/commons/axiom/wso2/axiom/1.2.11-wso2v16/axiom-1.2.11-wso2v16.jar!/
+2020-06-16 14:35:16,436 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2020-06-16 14:35:34,586 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - WEB_APP :APIStatusMonitor found
+2020-06-16 14:35:34,647 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2020-06-16 14:35:34,647 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
+2020-06-16 14:35:52,017 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 17320 millis
