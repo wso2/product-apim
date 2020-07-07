@@ -99,6 +99,9 @@ public class RestAPIStoreImpl {
 
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1.0");
+        apiStoreClient.setReadTimeout(600000);
+        apiStoreClient.setConnectTimeout(600000);
+        apiStoreClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);

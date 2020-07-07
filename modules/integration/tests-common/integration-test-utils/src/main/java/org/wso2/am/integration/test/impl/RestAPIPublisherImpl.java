@@ -112,6 +112,9 @@ public class RestAPIPublisherImpl {
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1.0");
+        apiPublisherClient.setReadTimeout(600000);
+        apiPublisherClient.setConnectTimeout(600000);
+        apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
