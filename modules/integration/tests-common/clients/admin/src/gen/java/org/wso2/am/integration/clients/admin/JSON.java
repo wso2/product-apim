@@ -51,21 +51,6 @@ public class JSON {
 
     public static GsonBuilder createGson() {
         GsonFireBuilder fireBuilder = new GsonFireBuilder()
-          .registerTypeSelector(ThrottlePolicyDTO.class, new TypeSelector() {
-            @Override
-            public Class getClassForElement(JsonElement readElement) {
-                Map classByDiscriminatorValue = new HashMap();
-                classByDiscriminatorValue.put("AdvancedThrottlePolicy".toUpperCase(), AdvancedThrottlePolicyDTO.class);
-                classByDiscriminatorValue.put("AdvancedThrottlePolicyInfo".toUpperCase(), AdvancedThrottlePolicyInfoDTO.class);
-                classByDiscriminatorValue.put("ApplicationThrottlePolicy".toUpperCase(), ApplicationThrottlePolicyDTO.class);
-                classByDiscriminatorValue.put("CustomRule".toUpperCase(), CustomRuleDTO.class);
-                classByDiscriminatorValue.put("SubscriptionThrottlePolicy".toUpperCase(), SubscriptionThrottlePolicyDTO.class);
-                classByDiscriminatorValue.put("ThrottlePolicyDTO".toUpperCase(), ThrottlePolicyDTO.class);
-                return getClassByDiscriminator(
-                                           classByDiscriminatorValue,
-                                           getDiscriminatorValue(readElement, "policyName"));
-            }
-          })
         ;
         GsonBuilder builder = fireBuilder.createGsonBuilder();
         return builder;
