@@ -28,7 +28,6 @@ import java.io.IOException;
  * ThrottlePolicyDTO
  */
 
-
 public class ThrottlePolicyDTO {
   @SerializedName("policyId")
   private String policyId = null;
@@ -45,9 +44,6 @@ public class ThrottlePolicyDTO {
   @SerializedName("isDeployed")
   private Boolean isDeployed = false;
 
-  public ThrottlePolicyDTO() {
-    this.policyName = this.getClass().getSimpleName();
-  }
   public ThrottlePolicyDTO policyId(String policyId) {
     this.policyId = policyId;
     return this;

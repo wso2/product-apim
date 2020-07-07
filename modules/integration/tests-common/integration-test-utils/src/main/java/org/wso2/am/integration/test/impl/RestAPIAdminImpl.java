@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.admin.ApiClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
@@ -91,6 +90,9 @@ public class RestAPIAdminImpl {
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiAdminClient.setBasePath(adminURl + "api/am/admin/v1");
         apiAdminClient.setDebugging(true);
+        apiAdminClient.setReadTimeout(600000);
+        apiAdminClient.setConnectTimeout(600000);
+        apiAdminClient.setWriteTimeout(600000);
         keyManagerCollectionApi.setApiClient(apiAdminClient);
         keyManagerIndividualApi.setApiClient(apiAdminClient);
         settingsApi.setApiClient(apiAdminClient);
@@ -135,16 +137,29 @@ public class RestAPIAdminImpl {
      * @param subscriptionThrottlePolicyDTO subscription throttling policy DTO.
      * @param contentType                   Content type.
      * @return returns the created subscription policy ID.
-     * @throws ApiException Throws if an error occured while creating a new subscription policy.
+     * @throws ApiException Throws if an error occurred while creating a new subscription policy.
      */
     public HttpResponse addSubscriptionPolicy(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO, String contentType) throws ApiException {
         SubscriptionThrottlePolicyDTO subscriptionPolicyDTOResponse = subscriptionPolicyCollectionApi
                 .throttlingPoliciesSubscriptionPost(subscriptionThrottlePolicyDTO, contentType);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(subscriptionPolicyDTOResponse.getPolicyId())) {
-            response = new HttpResponse(subscriptionPolicyDTOResponse.getPolicyId(), 200);
+            response = new HttpResponse(subscriptionPolicyDTOResponse.getPolicyId(), 201);
         }
         return response;
 
+    }
+
+    /**
+     * This method is used to delete a subscription throttling policy.
+     *
+     * @param policyId subscription throttling policy Id.
+     * @return returns the created subscription policy ID.
+     * @throws ApiException Throws if an error occurred while creating a new subscription policy.
+     */
+    public HttpResponse deleteSubscriptionPolicy(String policyId) throws ApiException {
+        subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdDelete(policyId, null, null);
+        return new HttpResponse("Policy deleted successfully", 200);
     }
 }

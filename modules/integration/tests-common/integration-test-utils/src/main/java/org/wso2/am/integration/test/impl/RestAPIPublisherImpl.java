@@ -133,6 +133,9 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v1");
         apiPublisherClient.setDebugging(true);
+        apiPublisherClient.setReadTimeout(600000);
+        apiPublisherClient.setConnectTimeout(600000);
+        apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
 	    apiProductsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
