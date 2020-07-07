@@ -4018,7 +4018,6 @@ definitions:
   # The Throttling Policy resource
   #-----------------------------------------------------
   ThrottlePolicy :
-    discriminator: policyName
     title: Generic Throttling Policy
     required:
       - policyName
