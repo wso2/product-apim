@@ -35,7 +35,22 @@ import org.wso2.am.integration.clients.admin.api.dto.ThrottlePolicyDTO;
  * SubscriptionThrottlePolicyDTO
  */
 
-public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
+public class SubscriptionThrottlePolicyDTO {
+  @SerializedName("policyId")
+  private String policyId = null;
+
+  @SerializedName("policyName")
+  private String policyName = null;
+
+  @SerializedName("displayName")
+  private String displayName = null;
+
+  @SerializedName("description")
+  private String description = null;
+
+  @SerializedName("isDeployed")
+  private Boolean isDeployed = false;
+
   @SerializedName("graphQLMaxComplexity")
   private Integer graphQLMaxComplexity = null;
 
@@ -62,6 +77,96 @@ public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
 
   @SerializedName("billingPlan")
   private String billingPlan = null;
+
+  public SubscriptionThrottlePolicyDTO policyId(String policyId) {
+    this.policyId = policyId;
+    return this;
+  }
+
+   /**
+   * Id of policy
+   * @return policyId
+  **/
+  @ApiModelProperty(example = "0c6439fd-9b16-3c2e-be6e-1086e0b9aa93", value = "Id of policy")
+  public String getPolicyId() {
+    return policyId;
+  }
+
+  public void setPolicyId(String policyId) {
+    this.policyId = policyId;
+  }
+
+  public SubscriptionThrottlePolicyDTO policyName(String policyName) {
+    this.policyName = policyName;
+    return this;
+  }
+
+   /**
+   * Name of policy
+   * @return policyName
+  **/
+  @ApiModelProperty(example = "Policy1", required = true, value = "Name of policy")
+  public String getPolicyName() {
+    return policyName;
+  }
+
+  public void setPolicyName(String policyName) {
+    this.policyName = policyName;
+  }
+
+  public SubscriptionThrottlePolicyDTO displayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+   /**
+   * Display name of the policy
+   * @return displayName
+  **/
+  @ApiModelProperty(value = "Display name of the policy")
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public SubscriptionThrottlePolicyDTO description(String description) {
+    this.description = description;
+    return this;
+  }
+
+   /**
+   * Description of the policy
+   * @return description
+  **/
+  @ApiModelProperty(value = "Description of the policy")
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public SubscriptionThrottlePolicyDTO isDeployed(Boolean isDeployed) {
+    this.isDeployed = isDeployed;
+    return this;
+  }
+
+   /**
+   * Indicates whether the policy is deployed successfully or not.
+   * @return isDeployed
+  **/
+  @ApiModelProperty(value = "Indicates whether the policy is deployed successfully or not.")
+  public Boolean isIsDeployed() {
+    return isDeployed;
+  }
+
+  public void setIsDeployed(Boolean isDeployed) {
+    this.isDeployed = isDeployed;
+  }
 
   public SubscriptionThrottlePolicyDTO graphQLMaxComplexity(Integer graphQLMaxComplexity) {
     this.graphQLMaxComplexity = graphQLMaxComplexity;
@@ -243,7 +348,12 @@ public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
       return false;
     }
     SubscriptionThrottlePolicyDTO subscriptionThrottlePolicy = (SubscriptionThrottlePolicyDTO) o;
-    return Objects.equals(this.graphQLMaxComplexity, subscriptionThrottlePolicy.graphQLMaxComplexity) &&
+    return Objects.equals(this.policyId, subscriptionThrottlePolicy.policyId) &&
+        Objects.equals(this.policyName, subscriptionThrottlePolicy.policyName) &&
+        Objects.equals(this.displayName, subscriptionThrottlePolicy.displayName) &&
+        Objects.equals(this.description, subscriptionThrottlePolicy.description) &&
+        Objects.equals(this.isDeployed, subscriptionThrottlePolicy.isDeployed) &&
+        Objects.equals(this.graphQLMaxComplexity, subscriptionThrottlePolicy.graphQLMaxComplexity) &&
         Objects.equals(this.graphQLMaxDepth, subscriptionThrottlePolicy.graphQLMaxDepth) &&
         Objects.equals(this.defaultLimit, subscriptionThrottlePolicy.defaultLimit) &&
         Objects.equals(this.monetization, subscriptionThrottlePolicy.monetization) &&
@@ -251,13 +361,12 @@ public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
         Objects.equals(this.rateLimitTimeUnit, subscriptionThrottlePolicy.rateLimitTimeUnit) &&
         Objects.equals(this.customAttributes, subscriptionThrottlePolicy.customAttributes) &&
         Objects.equals(this.stopOnQuotaReach, subscriptionThrottlePolicy.stopOnQuotaReach) &&
-        Objects.equals(this.billingPlan, subscriptionThrottlePolicy.billingPlan) &&
-        super.equals(o);
+        Objects.equals(this.billingPlan, subscriptionThrottlePolicy.billingPlan);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(graphQLMaxComplexity, graphQLMaxDepth, defaultLimit, monetization, rateLimitCount, rateLimitTimeUnit, customAttributes, stopOnQuotaReach, billingPlan, super.hashCode());
+    return Objects.hash(policyId, policyName, displayName, description, isDeployed, graphQLMaxComplexity, graphQLMaxDepth, defaultLimit, monetization, rateLimitCount, rateLimitTimeUnit, customAttributes, stopOnQuotaReach, billingPlan);
   }
 
 
@@ -265,7 +374,12 @@ public class SubscriptionThrottlePolicyDTO extends ThrottlePolicyDTO {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SubscriptionThrottlePolicyDTO {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    
+    sb.append("    policyId: ").append(toIndentedString(policyId)).append("\n");
+    sb.append("    policyName: ").append(toIndentedString(policyName)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    isDeployed: ").append(toIndentedString(isDeployed)).append("\n");
     sb.append("    graphQLMaxComplexity: ").append(toIndentedString(graphQLMaxComplexity)).append("\n");
     sb.append("    graphQLMaxDepth: ").append(toIndentedString(graphQLMaxDepth)).append("\n");
     sb.append("    defaultLimit: ").append(toIndentedString(defaultLimit)).append("\n");
