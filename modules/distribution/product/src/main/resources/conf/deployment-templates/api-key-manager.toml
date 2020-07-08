@@ -83,3 +83,14 @@ auth_urls = ["ssl://tm1.local:9711"]
 
 [oauth.oidc.id_token]
 issuer = "https://apim.am.wso2.com/oauth2/token"
+
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${https.nio.port}/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
