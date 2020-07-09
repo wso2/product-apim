@@ -158,6 +158,7 @@
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
         </classes>
     </test>
 
@@ -184,7 +185,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
+            <class name="org.wso2.am.integration.tAPIEndpointTypeUpdateTestCaseests.rest.DocAPIParameterTamperingTest"/>
         </classes>
     </test>
 
