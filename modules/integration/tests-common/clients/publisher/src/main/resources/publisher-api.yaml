@@ -6921,6 +6921,42 @@ paths:
             Not Found.
             Requested scope name does not exist.
 
+  /scopes/{scopeId}/usage:
+
+    #-------------------------------------------------------------
+    # Retrieve the usages of a Shared Scope
+    #-------------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      summary: Get usages of a Shared Scope by Scope Id
+      description: |
+        This operation can be used to retrieve usages of a Shared Scope by a given scope Id.
+      operationId: getSharedScopeUsages
+      tags:
+        - Scopes
+      parameters:
+        - $ref: '#/parameters/scopeId'
+      responses:
+        200:
+          description: |
+            OK.
+            Usages of the shared scope is returned.
+          schema:
+            $ref: '#/definitions/SharedScopeUsage'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        404:
+          description: |
+            Not Found.
+            Usages for the shared scope does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
 ######################################################
 # Parameters - required by some of the APIs above
 ######################################################
@@ -8824,6 +8860,76 @@ definitions:
         description: |
           usage count of Scope
         example: 3
+
+  #-----------------------------------------------------
+  # The Shared Scope Usage resource
+  #-----------------------------------------------------
+  SharedScopeUsage:
+    title: SharedScopeUsage
+    required:
+      - id
+      - name
+    properties:
+      id:
+        type: string
+        description: |
+          UUID of the Scope. Valid only for shared scopes.
+        example: 01234567-0123-0123-0123-012345678901
+      name:
+        type: string
+        description: |
+          name of Scope
+        example: apim:api_view
+      usedApiList:
+        description: |
+          API list which have used the shared scope
+        type: array
+        items:
+          $ref: '#/definitions/SharedScopeUsedAPIInfo'
+
+  #-----------------------------------------------------
+  # The API object where the shared scope is used
+  #-----------------------------------------------------
+  SharedScopeUsedAPIInfo:
+    title: API object using shared scope
+    required:
+      - name
+      - context
+      - version
+    properties:
+      name:
+        type: string
+        example: CalculatorAPI
+      context:
+        type: string
+        example: CalculatorAPI
+      version:
+        type: string
+        example: 1.0.0
+      provider:
+        description: |
+          If the provider value is not given user invoking the api will be used as the provider.
+        type: string
+        example: admin
+      usedResourceList:
+        description: |
+          Resource list which have used the shared scope within this API
+        type: array
+        items:
+          $ref: '#/definitions/SharedScopeUsedAPIResourceInfo'
+
+  #-----------------------------------------------------
+  # The API resource object where the shared scope is used
+  #-----------------------------------------------------
+  SharedScopeUsedAPIResourceInfo:
+    title: API resource object using shared scope
+    properties:
+      target:
+        type: string
+        example: "/add"
+      verb:
+        type: string
+        example: "POST"
 
   #-----------------------------------------------------
   # The APIScope resource
