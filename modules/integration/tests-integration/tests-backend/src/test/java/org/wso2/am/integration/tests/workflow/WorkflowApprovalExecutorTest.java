@@ -45,6 +45,7 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+
 import org.wso2.carbon.apimgt.api.WorkflowStatus;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -162,7 +163,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         String workflowType = "AM_API_STATE";
         restAPIAdminUser = new RestAPIAdminImpl(USER_SMITH, "john123", "carbon.super",
                 adminURLHttps);
-        HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow requests can only be viewed for the admin");
         //Get workflow pending requests by admin
@@ -231,7 +232,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Application state should remain without changing till approval. ");
         //get workflow pending requests by unauthorized user
         String workflowType = "AM_APPLICATION_CREATION";
-        HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow requests an only view by Admin");
         //get workflow pending requests by Admin
@@ -304,7 +305,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Subscription state should remain without changing till approval. ");
         //get pending workflow requests by unauthorized user
         String workflowType = "AM_SUBSCRIPTION_CREATION";
-        HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow Pending requests can only viewed for User Admin");
         //get pending workflow requests by Admin
@@ -375,7 +376,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Application key generation should not change until approval");
         //get pending workflow requests by unauthorized user
         String workflowType = "AM_APPLICATION_REGISTRATION_PRODUCTION";
-        HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow pending requests can only view by admin");
         //get pending workflow requests by admin
@@ -442,7 +443,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         //APIStoreClient = new RestAPIStoreImpl(username, password, SUPER_TENANT_DOMAIN, store);
         //get workflow pending requests by unauthorized user
         String workflowType = "AM_USER_SIGNUP";
-        HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 401,
                 "Workflow requests can only viewed by admin");
         //get workflow pending requests by admin
@@ -520,7 +521,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         //get pending workflow requests of API state change
         String workflowType = "AM_API_STATE";
-        HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 200,
                 "Get Workflow Pending requests failed for User Admin");
 
@@ -696,7 +697,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         String applicationIDNew = applicationResponse.getData();
         //get workflow pending requests by admin
         String workflowType = null;
-        HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
         assertEquals(response.getResponseCode(), 200,
                 "Get Workflow Pending requests failed for User Admin");
 
