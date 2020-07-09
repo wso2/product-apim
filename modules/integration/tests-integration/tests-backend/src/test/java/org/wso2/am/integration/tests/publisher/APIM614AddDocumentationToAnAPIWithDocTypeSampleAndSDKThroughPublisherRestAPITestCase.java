@@ -143,7 +143,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while update documentation to API");
+                "Error while updating documentation to API");
 }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type Sample SDK And" +
@@ -169,7 +169,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while update documentation to API");
+                "Error while updating documentation to API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type Other And" +
