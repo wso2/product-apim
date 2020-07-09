@@ -133,7 +133,7 @@
   },
   "apim.jwt.enable_user_claims": {
     "true": {
-      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
     }
   },
   "apim.devportal.application_sharing_type": {

@@ -234,5 +234,39 @@
   "static_configuration.versioning_comments.enable": false,
   "static_configuration.versioning_tags.enable": false,
   "static_configuration.versioning_ratings.enable": false,
-  "version_resources.on_change": false
+  "version_resources.on_change": false,
+  "tenant_context.rewrite.webapps": [
+    "/api/identity/user/v1.0/",
+    "/api/identity/consent-mgt/v1.0/",
+    "/api/identity/recovery/v0.9/",
+    "/oauth2/",
+    "/scim2/",
+    "/api/identity/entitlement/",
+    "/api/identity/oauth2/dcr/v1.1/",
+    "/api/identity/template/mgt/v1.0.0/",
+    "/api/identity/oauth2/v1.0/",
+    "/api/identity/oauth2/uma/permission/v1.0/",
+    "/api/identity/oauth2/uma/resourceregistration/v1.0/",
+    "/api/identity/config-mgt/v1.0/",
+    "/api/users/v2/me/webauthn",
+    "/api/",
+    "/user-portal/",
+    "/user-info/"
+  ],
+  "resource.access_control": [
+    {
+      "context" : "(.*)/user-info/claims(.*)",
+      "secure" : true,
+      "http_method" : "GET",
+      "permissions" : "/permission/admin/manage/identity/usermgt/list",
+      "scopes" : "internal_user_mgt_list"
+    },
+    {
+      "context" : "(.*)/user-info/claims/generate",
+      "secure" : true,
+      "http_method" : "POST",
+      "permissions" : "/permission/admin/manage/identity/usermgt/list",
+      "scopes" : "internal_user_mgt_list"
+    }
+  ]
 }
