@@ -21,17 +21,21 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.admin.ApiClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
 
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
 
 import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
@@ -52,6 +56,8 @@ public class RestAPIAdminImpl {
     public WorkflowCollectionApi workflowCollectionApi = new WorkflowCollectionApi();
     public WorkflowsIndividualApi workflowsIndividualApi = new WorkflowsIndividualApi();
     private SettingsApi settingsApi = new SettingsApi();
+    private ApplicationPolicyIndividualApi applicationPolicyIndividualApi = new ApplicationPolicyIndividualApi();
+    private ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
     private SubscriptionPolicyIndividualApi subscriptionPolicyIndividualApi = new SubscriptionPolicyIndividualApi();
     private SubscriptionPolicyCollectionApi subscriptionPolicyCollectionApi = new SubscriptionPolicyCollectionApi();
     public static final String appName = "Integration_Test_App_Admin";
@@ -109,6 +115,8 @@ public class RestAPIAdminImpl {
         keyManagerCollectionApi.setApiClient(apiAdminClient);
         keyManagerIndividualApi.setApiClient(apiAdminClient);
         settingsApi.setApiClient(apiAdminClient);
+        applicationPolicyIndividualApi.setApiClient(apiAdminClient);
+        applicationPolicyCollectionApi.setApiClient(apiAdminClient);
         subscriptionPolicyIndividualApi.setApiClient(apiAdminClient);
         subscriptionPolicyCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
@@ -147,6 +155,63 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to create an application throttling policy.
+     *
+     * @param applicationThrottlePolicyDTO Application throttling policy DTO.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while creating the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> addApplicationThrottlingPolicy(
+            ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
+
+        return applicationPolicyCollectionApi
+                .throttlingPoliciesApplicationPostWithHttpInfo(applicationThrottlePolicyDTO, Constants.jsonContentType);
+    }
+
+    /**
+     * This method is used to retrieve an application throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> getApplicationThrottlingPolicy(String policyId)
+            throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update an application throttling policy.
+     *
+     * @param policyId                     Policy Id of the application throttling policy to be updated.
+     * @param applicationThrottlePolicyDTO Application throttling policy DTO which contains the update content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> updateApplicationThrottlingPolicy(String policyId,
+                                                                                       ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO)
+            throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, applicationThrottlePolicyDTO,
+                        Constants.jsonContentType, null, null);
+    }
+
+    /**
+     * This method is used to delete an application throttling policy.
+     *
+     * @param policyId Policy Id of the application throttling policy to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the application throttling policy.
+     */
+    public ApiResponse<Void> deleteApplicationThrottlingPolicy(String policyId) throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
      * This method is used to create a subscription throttling policy.
      *
      * @param subscriptionThrottlePolicyDTO subscription throttling policy DTO.
@@ -177,6 +242,7 @@ public class RestAPIAdminImpl {
                 .throttlingPoliciesSubscriptionPolicyIdDelete(policyId, null, null);
         return new HttpResponse("Policy deleted successfully", 200);
     }
+
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {
         WorkflowInfoDTO workflowInfodto = null;
         HttpResponse response = null;

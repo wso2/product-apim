@@ -16,6 +16,10 @@
 
 package org.wso2.am.integration.test.impl;
 
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 
@@ -37,4 +41,80 @@ public class DtoFactory {
                 provider(provider);
     }
 
+    /**
+     * Creates an application throttling policy DTO using the given parameters.
+     *
+     * @param policyName   Name of the policy.
+     * @param displayName  Display name  policy.
+     * @param description  Description policy.
+     * @param isDeployed   Deployed status of the policy.
+     * @param defaultLimit Default Limit of the policy.
+     * @return Created application throttling policy DTO.
+     */
+    public static ApplicationThrottlePolicyDTO createApplicationThrottlePolicyDTO(String policyName, String displayName,
+                                                                                  String description,
+                                                                                  boolean isDeployed,
+                                                                                  ThrottleLimitDTO defaultLimit) {
+
+        return new ApplicationThrottlePolicyDTO().
+                policyName(policyName).
+                displayName(displayName).
+                description(description).
+                isDeployed(isDeployed).
+                defaultLimit(defaultLimit);
+    }
+
+    /**
+     * Creates a throttle limit DTO using the given parameters.
+     *
+     * @param type                 Type of the throttle limit. (Eg:- Request Count Limit, Bandwidth Limit)
+     * @param requestCountLimitDTO Request count limit DTO object.
+     * @param bandwidthLimitDTO    Bandwidth limit DTO object.
+     * @return Created throttle limit DTO.
+     */
+    public static ThrottleLimitDTO createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum type,
+                                                          RequestCountLimitDTO requestCountLimitDTO,
+                                                          BandwidthLimitDTO bandwidthLimitDTO) {
+
+        return new ThrottleLimitDTO().
+                type(type).
+                requestCount(requestCountLimitDTO).
+                bandwidth(bandwidthLimitDTO);
+    }
+
+    /**
+     * Creates a request count limit DTO using the given parameters.
+     *
+     * @param timeUnit     Time limit.
+     * @param unitTime     Unit of time.
+     * @param requestCount Request count limit.
+     * @return Created request count limit DTO.
+     */
+    public static RequestCountLimitDTO createRequestCountLimitDTO(String timeUnit, Integer unitTime,
+                                                                  Long requestCount) {
+
+        return new RequestCountLimitDTO().
+                timeUnit(timeUnit).
+                unitTime(unitTime).
+                requestCount(requestCount);
+    }
+
+    /**
+     * Creates a bandwidth limit DTO using the given parameters.
+     *
+     * @param timeUnit   Time limit.
+     * @param unitTime   Unit of time.
+     * @param dataAmount Data amount limit.
+     * @param dataUnit   Unit of data.
+     * @return Created bandwidth limit DTO.
+     */
+    public static BandwidthLimitDTO createBandwidthLimitDTO(String timeUnit, Integer unitTime,
+                                                                  Long dataAmount, String dataUnit) {
+
+        return new BandwidthLimitDTO().
+                timeUnit(timeUnit).
+                unitTime(unitTime).
+                dataAmount(dataAmount).
+                dataUnit(dataUnit);
+    }
 }

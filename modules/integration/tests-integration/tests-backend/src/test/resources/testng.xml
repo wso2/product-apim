@@ -223,6 +223,12 @@
         </classes>
     </test>
 
+    <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ApplicationThrottlingPolicyTestCase"/>
+        </classes>
+    </test>
+
     <!--Can Remove these as well-->
     <test name="rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>

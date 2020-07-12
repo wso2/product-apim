@@ -56,4 +56,6 @@ public class Constants {
     public static final String XML = ".xml";
     public static final String CARBON_HOME = "carbon.home";
     public static final String CARBON_HOME_VALUE = "../../";
+
+    public static final String jsonContentType = "application/json";
 }
