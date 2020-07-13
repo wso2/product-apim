@@ -322,7 +322,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     }
 
-    @Test(description = "1.1.2.5")
+    @Test(description = "1.1.2.5" , enabled = false)
     public void testCreateApiUsingValidOASDocumentFromJsonURL() throws Exception {
         String swaggerFileName = "OAS2Document.json";
 

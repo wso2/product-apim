@@ -32,7 +32,7 @@
 <!--        <module>3-securing-an-api-with-different-security-protocols</module>-->
         <module>4-application-development-using-apis</module>
         <module>5-managing-api-lifecycle</module>
-<!--        <module>6-rollout-api-updates-seamlessly</module>-->
+        <module>6-rollout-api-updates-seamlessly</module>
 <!--        <module>7-managing-api-traffic-based-on-various-conditions</module>-->
         <module>8-analyze-usage-of-apis-for-business-insights</module>
         <module>9-developer-community-building</module>
@@ -553,17 +553,17 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.admin.api</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
