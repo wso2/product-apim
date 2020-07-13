@@ -124,7 +124,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
-    @Test(description = "4.1.1.3", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    @Test(description = "4.1.1.3", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"}, enabled = false)
     public void testGenerateProductionKeysForApplication() throws Exception {
         String applicationName = "AppToken";
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
@@ -141,7 +141,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationResponse.getData());
     }
 
-    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"})
+    @Test(description = "4.1.1.4", dependsOnMethods = {"testApplicationCreationWithMandatoryValues"}, enabled = false)
     public void testGenerateSandboxKeysForApplication() throws Exception {
         String applicationName = "AppToken";
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,

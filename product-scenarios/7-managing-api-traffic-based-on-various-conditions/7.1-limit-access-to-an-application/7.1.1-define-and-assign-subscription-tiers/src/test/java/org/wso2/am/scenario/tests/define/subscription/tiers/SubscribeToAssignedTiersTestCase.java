@@ -24,17 +24,18 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.scenario.test.common.APIRequest;
-import org.wso2.am.scenario.test.common.AdminDashboardRestClient;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
 import org.wso2.am.scenario.test.common.ScenarioTestConstants;
-import org.wso2.am.scenario.test.common.SubscriptionThrottlePolicyRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -45,9 +46,6 @@ import java.util.List;
 import static org.testng.Assert.assertTrue;
 
 public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
-
-    private AdminDashboardRestClient adminDashboard;
-    private APIRequest apiRequest;
 
     private String apiNameSingleTier = "Single_Tier_API";
     private String apiNameMultipleTier = "Multi_Tier_API";
@@ -63,7 +61,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private String silverTier = "Silver";
     private String multiTier = "Gold,Silver";
     private String apiVersion = "1.0.0";
-    private String customTier = "CustomTier";
+    private String customTier = "CustomTier3";
     private static String apiId1;
     private static String apiId2;
     private static String apiId3;
@@ -74,6 +72,8 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private static String applicationId3;
     private static String applicationId4;
     private static String applicationId5;
+
+    private static String policyId;
 
     private String applicationNameSingleTier = "SingleTierApplication";
     private String applicationNameMultipleTier = "MultipleTierApplication";
@@ -100,12 +100,10 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        adminDashboard = new AdminDashboardRestClient(adminURL);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                     ADMIN_USERNAME, ADMIN_PW);
             createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
-            adminDashboard.login(ADMIN_USERNAME, ADMIN_PW);
         }
 
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
@@ -118,19 +116,18 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
                         TENANT_ADMIN_PW);
             }
-            adminDashboard.login(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
         super.init(userMode);
     }
 
     @Test(description = "7.1.1.1")
     public void testSingleTierSubscriptionAvailability() throws Exception {
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameSingleTier, apiContextSingleTier, apiVersion,
-                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
 
-        apiCreationRequestBean.setSubPolicyCollection(singleTier);
-        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId1 = apiDto.getId();
+        APIRequest apiRequest = new APIRequest(apiNameSingleTier, apiContextSingleTier, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(singleTier);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId1 = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
@@ -147,19 +144,40 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         verifyResponse(subscriptionResponse);
     }
 
-    @Test(description = "7.1.1.2", dependsOnMethods = "testSingleTierSubscriptionAvailability")
+    @Test(description = "7.1.1.2")
     public void testSingleCustomTierSubscriptionAvailability() throws Exception {
-        SubscriptionThrottlePolicyRequest policyRequest = new SubscriptionThrottlePolicyRequest(customTier, null, "5",
-                "1", "min");
-        HttpResponse addSubscriptionPolicyResponse = adminDashboard.addSubscriptionPolicy(policyRequest);
-        verifyResponse(addSubscriptionPolicyResponse);
+        SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
+        subscriptionThrottlePolicyDTO.setBillingPlan("FREE");
+        List<CustomAttributeDTO> customAttributeDTOS = new ArrayList<>();
+        subscriptionThrottlePolicyDTO.setCustomAttributes(customAttributeDTOS);
+        subscriptionThrottlePolicyDTO.setPolicyName(customTier);
+        subscriptionThrottlePolicyDTO.setDescription("6000 requests per minute");
+        subscriptionThrottlePolicyDTO.setStopOnQuotaReach(true);
 
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameCustomTier, apiContextCustomTier, apiVersion,
-                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
+        RequestCountLimitDTO requestCountLimitDTO = new RequestCountLimitDTO();
+        requestCountLimitDTO.setRequestCount(Long.valueOf(6000));
+        requestCountLimitDTO.setTimeUnit("min");
+        requestCountLimitDTO.setUnitTime(1);
 
-        apiCreationRequestBean.setSubPolicyCollection(customTier);
-        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId2 = apiDto.getId();
+
+        ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
+        throttleLimitDTO.setRequestCount(requestCountLimitDTO);
+        throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT);
+
+        subscriptionThrottlePolicyDTO.setDefaultLimit(throttleLimitDTO);
+        subscriptionThrottlePolicyDTO.setRateLimitTimeUnit("min");
+        subscriptionThrottlePolicyDTO.setRateLimitCount(0);
+        subscriptionThrottlePolicyDTO.setRateLimitTimeUnit("sec");
+
+        org.wso2.am.integration.test.HttpResponse policyAddResponse = restAPIAdmin
+                .addSubscriptionPolicy(subscriptionThrottlePolicyDTO, "application/json");
+        policyId = policyAddResponse.getData();
+
+        APIRequest apiRequest = new APIRequest(apiNameCustomTier, apiContextCustomTier, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(customTier);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId2 = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
@@ -178,11 +196,12 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
     @Test(description = "7.1.1.3", dependsOnMethods = "testSingleCustomTierSubscriptionAvailability")
     public void testMultipleTierSubscriptionAvailability() throws Exception {
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameMultipleTier, apiContextMultipleTier, apiVersion,
-                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
-        apiCreationRequestBean.setSubPolicyCollection(multiTier);
-        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId3 = apiDto.getId();
+
+        APIRequest apiRequest = new APIRequest(apiNameMultipleTier, apiContextMultipleTier, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(multiTier);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId3 = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
@@ -205,12 +224,11 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     @Test(description = "7.1.1.4", dependsOnMethods = "testMultipleTierSubscriptionAvailability")
     public void testRepublishWithDifferentTier() throws Exception {
 
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, apiVersion,
-                API_CREATOR_PUBLISHER_USERNAME, new URL(endpointUrl));
-
-        apiCreationRequestBean.setSubPolicyCollection(goldTier);
-        APIDTO apiDTO1 = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId4 = apiDTO1.getId();
+        APIRequest apiRequest = new APIRequest(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, new URL(endpointUrl));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(goldTier);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId4 = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // wait till API indexed in Store
@@ -264,7 +282,8 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
         restAPIPublisher.deleteAPI(apiId4);
-        adminDashboard.deleteSubscriptionPolicy(customTier);
+
+        restAPIAdmin.deleteSubscriptionPolicy(policyId);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
