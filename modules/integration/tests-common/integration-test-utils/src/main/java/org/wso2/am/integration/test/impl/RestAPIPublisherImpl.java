@@ -25,45 +25,8 @@ import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -98,6 +61,7 @@ public class RestAPIPublisherImpl {
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
+    public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
@@ -147,6 +111,7 @@ public class RestAPIPublisherImpl {
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
         subscriptionsApi.setApiClient(apiPublisherClient);
+        graphQlPoliciesApi.setApiClient(apiPublisherClient);
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
@@ -1114,5 +1079,71 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return GraphQLSchemaTypeListDTO GraphQLSchemaTypeList object
+     * @throws ApiException
+     */
+    public GraphQLSchemaTypeListDTO getGraphQLSchemaTypeList(String apiId) throws ApiException {
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        Assert.assertEquals(graphQLSchemaTypeListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return graphQLSchemaTypeListDTOApiResponse.getData();
+    }
+
+    /**
+     * Method to add GraphQL Complexity Info of an API
+     *
+     * @param apiID
+     * @param graphQLQueryComplexityInfoDTO GraphQL Complexity Object
+     * @return
+     * @throws ApiException
+     */
+    public void addGraphQLComplexityDetails(GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, String apiID ) throws ApiException {
+        ApiResponse<Void> apiResponse =  graphQlPoliciesApi.apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(apiID, graphQLQueryComplexityInfoDTO);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /**
+     * Method to retrieve the GraphQL Complexity Details
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        if(complexityResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
+        }
+        return response;
+    }
+
+
+
+
+
+
+
+
 
 }
