@@ -728,7 +728,7 @@ public class RestAPIPublisherImpl {
                 null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
-            response = new HttpResponse("Successfully update the documentation", 200);
+            response = new HttpResponse("Successfully updated the documentation", 200);
         }
         return response;
     }
