@@ -158,7 +158,7 @@ public class RestAPIAdminImpl {
      * This method is used to create an application throttling policy.
      *
      * @param applicationThrottlePolicyDTO Application throttling policy DTO.
-     * @return API response returned by API call.
+     * @return API response returned by the API call.
      * @throws ApiException if an error occurs while creating the application throttling policy.
      */
     public ApiResponse<ApplicationThrottlePolicyDTO> addApplicationThrottlingPolicy(
@@ -171,7 +171,7 @@ public class RestAPIAdminImpl {
     /**
      * This method is used to retrieve an application throttling policy.
      *
-     * @return API response returned by API call.
+     * @return API response returned by the API call.
      * @throws ApiException if an error occurs while retrieving the application throttling policy.
      */
     public ApiResponse<ApplicationThrottlePolicyDTO> getApplicationThrottlingPolicy(String policyId)
@@ -186,7 +186,7 @@ public class RestAPIAdminImpl {
      *
      * @param policyId                     Policy Id of the application throttling policy to be updated.
      * @param applicationThrottlePolicyDTO Application throttling policy DTO which contains the update content.
-     * @return API response returned by API call.
+     * @return API response returned by the API call.
      * @throws ApiException if an error occurs while updating the application throttling policy.
      */
     public ApiResponse<ApplicationThrottlePolicyDTO> updateApplicationThrottlingPolicy(String policyId,
@@ -202,7 +202,7 @@ public class RestAPIAdminImpl {
      * This method is used to delete an application throttling policy.
      *
      * @param policyId Policy Id of the application throttling policy to be deleted.
-     * @return API response returned by API call.
+     * @return API response returned by the API call.
      * @throws ApiException if an error occurs while deleting the application throttling policy.
      */
     public ApiResponse<Void> deleteApplicationThrottlingPolicy(String policyId) throws ApiException {
@@ -215,32 +215,59 @@ public class RestAPIAdminImpl {
      * This method is used to create a subscription throttling policy.
      *
      * @param subscriptionThrottlePolicyDTO subscription throttling policy DTO.
-     * @param contentType                   Content type.
-     * @return returns the created subscription policy ID.
+     * @return API response returned by the API call.
      * @throws ApiException Throws if an error occurred while creating a new subscription policy.
      */
-    public HttpResponse addSubscriptionPolicy(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO, String contentType) throws ApiException {
-        SubscriptionThrottlePolicyDTO subscriptionPolicyDTOResponse = subscriptionPolicyCollectionApi
-                .throttlingPoliciesSubscriptionPost(subscriptionThrottlePolicyDTO, contentType);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(subscriptionPolicyDTOResponse.getPolicyId())) {
-            response = new HttpResponse(subscriptionPolicyDTOResponse.getPolicyId(), 201);
-        }
-        return response;
+    public ApiResponse<SubscriptionThrottlePolicyDTO> addSubscriptionThrottlingPolicy(
+            SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
+        return subscriptionPolicyCollectionApi
+                .throttlingPoliciesSubscriptionPostWithHttpInfo(subscriptionThrottlePolicyDTO,
+                        Constants.jsonContentType);
+
+    }
+
+    /**
+     * This method is used to retrieve a subscription throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the subscription throttling policy.
+     */
+    public ApiResponse<SubscriptionThrottlePolicyDTO> getSubscriptionThrottlingPolicy(String policyId)
+            throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update a subscription throttling policy.
+     *
+     * @param policyId                      Policy Id of the subscription throttling policy to be updated.
+     * @param subscriptionThrottlePolicyDTO Subscription throttling policy DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the subscription throttling policy.
+     */
+    public ApiResponse<SubscriptionThrottlePolicyDTO> updateSubscriptionThrottlingPolicy(String policyId,
+                                                                                         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO)
+            throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId, subscriptionThrottlePolicyDTO,
+                        Constants.jsonContentType, null, null);
     }
 
     /**
      * This method is used to delete a subscription throttling policy.
      *
      * @param policyId subscription throttling policy Id.
-     * @return returns the created subscription policy ID.
+     * @return API response returned by the API call.
      * @throws ApiException Throws if an error occurred while creating a new subscription policy.
      */
-    public HttpResponse deleteSubscriptionPolicy(String policyId) throws ApiException {
-        subscriptionPolicyIndividualApi
-                .throttlingPoliciesSubscriptionPolicyIdDelete(policyId, null, null);
-        return new HttpResponse("Policy deleted successfully", 200);
+    public ApiResponse<Void> deleteSubscriptionThrottlingPolicy(String policyId) throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdDeleteWithHttpInfo(policyId, null, null);
     }
 
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {

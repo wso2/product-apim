@@ -25,29 +25,39 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.test.impl.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
+public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
 
     private String displayName = "Test Policy";
-    private String description = "This is a test application throttle policy";
+    private String description = "This is a test subscription throttle policy";
     private String timeUnit = "min";
     private Integer unitTime = 1;
-    private ApplicationThrottlePolicyDTO requestCountPolicyDTO;
-    private ApplicationThrottlePolicyDTO bandwidthPolicyDTO;
+    private Integer graphQLMaxComplexity = 400;
+    private Integer graphQLMaxDepth = 10;
+    private Integer rateLimitCount = -1;
+    private String rateLimitTimeUnit = "NA";
+    private boolean stopQuotaOnReach = false;
+    private String billingPlan = "COMMERCIAL";
+    private List<CustomAttributeDTO> customAttributes = null;
+    private SubscriptionThrottlePolicyDTO requestCountPolicyDTO;
+    private SubscriptionThrottlePolicyDTO bandwidthPolicyDTO;
     private AdminApiTestHelper adminApiTestHelper;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public ApplicationThrottlingPolicyTestCase(TestUserMode userMode) {
+    public SubscriptionThrottlingPolicyTestCase(TestUserMode userMode) {
 
         this.userMode = userMode;
     }
@@ -64,12 +74,17 @@ public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest
 
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
+        customAttributes = new ArrayList<>();
+        CustomAttributeDTO attribute = new CustomAttributeDTO();
+        attribute.setName("testAttribute");
+        attribute.setValue("testValue");
+        customAttributes.add(attribute);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add application throttling policy with request count limit")
+    @Test(groups = {"wso2.am"}, description = "Test add subscription throttling policy with request count limit")
     public void testAddPolicyWithRequestCountLimit() throws Exception {
 
-        //Create the application throttling policy DTO with request count limit
+        //Create the subscription throttling policy DTO with request count limit
         String policyName = "TestPolicyOne";
         Long requestCount = 50L;
         RequestCountLimitDTO requestCountLimit =
@@ -77,29 +92,31 @@ public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest
         ThrottleLimitDTO defaultLimit =
                 DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
         requestCountPolicyDTO = DtoFactory
-                .createApplicationThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit);
+                .createSubscriptionThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
+                        graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
+                        stopQuotaOnReach, billingPlan);
 
-        //Add the application throttling policy
-        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addApplicationThrottlingPolicy(requestCountPolicyDTO);
+        //Add the subscription throttling policy
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(requestCountPolicyDTO);
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-        ApplicationThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
+        SubscriptionThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
         String policyId = addedPolicyDTO.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
 
         requestCountPolicyDTO.setPolicyId(policyId);
         requestCountPolicyDTO.setIsDeployed(true);
-        //Verify the created application throttling policy DTO
-        adminApiTestHelper.verifyApplicationThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
+        //Verify the created subscription throttling policy DTO
+        adminApiTestHelper.verifySubscriptionThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add application throttling policy with bandwidth limit",
+    @Test(groups = {"wso2.am"}, description = "Test add subscription throttling policy with bandwidth limit",
             dependsOnMethods = "testAddPolicyWithRequestCountLimit")
     public void testAddPolicyWithBandwidthLimit() throws Exception {
 
-        //Create the application throttling policy DTO with bandwidth limit
+        //Create the subscription throttling policy DTO with bandwidth limit
         String policyName = "TestPolicyTwo";
         Long dataAmount = 2L;
         String dataUnit = "KB";
@@ -107,84 +124,87 @@ public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest
         ThrottleLimitDTO defaultLimit =
                 DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT, null, bandwidthLimit);
         bandwidthPolicyDTO = DtoFactory
-                .createApplicationThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit);
+                .createSubscriptionThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
+                        graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
+                        stopQuotaOnReach, billingPlan);
 
-        //Add the application throttling policy
-        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addApplicationThrottlingPolicy(bandwidthPolicyDTO);
+        //Add the subscription throttling policy
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthPolicyDTO);
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-        ApplicationThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
+        SubscriptionThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
         String policyId = addedPolicyDTO.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
 
         bandwidthPolicyDTO.setPolicyId(policyId);
         bandwidthPolicyDTO.setIsDeployed(true);
-        //Verify the created application throttling policy DTO
-        adminApiTestHelper.verifyApplicationThrottlePolicyDTO(bandwidthPolicyDTO, addedPolicyDTO);
+        //Verify the created subscription throttling policy DTO
+        adminApiTestHelper.verifySubscriptionThrottlePolicyDTO(bandwidthPolicyDTO, addedPolicyDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test get and update application throttling policy",
+    @Test(groups = {"wso2.am"}, description = "Test get and update subscription throttling policy",
             dependsOnMethods = "testAddPolicyWithBandwidthLimit")
     public void testGetAndUpdatePolicy() throws Exception {
 
-        //Get the added application throttling policy with request count limit
+        //Get the added subscription throttling policy with request count limit
         String policyId = requestCountPolicyDTO.getPolicyId();
-        ApiResponse<ApplicationThrottlePolicyDTO> retrievedPolicy =
-                restAPIAdmin.getApplicationThrottlingPolicy(policyId);
-        ApplicationThrottlePolicyDTO retrievedPolicyDTO = retrievedPolicy.getData();
+        ApiResponse<SubscriptionThrottlePolicyDTO> retrievedPolicy =
+                restAPIAdmin.getSubscriptionThrottlingPolicy(policyId);
+        SubscriptionThrottlePolicyDTO retrievedPolicyDTO = retrievedPolicy.getData();
         Assert.assertEquals(retrievedPolicy.getStatusCode(), HttpStatus.SC_OK);
 
-        //Verify the retrieved application throttling policy DTO
-        adminApiTestHelper.verifyApplicationThrottlePolicyDTO(requestCountPolicyDTO, retrievedPolicyDTO);
+        //Verify the retrieved subscription throttling policy DTO
+        adminApiTestHelper.verifySubscriptionThrottlePolicyDTO(requestCountPolicyDTO, retrievedPolicyDTO);
 
-        //Update the application throttling policy
-        String updatedDescription = "This is a updated test application throttle policy";
+        //Update the subscription throttling policy
+        String updatedDescription = "This is a updated test subscription throttle policy";
         requestCountPolicyDTO.setDescription(updatedDescription);
-        ApiResponse<ApplicationThrottlePolicyDTO> updatedPolicy =
-                restAPIAdmin.updateApplicationThrottlingPolicy(policyId, requestCountPolicyDTO);
-        ApplicationThrottlePolicyDTO updatedPolicyDTO = updatedPolicy.getData();
+        ApiResponse<SubscriptionThrottlePolicyDTO> updatedPolicy =
+                restAPIAdmin.updateSubscriptionThrottlingPolicy(policyId, requestCountPolicyDTO);
+        SubscriptionThrottlePolicyDTO updatedPolicyDTO = updatedPolicy.getData();
         Assert.assertEquals(updatedPolicy.getStatusCode(), HttpStatus.SC_OK);
 
-        //Verify the updated application throttling policy DTO
-        adminApiTestHelper.verifyApplicationThrottlePolicyDTO(requestCountPolicyDTO, updatedPolicyDTO);
+        //Verify the updated subscription throttling policy DTO
+        adminApiTestHelper.verifySubscriptionThrottlePolicyDTO(requestCountPolicyDTO, updatedPolicyDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete application throttling policy",
+    @Test(groups = {"wso2.am"}, description = "Test delete subscription throttling policy",
             dependsOnMethods = "testGetAndUpdatePolicy")
     public void testDeletePolicy() throws Exception {
 
         ApiResponse<Void> apiResponse =
-                restAPIAdmin.deleteApplicationThrottlingPolicy(requestCountPolicyDTO.getPolicyId());
+                restAPIAdmin.deleteSubscriptionThrottlingPolicy(requestCountPolicyDTO.getPolicyId());
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add application throttling policy with existing policy name",
+    @Test(groups = {"wso2.am"}, description = "Test add subscription throttling policy with existing policy name",
             dependsOnMethods = "testDeletePolicy")
     public void testAddPolicyWithExistingPolicyName() {
 
-        //Exception occurs when adding an application throttling policy with an existing policy name. The status code
+        //Exception occurs when adding an subscription throttling policy with an existing policy name. The status code
         //in the Exception object is used to assert this scenario
         try {
-            restAPIAdmin.addApplicationThrottlingPolicy(bandwidthPolicyDTO);
+            restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthPolicyDTO);
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete application throttling policy with non existing policy ID",
+    @Test(groups = {"wso2.am"}, description = "Test delete subscription throttling policy with non existing policy ID",
             dependsOnMethods = "testAddPolicyWithExistingPolicyName")
     public void testDeletePolicyWithNonExistingPolicyId() {
 
-        //Exception occurs when deleting an application throttling policy with a non existing policy ID. The
+        //Exception occurs when deleting an subscription throttling policy with a non existing policy ID. The
         //status code in the Exception object is used to assert this scenario
         try {
             //The policy ID is created by combining two generated UUIDs
             restAPIAdmin
-                    .deleteApplicationThrottlingPolicy(UUID.randomUUID().toString() + UUID.randomUUID().toString());
+                    .deleteSubscriptionThrottlingPolicy(UUID.randomUUID().toString() + UUID.randomUUID().toString());
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
     }
+
 }

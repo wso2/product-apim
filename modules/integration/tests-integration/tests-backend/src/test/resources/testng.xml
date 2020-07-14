@@ -226,6 +226,7 @@
     <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ApplicationThrottlingPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.SubscriptionThrottlingPolicyTestCase"/>
         </classes>
     </test>
 

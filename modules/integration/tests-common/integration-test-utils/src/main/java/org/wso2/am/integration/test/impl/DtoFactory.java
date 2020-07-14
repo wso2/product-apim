@@ -18,7 +18,9 @@ package org.wso2.am.integration.test.impl;
 
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
@@ -108,13 +110,58 @@ public class DtoFactory {
      * @param dataUnit   Unit of data.
      * @return Created bandwidth limit DTO.
      */
-    public static BandwidthLimitDTO createBandwidthLimitDTO(String timeUnit, Integer unitTime,
-                                                                  Long dataAmount, String dataUnit) {
+    public static BandwidthLimitDTO createBandwidthLimitDTO(String timeUnit, Integer unitTime, Long dataAmount,
+                                                            String dataUnit) {
 
         return new BandwidthLimitDTO().
                 timeUnit(timeUnit).
                 unitTime(unitTime).
                 dataAmount(dataAmount).
                 dataUnit(dataUnit);
+    }
+
+    /**
+     * Creates a subscription throttling policy DTO using the given parameters.
+     *
+     * @param policyName           Name of the policy.
+     * @param displayName          Display name  policy.
+     * @param description          Description policy.
+     * @param isDeployed           Deployed status of the policy.
+     * @param defaultLimit         Default Limit of the policy.
+     * @param graphQLMaxComplexity Maximum Complexity of the GraphQL query.
+     * @param graphQLMaxDepth      Maximum Depth of the GraphQL query.
+     * @param rateLimitCount       Burst control request count.
+     * @param rateLimitTimeUnit    Burst control time unit.
+     * @param customAttributes     Custom attributes added to the Subscription Throttling Policy.
+     * @param stopQuotaOnReach     Action to be taken when a user goes beyond the allocated quota.
+     * @param billingPlan          Defines whether this is a Paid or a Free plan.
+     * @return Created subscription throttling policy DTO.
+     */
+    public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
+                                                                                    String displayName,
+                                                                                    String description,
+                                                                                    boolean isDeployed,
+                                                                                    ThrottleLimitDTO defaultLimit,
+                                                                                    int graphQLMaxComplexity,
+                                                                                    int graphQLMaxDepth,
+                                                                                    int rateLimitCount,
+                                                                                    String rateLimitTimeUnit,
+                                                                                    List<CustomAttributeDTO> customAttributes,
+                                                                                    boolean stopQuotaOnReach,
+                                                                                    String billingPlan) {
+
+        return new SubscriptionThrottlePolicyDTO().
+                policyName(policyName).
+                displayName(displayName).
+                description(description).
+                isDeployed(isDeployed).
+                defaultLimit(defaultLimit).
+                graphQLMaxComplexity(graphQLMaxComplexity).
+                graphQLMaxDepth(graphQLMaxDepth).
+                rateLimitCount(rateLimitCount).
+                rateLimitTimeUnit(rateLimitTimeUnit).
+                customAttributes(customAttributes).
+                stopOnQuotaReach(stopQuotaOnReach).
+                billingPlan(billingPlan);
     }
 }

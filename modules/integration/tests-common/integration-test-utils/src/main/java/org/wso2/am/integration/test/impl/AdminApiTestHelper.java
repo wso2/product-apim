@@ -19,6 +19,7 @@ package org.wso2.am.integration.test.impl;
 
 import org.testng.Assert;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 
 /**
  * A collection of helper methods to aid Admin REST API related tests
@@ -37,13 +38,51 @@ public class AdminApiTestHelper {
         Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
                 "Policy ID does not match with the expected policy ID");
         Assert.assertEquals(actualPolicy.getPolicyName(), expectedPolicy.getPolicyName(),
-                "Policy name does not match with the expected policy name");
+                "Policy name does not match with the expected name");
         Assert.assertEquals(actualPolicy.getDisplayName(), expectedPolicy.getDisplayName(),
-                "Policy display name does not match with the expected policy display name");
+                "Policy display name does not match with the expected display name");
         Assert.assertEquals(actualPolicy.getDescription(), expectedPolicy.getDescription(),
-                "Policy description does not match with the expected policy description");
+                "Policy description does not match with the expected description");
+        Assert.assertEquals(actualPolicy.isIsDeployed(), expectedPolicy.isIsDeployed(),
+                "Policy deployed status does not match with the expected deployed status");
         boolean isDefaultLimitEqual = actualPolicy.getDefaultLimit().equals(expectedPolicy.getDefaultLimit());
-        Assert.assertTrue(isDefaultLimitEqual, "Policy default limit does not match with the expected policy default " +
-                "limit");
+        Assert.assertTrue(isDefaultLimitEqual, "Policy default limit does not match with the expected default limit");
+    }
+
+    /**
+     * Verify whether the field values of the application throttling policy contains the expected values.
+     *
+     * @param expectedPolicy Expected policy which contains the expected field values.
+     * @param actualPolicy   Policy object of which the field values should be verified.
+     */
+    public void verifySubscriptionThrottlePolicyDTO(SubscriptionThrottlePolicyDTO expectedPolicy,
+                                                    SubscriptionThrottlePolicyDTO actualPolicy) {
+
+        Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
+                "Policy ID does not match with the expected policy ID");
+        Assert.assertEquals(actualPolicy.getPolicyName(), expectedPolicy.getPolicyName(),
+                "Policy name does not match with the expected name");
+        Assert.assertEquals(actualPolicy.getDisplayName(), expectedPolicy.getDisplayName(),
+                "Policy display name does not match with the expected display name");
+        Assert.assertEquals(actualPolicy.getDescription(), expectedPolicy.getDescription(),
+                "Policy description does not match with the expected description");
+        Assert.assertEquals(actualPolicy.isIsDeployed(), expectedPolicy.isIsDeployed(),
+                "Policy deployed status does not match with the expected deployed status");
+        boolean isDefaultLimitEqual = actualPolicy.getDefaultLimit().equals(expectedPolicy.getDefaultLimit());
+        Assert.assertTrue(isDefaultLimitEqual, "Policy default limit does not match with the expected default limit");
+        Assert.assertEquals(actualPolicy.getGraphQLMaxComplexity(), expectedPolicy.getGraphQLMaxComplexity(),
+                "Policy graphQL max complexity does not match with the expected graphQL max complexity");
+        Assert.assertEquals(actualPolicy.getGraphQLMaxDepth(), expectedPolicy.getGraphQLMaxDepth(),
+                "Policy graphQL max depth does not match with the expected graphQL max depth");
+        Assert.assertEquals(actualPolicy.getRateLimitCount(), expectedPolicy.getRateLimitCount(),
+                "Policy rate limit count does not match with the expected rate limit count");
+        Assert.assertEquals(actualPolicy.getRateLimitTimeUnit(), expectedPolicy.getRateLimitTimeUnit(),
+                "Policy rate limit time unit does not match with the expected rate limit time unit");
+        boolean isCustomAttributesEqual =
+                actualPolicy.getCustomAttributes().equals(expectedPolicy.getCustomAttributes());
+        Assert.assertTrue(isCustomAttributesEqual, "Policy custom attributes does not match with the expected " +
+                "custom attributes");
+        Assert.assertEquals(actualPolicy.getBillingPlan(), expectedPolicy.getBillingPlan(),
+                "Policy billing plan does not match with the expected billing plan");
     }
 }
