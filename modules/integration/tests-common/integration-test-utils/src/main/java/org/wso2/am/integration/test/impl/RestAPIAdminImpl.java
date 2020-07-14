@@ -23,6 +23,8 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
+import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
@@ -30,6 +32,7 @@ import org.wso2.am.integration.clients.admin.api.SettingsApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
@@ -60,6 +63,8 @@ public class RestAPIAdminImpl {
     private ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
     private SubscriptionPolicyIndividualApi subscriptionPolicyIndividualApi = new SubscriptionPolicyIndividualApi();
     private SubscriptionPolicyCollectionApi subscriptionPolicyCollectionApi = new SubscriptionPolicyCollectionApi();
+    private CustomRulesIndividualApi customRulesIndividualApi = new CustomRulesIndividualApi();
+    private CustomRulesCollectionApi customRulesCollectionApi = new CustomRulesCollectionApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -119,6 +124,8 @@ public class RestAPIAdminImpl {
         applicationPolicyCollectionApi.setApiClient(apiAdminClient);
         subscriptionPolicyIndividualApi.setApiClient(apiAdminClient);
         subscriptionPolicyCollectionApi.setApiClient(apiAdminClient);
+        customRulesIndividualApi.setApiClient(apiAdminClient);
+        customRulesCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
@@ -268,6 +275,60 @@ public class RestAPIAdminImpl {
 
         return subscriptionPolicyIndividualApi
                 .throttlingPoliciesSubscriptionPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to create an custom throttling policy.
+     *
+     * @param customRuleDTO Custom throttling policy DTO.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while creating the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> addCustomThrottlingPolicy(CustomRuleDTO customRuleDTO) throws ApiException {
+
+        return customRulesCollectionApi
+                .throttlingPoliciesCustomPostWithHttpInfo(customRuleDTO, Constants.jsonContentType);
+    }
+
+    /**
+     * This method is used to retrieve a custom throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> getCustomThrottlingPolicy(String policyId) throws ApiException {
+
+        return customRulesIndividualApi
+                .throttlingPoliciesCustomRuleIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update a custom throttling policy.
+     *
+     * @param policyId      Policy Id of the custom throttling policy to be updated.
+     * @param customRuleDTO Custom throttling policy DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> updateCustomThrottlingPolicy(String policyId, CustomRuleDTO customRuleDTO)
+            throws ApiException {
+
+        return customRulesIndividualApi
+                .throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
+                        Constants.jsonContentType, null, null);
+    }
+
+    /**
+     * This method is used to delete a custom throttling policy.
+     *
+     * @param policyId Policy Id of the custom throttling policy to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the custom throttling policy.
+     */
+    public ApiResponse<Void> deleteCustomThrottlingPolicy(String policyId) throws ApiException {
+
+        return customRulesIndividualApi
+                .throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
     }
 
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {

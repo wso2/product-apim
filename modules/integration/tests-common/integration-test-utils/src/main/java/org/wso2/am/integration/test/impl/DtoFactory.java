@@ -19,6 +19,7 @@ package org.wso2.am.integration.test.impl;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
@@ -163,5 +164,27 @@ public class DtoFactory {
                 customAttributes(customAttributes).
                 stopOnQuotaReach(stopQuotaOnReach).
                 billingPlan(billingPlan);
+    }
+
+    /**
+     * Creates a custom throttling policy DTO using the given parameters.
+     *
+     * @param policyName  Name of the policy.
+     * @param description Description policy.
+     * @param isDeployed  Deployed status of the policy.
+     * @param siddhiQuery Siddhi query which represents the custom throttling policy.
+     * @param keyTemplate The specific combination of attributes that are checked in the policy.
+     * @return Created custom throttling policy DTO.
+     */
+    public static CustomRuleDTO createCustomThrottlePolicyDTO(String policyName, String description,
+                                                              boolean isDeployed, String siddhiQuery,
+                                                              String keyTemplate) {
+
+        return new CustomRuleDTO().
+                policyName(policyName).
+                description(description).
+                isDeployed(isDeployed).
+                siddhiQuery(siddhiQuery).
+                keyTemplate(keyTemplate);
     }
 }

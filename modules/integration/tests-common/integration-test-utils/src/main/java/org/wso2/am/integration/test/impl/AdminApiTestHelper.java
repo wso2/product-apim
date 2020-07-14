@@ -19,6 +19,7 @@ package org.wso2.am.integration.test.impl;
 
 import org.testng.Assert;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 
 /**
@@ -84,5 +85,27 @@ public class AdminApiTestHelper {
                 "custom attributes");
         Assert.assertEquals(actualPolicy.getBillingPlan(), expectedPolicy.getBillingPlan(),
                 "Policy billing plan does not match with the expected billing plan");
+    }
+
+    /**
+     * Verify whether the field values of the application throttling policy contains the expected values.
+     *
+     * @param expectedPolicy Expected policy which contains the expected field values.
+     * @param actualPolicy   Policy object of which the field values should be verified.
+     */
+    public void verifyCustomThrottlePolicyDTO(CustomRuleDTO expectedPolicy, CustomRuleDTO actualPolicy) {
+
+        Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
+                "Policy ID does not match with the expected policy ID");
+        Assert.assertEquals(actualPolicy.getPolicyName(), expectedPolicy.getPolicyName(),
+                "Policy name does not match with the expected name");
+        Assert.assertEquals(actualPolicy.getDescription(), expectedPolicy.getDescription(),
+                "Policy description does not match with the expected description");
+        Assert.assertEquals(actualPolicy.isIsDeployed(), expectedPolicy.isIsDeployed(),
+                "Policy description does not match with the expected description");
+        Assert.assertEquals(actualPolicy.getSiddhiQuery(), expectedPolicy.getSiddhiQuery(),
+                "Policy siddhi query does not match with the expected siddhi query");
+        Assert.assertEquals(actualPolicy.getKeyTemplate(), expectedPolicy.getKeyTemplate(),
+                "Policy key template does not match with the expected key template");
     }
 }
