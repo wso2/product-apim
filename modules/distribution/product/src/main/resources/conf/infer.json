@@ -28,7 +28,7 @@
       "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
       "system.parameter.profile": "api-key-manager",
       "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": true,
+      "apim.key_manager.enable_retriever": false,
       "oauth.grant_type.authorization_code.grant_handler": "org.wso2.carbon.apimgt.tokenmgt.handlers.ExtendedAuthorizationCodeGrantHandler",
       "oauth.grant_type.password.grant_handler": "org.wso2.carbon.apimgt.tokenmgt.handlers.ExtendedPasswordGrantHandler",
       "oauth.grant_type.refresh_token.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler",
