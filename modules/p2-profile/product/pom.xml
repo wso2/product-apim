@@ -2756,7 +2756,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.userinfo.endpoint.feature.group</id>
+                                    <id>wso2is.key.manager.operations.endpoint.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
