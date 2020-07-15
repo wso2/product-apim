@@ -16,6 +16,7 @@ import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.clients.admin.api.dto.*;
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -44,10 +45,7 @@ import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import javax.ws.rs.core.Response;
 import java.io.FileWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 
@@ -58,17 +56,21 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
     private String USER_ADMIN = "smith";
     private final String ALLOWED_ROLE = "admin";
     private RestAPIAdminImpl restAPIAdminUser;
+    private static final String GRAPHQL_TEST_USER = "graphqluser";
+    private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
+    private static final String GRAPHQL_ROLE = "graphqlrole";
 
-    private final String GRAPHQL_API_NAME = "CountriesGraphqlAPI";
-    private final String API_CONTEXT = "info";
+    private final String GRAPHQL_API_NAME = "CountriesGraphqlAPIQueryAnalysis";
+    private final String API_CONTEXT = "infoS";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String END_POINT_URL = "https://localhost:9943/am-graphQL-sample/api/graphql/";
     private final String RESPONSE_DATA = "[{\"name\":\"Afrikaans\",\"code\":\"af\"},{\"name\":\"Amharic\",\"code\":\"am\"}," +
             "{\"name\":\"Arabic\",\"code\":\"ar\"},{\"name\":\"Aymara\",\"code\":\"ay\"},{\"name\":\"Azerbaijani\"," +
             "\"code\":\"az\"},{\"name\":\"Belarusian\",\"code\":\"be\"}]";
     private String schemaDefinition;
-    private String graphqlAPIId;
-    private String applicationId;
+    private String graphqlApiId;
+    private String tokenTestApiAppId;
+    private String oauthTokenTestApiId;
 
 
 
@@ -91,6 +93,8 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
         userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
+        userManagementClient.addUser(GRAPHQL_TEST_USER, GRAPHQL_TEST_USER_PASSWORD, new String[]{}, null);
+        userManagementClient.addRole(GRAPHQL_ROLE, new String[]{GRAPHQL_TEST_USER}, new String[]{});
 
         // add new Subscription throttling policy
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
@@ -111,12 +115,12 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
         String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
         JSONArray operations = new JSONArray(arrayToJson);
+
         ArrayList<String> environment = new ArrayList<String>();
         environment.add("Production and Sandbox");
 
         ArrayList<String> policies = new ArrayList<String>();
         policies.add("Platinum");
-        policies.add("Unlimited");
 
         JSONObject additionalPropertiesObj = new JSONObject();
         additionalPropertiesObj.put("name", GRAPHQL_API_NAME);
@@ -136,55 +140,26 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
         // create Graphql API
         APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinition(file, additionalPropertiesObj.toString());
-        graphqlAPIId = apidto.getId();
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
+        graphqlApiId = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlApiId);
+        System.out.println(createdApiResponse.getData());
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 GRAPHQL_API_NAME + " API creation is failed");
 
-        // update GraphQL API tier
-        //apidto.setApiThrottlingPolicy("Platinum");
-        //APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, graphqlAPIId);
-        //HttpResponse updatedApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
-        //assertEquals(Response.Status.OK.getStatusCode(), updatedApiResponse.getResponseCode(),
-               // GRAPHQL_API_NAME + " API updated is failed");
-
         // publish api
-        restAPIPublisher.changeAPILifeCycleStatus(graphqlAPIId, Constants.PUBLISHED);
+        restAPIPublisher.changeAPILifeCycleStatus(graphqlApiId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), GRAPHQL_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
+
+
     }
-
-    /*@Test(groups = {"wso2.am"}, description = "API invocation using oauth App")
-    public void testInvokeGraphqlAPIUsingOAuthApplication() throws Exception {
-        String graphqlOAUTHAppName = "CountriesOauthAPP";
-        createGraphqlAppAndSubscribeToAPI(graphqlOAUTHAppName,"OAUTH");
-
-        // generate token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        JSONObject queryObject = new JSONObject();
-        queryObject.put("query", "{languages{code name}}");
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        requestHeaders.put("Content-Type",  "application/json");
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
-
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
-        Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
-    }*/
 
     @Test(groups = {"wso2.am"}, description = "Add GraphQL Complexity Values in Publisher Portal")
     public void testAddGraphQLComplexity() throws Exception {
         //Get GraphQL Schema Type List
-        GraphQLSchemaTypeListDTO graphQLSchemaTypeList = restAPIPublisher.getGraphQLSchemaTypeList(graphqlAPIId);
-        HttpResponse response = restAPIPublisher.getGraphQLSchemaTypeListResponse(graphqlAPIId);
+        GraphQLSchemaTypeListDTO graphQLSchemaTypeList = restAPIPublisher.getGraphQLSchemaTypeList(graphqlApiId);
+        HttpResponse response = restAPIPublisher.getGraphQLSchemaTypeListResponse(graphqlApiId);
         assertEquals(Response.Status.OK.getStatusCode(), response.getResponseCode());
 
         // add GraphQL Complexity Details
@@ -197,21 +172,113 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
                 GraphQLCustomComplexityInfoDTO graphQLCustomComplexityInfoDTO = new GraphQLCustomComplexityInfoDTO();
                 graphQLCustomComplexityInfoDTO.setType(graphQLSchemaTypeDTO.getType());
                 graphQLCustomComplexityInfoDTO.setField(field);
-                graphQLCustomComplexityInfoDTO.setComplexityValue(2);
+                graphQLCustomComplexityInfoDTO.setComplexityValue(1);
                 System.out.println(graphQLCustomComplexityInfoDTO);
                 complexityList.add(graphQLCustomComplexityInfoDTO);
             }
         }
         GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO = new GraphQLQueryComplexityInfoDTO();
         graphQLQueryComplexityInfoDTO.setList(complexityList);
-        restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO,graphqlAPIId);
+        restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO,graphqlApiId);
 
-        //Get GraphQLComplexity
-        HttpResponse complexityResponse = restAPIPublisher.getGraphQLComplexityResponse(graphqlAPIId);
+        //Get GraphQLComplexity Details
+        HttpResponse complexityResponse = restAPIPublisher.getGraphQLComplexityResponse(graphqlApiId);
         assertEquals(Response.Status.OK.getStatusCode(), complexityResponse.getResponseCode());
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "View GraphQL Complexity Values in Developer Portal")
+    public void testRetrieveGraphQLComplexity() throws Exception {
+        //Get GraphQLComplexity Details
+        HttpResponse complexityResponse = restAPIStore.getGraphQLComplexityResponse(graphqlApiId);
+        assertEquals(Response.Status.OK.getStatusCode(), complexityResponse.getResponseCode());
+
+        //Get GraphQL Schema Type List
+        HttpResponse response = restAPIStore.getGraphQLSchemaTypeListResponse(graphqlApiId);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getResponseCode());
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
+    public void testInvokeGraphqlAPIUsingJWTApplication() throws Exception {
+        String graphqlOAUTHAppName = "CountriesJWTAPPForQueryAnalysis";
+
+        //create new JWT Application
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(graphqlOAUTHAppName,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test-app for JWT",
+                "JWT");
+        tokenTestApiAppId = applicationDTO.getApplicationId();
+
+        //Subscribe to the API
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
+                "Platinum");
+        Assert.assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Platinum"));
+
+        // generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
+                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        JSONObject queryObject = new JSONObject();
+        queryObject.put("query", "{languages{code name native rtl}}");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type",  "application/json");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
+
+        JSONObject queryObject2 = new JSONObject();
+        queryObject2.put("query", "{countries{code name languages{code name}}}");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type",  "application/json");
+        HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
+        Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API invocation using oauth App")
+    public void testInvokeGraphqlAPIUsingOAuthApplication() throws Exception {
+        String graphqlOAUTHAppName = "CountriesOauthAPPForQueryAnalysis";
+
+        //create new OAUTH Application
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(graphqlOAUTHAppName,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test-app for OAUTH",
+                "OAUTH");
+        oauthTokenTestApiId = applicationDTO.getApplicationId();
+
+        //Subscribe to the API
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
+                "Platinum");
+        Assert.assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Platinum"));
+
+        // generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
+                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        JSONObject queryObject = new JSONObject();
+        queryObject.put("query", "{languages{code name native rtl}}");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type",  "application/json");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
+
+        JSONObject queryObject2 = new JSONObject();
+        queryObject2.put("query", "{countries{code name languages{code name}}}");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type",  "application/json");
+        HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
+        Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
+    }
 
     public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyObject(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO){
         subscriptionThrottlePolicyDTO.setPolicyId("0c6439fd-9b16-3c2e-be6e-1086e0b9aa92");
@@ -223,8 +290,8 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         subscriptionThrottlePolicyDTO.setBillingPlan("COMMERCIAL");
         subscriptionThrottlePolicyDTO.setStopOnQuotaReach(true);
         subscriptionThrottlePolicyDTO.setIsDeployed(true);
-        subscriptionThrottlePolicyDTO.setGraphQLMaxComplexity(6);
-        subscriptionThrottlePolicyDTO.setGraphQLMaxDepth(5);
+        subscriptionThrottlePolicyDTO.setGraphQLMaxComplexity(4);
+        subscriptionThrottlePolicyDTO.setGraphQLMaxDepth(2);
 
         ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
         throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.valueOf("REQUESTCOUNTLIMIT"));
@@ -247,17 +314,15 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         return temp;
     }
 
-    private void createGraphqlAppAndSubscribeToAPI(String appName, String tokenType) throws ApiException {
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(appName,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
-                "test app for countries API", tokenType);
-        applicationId = applicationDTO.getApplicationId();
-        restAPIStore.subscribeToAPI(graphqlAPIId, applicationId, "Platinum");
-    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         userManagementClient.deleteUser(USER_ADMIN);
+        userManagementClient.deleteRole(GRAPHQL_ROLE);
+        userManagementClient.deleteUser(GRAPHQL_TEST_USER);
+        restAPIStore.deleteApplication(oauthTokenTestApiId);
+        restAPIStore.deleteApplication(tokenTestApiAppId);
+        restAPIPublisher.deleteAPI(graphqlApiId);
         super.cleanUp();
     }
 }

@@ -35,25 +35,8 @@ import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
+import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -84,6 +67,7 @@ public class RestAPIStoreImpl {
     public ApiKeysApi apiKeysApi = new ApiKeysApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
+    public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
@@ -127,6 +111,7 @@ public class RestAPIStoreImpl {
         unifiedSearchApi.setApiClient(apiStoreClient);
         apiKeysApi.setApiClient(apiStoreClient);
         keyManagersCollectionApi.setApiClient(apiStoreClient);
+        graphQlPoliciesApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
@@ -1762,4 +1747,39 @@ public class RestAPIStoreImpl {
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
     }
+
+
+    /**
+     * Method to retrieve the GraphQL Complexity Details
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws org.wso2.am.integration.clients.store.api.ApiException
+     */
+    public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        if(complexityResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws org.wso2.am.integration.clients.store.api.ApiException
+     */
+    public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi.
+                apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
+        }
+        return response;
+    }
+
+
 }
