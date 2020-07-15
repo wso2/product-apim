@@ -1246,13 +1246,4 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
-
-
-
-
-
-
-
-
-
 }
