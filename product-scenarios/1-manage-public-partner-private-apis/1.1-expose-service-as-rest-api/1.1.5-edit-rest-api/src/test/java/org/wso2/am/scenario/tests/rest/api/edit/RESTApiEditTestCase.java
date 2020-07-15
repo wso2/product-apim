@@ -185,7 +185,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      * */
 //    TODO : Investgate test failures and fix
     @Test(description = "1.1.5.3", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class
-            , dependsOnMethods = "testRESTAPIEditAlreadyCreatedApi", enabled = false)
+            , dependsOnMethods = "testRESTAPIEditAlreadyCreatedApi")
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
