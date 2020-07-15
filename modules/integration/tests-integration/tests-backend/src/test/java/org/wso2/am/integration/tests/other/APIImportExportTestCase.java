@@ -265,6 +265,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(API_NAME, apiObj.getName(), "Imported API Name is incorrect");
         assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
         assertEquals(DESCRIPTION, apiObj.getDescription(), "Imported API description is incorrect");
+        assertEquals("/" + API_CONTEXT, apiObj.getContext().replace("/t/wso2.com", ""),
+                "Imported API context is incorrect");
         List<String> tagList = apiObj.getTags();
         Assert.assertTrue(tagList.contains(TAG1), "Imported API not contain tag: " + TAG1);
         Assert.assertTrue(tagList.contains(TAG2), "Imported API not contain tag: " + TAG2);
@@ -419,6 +421,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 "Imported API not in Published state");
         assertEquals(NEW_API_NAME, apiObj.getName(), "Imported API Name is incorrect");
         assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
+        assertEquals("/" + NEW_API_CONTEXT, apiObj.getContext().replace("/t/wso2.com", ""),
+                "Imported API context is incorrect");
 
         assertEquals(APIDTO.VisibilityEnum.RESTRICTED, apiObj.getVisibility(), "Imported API Visibility is incorrect");
         String endpointConfig = apiObj.getEndpointConfig().toString();
