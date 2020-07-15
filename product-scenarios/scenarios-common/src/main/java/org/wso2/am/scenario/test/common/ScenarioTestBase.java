@@ -192,7 +192,7 @@ public class ScenarioTestBase {
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStore = new org.wso2.am.integration.test.utils.clients.APIStoreRestClient(storeURLHttp);
 
-            String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.17/register";
+            String dcrURL = baseUrl + "client-registration/v0.17/register";
 
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
@@ -231,8 +231,9 @@ public class ScenarioTestBase {
                     storeContext.getContextTenant().getDomain(), baseUrl);
 
             log.info("Logging URL's");
-            log.info(baseUrl + "baseUrl");
-            log.info(storeURLHttps + "storeURLHttps");
+            log.info("baseUrl: " + baseUrl);
+            log.info("storeURLHttps: " + storeURLHttps);
+            log.info("DCR end point: " + dcrURL);
             log.info("Logging URL's ENDED");
 
             try {
