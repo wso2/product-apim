@@ -25,6 +25,48 @@ import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.Constants;
@@ -63,6 +105,7 @@ public class RestAPIPublisherImpl {
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
+    public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -91,7 +134,7 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage",
+                                "apim:pub_alert_manage apim:shared_scope_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -114,6 +157,7 @@ public class RestAPIPublisherImpl {
         graphQlPoliciesApi.setApiClient(apiPublisherClient);
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
+        sharedScopesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -688,7 +732,7 @@ public class RestAPIPublisherImpl {
                 null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
-            response = new HttpResponse("Successfully update the documentation", 200);
+            response = new HttpResponse("Successfully updated the documentation", 200);
         }
         return response;
     }
@@ -762,6 +806,70 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Successfully deleted the Document", 200);
         }
         return response;
+    }
+
+    /***
+     * Add a shared scope
+     *
+     * @param scopeDTO
+     * @return ScopeDTO - Returns the added shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO addSharedScope(ScopeDTO scopeDTO) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.addSharedScopeWithHttpInfo(scopeDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_CREATED);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Update a shared scopes
+     *
+     * @param uuid
+     * @param scopeDTO
+     * @return ScopeDTO - Returns the updated shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO updateSharedScope(String uuid, ScopeDTO scopeDTO) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.updateSharedScopeWithHttpInfo(uuid, scopeDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Get a shared scope
+     *
+     * @param uuid
+     * @return ScopeDTO - Returns the updated shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO getSharedScopeById(String uuid) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.getSharedScopeWithHttpInfo(uuid);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Delete a shared scope
+     *
+     * @param uuid
+     * @throws ApiException
+     */
+    public void deleteSharedScope(String uuid) throws ApiException {
+        ApiResponse<Void> httpInfo = sharedScopesApi.deleteSharedScopeWithHttpInfo(uuid);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+
+    /***
+     * Get all shared scopes
+     *
+     * @return ScopeListDTO - Returns all the shared scopes
+     * @throws ApiException
+     */
+    public ScopeListDTO getAllSharedScopes() throws ApiException {
+        ApiResponse<ScopeListDTO> httpInfo = sharedScopesApi.getSharedScopesWithHttpInfo(null, null);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
     }
 
 
