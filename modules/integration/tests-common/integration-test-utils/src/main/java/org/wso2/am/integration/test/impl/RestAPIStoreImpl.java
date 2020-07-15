@@ -1766,7 +1766,7 @@ public class RestAPIStoreImpl {
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
     }
-    
+
     /**
      * Method to retrieve the GraphQL Complexity Details
      * @param apiId apiId of the API
