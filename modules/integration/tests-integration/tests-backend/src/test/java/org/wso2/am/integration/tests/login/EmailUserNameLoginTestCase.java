@@ -26,15 +26,16 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -69,7 +70,6 @@ import static org.testng.Assert.assertNotNull;
  */
 public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
 
-    private AdminDashboardRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
 
@@ -91,19 +91,17 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
             throw new APIManagerIntegrationTestException("Error while changing server configuration", e);
         }
     }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init();
-        String workflowAdminURLHTTP = getStoreURLHttp();
-
-        workflowAdmin = new AdminDashboardRestClient(workflowAdminURLHTTP);
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Email username login test case")
     public void LoginWithEmailUserNameTestCase()
             throws APIManagerIntegrationTestException, org.wso2.am.integration.clients.store.api.ApiException,
-            XPathExpressionException {
+            XPathExpressionException, org.wso2.am.integration.clients.admin.ApiException {
 
         String userNameWithEmail = "emailuser@email.com";
         String password = "email123";
@@ -135,10 +133,12 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore = new RestAPIStoreImpl(userNameWithEmail, password, domainName,"https://localhost:9943/");
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
+
         // check for Admin Portal login with email user name
-        HttpResponse login = workflowAdmin.login(fullUserName, password);
-        assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Login to Admin Portal Login to Publisher with email username failed");
+        restAPIAdmin = new RestAPIAdminImpl(userNameWithEmail, password, domainName, "https://localhost:9943/");
+        ApplicationThrottlePolicyListDTO listDTO =
+                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
+        assertNotNull(listDTO, "Login to Admin portal with email username failed");
     }
 
     /**

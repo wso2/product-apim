@@ -60,7 +60,7 @@ public class RestAPIAdminImpl {
     public WorkflowsIndividualApi workflowsIndividualApi = new WorkflowsIndividualApi();
     private SettingsApi settingsApi = new SettingsApi();
     private ApplicationPolicyIndividualApi applicationPolicyIndividualApi = new ApplicationPolicyIndividualApi();
-    private ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
+    public ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
     private SubscriptionPolicyIndividualApi subscriptionPolicyIndividualApi = new SubscriptionPolicyIndividualApi();
     private SubscriptionPolicyCollectionApi subscriptionPolicyCollectionApi = new SubscriptionPolicyCollectionApi();
     private CustomRulesIndividualApi customRulesIndividualApi = new CustomRulesIndividualApi();
