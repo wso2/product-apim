@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -15,6 +16,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -22,10 +29,10 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -35,10 +42,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import com.google.gson.Gson;
 
 public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
-    private AdminDashboardRestClient adminDashboardRestClient;
     private String appPolicyName = "AppPolicyWithBandwidth";
     private String subPolicyName = "SubPolicyWithBandwidth";
     private String apiPolicyName = "APIPolicyWithBandwidth";
+    private String appPolicyId;
+    private String subPolicyId;
+    private String apiPolicyId;
     private String apiId;
     private String gatewayUrl;
     private String app1Id;
@@ -67,24 +76,49 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        // create application level policy with bandwidth quota type
-        adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
-        adminDashboardRestClient.login(user.getUserName(), user.getPassword());
-        HttpResponse addPolicyResponse = adminDashboardRestClient.addApplicationPolicyWithBandwidthType(appPolicyName,
-                1, "KB", 1, "min");
-        verifyResponse(addPolicyResponse);
 
-        // create subscription level policy with bandwidth quota type
-        addPolicyResponse = adminDashboardRestClient.addSubscriptionPolicyWithBandwidthType(subPolicyName, 1, "KB", 1,
-                "min", true, 100, "min");
-        verifyResponse(addPolicyResponse);
+        BandwidthLimitDTO bandwidthLimit = DtoFactory.createBandwidthLimitDTO("min", 1, 1L, "KB");
+        ThrottleLimitDTO defaultLimit =
+                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT, null, bandwidthLimit);
 
-        String throttlingPolicyJSON = "{\"policyName\":\"" + apiPolicyName
-                + "\",\"policyDescription\":\"\",\"executionFlows\":[],\"defaultQuotaPolicy\":"
-                + "{\"type\":\"bandwidthVolume\",\"limit\":{\"requestCount\":0,\"timeUnit\":\"min\","
-                + "\"dataAmount\":\"1\",\"dataUnit\":\"KB\",\"unitTime\":\"1\"}}}";
-        addPolicyResponse = adminDashboardRestClient.addThrottlingPolicy(throttlingPolicyJSON);
-        verifyResponse(addPolicyResponse);
+        //Create the application level policy with bandwidth quota type
+        ApplicationThrottlePolicyDTO bandwidthApplicationPolicyDTO = DtoFactory
+                .createApplicationThrottlePolicyDTO(appPolicyName, "", "", false, defaultLimit);
+        ApiResponse<ApplicationThrottlePolicyDTO> addedApplicationPolicy =
+                restAPIAdmin.addApplicationThrottlingPolicy(bandwidthApplicationPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedApplicationPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        ApplicationThrottlePolicyDTO addedApplicationPolicyDTO = addedApplicationPolicy.getData();
+        appPolicyId = addedApplicationPolicyDTO.getPolicyId();
+        Assert.assertNotNull(appPolicyId, "The policy ID cannot be null or empty");
+
+        //Create the subscription level policy with bandwidth quota type
+        SubscriptionThrottlePolicyDTO bandwidthSubscriptionPolicyDTO = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
+                        -1, -1, 100, "min", new ArrayList<>(),
+                        true, "");
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthSubscriptionPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedSubscriptionPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        SubscriptionThrottlePolicyDTO addedSubscriptionPolicyDTO = addedSubscriptionPolicy.getData();
+        subPolicyId = addedSubscriptionPolicyDTO.getPolicyId();
+        Assert.assertNotNull(subPolicyId, "The policy ID cannot be null or empty");
+
+        //Create the advanced throttling policy with bandwidth quota type
+        AdvancedThrottlePolicyDTO bandwidthAdvancedPolicyDTO = DtoFactory
+                .createAdvancedThrottlePolicyDTO(apiPolicyName, "", "", false, defaultLimit,
+                        new ArrayList<>());
+        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addAdvancedThrottlingPolicy(bandwidthAdvancedPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        AdvancedThrottlePolicyDTO addedAdvancedPolicyDTO = addedPolicy.getData();
+        apiPolicyId = addedAdvancedPolicyDTO.getPolicyId();
+        Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
 
         backendEP = gatewayUrlsWrk.getWebAppURLNhttp() + "response/";
         // create api
@@ -253,8 +287,8 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(app2Id);
         restAPIStore.deleteApplication(app3Id);
         restAPIPublisher.deleteAPI(apiId);
-        adminDashboardRestClient.deleteAPIPolicy(apiPolicyName);
-        adminDashboardRestClient.deleteApplicationPolicy(appPolicyName);
-        adminDashboardRestClient.deleteSubscriptionPolicy(subPolicyName);
+        restAPIAdmin.deleteAdvancedThrottlingPolicy(apiPolicyId);
+        restAPIAdmin.deleteApplicationThrottlingPolicy(appPolicyId);
+        restAPIAdmin.deleteSubscriptionThrottlingPolicy(subPolicyId);
     }
 }
