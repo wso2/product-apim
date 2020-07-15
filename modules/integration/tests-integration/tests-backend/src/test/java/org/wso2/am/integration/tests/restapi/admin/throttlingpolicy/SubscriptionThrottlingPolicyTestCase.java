@@ -206,5 +206,4 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
     }
-
 }
