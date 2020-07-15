@@ -67,6 +67,9 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyList
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -101,6 +104,7 @@ public class RestAPIPublisherImpl {
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
+    public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
@@ -151,6 +155,7 @@ public class RestAPIPublisherImpl {
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
         subscriptionsApi.setApiClient(apiPublisherClient);
+        graphQlPoliciesApi.setApiClient(apiPublisherClient);
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
@@ -1184,4 +1189,61 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return GraphQLSchemaTypeListDTO GraphQLSchemaTypeList object
+     * @throws ApiException
+     */
+    public GraphQLSchemaTypeListDTO getGraphQLSchemaTypeList(String apiId) throws ApiException {
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        Assert.assertEquals(graphQLSchemaTypeListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return graphQLSchemaTypeListDTOApiResponse.getData();
+    }
+
+    /**
+     * Method to add GraphQL Complexity Info of an API
+     *
+     * @param apiID
+     * @param graphQLQueryComplexityInfoDTO GraphQL Complexity Object
+     * @return
+     * @throws ApiException
+     */
+    public void addGraphQLComplexityDetails(GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, String apiID ) throws ApiException {
+        ApiResponse<Void> apiResponse =  graphQlPoliciesApi.apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(apiID, graphQLQueryComplexityInfoDTO);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /**
+     * Method to retrieve the GraphQL Complexity Details
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        if(complexityResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
+        }
+        return response;
+    }
 }
