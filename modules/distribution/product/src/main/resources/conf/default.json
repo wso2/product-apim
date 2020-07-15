@@ -251,22 +251,29 @@
     "/api/users/v2/me/webauthn",
     "/api/",
     "/user-portal/",
-    "/user-info/"
+    "/keymanager-operations/"
   ],
   "resource.access_control": [
     {
-      "context" : "(.*)/user-info/claims(.*)",
+      "context" : "(.*)/keymanager-operations/user-info/claims(.*)",
       "secure" : true,
       "http_method" : "GET",
       "permissions" : "/permission/admin/manage/identity/usermgt/list",
       "scopes" : "internal_user_mgt_list"
     },
     {
-      "context" : "(.*)/user-info/claims/generate",
+      "context" : "(.*)/keymanager-operations/user-info/claims/generate",
       "secure" : true,
       "http_method" : "POST",
       "permissions" : "/permission/admin/manage/identity/usermgt/list",
       "scopes" : "internal_user_mgt_list"
+    },
+    {
+      "context" : "(.*)/keymanager-operations/dcr/register",
+      "secure" : true,
+      "http_method" : "POST",
+      "permissions" : "/permission/admin/manage/identity/applicationmgt/create",
+      "scopes" : "internal_application_mgt_create"
     }
   ]
 }
