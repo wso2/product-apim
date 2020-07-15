@@ -231,9 +231,9 @@ public class ScenarioTestBase {
                     storeContext.getContextTenant().getDomain(), baseUrl);
 
             log.info("Logging URL's");
-            log.info(baseUrl + "baseUrl");
-            log.info(storeURLHttps + "storeURLHttps");
-            log.info("DCR end point" + dcrURL);
+            log.info("baseUrl: " + baseUrl);
+            log.info("storeURLHttps: " + storeURLHttps);
+            log.info("DCR end point: " + dcrURL);
             log.info("Logging URL's ENDED");
 
             try {
