@@ -1,15 +1,13 @@
 {
   "policyName": "WebSocketTestThrottlingPolicy",
   "policyDescription": "WebSocket Test Throttling Policy",
-  "executionFlows": [],
-  "defaultQuotaPolicy": {
-    "type": "requestCount",
-    "limit": {
-      "requestCount": "2",
+  "conditionalGroups": [],
+  "defaultLimit": {
+    "type": "REQUESTCOUNTLIMIT",
+    "requestCount": {
+      "requestCount": 2,
       "timeUnit": "min",
-      "dataAmount": 0,
-      "dataUnit": "",
-      "unitTime": "1"
+      "unitTime": 1
     }
   }
 }
