@@ -3447,6 +3447,104 @@ paths:
             The request has not been performed because one of the preconditions is not met.
           schema:
             $ref: '#/definitions/Error'
+  ######################################################
+  # GraphQL "Query Complexity" resource APIs
+  ######################################################
+  /apis/{apiId}/graphql-policies/complexity:
+
+    #-----------------------------------------------------
+    # Retrieve Custom Complexity Info of a given API
+    #-----------------------------------------------------
+    get:
+      summary: Get the complexity related details of an API
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_publish
+      description: |
+        This operation can be used to retrieve complexity related details belonging to an API by providing the API id.
+      parameters:
+        - $ref: '#/parameters/apiId'
+      tags:
+        - GraphQL Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Requested complexity details returned.
+        404:
+          description: |
+            Not Found.
+            Requested API does not contain any complexity details.
+
+    #-----------------------------------------------------
+    # Update API specific Custom Complexity Info
+    #-----------------------------------------------------
+    put:
+      summary: Update complexity related details of an API
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      description: |
+        This operation can be used to update complexity details belonging to an API by providing the id of the API.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - in: body
+          name: body
+          description: |
+            Role-depth mapping that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/GraphQLQueryComplexityInfo'
+      tags:
+        - GraphQL Policies
+      responses:
+        200:
+          description: |
+            Created.
+            Complexity details created successfully.
+        404:
+          description: |
+            Bad Request.
+            Complexity detail addition failed.
+
+  ######################################################
+  # GraphQL Schema "Types and Fields" resource API
+  ######################################################
+  /apis/{apiId}/graphql-policies/complexity/types:
+
+    #-----------------------------------------------------
+    # Retrieve all types and fields of a GraphQL Schema
+    #-----------------------------------------------------
+    get:
+      summary: Retrieve types and fields of a GraphQL Schema
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_publish
+      description: |
+        This operation can be used to retrieve all types and fields of the GraphQL Schema by providing the API id.
+      parameters:
+        - $ref: '#/parameters/apiId'
+      tags:
+        - GraphQL Policies
+      responses:
+        200:
+          description: |
+            OK.
+            Types and fields returned successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content of the body.
+              default: application/json
+              type: string
+          schema:
+            $ref: '#/definitions/GraphQLSchemaTypeList'
+        404:
+          description: |
+            Not Found.
+            Retrieving types and fields failed.
 
   ######################################################
   # The "Resource Paths" resource
@@ -8265,6 +8363,72 @@ definitions:
       schemaDefinition:
         type: string
 
+  #-----------------------------------------------------
+  # The GraphQL Query Complexity Info resource
+  #-----------------------------------------------------
+  GraphQLQueryComplexityInfo:
+    title: GraphQL Query Complexity Info
+    properties:
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/GraphQLCustomComplexityInfo'
+
+  #-----------------------------------------------------
+  # The GraphQL Custom Complexity Info resource
+  #-----------------------------------------------------
+  GraphQLCustomComplexityInfo:
+    title: GraphQL Custom Complexity Info
+    required:
+      - type
+      - field
+      - complexityValue
+    properties:
+      type:
+        type: string
+        description: |
+          The type found within the schema of the API
+        example: "Country"
+      field:
+        type: string
+        description: |
+          The field which is found under the type within the schema of the API
+        example: "name"
+      complexityValue:
+        type: integer
+        description: |
+          The complexity value allocated for the associated field under the specified type
+        example: 1
+
+  #-----------------------------------------------------
+  # The GraphQL Schema Type List resource
+  #-----------------------------------------------------
+  GraphQLSchemaTypeList:
+    title: List of types and corresponding fields of the GraphQL Schema
+    properties:
+      typeList:
+        type: array
+        items:
+          $ref: '#/definitions/GraphQLSchemaType'
+
+  #-----------------------------------------------------
+  # The GraphQL Schema Type resource
+  #-----------------------------------------------------
+  GraphQLSchemaType:
+    title: Single type and corresponding fields found within the GraphQL Schema
+    properties:
+      type:
+        type: string
+        description: |
+          Type found within the GraphQL Schema
+        example: "Country"
+      fieldList:
+        type: array
+        description: |
+          Array of fields under current type
+        items:
+          type: string
+        example: ["code","name"]
 
   #-----------------------------------------------------
   # The Mediation List resource
