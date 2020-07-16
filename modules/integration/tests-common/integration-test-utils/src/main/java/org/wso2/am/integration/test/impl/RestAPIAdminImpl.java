@@ -23,6 +23,8 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.AdvancedPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
@@ -34,6 +36,7 @@ import org.wso2.am.integration.clients.admin.api.SettingsApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
@@ -70,6 +73,8 @@ public class RestAPIAdminImpl {
     private CustomRulesCollectionApi customRulesCollectionApi = new CustomRulesCollectionApi();
     private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
+    private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
+    private ApplicationApi applicationApi = new ApplicationApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -133,6 +138,8 @@ public class RestAPIAdminImpl {
         customRulesCollectionApi.setApiClient(apiAdminClient);
         advancedPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyCollectionApi.setApiClient(apiAdminClient);
+        applicationCollectionApi.setApiClient(apiAdminClient);
+        applicationApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
@@ -394,6 +401,35 @@ public class RestAPIAdminImpl {
 
         return advancedPolicyIndividualApi
                 .throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to retrieve applications.
+     *
+     * @param user            Username of the application creator.
+     * @param limit           Maximum number of applications to return.
+     * @param offset          Starting point within the complete list of applications qualified.
+     * @param appTenantDomain Tenant domain of the applications to get.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving applications.
+     */
+    public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
+                                                           String appTenantDomain) throws ApiException {
+
+        return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null, null, appTenantDomain);
+    }
+
+    /**
+     * This method is used to change the owner of an application.
+     *
+     * @param newOwner      New owner of the application.
+     * @param applicationId Application ID of the application.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while changing the owner of an application.
+     */
+    public ApiResponse<Void> changeApplicationOwner(String newOwner, String applicationId) throws ApiException {
+
+        return applicationApi.applicationsApplicationIdChangeOwnerPostWithHttpInfo(newOwner, applicationId);
     }
 
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {
