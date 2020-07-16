@@ -72,14 +72,12 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
-        userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
-        userManagementClient.addUser(GRAPHQL_TEST_USER, GRAPHQL_TEST_USER_PASSWORD, new String[]{}, null);
-        userManagementClient.addRole(GRAPHQL_ROLE, new String[]{GRAPHQL_TEST_USER}, new String[]{});
+        //userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
 
         // add new Subscription throttling policy
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         createNewSubscriptionPolicyObject(subscriptionThrottlePolicyDTO);
-        restAPIAdminUser = new RestAPIAdminImpl(USER_ADMIN, "admin", "carbon.super",
+        restAPIAdminUser = new RestAPIAdminImpl("admin", "admin", "carbon.super",
                 adminURLHttps);
         org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.addSubscriptionPolicy(subscriptionThrottlePolicyDTO,"application/json");
         assertEquals(response.getResponseCode(), 201);
@@ -203,11 +201,15 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
         JSONObject queryObject = new JSONObject();
         queryObject.put("query", "{languages{code name native rtl}}");
+
+        //Maximum query complexity exceed, max_query_complexity = 4 < query complexity = 5
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
 
         JSONObject queryObject2 = new JSONObject();
         queryObject2.put("query", "{countries{code name languages{code name}}}");
+
+        //Maximum query depth exceed, max_query_depth = 2 < query_depth = 3
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
     }
@@ -243,11 +245,15 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
         JSONObject queryObject = new JSONObject();
         queryObject.put("query", "{languages{code name native rtl}}");
+
+        //Maximum query complexity exceed, max_query_complexity = 4 < query complexity = 5
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
 
         JSONObject queryObject2 = new JSONObject();
         queryObject2.put("query", "{countries{code name languages{code name}}}");
+
+        //Maximum query depth exceed, max_query_depth = 2 < query_depth = 3
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
     }
@@ -289,9 +295,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        userManagementClient.deleteUser(USER_ADMIN);
-        userManagementClient.deleteRole(GRAPHQL_ROLE);
-        userManagementClient.deleteUser(GRAPHQL_TEST_USER);
+        //userManagementClient.deleteUser(USER_ADMIN);
         restAPIStore.deleteApplication(oauthTokenTestApiId);
         restAPIStore.deleteApplication(tokenTestApiAppId);
         restAPIPublisher.deleteAPI(graphqlApiId);
