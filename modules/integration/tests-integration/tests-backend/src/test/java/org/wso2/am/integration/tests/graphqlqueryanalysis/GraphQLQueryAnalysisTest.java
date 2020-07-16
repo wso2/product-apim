@@ -34,13 +34,7 @@ import static org.testng.Assert.assertEquals;
 public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
     private  AdminDashboardRestClient adminDashboardRestClient;
-    private String ADMIN_ROLE = "admin";
-    private String USER_ADMIN = "smith";
-    private final String ALLOWED_ROLE = "admin";
     private RestAPIAdminImpl restAPIAdminUser;
-    private static final String GRAPHQL_TEST_USER = "graphqluser";
-    private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
-    private static final String GRAPHQL_ROLE = "graphqlrole";
 
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPIQueryAnalysis";
     private final String API_CONTEXT = "infoS";
@@ -71,8 +65,6 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
-
-        //userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
 
         // add new Subscription throttling policy
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
@@ -295,7 +287,6 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //userManagementClient.deleteUser(USER_ADMIN);
         restAPIStore.deleteApplication(oauthTokenTestApiId);
         restAPIStore.deleteApplication(tokenTestApiAppId);
         restAPIPublisher.deleteAPI(graphqlApiId);
