@@ -634,7 +634,7 @@
                                     org.wso2.km.ext.wso2is:wso2is.key.manager.feature:${wso2is.km.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.km.ext.wso2is:wso2is.key.manager.userinfo.endpoint.feature:${wso2is.km.version}
+                                    org.wso2.km.ext.wso2is:wso2is.key.manager.operations.endpoint.feature:${wso2is.km.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.km.ext.wso2is:wso2is.key.manager.notification.feature:${wso2is.km.version}
@@ -1393,7 +1393,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.userinfo.endpoint.feature.group</id>
+                                    <id>wso2is.key.manager.operations.endpoint.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -2756,7 +2756,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.userinfo.endpoint.feature.group</id>
+                                    <id>wso2is.key.manager.operations.endpoint.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
