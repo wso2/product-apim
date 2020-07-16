@@ -35,14 +35,10 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
     private  AdminDashboardRestClient adminDashboardRestClient;
     private RestAPIAdminImpl restAPIAdminUser;
-
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPIQueryAnalysis";
     private final String API_CONTEXT = "infoS";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String END_POINT_URL = "https://localhost:9943/am-graphQL-sample/api/graphql/";
-    private final String RESPONSE_DATA = "[{\"name\":\"Afrikaans\",\"code\":\"af\"},{\"name\":\"Amharic\",\"code\":\"am\"}," +
-            "{\"name\":\"Arabic\",\"code\":\"ar\"},{\"name\":\"Aymara\",\"code\":\"ay\"},{\"name\":\"Azerbaijani\"," +
-            "\"code\":\"az\"},{\"name\":\"Belarusian\",\"code\":\"be\"}]";
     private String schemaDefinition;
     private String graphqlApiId;
     private String tokenTestApiAppId;
@@ -283,7 +279,6 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         out.close();
         return temp;
     }
-
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
