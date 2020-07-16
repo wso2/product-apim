@@ -108,6 +108,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private final String TAG2 = "export";
     private final String TAG3 = "test";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
+    private final String UPDATED_DESCRIPTION = "This is the updated version of API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "APIImportExportTestCaseApp";
     private final String NEW_APP_NAME = "newAPIImportExportTestCaseApp";
@@ -265,6 +266,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(API_NAME, apiObj.getName(), "Imported API Name is incorrect");
         assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
         assertEquals(DESCRIPTION, apiObj.getDescription(), "Imported API description is incorrect");
+        assertEquals("/" + API_CONTEXT, apiObj.getContext().replace("/t/wso2.com", ""),
+                "Imported API context is incorrect");
         List<String> tagList = apiObj.getTags();
         Assert.assertTrue(tagList.contains(TAG1), "Imported API not contain tag: " + TAG1);
         Assert.assertTrue(tagList.contains(TAG2), "Imported API not contain tag: " + TAG2);
@@ -314,8 +317,81 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(groups = { "wso2.am" }, description = "Update imported Sample API",dependsOnMethods = "testAPIState")
+    public void testAPIUpdate() throws Exception {
+        //get the imported API information
+        APIDTO apiObj = getAPI(API_NAME, API_VERSION, user.getUserName());
+        apiId = apiObj.getId();
+
+        //Update imported API information
+        apiObj.setDescription(UPDATED_DESCRIPTION);
+        restAPIPublisher.updateAPI(apiObj);
+    }
+
     @Test(groups = {
-            "wso2.am" }, description = "Implementing sample api for scope test", dependsOnMethods = "testAPIState")
+            "wso2.am" }, description = "Checking status of the updated API", dependsOnMethods = "testAPIUpdate")
+    public void testAPIStateAfterUpdate() throws Exception {
+        //get the updated API information
+        APIDTO updatedApiObj = getAPI(API_NAME, API_VERSION, user.getUserName());
+        apiId = updatedApiObj.getId();
+
+        String state = updatedApiObj.getLifeCycleStatus();
+        assertEquals(state, APILifeCycleState.PUBLISHED.getState().toUpperCase(),
+                "Imported API not in Published state");
+        assertEquals(API_NAME, updatedApiObj.getName(), "Imported API Name is incorrect");
+        assertEquals(API_VERSION, updatedApiObj.getVersion(), "Imported API version is incorrect");
+        assertEquals(UPDATED_DESCRIPTION, updatedApiObj.getDescription(), "Imported API description is incorrect");
+        List<String> tagList = updatedApiObj.getTags();
+        Assert.assertTrue(tagList.contains(TAG1), "Imported API not contain tag: " + TAG1);
+        Assert.assertTrue(tagList.contains(TAG2), "Imported API not contain tag: " + TAG2);
+        Assert.assertTrue(tagList.contains(TAG3), "Imported API not contain tag: " + TAG3);
+        Assert.assertTrue(
+                updatedApiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.GOLD),
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.GOLD);
+        Assert.assertTrue(
+                updatedApiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.BRONZE),
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.BRONZE);
+        Assert.assertTrue(
+                updatedApiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.SILVER),
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.SILVER);
+        Assert.assertTrue(
+                updatedApiObj.getPolicies().contains(APIMIntegrationConstants.API_TIER.UNLIMITED),
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.UNLIMITED);
+        Assert.assertTrue(updatedApiObj.getTransport().contains(Constants.PROTOCOL_HTTP),
+                "Imported API HTTP transport status is incorrect");
+        Assert.assertTrue(updatedApiObj.getTransport().contains(Constants.PROTOCOL_HTTPS),
+                "Imported API HTTP transport status is incorrect");
+        Assert.assertFalse(updatedApiObj.isResponseCachingEnabled(),
+                "Imported API response Cache status is incorrect");
+        assertEquals(APIDTO.VisibilityEnum.PUBLIC, updatedApiObj.getVisibility(), "Imported API visibility is incorrect");
+        Assert.assertFalse(updatedApiObj.isIsDefaultVersion(),
+                "Imported API Default Version status is incorrect");
+
+        List<APIOperationsDTO> apiOperationsDTOList = updatedApiObj.getOperations();
+
+        assertEquals(resList.size(), apiOperationsDTOList.size(), "Imported API not in Created state");
+        String method = null, authType = null, tier = null, urlPattern = null;
+        APIResourceBean res;
+        for (int i = 0; i < resList.size(); i++) {
+            res = resList.get(i);
+            for (APIOperationsDTO apiOperationsDTO: apiOperationsDTOList) {
+                method = apiOperationsDTO.getVerb();
+                if (StringUtils.equals(res.getResourceMethod(), method)) {
+                    authType = apiOperationsDTO.getAuthType();
+                    tier = apiOperationsDTO.getThrottlingPolicy();
+                    urlPattern = apiOperationsDTO.getTarget();
+                    break;
+                }
+            }
+            assertEquals(res.getResourceMethod(), method, "Imported API Resource method is incorrect");
+            //Need to uncomment this after fixing product-apim/issues/6859
+            //Assert.assertEquals(res.getResourceMethodThrottlingTier(), tier, "Imported API Resource Tier is incorrect");
+            assertEquals(res.getUriTemplate(), urlPattern, "Imported API Resource URL template is incorrect");
+        }
+    }
+
+    @Test(groups = {
+            "wso2.am" }, description = "Implementing sample api for scope test", dependsOnMethods = "testAPIStateAfterUpdate")
     public void testNewAPICreation() throws Exception {
         String providerName = user.getUserName();
 
@@ -419,6 +495,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 "Imported API not in Published state");
         assertEquals(NEW_API_NAME, apiObj.getName(), "Imported API Name is incorrect");
         assertEquals(API_VERSION, apiObj.getVersion(), "Imported API version is incorrect");
+        assertEquals("/" + NEW_API_CONTEXT, apiObj.getContext().replace("/t/wso2.com", ""),
+                "Imported API context is incorrect");
 
         assertEquals(APIDTO.VisibilityEnum.RESTRICTED, apiObj.getVisibility(), "Imported API Visibility is incorrect");
         String endpointConfig = apiObj.getEndpointConfig().toString();
