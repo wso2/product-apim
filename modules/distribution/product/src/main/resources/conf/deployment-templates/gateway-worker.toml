@@ -65,12 +65,12 @@ username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
 [[apim.analytics.url_group]]
-analytics_url="tcp://analytics1.local:7612"
-analytics_auth_url="ssl://analytics1.local:7712"
+analytics_url=["tcp://analytics1.local:7612"]
+analytics_auth_url=["ssl://analytics1.local:7712"]
 
 [[apim.analytics.url_group]]
-analytics_url="tcp://analytics2.local:7612"
-analytics_auth_url="ssl://analytics2.local:7712"
+analytics_url=["tcp://analytics2.local:7612"]
+analytics_auth_url=["ssl://analytics2.local:7712"]
 
 [apim.cache.gateway_token]
 enable = true
