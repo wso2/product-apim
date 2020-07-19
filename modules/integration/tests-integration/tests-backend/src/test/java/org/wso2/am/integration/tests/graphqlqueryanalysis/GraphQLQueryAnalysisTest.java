@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -67,8 +68,9 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         createNewSubscriptionPolicyObject(subscriptionThrottlePolicyDTO);
         restAPIAdminUser = new RestAPIAdminImpl("admin", "admin", "carbon.super",
                 adminURLHttps);
-        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.addSubscriptionPolicy(subscriptionThrottlePolicyDTO,"application/json");
-        assertEquals(response.getResponseCode(), 201);
+        ApiResponse<SubscriptionThrottlePolicyDTO>
+                response = restAPIAdminUser.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO);
+        assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
 
         //create  and publish GraphQL API
         schemaDefinition = IOUtils.toString(
