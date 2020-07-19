@@ -31,6 +31,8 @@ import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
+import org.wso2.am.integration.clients.admin.api.LabelApi;
+import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
 
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
@@ -41,6 +43,8 @@ import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDT
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
@@ -75,6 +79,8 @@ public class RestAPIAdminImpl {
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
     private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
     private ApplicationApi applicationApi = new ApplicationApi();
+    private LabelApi labelApi = new LabelApi();
+    private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -140,6 +146,8 @@ public class RestAPIAdminImpl {
         advancedPolicyCollectionApi.setApiClient(apiAdminClient);
         applicationCollectionApi.setApiClient(apiAdminClient);
         applicationApi.setApiClient(apiAdminClient);
+        labelApi.setApiClient(apiAdminClient);
+        labelCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
@@ -178,7 +186,7 @@ public class RestAPIAdminImpl {
     /**
      * This method is used to create an application throttling policy.
      *
-     * @param applicationThrottlePolicyDTO Application throttling policy DTO.
+     * @param applicationThrottlePolicyDTO Application throttling policy DTO to be added.
      * @return API response returned by the API call.
      * @throws ApiException if an error occurs while creating the application throttling policy.
      */
@@ -235,7 +243,7 @@ public class RestAPIAdminImpl {
     /**
      * This method is used to create a subscription throttling policy.
      *
-     * @param subscriptionThrottlePolicyDTO Subscription throttling policy DTO.
+     * @param subscriptionThrottlePolicyDTO Subscription throttling policy DTO to be added.
      * @return API response returned by the API call.
      * @throws ApiException Throws if an error occurred while creating the new subscription throttling policy.
      */
@@ -294,7 +302,7 @@ public class RestAPIAdminImpl {
     /**
      * This method is used to create an custom throttling policy.
      *
-     * @param customRuleDTO Custom throttling policy DTO.
+     * @param customRuleDTO Custom throttling policy DTO to be added.
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while creating the custom throttling policy.
      */
@@ -348,7 +356,7 @@ public class RestAPIAdminImpl {
     /**
      * This method is used to create an advanced throttling policy.
      *
-     * @param advancedThrottlePolicyDTO Advanced throttling policy DTO.
+     * @param advancedThrottlePolicyDTO Advanced throttling policy DTO to be added.
      * @return API response returned by the API call.
      * @throws ApiException Throws if an error occurred while creating the new advanced policy.
      */
@@ -401,6 +409,54 @@ public class RestAPIAdminImpl {
 
         return advancedPolicyIndividualApi
                 .throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to add a label.
+     *
+     * @param labelDTO Label DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new label.
+     */
+    public ApiResponse<LabelDTO> addLabel(LabelDTO labelDTO) throws ApiException {
+
+        return labelApi.labelsPostWithHttpInfo(labelDTO);
+    }
+
+    /**
+     * This method is used to retrieve all labels.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while retrieving all labels.
+     */
+    public ApiResponse<LabelListDTO> getLabels() throws ApiException {
+
+        return labelCollectionApi.labelsGetWithHttpInfo();
+    }
+
+    /**
+     * This method is used to update a label.
+     *
+     * @param labelId  Label Id of the label to be updated.
+     * @param labelDTO Label DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the label.
+     */
+    public ApiResponse<LabelDTO> updateLabel(String labelId, LabelDTO labelDTO) throws ApiException {
+
+        return labelApi.labelsLabelIdPutWithHttpInfo(labelId, labelDTO);
+    }
+
+    /**
+     * This method is used to delete a label.
+     *
+     * @param labelId Label Id of the label to be updated.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the label.
+     */
+    public ApiResponse<Void> deleteLabel(String labelId) throws ApiException {
+
+        return labelApi.labelsLabelIdDeleteWithHttpInfo(labelId, null, null);
     }
 
     /**

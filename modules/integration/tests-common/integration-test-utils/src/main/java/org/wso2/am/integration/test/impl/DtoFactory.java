@@ -25,6 +25,7 @@ import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
@@ -325,5 +326,21 @@ public class DtoFactory {
                 isDeployed(isDeployed).
                 defaultLimit(defaultLimit).
                 conditionalGroups(conditionalGroups);
+    }
+
+    /**
+     * Creates a label DTO using the given parameters.
+     *
+     * @param name        Name of the label.
+     * @param description Description of the label.
+     * @param accessUrls  Access URLs.
+     * @return Created label DTO.
+     */
+    public static LabelDTO createLabelDTO(String name, String description, List<String> accessUrls) {
+
+        return new LabelDTO().
+                name(name).
+                description(description).
+                accessUrls(accessUrls);
     }
 }

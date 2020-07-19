@@ -21,6 +21,7 @@ import org.testng.Assert;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 
 /**
@@ -135,5 +136,23 @@ public class AdminApiTestHelper {
                 actualPolicy.getConditionalGroups().equals(expectedPolicy.getConditionalGroups());
         Assert.assertTrue(isConditionGroupsEqual, "Policy conditional groups does not match with the expected " +
                 "conditional groups");
+    }
+
+    /**
+     * Verify whether the field values of the label DTO contains the expected values.
+     *
+     * @param expectedLabel Expected label which contains the expected field values.
+     * @param actualLabel   Label object of which the field values should be verified.
+     */
+    public void verifyLabelDTO(LabelDTO expectedLabel, LabelDTO actualLabel) {
+
+        Assert.assertEquals(actualLabel.getId(), expectedLabel.getId(),
+                "Label ID does not match with the expected label ID");
+        Assert.assertEquals(actualLabel.getName(), expectedLabel.getName(),
+                "Label name does not match with the expected name");
+        Assert.assertEquals(actualLabel.getDescription(), expectedLabel.getDescription(),
+                "Label description does not match with the expected description");
+        boolean isAccessUrlsEqual = actualLabel.getAccessUrls().equals(expectedLabel.getAccessUrls());
+        Assert.assertTrue(isAccessUrlsEqual, "Access URLs does not match with the expected access URLs");
     }
 }
