@@ -194,7 +194,8 @@ public class RestAPIAdminImpl {
             ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyCollectionApi
-                .throttlingPoliciesApplicationPostWithHttpInfo(applicationThrottlePolicyDTO, Constants.jsonContentType);
+                .throttlingPoliciesApplicationPostWithHttpInfo(applicationThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE);
     }
 
     /**
@@ -224,7 +225,7 @@ public class RestAPIAdminImpl {
 
         return applicationPolicyIndividualApi
                 .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, applicationThrottlePolicyDTO,
-                        Constants.jsonContentType, null, null);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
@@ -252,7 +253,7 @@ public class RestAPIAdminImpl {
 
         return subscriptionPolicyCollectionApi
                 .throttlingPoliciesSubscriptionPostWithHttpInfo(subscriptionThrottlePolicyDTO,
-                        Constants.jsonContentType);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE);
 
     }
 
@@ -283,7 +284,7 @@ public class RestAPIAdminImpl {
 
         return subscriptionPolicyIndividualApi
                 .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId, subscriptionThrottlePolicyDTO,
-                        Constants.jsonContentType, null, null);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
@@ -309,7 +310,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> addCustomThrottlingPolicy(CustomRuleDTO customRuleDTO) throws ApiException {
 
         return customRulesCollectionApi
-                .throttlingPoliciesCustomPostWithHttpInfo(customRuleDTO, Constants.jsonContentType);
+                .throttlingPoliciesCustomPostWithHttpInfo(customRuleDTO, Constants.APPLICATION_JSON_CONTENT_TYPE);
     }
 
     /**
@@ -337,7 +338,7 @@ public class RestAPIAdminImpl {
 
         return customRulesIndividualApi
                 .throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
-                        Constants.jsonContentType, null, null);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
@@ -365,7 +366,7 @@ public class RestAPIAdminImpl {
 
         return advancedPolicyCollectionApi
                 .throttlingPoliciesAdvancedPostWithHttpInfo(advancedThrottlePolicyDTO,
-                        Constants.jsonContentType);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE);
 
     }
 
@@ -395,7 +396,7 @@ public class RestAPIAdminImpl {
 
         return advancedPolicyIndividualApi
                 .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, advancedThrottlePolicyDTO,
-                        Constants.jsonContentType, null, null);
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
