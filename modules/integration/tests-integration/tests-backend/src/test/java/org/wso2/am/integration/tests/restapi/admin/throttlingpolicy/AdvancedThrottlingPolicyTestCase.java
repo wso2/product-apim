@@ -256,15 +256,6 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
 
         List<ThrottleConditionDTO> throttleConditions = new ArrayList<>();
 
-        //Create the header condition and add it to the throttle conditions list
-        String headerName = "Host";
-        String headerValue = "10.100.7.77";
-        HeaderConditionDTO headerConditionDTO = DtoFactory.createHeaderConditionDTO(headerName, headerValue);
-        ThrottleConditionDTO headerCondition = DtoFactory
-                .createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum.HEADERCONDITION, false, headerConditionDTO,
-                        null, null, null);
-        throttleConditions.add(headerCondition);
-
         //Create the IP condition and add it to the throttle conditions list
         String specificIP = "10.100.1.22";
         IPConditionDTO ipConditionDTO =
@@ -274,15 +265,14 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
                         null, null);
         throttleConditions.add(ipCondition);
 
-        //Create the JWT claims condition and add it to the throttle conditions list
-        String parameterName = "name";
-        String parameterValue = "admin";
-        JWTClaimsConditionDTO jwtClaimsConditionDTO =
-                DtoFactory.createJWTClaimsConditionDTO(parameterName, parameterValue);
-        ThrottleConditionDTO jwtClaimsCondition = DtoFactory
-                .createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum.JWTCLAIMSCONDITION, false, null, null,
-                        jwtClaimsConditionDTO, null);
-        throttleConditions.add(jwtClaimsCondition);
+        //Create the header condition and add it to the throttle conditions list
+        String headerName = "Host";
+        String headerValue = "10.100.7.77";
+        HeaderConditionDTO headerConditionDTO = DtoFactory.createHeaderConditionDTO(headerName, headerValue);
+        ThrottleConditionDTO headerCondition = DtoFactory
+                .createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum.HEADERCONDITION, false, headerConditionDTO,
+                        null, null, null);
+        throttleConditions.add(headerCondition);
 
         //Create the query parameter condition and add it to the throttle conditions list
         String claimUrl = "claimUrl";
@@ -293,6 +283,16 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
                 .createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum.QUERYPARAMETERCONDITION, false, null, null,
                         null, queryParameterConditionDTO);
         throttleConditions.add(queryParameterCondition);
+
+        //Create the JWT claims condition and add it to the throttle conditions list
+        String parameterName = "name";
+        String parameterValue = "admin";
+        JWTClaimsConditionDTO jwtClaimsConditionDTO =
+                DtoFactory.createJWTClaimsConditionDTO(parameterName, parameterValue);
+        ThrottleConditionDTO jwtClaimsCondition = DtoFactory
+                .createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum.JWTCLAIMSCONDITION, false, null, null,
+                        jwtClaimsConditionDTO, null);
+        throttleConditions.add(jwtClaimsCondition);
 
         return throttleConditions;
     }
