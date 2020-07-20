@@ -92,16 +92,16 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
+            dataProviderClass = ScenarioDataProvider.class, dependsOnMethods = "testApplicationCreationWithMissingMandatoryValues")
     public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
-                                                                  String errorMessage) throws Exception {
+                                                                  String errorMessage) {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
                 "null", ApplicationDTO.TokenTypeEnum.OAUTH);
         assertEquals(applicationResponse, null, errorMessage);
     }
 
-    @Test(description = "4.1.1.7")
-    public void testDuplicateApplicationName() throws Exception {
+    @Test(description = "4.1.1.7", dependsOnMethods = "testApplicationCreationWithInvalidMandatoryValues")
+    public void testDuplicateApplicationName() {
         String APPLICATION_NAME = "Application";
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);

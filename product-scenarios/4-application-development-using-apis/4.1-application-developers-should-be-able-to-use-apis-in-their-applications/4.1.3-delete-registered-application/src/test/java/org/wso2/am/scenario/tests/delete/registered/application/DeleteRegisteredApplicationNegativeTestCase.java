@@ -85,8 +85,8 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
         assertNotNull(applicationResponse.getData());
         assertFalse(applicationId.equals(applicationResponse.getData()));
         assertNull(restAPIStoreNew.deleteApplication(applicationId));
-        HttpResponse applicationResponseOld = restAPIStore.getApplicationById(applicationId);
-        assertTrue(applicationResponseOld.getData().contains(applicationId));
+        ApplicationDTO applicationResponseOld = restAPIStore.getApplicationById(applicationId);
+        assertTrue(applicationResponseOld.getApplicationId().contains(applicationId));
         restAPIStoreNew.deleteApplication(applicationResponse.getData());
         restAPIStore.deleteApplication(applicationId);
     }

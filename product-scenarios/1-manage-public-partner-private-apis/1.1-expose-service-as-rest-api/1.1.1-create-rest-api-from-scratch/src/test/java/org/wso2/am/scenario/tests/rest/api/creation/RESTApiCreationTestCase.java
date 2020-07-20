@@ -142,7 +142,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.2")
+    @Test(description = "1.1.1.2" , dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
@@ -204,7 +204,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         validateOptionalField(serviceResponseGetApi);
     }
 
-    @Test(description = "1.1.1.4")
+    @Test(description = "1.1.1.4", dependsOnMethods = "testRESTAPICreationWithOptionalValues")
     public void testRESTAPICreationWithwildCardResource() throws Exception {
         apiName = "APIWildCard";
         apiContext = "apiwildcard";
