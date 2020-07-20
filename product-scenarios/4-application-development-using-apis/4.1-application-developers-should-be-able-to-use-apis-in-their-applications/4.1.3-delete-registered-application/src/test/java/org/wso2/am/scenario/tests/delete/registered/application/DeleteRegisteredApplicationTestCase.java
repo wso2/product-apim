@@ -115,7 +115,7 @@ public class DeleteRegisteredApplicationTestCase extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationId);
     }
 
-    @Test(description = "4.1.3.1")
+    @Test(description = "4.1.3.1", dependsOnMethods = "testKeyGenerationForRecreateDeletedApplication")
     public void testDeleteApplicationWithSubscription() throws Exception {
 //        delete app with subscriptions
         String API_NAME_PREFIX = "AppDeleteAPI_";

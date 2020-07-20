@@ -370,6 +370,7 @@ public class ScenarioTestBase {
                 tenantManagementServiceClient.addTenant(domain, adminUsername, adminPassword, "demo");
                 tenantManagementServiceClient.activateTenant(domain);
             }
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
         }
@@ -385,6 +386,7 @@ public class ScenarioTestBase {
                 tenantManagementServiceClient.deactivateTenant(domain);
                 tenantManagementServiceClient.deleteTenant(domain);
             }
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
         }
@@ -490,6 +492,7 @@ public class ScenarioTestBase {
             if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
                 userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
             }
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with creator role " + username, e);
         }
@@ -506,7 +509,7 @@ public class ScenarioTestBase {
                     .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
                                                               ScenarioTestConstants.PUBLISHER_ROLE}, username);
             }
-
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
         }
@@ -536,6 +539,7 @@ public class ScenarioTestBase {
                 userManagementClient
                     .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
             }
+            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with subscriber role " + username, e);
         }
