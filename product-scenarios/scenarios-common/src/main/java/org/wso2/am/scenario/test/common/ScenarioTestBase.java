@@ -398,6 +398,7 @@ public class ScenarioTestBase {
         try {
             tenantManagementServiceClient = getTenantManagementServiceClient();
             boolean isActive = false;
+            long maxWait = 0;
             while (!isActive) {
                 TenantInfoBean tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
                 if (tenantInfoBean.getActive()) {
@@ -405,6 +406,11 @@ public class ScenarioTestBase {
                 }
                 log.info("Waiting for the tenant " + domain + " to get activated");
                 Thread.sleep(3000);
+                maxWait = maxWait + 3000;
+                if (maxWait > 60000) {
+                    log.error("Tenant domain " + domain + "activation failed");
+                    break;
+                }
             }
             return true;
         } catch (Exception e) {
