@@ -397,9 +397,9 @@ public class ScenarioTestBase {
         TenantManagementServiceClient tenantManagementServiceClient;
         try {
             tenantManagementServiceClient = getTenantManagementServiceClient();
-            TenantInfoBean tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
             boolean isActive = false;
             while (!isActive) {
+                TenantInfoBean tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
                 if (tenantInfoBean.getActive()) {
                     isActive = true;
                 }
