@@ -29,9 +29,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
-import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -102,7 +102,7 @@ public class ScenarioTestBase {
     protected TestUserMode userMode;
     protected APIMTestCaseUtils apimTestCaseUtils;
     protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
-        gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
     protected OMElement synapseConfiguration;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected String executionMode;
@@ -142,33 +142,33 @@ public class ScenarioTestBase {
         try {
             //create store server instance based on configuration given at automation.xml
             storeContext =
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
             storeUrls = new APIMURLBean(storeContext.getContextUrls());
 
             //create publisher server instance based on configuration given at automation.xml
             publisherContext =
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
             publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
 
             //create gateway server instance based on configuration given at automation.xml
             gatewayContextMgt =
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, userMode);
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, userMode);
             gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
 
             gatewayContextWrk =
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, userMode);
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, userMode);
             gatewayUrlsWrk = new APIMURLBean(gatewayContextWrk.getContextUrls());
 
             keyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, userMode);
+                    APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, userMode);
             keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
 
             backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                  APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
+                    APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
             backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
 
             executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
@@ -176,8 +176,8 @@ public class ScenarioTestBase {
             user = storeContext.getContextTenant().getContextUser();
 
             superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                                                                 TestUserMode.SUPER_TENANT_ADMIN);
+                    APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                    TestUserMode.SUPER_TENANT_ADMIN);
 
             if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                 keymanagerSessionCookie = createSession(keyManagerContext);
@@ -196,15 +196,15 @@ public class ScenarioTestBase {
 
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
-                                                                        RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                                                                        RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
-                                                                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+                    RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
+                    RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                    APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
             ClientAuthenticator.makeDCRRequest(publisherParamRequest);
             //DCR call for dev portal app
             DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
-                                                                        RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                                                                        RestAPIStoreImpl.username, RestAPIStoreImpl.password,
-                                                                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+                    RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                    RestAPIStoreImpl.username, RestAPIStoreImpl.password,
+                    APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
             //DCR call for dev portal app
@@ -216,20 +216,21 @@ public class ScenarioTestBase {
             ClientAuthenticator.makeDCRRequest(adminPortalParamRequest);
 
             restAPIPublisher = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                publisherContext.getContextTenant().getDomain(), baseUrl);
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
+                    publisherContext.getContextTenant().getDomain(), baseUrl);
             restAPIStore =
-                new RestAPIStoreImpl(
-                    storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
-                    storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                    storeContext.getContextTenant().getDomain(), baseUrl);
+                    new RestAPIStoreImpl(
+                            storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
+                            storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
+                            storeContext.getContextTenant().getDomain(), baseUrl);
 
             restAPIAdmin = new RestAPIAdminImpl(
                     storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
                     storeContext.getContextTenant().getTenantAdmin().getPassword(),
                     storeContext.getContextTenant().getDomain(), baseUrl);
 
+            storeURLHttps = baseUrl;
             log.info("Logging URL's");
             log.info("baseUrl: " + baseUrl);
             log.info("storeURLHttps: " + storeURLHttps);
@@ -240,10 +241,10 @@ public class ScenarioTestBase {
                 if (userMode.equals(TestUserMode.SUPER_TENANT_ADMIN)) {
                     keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
                     userManagementClient = new UserManagementClient(
-                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                            keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
                     tenantManagementServiceClient = new TenantManagementServiceClient(
-                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
-                        keymanagerSuperTenantSessionCookie);
+                            superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                            keymanagerSuperTenantSessionCookie);
                 }
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
@@ -263,7 +264,7 @@ public class ScenarioTestBase {
      * @throws APIManagerIntegrationTestException - Throws if creating session cookie fails
      */
     protected String createSession(AutomationContext automationContext)
-        throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException {
         LoginLogoutClient loginLogoutClient;
         try {
             loginLogoutClient = new LoginLogoutClient(automationContext);
@@ -306,11 +307,11 @@ public class ScenarioTestBase {
         }
 
 
-        if(StringUtils.isNotEmpty(System.getenv("DATA_BUCKET_LOCATION"))){
+        if (StringUtils.isNotEmpty(System.getenv("DATA_BUCKET_LOCATION"))) {
             String[] urlProps = keyManagerURL.split("services/");
             baseUrl = urlProps[0];
             String[] urlProps2 = urlProps[0].split("https://");
-            if(StringUtils.contains(urlProps2[1], "944")) {
+            if (StringUtils.contains(urlProps2[1], "944")) {
                 String[] urlProps3 = urlProps2[1].split(":9443/");
                 host = urlProps3[0];
             } else {
@@ -359,7 +360,7 @@ public class ScenarioTestBase {
     }
 
     public static void addTenantAndActivate(String domain, String adminUsername, String adminPassword)
-        throws APIManagementException {
+            throws APIManagementException {
         TenantManagementServiceClient tenantManagementServiceClient = null;
         try {
             tenantManagementServiceClient = getTenantManagementServiceClient();
@@ -377,7 +378,7 @@ public class ScenarioTestBase {
     }
 
     public static void deactivateAndDeleteTenant(String domain)
-        throws APIManagementException {
+            throws APIManagementException {
         TenantManagementServiceClient tenantManagementServiceClient;
         try {
             tenantManagementServiceClient = getTenantManagementServiceClient();
@@ -419,7 +420,7 @@ public class ScenarioTestBase {
             String sessionCookie = authenticatorClient.login("admin", "admin", "localhost");
 
             TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(keyManagerURL,
-                                                                                                            sessionCookie);
+                    sessionCookie);
             return tenantManagementServiceClient;
         } catch (Exception e) {
             throw new APIManagementException("Unable to create new tenantManagementClient ", e);
@@ -427,9 +428,9 @@ public class ScenarioTestBase {
     }
 
     private static UserManagementClient getRemoteUserManagerClient(String adminUsername, String adminPassword)
-        throws AxisFault {
+            throws AxisFault {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
-                                                                             adminPassword);
+                adminPassword);
         return userManagementClient;
     }
 
@@ -506,8 +507,8 @@ public class ScenarioTestBase {
 
             if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
                 userManagementClient
-                    .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
-                                                              ScenarioTestConstants.PUBLISHER_ROLE}, username);
+                        .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
+                                ScenarioTestConstants.PUBLISHER_ROLE}, username);
             }
             Thread.sleep(10000);
         } catch (Exception e) {
@@ -522,7 +523,7 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient
-                .addUser(username, password, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, username);
+                    .addUser(username, password, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher role " + username, e);
         }
@@ -531,13 +532,13 @@ public class ScenarioTestBase {
 
     public static void createUserWithSubscriberRole(String username, String password,
                                                     String adminUsername, String adminPassword)
-        throws RemoteException, UserAdminUserAdminException, APIManagementException {
+            throws RemoteException, UserAdminUserAdminException, APIManagementException {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             if (!userManagementClient.userNameExists(ScenarioTestConstants.SUBSCRIBER_ROLE, username)) {
                 userManagementClient
-                    .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
+                        .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
             }
             Thread.sleep(10000);
         } catch (Exception e) {
@@ -566,9 +567,9 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addRole(role,
-                                         new String[]{},
-                                         permisionArray
-                                        );
+                    new String[]{},
+                    permisionArray
+            );
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
@@ -583,9 +584,9 @@ public class ScenarioTestBase {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.deleteRole(role);
             userManagementClient.addRole(role,
-                                         userList,
-                                         permissionArray
-                                        );
+                    userList,
+                    permissionArray
+            );
         } catch (Exception e) {
             throw new APIManagementException("Unable to update role :" + role, e);
         }
@@ -604,7 +605,7 @@ public class ScenarioTestBase {
     }
 
     public void updateUser(String username, String[] newRoles, String[] deletedRoles, String adminUsername, String adminPassword)
-        throws APIManagementException {
+            throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
         try {
@@ -670,7 +671,7 @@ public class ScenarioTestBase {
                 for (String t : updatedTags) {
                     Assert.assertTrue(tagsList.contains(t.trim()), "tag " + t + " in the " + apiName + " is not updated");
                 }
-            } else if (updatedTags.size() == 1){
+            } else if (updatedTags.size() == 1) {
                 Assert.assertTrue(tags.equals(updatedTags.get(0)), "Tags of the " + apiName + " is not updated");
             } else {
                 Assert.assertTrue(tags.equals(""), "Tags of the " + apiName + " is not updated");
@@ -689,7 +690,7 @@ public class ScenarioTestBase {
      * @throws Exception
      * */
     public void isTagsVisibleInStore(String provider, String apiName, String version, String tags, APIStoreRestClient apiStoreRestClient)
-        throws Exception {
+            throws Exception {
 
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
@@ -735,7 +736,7 @@ public class ScenarioTestBase {
     }
 
     public void isAPINotVisibleInStore(String apiName, APIStoreRestClient apiStoreRestClient)
-        throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException {
         long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_API_NOT_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse apiResponseStore = null;
         log.info("WAIT for API to be unavailable in store: " + apiName);
@@ -792,16 +793,16 @@ public class ScenarioTestBase {
             }
         }
         if (apiResponseStore != null && !apiResponseStore.getData().contains(apiName) && !apiResponseStore.getData()
-                                                                                                          .contains(assertText)) {
+                .contains(assertText)) {
             Assert.assertTrue(false,
-                              "New changes for :" + apiName + " was not visible in store at the end of wait time.");
+                    "New changes for :" + apiName + " was not visible in store at the end of wait time.");
         }
     }
 
     public void isTagVisibleInStore(String tag, APIStoreRestClient apiStoreRestClient, boolean isAnonymousUser)
-        throws Exception {
+            throws Exception {
         long waitTime = System.currentTimeMillis() +
-                        ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
+                ScenarioTestConstants.TIMEOUT_API_TAG_APPEAR_IN_STORE_AFTER_PUBLISH;
         HttpResponse tagResponse = null;
         log.info("WAIT for tag \'" + tag + "\' to be visible in store");
         while ((waitTime > System.currentTimeMillis())) {
@@ -836,7 +837,7 @@ public class ScenarioTestBase {
 
     public boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
                                             String webAppFileName)
-        throws RemoteException, APIManagementException {
+            throws RemoteException, APIManagementException {
         String sessionCookie = login(serviceEndpoint, username, password);
         WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, sessionCookie);
 
@@ -901,7 +902,7 @@ public class ScenarioTestBase {
      */
     protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
                                             String expectedResponse)
-        throws APIManagerIntegrationTestException {
+            throws APIManagerIntegrationTestException {
 
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
@@ -915,23 +916,23 @@ public class ScenarioTestBase {
             HttpResponse response = null;
             try {
                 response = HttpClient.doGet(getBackendEndServiceEndPointHttps("") +
-                                            "APIStatusMonitor/apiInformation/api/" +
-                                            tenantIdentifier +
-                                            apiName + "/" + apiVersion, headerMap);
+                        "APIStatusMonitor/apiInformation/api/" +
+                        tenantIdentifier +
+                        apiName + "/" + apiVersion, headerMap);
             } catch (IOException ignored) {
                 log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet " +
-                         "deployed " + " with provider: " + apiProvider);
+                        "deployed " + " with provider: " + apiProvider);
             }
 
             log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
-                     + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
-                     + " with expected response : " + expectedResponse);
+                    + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
+                    + " with expected response : " + expectedResponse);
 
             if (response != null) {
                 log.info("Data: " + response.getData());
                 if (response.getData().contains(expectedResponse)) {
                     log.info("API :" + apiName + " with version: " + apiVersion +
-                             " with expected response " + expectedResponse + " found");
+                            " with expected response " + expectedResponse + " found");
                     break;
                 } else {
                     try {
@@ -957,7 +958,7 @@ public class ScenarioTestBase {
             if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)) {
                 String sessionCookie = login(serviceEndpoint, "admin", "admin");
                 TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                    serviceEndpoint, sessionCookie);
+                        serviceEndpoint, sessionCookie);
                 TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
                 if (tenant == null) {
                     log.info("tenant is null: " + providerTenantDomain);
