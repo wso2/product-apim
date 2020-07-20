@@ -149,11 +149,11 @@
                 </admin>
                 <users>
                     <user key="publisherUser">
-                        <userName>micheal@wso2.com</userName>
+                        <userName>micheal</userName>
                         <password>Micheal#123</password>
                     </user>
                     <user key="storeUser">
-                        <userName>andrew@wso2.com</userName>
+                        <userName>andrew</userName>
                         <password>Andrew#123</password>
                     </user>
                 </users>
