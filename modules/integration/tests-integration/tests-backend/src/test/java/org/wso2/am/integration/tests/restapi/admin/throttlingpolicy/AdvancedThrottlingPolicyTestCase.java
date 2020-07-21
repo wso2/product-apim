@@ -19,6 +19,7 @@ package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -52,6 +53,7 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
     private Integer unitTime = 1;
     private AdvancedThrottlePolicyDTO requestCountPolicyDTO;
     private AdvancedThrottlePolicyDTO bandwidthPolicyDTO;
+    private AdvancedThrottlePolicyDTO conditionalGroupsPolicyDTO;
     private AdminApiTestHelper adminApiTestHelper;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -151,13 +153,13 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
                 DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
 
         conditionalGroups.add(createConditionalGroup(defaultLimit));
-        requestCountPolicyDTO = DtoFactory
+        conditionalGroupsPolicyDTO = DtoFactory
                 .createAdvancedThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
                         conditionalGroups);
 
         //Add the advanced throttling policy
         ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addAdvancedThrottlingPolicy(requestCountPolicyDTO);
+                restAPIAdmin.addAdvancedThrottlingPolicy(conditionalGroupsPolicyDTO);
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
@@ -165,10 +167,10 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         String policyId = addedPolicyDTO.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
 
-        requestCountPolicyDTO.setPolicyId(policyId);
-        requestCountPolicyDTO.setIsDeployed(true);
+        conditionalGroupsPolicyDTO.setPolicyId(policyId);
+        conditionalGroupsPolicyDTO.setIsDeployed(true);
         //Verify the created advanced throttling policy DTO
-        adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
+        adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(conditionalGroupsPolicyDTO, addedPolicyDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get and update advanced throttling policy",
@@ -295,5 +297,12 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         throttleConditions.add(jwtClaimsCondition);
 
         return throttleConditions;
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+
+        restAPIAdmin.deleteAdvancedThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
+        restAPIAdmin.deleteAdvancedThrottlingPolicy(conditionalGroupsPolicyDTO.getPolicyId());
     }
 }

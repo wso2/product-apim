@@ -19,6 +19,7 @@ package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -205,5 +206,11 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+
+        restAPIAdmin.deleteSubscriptionThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
     }
 }
