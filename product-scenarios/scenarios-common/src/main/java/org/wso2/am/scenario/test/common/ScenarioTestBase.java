@@ -559,6 +559,7 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addUser(username, password, roleList, username);
+            Thread.sleep(10000);
         } catch (Exception e) {
             for (String s : roleList) {
                 log.error("Unable to create user with the provided role : " + s);
