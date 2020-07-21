@@ -643,6 +643,10 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.okta:okta.key.manager.feature:${okta.keymanager.feature.version}
                                 </featureArtifactDef>
+                                <!-- KeyCloak KeyManager Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.keycloak:keycloak.key.manager.feature:${keycloak.keymanager.feature.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1400,6 +1404,10 @@
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>keycloak.key.manager.feature.group</id>
+                                    <version>${keycloak.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1808,6 +1816,10 @@
                                 <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>keycloak.key.manager.feature.group</id>
+                                    <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2303,6 +2315,10 @@
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>keycloak.key.manager.feature.group</id>
+                                    <version>${keycloak.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2762,6 +2778,10 @@
                                 <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>keycloak.key.manager.feature.group</id>
+                                    <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
