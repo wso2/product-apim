@@ -378,7 +378,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     }
 
-    @Test(description = "1.1.2.6")
+    @Test(description = "1.1.2.6", enabled = false)
     public void testCreateApiUsingValidOASDocumentFromYamlURL() throws Exception {
         String swaggerFileName = "OAS2Document.yaml";
 
