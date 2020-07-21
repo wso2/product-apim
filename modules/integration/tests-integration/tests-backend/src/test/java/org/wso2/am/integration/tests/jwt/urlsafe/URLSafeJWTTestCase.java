@@ -41,6 +41,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
@@ -122,11 +123,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
                 applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
-        log.info("Acess Token Generated in oauth ==" + accessToken);
+        log.info("Access Token Generated in oauth ==" + accessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
-        get.addHeader("Authorization", "Bearer " + accessToken);
+        get.addHeader("Authorization", "Bearer " + tokenJti);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");

@@ -34,6 +34,7 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -56,7 +57,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     private String apiId;
     private String apiIdForOauth;
     private String tokenTestApiAppId;
-    private String tokenTestAppId;
     private String oauthTokenTestApiId;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -188,42 +188,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(errorResponse.getResponseCode(), 401, "Response code mismatched while token API test case");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Token equality test",
-            dependsOnMethods = {"testTokenAPITestCase"})
-    public void testTokenEqualityBeforeExpiration() throws Exception {
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("TokenTestApp",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test", "OAUTH");
-        tokenTestAppId = applicationDTO.getApplicationId();
-        ArrayList<String> grantTypes = new ArrayList<>();
-        //get access token
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "3600",
-                null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String consumerKey = applicationKeyDTO.getConsumerKey();
-        String consumerSecret = applicationKeyDTO.getConsumerSecret();
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
-        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
-                "&scope=default";
-
-        HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
-        //get an access token for the first time
-        String firstAccessToken = firstAccessTokenGenerationResponse.getString("access_token");
-
-        HttpResponse secondResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject secondAccessTokenGenerationResponse = new JSONObject(secondResponse.getData());
-        //get an access token for the second time (using the same consumerKey, consumerSecret)
-        String secondAccessToken = secondAccessTokenGenerationResponse.getString("access_token");
-        //compare the two tokens, those should be equal
-        assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
-    }
-
     @Test(groups = { "wso2.am" }, description = "Oauth Token API Test other", dependsOnMethods = {
-            "testTokenEqualityBeforeExpiration" })
+            "testTokenAPITestCase" })
     public void testOauthTokenAPITestCase() throws Exception {
 
         String APIName = "oauthTokenTestAPI";
@@ -265,7 +231,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         String sandboxAccessToken = applicationKeyDTO.getToken().getAccessToken();
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
-        requestHeadersSandBox.put("Authorization", "Bearer " + sandboxAccessToken);
+        String sandTokenJti = TokenUtils.getJtiOfJwtToken(sandboxAccessToken);
+        requestHeadersSandBox.put("Authorization", "Bearer " + sandTokenJti);
         requestHeadersSandBox.put("accept", "text/xml");
         HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrl, requestHeadersSandBox);
         log.info("Response " + youTubeResponseSandBox);
@@ -287,7 +254,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check User Access Token
-        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        String accessTokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
+        requestHeaders.put("Authorization", "Bearer " + accessTokenJti);
         requestHeaders.put("accept", "text/xml");
         Thread.sleep(2000);
 
@@ -302,7 +270,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(tokenTestApiAppId);
-        restAPIStore.deleteApplication(tokenTestAppId);
         restAPIStore.deleteApplication(oauthTokenTestApiId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiIdForOauth);
