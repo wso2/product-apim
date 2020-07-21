@@ -64,13 +64,13 @@ traffic_manager_auth_urls=["ssl://tm2.local:9711"]
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytics1.local:7612"
-analytics_auth_url="ssl://analytics1.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytics1.local:7612"]
+analytics_auth_url=["ssl://analytics1.local:7712"]
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytics2.local:7612"
-analytics_auth_url="ssl://analytics2.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytics2.local:7612"]
+analytics_auth_url=["ssl://analytics2.local:7712"]
 
 [apim.cache.gateway_token]
 enable = true
@@ -89,3 +89,11 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
+
+[apim.event_hub]
+service_url = "https://tm1.local:9443"
+event_listening_endpoints = ["tcp://tm1.local:5672"]
+
+[[apim.event_hub.publish.url_group]]
+urls = ["tcp://tm1.local:9611"]
+auth_urls = ["ssl://tm1.local:9711"]

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIIngressURLsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
@@ -101,6 +102,9 @@ public class APIDTO {
   @SerializedName("monetization")
   private APIMonetizationInfoDTO monetization = null;
 
+  @SerializedName("ingressURLs")
+  private List<APIIngressURLsDTO> ingressURLs = null;
+
   @SerializedName("endpointURLs")
   private List<APIEndpointURLsDTO> endpointURLs = null;
 
@@ -127,6 +131,9 @@ public class APIDTO {
 
   @SerializedName("categories")
   private List<String> categories = null;
+
+  @SerializedName("keyManagers")
+  private Object keyManagers = null;
 
   public APIDTO id(String id) {
     this.id = id;
@@ -536,6 +543,32 @@ public class APIDTO {
     this.monetization = monetization;
   }
 
+  public APIDTO ingressURLs(List<APIIngressURLsDTO> ingressURLs) {
+    this.ingressURLs = ingressURLs;
+    return this;
+  }
+
+  public APIDTO addIngressURLsItem(APIIngressURLsDTO ingressURLsItem) {
+    if (this.ingressURLs == null) {
+      this.ingressURLs = new ArrayList<>();
+    }
+    this.ingressURLs.add(ingressURLsItem);
+    return this;
+  }
+
+   /**
+   * Get ingressURLs
+   * @return ingressURLs
+  **/
+  @ApiModelProperty(value = "")
+  public List<APIIngressURLsDTO> getIngressURLs() {
+    return ingressURLs;
+  }
+
+  public void setIngressURLs(List<APIIngressURLsDTO> ingressURLs) {
+    this.ingressURLs = ingressURLs;
+  }
+
   public APIDTO endpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
     this.endpointURLs = endpointURLs;
     return this;
@@ -738,6 +771,24 @@ public class APIDTO {
     this.categories = categories;
   }
 
+  public APIDTO keyManagers(Object keyManagers) {
+    this.keyManagers = keyManagers;
+    return this;
+  }
+
+   /**
+   * API Key Managers 
+   * @return keyManagers
+  **/
+  @ApiModelProperty(value = "API Key Managers ")
+  public Object getKeyManagers() {
+    return keyManagers;
+  }
+
+  public void setKeyManagers(Object keyManagers) {
+    this.keyManagers = keyManagers;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -768,6 +819,7 @@ public class APIDTO {
         Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
         Objects.equals(this.additionalProperties, API.additionalProperties) &&
         Objects.equals(this.monetization, API.monetization) &&
+        Objects.equals(this.ingressURLs, API.ingressURLs) &&
         Objects.equals(this.endpointURLs, API.endpointURLs) &&
         Objects.equals(this.businessInformation, API.businessInformation) &&
         Objects.equals(this.labels, API.labels) &&
@@ -776,12 +828,13 @@ public class APIDTO {
         Objects.equals(this.avgRating, API.avgRating) &&
         Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
         Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable) &&
-        Objects.equals(this.categories, API.categories);
+        Objects.equals(this.categories, API.categories) &&
+        Objects.equals(this.keyManagers, API.keyManagers);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories);
+    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers);
   }
 
 
@@ -810,6 +863,7 @@ public class APIDTO {
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
+    sb.append("    ingressURLs: ").append(toIndentedString(ingressURLs)).append("\n");
     sb.append("    endpointURLs: ").append(toIndentedString(endpointURLs)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
@@ -819,6 +873,7 @@ public class APIDTO {
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
     sb.append("    isSubscriptionAvailable: ").append(toIndentedString(isSubscriptionAvailable)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
+    sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
     sb.append("}");
     return sb.toString();
   }

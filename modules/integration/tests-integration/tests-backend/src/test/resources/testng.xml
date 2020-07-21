@@ -158,6 +158,7 @@
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
         </classes>
     </test>
 
@@ -218,6 +219,7 @@
     <test name="apim-integration-tests-graphql" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
+            <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
         </classes>
     </test>
 
@@ -323,6 +325,12 @@
           group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-integration-tests-workflow" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
         </classes>
     </test>
 </suite>

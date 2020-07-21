@@ -1221,10 +1221,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.25</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.26</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.7.33</carbon.apimgt.version>
+	<carbon.apimgt.version>6.7.120</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1233,11 +1233,11 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.18</carbon.governance.version>
+        <carbon.governance.version>4.8.19</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.6.0</carbon.kernel.version>
-	<apimserver.version>3.2.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>3.2.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.1</ws.feature.version>
 
 	    <cipher.tool.version>1.1.9</cipher.tool.version>
@@ -1414,6 +1414,9 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
+        <wso2is.km.version>1.0.7</wso2is.km.version>
+        <okta.keymanager.feature.version>3.0.0</okta.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.0.1</keycloak.keymanager.feature.version>
     </properties>
 
 </project>

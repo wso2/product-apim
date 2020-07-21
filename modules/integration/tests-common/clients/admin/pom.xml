@@ -27,37 +27,37 @@
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>io.swagger</groupId>-->
-<!--                <artifactId>swagger-codegen-maven-plugin</artifactId>-->
-<!--                <version>2.4.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>${project.basedir}/src/main/resources/admin-api.yaml</inputSpec>-->
-<!--                            <language>java</language>-->
-<!--                            <generateApiTests>false</generateApiTests>-->
-<!--                            <generateModelTests>false</generateModelTests>-->
-<!--                            <generateApiDocumentation>false</generateApiDocumentation>-->
-<!--                            <generateModelDocumentation>false</generateModelDocumentation>-->
-<!--                            <configOptions>-->
-<!--                                <apiPackage>org.wso2.am.integration.clients.admin.api</apiPackage>-->
-<!--                                <modelPackage>org.wso2.am.integration.clients.admin.api.dto</modelPackage>-->
-<!--                                <sourceFolder>src/gen/java</sourceFolder>-->
-<!--                                <dateLibrary>java8</dateLibrary>-->
-<!--                                <java8>true</java8>-->
-<!--                                <hideGenerationTimestamp>true</hideGenerationTimestamp>-->
-<!--                            </configOptions>-->
-<!--                            <output>.</output>-->
-<!--                            <skipOverwrite>false</skipOverwrite>-->
-<!--                            <modelNameSuffix>DTO</modelNameSuffix>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>2.4.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/admin-api.yaml</inputSpec>
+                            <language>java</language>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <configOptions>
+                                <apiPackage>org.wso2.am.integration.clients.admin.api</apiPackage>
+                                <modelPackage>org.wso2.am.integration.clients.admin.api.dto</modelPackage>
+                                <sourceFolder>src/gen/java</sourceFolder>
+                                <dateLibrary>java8</dateLibrary>
+                                <java8>true</java8>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                            </configOptions>
+                            <output>.</output>
+                            <skipOverwrite>false</skipOverwrite>
+                            <modelNameSuffix>DTO</modelNameSuffix>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

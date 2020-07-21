@@ -36,6 +36,7 @@ import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
@@ -54,6 +55,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -84,6 +86,7 @@ public class RestAPIStoreImpl {
     public ApiKeysApi apiKeysApi = new ApiKeysApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
+    public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     ApiClient apiStoreClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
@@ -103,7 +106,7 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
-        String dcrURL = storeURL + "client-registration/v0.16/register";
+        String dcrURL = storeURL + "client-registration/v0.17/register";
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
@@ -114,6 +117,9 @@ public class RestAPIStoreImpl {
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
         apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setReadTimeout(600000);
+        apiStoreClient.setConnectTimeout(600000);
+        apiStoreClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
         subscriptionIndividualApi.setApiClient(apiStoreClient);
@@ -124,6 +130,7 @@ public class RestAPIStoreImpl {
         unifiedSearchApi.setApiClient(apiStoreClient);
         apiKeysApi.setApiClient(apiStoreClient);
         keyManagersCollectionApi.setApiClient(apiStoreClient);
+        graphQlPoliciesApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
@@ -1758,5 +1765,37 @@ public class RestAPIStoreImpl {
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
+    }
+
+    /**
+     * Method to retrieve the GraphQL Complexity Details
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws org.wso2.am.integration.clients.store.api.ApiException
+     */
+    public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        if(complexityResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws org.wso2.am.integration.clients.store.api.ApiException
+     */
+    public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi.
+                apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
+        }
+        return response;
     }
 }

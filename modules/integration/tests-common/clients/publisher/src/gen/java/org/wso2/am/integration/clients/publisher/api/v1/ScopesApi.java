@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SharedScopeUsageDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -417,6 +418,129 @@ public class ScopesApi {
 
         com.squareup.okhttp.Call call = getSharedScopeValidateBeforeCall(scopeId, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<ScopeDTO>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for getSharedScopeUsages
+     * @param scopeId Scope Id consisting the UUID of the shared scope  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call getSharedScopeUsagesCall(String scopeId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/scopes/{scopeId}/usage"
+            .replaceAll("\\{" + "scopeId" + "\\}", apiClient.escapeString(scopeId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call getSharedScopeUsagesValidateBeforeCall(String scopeId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'scopeId' is set
+        if (scopeId == null) {
+            throw new ApiException("Missing the required parameter 'scopeId' when calling getSharedScopeUsages(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = getSharedScopeUsagesCall(scopeId, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Get usages of a Shared Scope by Scope Id
+     * This operation can be used to retrieve usages of a Shared Scope by a given scope Id. 
+     * @param scopeId Scope Id consisting the UUID of the shared scope  (required)
+     * @return SharedScopeUsageDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public SharedScopeUsageDTO getSharedScopeUsages(String scopeId) throws ApiException {
+        ApiResponse<SharedScopeUsageDTO> resp = getSharedScopeUsagesWithHttpInfo(scopeId);
+        return resp.getData();
+    }
+
+    /**
+     * Get usages of a Shared Scope by Scope Id
+     * This operation can be used to retrieve usages of a Shared Scope by a given scope Id. 
+     * @param scopeId Scope Id consisting the UUID of the shared scope  (required)
+     * @return ApiResponse&lt;SharedScopeUsageDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<SharedScopeUsageDTO> getSharedScopeUsagesWithHttpInfo(String scopeId) throws ApiException {
+        com.squareup.okhttp.Call call = getSharedScopeUsagesValidateBeforeCall(scopeId, null, null);
+        Type localVarReturnType = new TypeToken<SharedScopeUsageDTO>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Get usages of a Shared Scope by Scope Id (asynchronously)
+     * This operation can be used to retrieve usages of a Shared Scope by a given scope Id. 
+     * @param scopeId Scope Id consisting the UUID of the shared scope  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call getSharedScopeUsagesAsync(String scopeId, final ApiCallback<SharedScopeUsageDTO> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = getSharedScopeUsagesValidateBeforeCall(scopeId, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<SharedScopeUsageDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }

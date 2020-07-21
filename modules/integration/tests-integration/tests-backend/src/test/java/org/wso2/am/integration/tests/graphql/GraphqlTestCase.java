@@ -247,7 +247,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.updateAPI(apidto, graphqlAPIId);
 
         createGraphqlAppAndSubscribeToAPI("CountriesOauthAPPForOAuthScopeCheck","OAUTH");
-
+        // Keep sufficient time to update map
+        Thread.sleep(10000);
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
@@ -316,7 +317,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, graphqlAPIId);
         createGraphqlAppAndSubscribeToAPI(  "CountriesOauthAPPForSecurityCheck","OAUTH");
-
+        // Keep sufficient time to update map
+        Thread.sleep(10000);
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
