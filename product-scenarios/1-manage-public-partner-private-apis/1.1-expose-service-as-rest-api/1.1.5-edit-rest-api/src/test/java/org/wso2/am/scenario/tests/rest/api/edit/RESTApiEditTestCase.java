@@ -431,7 +431,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         // 2) Tenant API creator
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_USER},
-                new Object[]{TestUserMode.TENANT_USER},
+                // new Object[]{TestUserMode.TENANT_USER},
         };
     }
 }
