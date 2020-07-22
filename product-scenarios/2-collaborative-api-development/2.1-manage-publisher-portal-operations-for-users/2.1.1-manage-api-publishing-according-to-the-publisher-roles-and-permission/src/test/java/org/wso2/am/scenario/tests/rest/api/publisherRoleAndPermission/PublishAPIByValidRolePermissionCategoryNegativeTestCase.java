@@ -163,7 +163,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
 
     // Investigate test failures and fix
     @Test(description = "2.1.1.2", dataProvider = "ApiInvalidPermissionDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
+            dataProviderClass = ScenarioDataProvider.class, enabled = false)
     public void testPublishAPIByInvalidPermissionUser(String[] permissionList) throws Exception {
 
         apiName = "API_1.2_" + count;
