@@ -30,7 +30,7 @@ import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDT
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
-import org.wso2.am.integration.test.impl.AdminApiTestHelper;
+import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -49,20 +49,17 @@ public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationThrottlingPolicyTestCase(TestUserMode userMode) {
-
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
     }
@@ -191,7 +188,6 @@ public class ApplicationThrottlingPolicyTestCase extends APIMIntegrationBaseTest
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
         restAPIAdmin.deleteApplicationThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
     }
 }

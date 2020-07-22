@@ -63,9 +63,7 @@ public class DtoFactory {
      * @return Created application throttling policy DTO.
      */
     public static ApplicationThrottlePolicyDTO createApplicationThrottlePolicyDTO(String policyName, String displayName,
-                                                                                  String description,
-                                                                                  boolean isDeployed,
-                                                                                  ThrottleLimitDTO defaultLimit) {
+            String description, boolean isDeployed, ThrottleLimitDTO defaultLimit) {
 
         return new ApplicationThrottlePolicyDTO().
                 policyName(policyName).
@@ -84,8 +82,7 @@ public class DtoFactory {
      * @return Created throttle limit DTO.
      */
     public static ThrottleLimitDTO createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum type,
-                                                          RequestCountLimitDTO requestCountLimitDTO,
-                                                          BandwidthLimitDTO bandwidthLimitDTO) {
+            RequestCountLimitDTO requestCountLimitDTO, BandwidthLimitDTO bandwidthLimitDTO) {
 
         return new ThrottleLimitDTO().
                 type(type).
@@ -102,7 +99,7 @@ public class DtoFactory {
      * @return Created request count limit DTO.
      */
     public static RequestCountLimitDTO createRequestCountLimitDTO(String timeUnit, Integer unitTime,
-                                                                  Long requestCount) {
+            Long requestCount) {
 
         return new RequestCountLimitDTO().
                 timeUnit(timeUnit).
@@ -120,7 +117,7 @@ public class DtoFactory {
      * @return Created bandwidth limit DTO.
      */
     public static BandwidthLimitDTO createBandwidthLimitDTO(String timeUnit, Integer unitTime, Long dataAmount,
-                                                            String dataUnit) {
+            String dataUnit) {
 
         return new BandwidthLimitDTO().
                 timeUnit(timeUnit).
@@ -147,17 +144,9 @@ public class DtoFactory {
      * @return Created subscription throttling policy DTO.
      */
     public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
-                                                                                    String displayName,
-                                                                                    String description,
-                                                                                    boolean isDeployed,
-                                                                                    ThrottleLimitDTO defaultLimit,
-                                                                                    int graphQLMaxComplexity,
-                                                                                    int graphQLMaxDepth,
-                                                                                    int rateLimitCount,
-                                                                                    String rateLimitTimeUnit,
-                                                                                    List<CustomAttributeDTO> customAttributes,
-                                                                                    boolean stopQuotaOnReach,
-                                                                                    String billingPlan) {
+            String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
+            int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
+            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan) {
 
         return new SubscriptionThrottlePolicyDTO().
                 policyName(policyName).
@@ -184,9 +173,8 @@ public class DtoFactory {
      * @param keyTemplate The specific combination of attributes that are checked in the policy.
      * @return Created custom throttling policy DTO.
      */
-    public static CustomRuleDTO createCustomThrottlePolicyDTO(String policyName, String description,
-                                                              boolean isDeployed, String siddhiQuery,
-                                                              String keyTemplate) {
+    public static CustomRuleDTO createCustomThrottlePolicyDTO(String policyName, String description, boolean isDeployed,
+            String siddhiQuery, String keyTemplate) {
 
         return new CustomRuleDTO().
                 policyName(policyName).
@@ -220,7 +208,7 @@ public class DtoFactory {
      * @return Created IP condition DTO.
      */
     public static IPConditionDTO createIPConditionDTO(IPConditionDTO.IpConditionTypeEnum ipConditionType,
-                                                      String specificIP, String startingIP, String endingIP) {
+            String specificIP, String startingIP, String endingIP) {
 
         return new IPConditionDTO().
                 ipConditionType(ipConditionType).
@@ -251,7 +239,7 @@ public class DtoFactory {
      * @return Created query parameter condition DTO.
      */
     public static QueryParameterConditionDTO createQueryParameterConditionDTO(String parameterName,
-                                                                              String parameterValue) {
+            String parameterValue) {
 
         return new QueryParameterConditionDTO().
                 parameterName(parameterName).
@@ -270,11 +258,8 @@ public class DtoFactory {
      * @return Created throttle condition DTO.
      */
     public static ThrottleConditionDTO createThrottleConditionDTO(ThrottleConditionDTO.TypeEnum type,
-                                                                  boolean invertCondition,
-                                                                  HeaderConditionDTO headerCondition,
-                                                                  IPConditionDTO ipCondition,
-                                                                  JWTClaimsConditionDTO jwtClaimsCondition,
-                                                                  QueryParameterConditionDTO queryParameterCondition) {
+            boolean invertCondition, HeaderConditionDTO headerCondition, IPConditionDTO ipCondition,
+            JWTClaimsConditionDTO jwtClaimsCondition, QueryParameterConditionDTO queryParameterCondition) {
 
         return new ThrottleConditionDTO().
                 type(type).
@@ -294,8 +279,7 @@ public class DtoFactory {
      * @return Created conditional group DTO.
      */
     public static ConditionalGroupDTO createConditionalGroupDTO(String description,
-                                                                List<ThrottleConditionDTO> conditions,
-                                                                ThrottleLimitDTO limit) {
+            List<ThrottleConditionDTO> conditions, ThrottleLimitDTO limit) {
 
         return new ConditionalGroupDTO().
                 description(description).
@@ -315,9 +299,8 @@ public class DtoFactory {
      * @return Created advanced throttling policy DTO.
      */
     public static AdvancedThrottlePolicyDTO createAdvancedThrottlePolicyDTO(String policyName, String displayName,
-                                                                            String description, boolean isDeployed,
-                                                                            ThrottleLimitDTO defaultLimit,
-                                                                            List<ConditionalGroupDTO> conditionalGroups) {
+            String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
+            List<ConditionalGroupDTO> conditionalGroups) {
 
         return new AdvancedThrottlePolicyDTO().
                 policyName(policyName).

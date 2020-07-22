@@ -220,8 +220,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while updating the application throttling policy.
      */
     public ApiResponse<ApplicationThrottlePolicyDTO> updateApplicationThrottlingPolicy(String policyId,
-                                                                                       ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO)
-            throws ApiException {
+            ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyIndividualApi
                 .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, applicationThrottlePolicyDTO,
@@ -279,8 +278,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while updating the subscription throttling policy.
      */
     public ApiResponse<SubscriptionThrottlePolicyDTO> updateSubscriptionThrottlingPolicy(String policyId,
-                                                                                         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO)
-            throws ApiException {
+            SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
         return subscriptionPolicyIndividualApi
                 .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId, subscriptionThrottlePolicyDTO,
@@ -336,9 +334,8 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> updateCustomThrottlingPolicy(String policyId, CustomRuleDTO customRuleDTO)
             throws ApiException {
 
-        return customRulesIndividualApi
-                .throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
+                Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
@@ -350,8 +347,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteCustomThrottlingPolicy(String policyId) throws ApiException {
 
-        return customRulesIndividualApi
-                .throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
     }
 
     /**
@@ -364,9 +360,8 @@ public class RestAPIAdminImpl {
     public ApiResponse<AdvancedThrottlePolicyDTO> addAdvancedThrottlingPolicy(
             AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
-        return advancedPolicyCollectionApi
-                .throttlingPoliciesAdvancedPostWithHttpInfo(advancedThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE);
+        return advancedPolicyCollectionApi.throttlingPoliciesAdvancedPostWithHttpInfo(advancedThrottlePolicyDTO,
+                Constants.APPLICATION_JSON_CONTENT_TYPE);
 
     }
 
@@ -378,8 +373,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<AdvancedThrottlePolicyDTO> getAdvancedThrottlingPolicy(String policyId) throws ApiException {
 
-        return advancedPolicyIndividualApi
-                .throttlingPoliciesAdvancedPolicyIdGetWithHttpInfo(policyId, null, null);
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdGetWithHttpInfo(policyId, null, null);
     }
 
     /**
@@ -391,8 +385,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while updating the advanced throttling policy.
      */
     public ApiResponse<AdvancedThrottlePolicyDTO> updateAdvancedThrottlingPolicy(String policyId,
-                                                                                 AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO)
-            throws ApiException {
+            AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
         return advancedPolicyIndividualApi
                 .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, advancedThrottlePolicyDTO,
@@ -408,8 +401,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteAdvancedThrottlingPolicy(String policyId) throws ApiException {
 
-        return advancedPolicyIndividualApi
-                .throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
     }
 
     /**
@@ -471,7 +463,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while retrieving applications.
      */
     public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
-                                                           String appTenantDomain) throws ApiException {
+            String appTenantDomain) throws ApiException {
 
         return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null, null, appTenantDomain);
     }

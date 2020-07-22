@@ -15,7 +15,7 @@
  *
  */
 
-package org.wso2.am.integration.test.impl;
+package org.wso2.am.integration.test.helpers;
 
 import org.testng.Assert;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
@@ -36,7 +36,7 @@ public class AdminApiTestHelper {
      * @param actualPolicy   Policy object of which the field values should be verified.
      */
     public void verifyApplicationThrottlePolicyDTO(ApplicationThrottlePolicyDTO expectedPolicy,
-                                                   ApplicationThrottlePolicyDTO actualPolicy) {
+            ApplicationThrottlePolicyDTO actualPolicy) {
 
         Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
                 "Policy ID does not match with the expected policy ID");
@@ -59,7 +59,7 @@ public class AdminApiTestHelper {
      * @param actualPolicy   Policy object of which the field values should be verified.
      */
     public void verifySubscriptionThrottlePolicyDTO(SubscriptionThrottlePolicyDTO expectedPolicy,
-                                                    SubscriptionThrottlePolicyDTO actualPolicy) {
+            SubscriptionThrottlePolicyDTO actualPolicy) {
 
         Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
                 "Policy ID does not match with the expected policy ID");
@@ -81,10 +81,10 @@ public class AdminApiTestHelper {
                 "Policy rate limit count does not match with the expected rate limit count");
         Assert.assertEquals(actualPolicy.getRateLimitTimeUnit(), expectedPolicy.getRateLimitTimeUnit(),
                 "Policy rate limit time unit does not match with the expected rate limit time unit");
-        boolean isCustomAttributesEqual =
-                actualPolicy.getCustomAttributes().equals(expectedPolicy.getCustomAttributes());
-        Assert.assertTrue(isCustomAttributesEqual, "Policy custom attributes does not match with the expected " +
-                "custom attributes");
+        boolean isCustomAttributesEqual = actualPolicy.getCustomAttributes()
+                .equals(expectedPolicy.getCustomAttributes());
+        Assert.assertTrue(isCustomAttributesEqual,
+                "Policy custom attributes does not match with the expected " + "custom attributes");
         Assert.assertEquals(actualPolicy.getBillingPlan(), expectedPolicy.getBillingPlan(),
                 "Policy billing plan does not match with the expected billing plan");
     }
@@ -118,7 +118,7 @@ public class AdminApiTestHelper {
      * @param actualPolicy   Policy object of which the field values should be verified.
      */
     public void verifyAdvancedThrottlePolicyDTO(AdvancedThrottlePolicyDTO expectedPolicy,
-                                                AdvancedThrottlePolicyDTO actualPolicy) {
+            AdvancedThrottlePolicyDTO actualPolicy) {
 
         Assert.assertEquals(actualPolicy.getPolicyId(), expectedPolicy.getPolicyId(),
                 "Policy ID does not match with the expected policy ID");
@@ -132,10 +132,10 @@ public class AdminApiTestHelper {
                 "Policy deployed status does not match with the expected deployed status");
         boolean isDefaultLimitEqual = actualPolicy.getDefaultLimit().equals(expectedPolicy.getDefaultLimit());
         Assert.assertTrue(isDefaultLimitEqual, "Policy default limit does not match with the expected default limit");
-        boolean isConditionGroupsEqual =
-                actualPolicy.getConditionalGroups().equals(expectedPolicy.getConditionalGroups());
-        Assert.assertTrue(isConditionGroupsEqual, "Policy conditional groups does not match with the expected " +
-                "conditional groups");
+        boolean isConditionGroupsEqual = actualPolicy.getConditionalGroups()
+                .equals(expectedPolicy.getConditionalGroups());
+        Assert.assertTrue(isConditionGroupsEqual,
+                "Policy conditional groups does not match with the expected " + "conditional groups");
     }
 
     /**

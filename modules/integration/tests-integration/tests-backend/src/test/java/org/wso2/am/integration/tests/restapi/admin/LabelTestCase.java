@@ -27,7 +27,7 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
-import org.wso2.am.integration.test.impl.AdminApiTestHelper;
+import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -43,20 +43,17 @@ public class LabelTestCase extends APIMIntegrationBaseTest {
 
     @Factory(dataProvider = "userModeDataProvider")
     public LabelTestCase(TestUserMode userMode) {
-
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
     }
