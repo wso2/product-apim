@@ -54,7 +54,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
 
 public class RESTApiEditTestCase extends ScenarioTestBase {
-    private static final Log log = LogFactory.getLog(RESTApiEditTestCase.class);
 
     private APICreationRequestBean apiCreationRequestBean;
     private APIDTO apidto;
@@ -118,18 +117,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
                         TENANT_ADMIN_PW);
             }
         }
-
-        setup();
         super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
-                apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         //Create an API
@@ -164,7 +152,6 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         List<String> tiersCollectionList = new ArrayList<>();
         tiersCollectionList.add("Unlimited");
         tiersCollectionList.add("Gold");
-        tiersCollectionList.add("Bronze");
         apidto.setPolicies(tiersCollectionList);
 
         APIDTO apidtoResponse = restAPIPublisher.updateAPI(apidto);
