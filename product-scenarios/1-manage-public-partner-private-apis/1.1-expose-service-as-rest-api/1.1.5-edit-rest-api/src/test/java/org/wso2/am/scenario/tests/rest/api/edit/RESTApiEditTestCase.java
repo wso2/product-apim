@@ -118,19 +118,9 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
                         TENANT_ADMIN_PW);
             }
         }
-
-        setup();
         super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
-                apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
+        log.info("Provider in RESTApiEditTestCase " + apiProviderName);
 
         //Create an API
         apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, apiProviderName, new URL(backendEndPoint));
