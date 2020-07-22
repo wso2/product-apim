@@ -24,6 +24,7 @@ Name | Type | Description | Notes
 **hasThumbnail** | **Boolean** |  |  [optional]
 **additionalProperties** | **Map&lt;String, String&gt;** | Custom(user defined) properties of API  |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
+**ingressURLs** | [**List&lt;APIIngressURLsDTO&gt;**](APIIngressURLsDTO.md) |  |  [optional]
 **endpointURLs** | [**List&lt;APIEndpointURLsDTO&gt;**](APIEndpointURLsDTO.md) |  |  [optional]
 **businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
 **labels** | [**List&lt;LabelDTO&gt;**](LabelDTO.md) | Labels of micro-gateway environments attached to the API.  |  [optional]
@@ -33,6 +34,7 @@ Name | Type | Description | Notes
 **advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
 **isSubscriptionAvailable** | **Boolean** |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
+**keyManagers** | **Object** | API Key Managers  |  [optional]
 
 
 

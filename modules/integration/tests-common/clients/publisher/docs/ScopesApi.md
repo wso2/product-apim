@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**addSharedScope**](ScopesApi.md#addSharedScope) | **POST** /scopes | Add a new Shared Scope
 [**deleteSharedScope**](ScopesApi.md#deleteSharedScope) | **DELETE** /scopes/{scopeId} | Delete a Shared Scope
 [**getSharedScope**](ScopesApi.md#getSharedScope) | **GET** /scopes/{scopeId} | Get a Shared Scope by Scope Id
+[**getSharedScopeUsages**](ScopesApi.md#getSharedScopeUsages) | **GET** /scopes/{scopeId}/usage | Get usages of a Shared Scope by Scope Id
 [**getSharedScopes**](ScopesApi.md#getSharedScopes) | **GET** /scopes | Get all available Shared Scopes
 [**updateSharedScope**](ScopesApi.md#updateSharedScope) | **PUT** /scopes/{scopeId} | Update a Shared Scope
 [**validateScope**](ScopesApi.md#validateScope) | **HEAD** /scopes/{scopeId} | Check given scope name is already exist
@@ -160,6 +161,59 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ScopeDTO**](ScopeDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getSharedScopeUsages"></a>
+# **getSharedScopeUsages**
+> SharedScopeUsageDTO getSharedScopeUsages(scopeId)
+
+Get usages of a Shared Scope by Scope Id
+
+This operation can be used to retrieve usages of a Shared Scope by a given scope Id. 
+
+### Example
+```java
+// Import classes:
+//import org.wso2.am.integration.clients.publisher.api.ApiClient;
+//import org.wso2.am.integration.clients.publisher.api.ApiException;
+//import org.wso2.am.integration.clients.publisher.api.Configuration;
+//import org.wso2.am.integration.clients.publisher.api.auth.*;
+//import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
+
+ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+// Configure OAuth2 access token for authorization: OAuth2Security
+OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+ScopesApi apiInstance = new ScopesApi();
+String scopeId = "scopeId_example"; // String | Scope Id consisting the UUID of the shared scope 
+try {
+    SharedScopeUsageDTO result = apiInstance.getSharedScopeUsages(scopeId);
+    System.out.println(result);
+} catch (ApiException e) {
+    System.err.println("Exception when calling ScopesApi#getSharedScopeUsages");
+    e.printStackTrace();
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **scopeId** | **String**| Scope Id consisting the UUID of the shared scope  |
+
+### Return type
+
+[**SharedScopeUsageDTO**](SharedScopeUsageDTO.md)
 
 ### Authorization
 

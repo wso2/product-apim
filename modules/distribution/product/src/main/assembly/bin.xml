@@ -713,7 +713,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>user-info.war</include>
+                <include>keymanager-operations.war</include>
             </includes>
         </fileSet>
         <fileSet>

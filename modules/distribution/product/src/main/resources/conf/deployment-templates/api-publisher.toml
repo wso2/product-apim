@@ -55,13 +55,13 @@ store_api_url = "https://analytics.wso2.com:7444"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytic1.local:7612"
-analytics_auth_url="ssl://analytic1.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytic1.local:7612"]
+analytics_auth_url=["ssl://analytic1.local:7712"]
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytic2.local:7612"
-analytics_auth_url="ssl://analytic2.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytic2.local:7612"]
+analytics_auth_url=["ssl://analytic2.local:7712"]
 
 # Traffic Manager configurations
 [apim.throttling]

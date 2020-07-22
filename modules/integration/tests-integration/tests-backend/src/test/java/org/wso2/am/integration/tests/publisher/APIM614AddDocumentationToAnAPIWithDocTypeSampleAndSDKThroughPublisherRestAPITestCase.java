@@ -116,7 +116,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.addDocument(apiId, documentDTO);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while add documentation to API");
+                "Error while adding file-based documentation to API");
         fileTypeDocumentId = documentationResponse.getData();
     }
 
@@ -127,8 +127,8 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
 
         String fileNameAPIM614 = "APIM614.txt";
         String docName = "APIM614PublisherTestHowTo-File-summary";
-        String filePathAPIM614 =TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                File.separator + "AM" + File.separator + "lifecycletest" +File.separator + fileNameAPIM614;
+        String filePathAPIM614 = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                File.separator + "AM" + File.separator + "lifecycletest" + File.separator + fileNameAPIM614;
         File file = new File(filePathAPIM614);
 
         //Update Type and update document
@@ -136,13 +136,14 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         documentDTO.setName(docName);
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse updateDocumentResponse =
                 restAPIPublisher.updateDocument(apiId, fileTypeDocumentId, documentDTO);
-        assertEquals(updateDocumentResponse.getResponseCode(), 200, "Error while update the documents");
+        assertEquals(updateDocumentResponse.getResponseCode(), 200,
+                "Error while updating the documents");
 
         //Update the document content
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while update documentation to API");
+                "Error while updating documentation to API");
 }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type Sample SDK And" +
@@ -161,13 +162,14 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         documentDTO.setName(docName);
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse updateDocumentResponse =
                 restAPIPublisher.updateDocument(apiId, fileTypeDocumentId, documentDTO);
-        assertEquals(updateDocumentResponse.getResponseCode(), 200, "Error while update the documents");
+        assertEquals(updateDocumentResponse.getResponseCode(), 200,
+                "Error while updating the documents");
 
         //Update the document content
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while update documentation to API");
+                "Error while updating documentation to API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type Other And" +
@@ -187,13 +189,14 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         documentDTO.setName(docName);
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse updateDocumentResponse =
                 restAPIPublisher.updateDocument(apiId, fileTypeDocumentId, documentDTO);
-        assertEquals(updateDocumentResponse.getResponseCode(), 200, "Error while update the documents");
+        assertEquals(updateDocumentResponse.getResponseCode(), 200,
+                "Error while updating the documents");
 
         //Update the document content
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse documentationResponse =
                 restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
         assertEquals(documentationResponse.getResponseCode(), 200,
-                "Error while update documentation to API");
+                "Error while updating documentation to API");
     }
 
     @AfterClass(alwaysRun = true)

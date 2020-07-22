@@ -98,7 +98,7 @@ public class APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITes
     }
 
     @Test(groups = {"wso2.am"}, description = "Validate the Role of an non-existing user through" +
-            " the publisher rest API ", dependsOnMethods = {"testValidateTheRoleOfAnExistingUser"})
+            " the publisher rest API ", dependsOnMethods = "testValidateTheRoleOfAnExistingUser")
     public void testValidateTheRoleOfAnNonExistingUser() throws Exception {
         //Validate the publisher role
         try {

@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **id** | **String** |  |  [optional]
 **name** | **String** |  | 
 **type** | **String** |  | 
+**displayName** | **String** | display name of Keymanager  |  [optional]
 **description** | **String** |  |  [optional]
 **enabled** | **Boolean** |  |  [optional]
 **availableGrantTypes** | **List&lt;String&gt;** |  |  [optional]
@@ -19,7 +20,7 @@ Name | Type | Description | Notes
 **enableOAuthAppCreation** | **Boolean** |  |  [optional]
 **enableMapOAuthConsumerApps** | **Boolean** |  |  [optional]
 **applicationConfiguration** | [**List&lt;KeyManagerApplicationConfigurationDTO&gt;**](KeyManagerApplicationConfigurationDTO.md) |  |  [optional]
-**additionalProperties** | **List&lt;Object&gt;** |  |  [optional]
+**additionalProperties** | **Object** |  |  [optional]
 
 
 

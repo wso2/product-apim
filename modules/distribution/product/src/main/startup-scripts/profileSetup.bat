@@ -73,7 +73,7 @@ call :removeSynapseConfigs
 call :replaceDeploymentConfiguration
 
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war throttle#data#v.*war api#identity#consent-mgt#v.*war api#identity#recovery#v.*war api#identity#user#v.*war api#identity#oauth2#dcr#v.*war api#identity#oauth2#v.*war user-info.war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war throttle#data#v.*war api#identity#consent-mgt#v.*war api#identity#recovery#v.*war api#identity#user#v.*war api#identity#oauth2#dcr#v.*war api#identity#oauth2#v.*war keymanager-operations.war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%

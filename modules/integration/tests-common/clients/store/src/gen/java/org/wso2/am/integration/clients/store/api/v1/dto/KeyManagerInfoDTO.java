@@ -41,6 +41,9 @@ public class KeyManagerInfoDTO {
   @SerializedName("type")
   private String type = null;
 
+  @SerializedName("displayName")
+  private String displayName = null;
+
   @SerializedName("description")
   private String description = null;
 
@@ -78,7 +81,7 @@ public class KeyManagerInfoDTO {
   private List<KeyManagerApplicationConfigurationDTO> applicationConfiguration = null;
 
   @SerializedName("additionalProperties")
-  private List<Object> additionalProperties = null;
+  private Object additionalProperties = null;
 
   public KeyManagerInfoDTO id(String id) {
     this.id = id;
@@ -132,6 +135,24 @@ public class KeyManagerInfoDTO {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public KeyManagerInfoDTO displayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+   /**
+   * display name of Keymanager 
+   * @return displayName
+  **/
+  @ApiModelProperty(example = "Keymanager1", value = "display name of Keymanager ")
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
   public KeyManagerInfoDTO description(String description) {
@@ -366,16 +387,8 @@ public class KeyManagerInfoDTO {
     this.applicationConfiguration = applicationConfiguration;
   }
 
-  public KeyManagerInfoDTO additionalProperties(List<Object> additionalProperties) {
+  public KeyManagerInfoDTO additionalProperties(Object additionalProperties) {
     this.additionalProperties = additionalProperties;
-    return this;
-  }
-
-  public KeyManagerInfoDTO addAdditionalPropertiesItem(Object additionalPropertiesItem) {
-    if (this.additionalProperties == null) {
-      this.additionalProperties = new ArrayList<>();
-    }
-    this.additionalProperties.add(additionalPropertiesItem);
     return this;
   }
 
@@ -384,11 +397,11 @@ public class KeyManagerInfoDTO {
    * @return additionalProperties
   **/
   @ApiModelProperty(value = "")
-  public List<Object> getAdditionalProperties() {
+  public Object getAdditionalProperties() {
     return additionalProperties;
   }
 
-  public void setAdditionalProperties(List<Object> additionalProperties) {
+  public void setAdditionalProperties(Object additionalProperties) {
     this.additionalProperties = additionalProperties;
   }
 
@@ -405,6 +418,7 @@ public class KeyManagerInfoDTO {
     return Objects.equals(this.id, keyManagerInfo.id) &&
         Objects.equals(this.name, keyManagerInfo.name) &&
         Objects.equals(this.type, keyManagerInfo.type) &&
+        Objects.equals(this.displayName, keyManagerInfo.displayName) &&
         Objects.equals(this.description, keyManagerInfo.description) &&
         Objects.equals(this.enabled, keyManagerInfo.enabled) &&
         Objects.equals(this.availableGrantTypes, keyManagerInfo.availableGrantTypes) &&
@@ -422,7 +436,7 @@ public class KeyManagerInfoDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, additionalProperties);
+    return Objects.hash(id, name, type, displayName, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, additionalProperties);
   }
 
 
@@ -434,6 +448,7 @@ public class KeyManagerInfoDTO {
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    enabled: ").append(toIndentedString(enabled)).append("\n");
     sb.append("    availableGrantTypes: ").append(toIndentedString(availableGrantTypes)).append("\n");

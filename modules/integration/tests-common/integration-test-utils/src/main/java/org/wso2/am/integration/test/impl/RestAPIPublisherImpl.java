@@ -35,6 +35,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
@@ -59,11 +60,16 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -98,7 +104,9 @@ public class RestAPIPublisherImpl {
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
+    public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
+    public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -127,7 +135,7 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage",
+                                "apim:pub_alert_manage apim:shared_scope_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -147,8 +155,10 @@ public class RestAPIPublisherImpl {
         validationApi.setApiClient(apiPublisherClient);
         clientCertificatesApi.setApiClient(apiPublisherClient);
         subscriptionsApi.setApiClient(apiPublisherClient);
+        graphQlPoliciesApi.setApiClient(apiPublisherClient);
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
+        sharedScopesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -723,7 +733,7 @@ public class RestAPIPublisherImpl {
                 null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
-            response = new HttpResponse("Successfully update the documentation", 200);
+            response = new HttpResponse("Successfully updated the documentation", 200);
         }
         return response;
     }
@@ -797,6 +807,70 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Successfully deleted the Document", 200);
         }
         return response;
+    }
+
+    /***
+     * Add a shared scope
+     *
+     * @param scopeDTO
+     * @return ScopeDTO - Returns the added shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO addSharedScope(ScopeDTO scopeDTO) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.addSharedScopeWithHttpInfo(scopeDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_CREATED);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Update a shared scopes
+     *
+     * @param uuid
+     * @param scopeDTO
+     * @return ScopeDTO - Returns the updated shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO updateSharedScope(String uuid, ScopeDTO scopeDTO) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.updateSharedScopeWithHttpInfo(uuid, scopeDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Get a shared scope
+     *
+     * @param uuid
+     * @return ScopeDTO - Returns the updated shared scope
+     * @throws ApiException
+     */
+    public ScopeDTO getSharedScopeById(String uuid) throws ApiException {
+        ApiResponse<ScopeDTO> httpInfo = sharedScopesApi.getSharedScopeWithHttpInfo(uuid);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /***
+     * Delete a shared scope
+     *
+     * @param uuid
+     * @throws ApiException
+     */
+    public void deleteSharedScope(String uuid) throws ApiException {
+        ApiResponse<Void> httpInfo = sharedScopesApi.deleteSharedScopeWithHttpInfo(uuid);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+
+    /***
+     * Get all shared scopes
+     *
+     * @return ScopeListDTO - Returns all the shared scopes
+     * @throws ApiException
+     */
+    public ScopeListDTO getAllSharedScopes() throws ApiException {
+        ApiResponse<ScopeListDTO> httpInfo = sharedScopesApi.getSharedScopesWithHttpInfo(null, null);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
     }
 
 
@@ -1115,4 +1189,61 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Method to retrieve the GraphQL Schema Type List
+     * @param apiId apiId of the API
+     * @return GraphQLSchemaTypeListDTO GraphQLSchemaTypeList object
+     * @throws ApiException
+     */
+    public GraphQLSchemaTypeListDTO getGraphQLSchemaTypeList(String apiId) throws ApiException {
+        ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+        Assert.assertEquals(graphQLSchemaTypeListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return graphQLSchemaTypeListDTOApiResponse.getData();
+    }
+
+    /**
+     * Method to add GraphQL Complexity Info of an API
+     *
+     * @param apiID
+     * @param graphQLQueryComplexityInfoDTO GraphQL Complexity Object
+     * @return
+     * @throws ApiException
+     */
+    public void addGraphQLComplexityDetails(GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, String apiID ) throws ApiException {
+        ApiResponse<Void> apiResponse =  graphQlPoliciesApi.apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(apiID, graphQLQueryComplexityInfoDTO);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /**
+     * Method to retrieve the GraphQL Complexity Details
+     * @param apiId apiId of the API
+     * @return HttpResponse response
+     * @throws ApiException
+     */
+    public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+        HttpResponse response = null;
+        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        if(complexityResponse.getStatusCode() == 200){
+            response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
+        }
+        return response;
+    }
 }
