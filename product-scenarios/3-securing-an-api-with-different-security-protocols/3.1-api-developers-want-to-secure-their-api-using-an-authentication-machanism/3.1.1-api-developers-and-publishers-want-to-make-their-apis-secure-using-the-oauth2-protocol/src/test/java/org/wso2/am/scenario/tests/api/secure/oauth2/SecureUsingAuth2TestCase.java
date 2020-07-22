@@ -228,7 +228,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         changeCustomAuthorizationHeaderInAPI("Authorization", apiId);
     }
 
-    @Test(description = "3.1.1.7", dependsOnMethods = "testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType")
+    @Test(description = "3.1.1.7", enabled = false, dependsOnMethods = "testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType")
     public void testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
