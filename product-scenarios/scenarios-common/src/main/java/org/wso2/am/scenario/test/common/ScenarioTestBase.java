@@ -508,7 +508,6 @@ public class ScenarioTestBase {
             if (!userMgtClient.isExistingUser(username)) {
                 userMgtClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE});
             }
-            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with creator role " + username, e);
         }
@@ -525,9 +524,8 @@ public class ScenarioTestBase {
                         .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
                                 ScenarioTestConstants.PUBLISHER_ROLE});
             }
-            Thread.sleep(10000);
         } catch (Exception e) {
-            throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
+            throw new APIManagementException("Unable to create user "+ username +" with publisher and creator role ", e);
         }
     }
 
@@ -554,7 +552,6 @@ public class ScenarioTestBase {
                 userMgtClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE});
             }
-            Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with subscriber role " + username, e);
         }
@@ -568,7 +565,6 @@ public class ScenarioTestBase {
             if (!userMgtClient.isExistingUser(username)) {
                 userMgtClient.addUser(username, password, roleList);
             }
-            Thread.sleep(10000);
         } catch (Exception e) {
             for (String s : roleList) {
                 log.error("Unable to create user with the provided role : " + s);
