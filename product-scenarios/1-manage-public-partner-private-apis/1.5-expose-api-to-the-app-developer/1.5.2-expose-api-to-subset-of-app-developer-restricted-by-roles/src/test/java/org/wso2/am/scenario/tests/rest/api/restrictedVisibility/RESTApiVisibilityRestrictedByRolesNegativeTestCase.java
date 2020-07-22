@@ -181,7 +181,7 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
         apiPublisher.deleteAPI("APIVisibility_ByRoleAndTenant", apiVersion, SUPER_TENANT_USER_USERNAME);
         deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        // deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(SUPER_TENANT_USER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteUser(TENANT_SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME + "@" +
                 ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);

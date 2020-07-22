@@ -207,7 +207,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
     }
 
-    @Test(description = "3.1.1.4", enabled = true, dependsOnMethods = "testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader")
+    @Test(description = "3.1.1.4", enabled = false, dependsOnMethods = "testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader")
     public void testResourceApplicationInvokeByCustomAuthorization() throws Exception {
         changeCustomAuthorizationHeaderInAPI(CUSTOM_AUTH_HEADER, apiId);
         Map<String, String> requestHeaders = new HashMap();
@@ -228,7 +228,8 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         changeCustomAuthorizationHeaderInAPI("Authorization", apiId);
     }
 
-    @Test(description = "3.1.1.7", dependsOnMethods = "testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType")
+    @Test(description = "3.1.1.7",
+            dependsOnMethods = "testResourceSetSecurityTypeAsApplicationUserInvokeByPasswordGrantType", enabled = false)
     public void testResourceSetSecurityTypeAsNoneCanInvokedAPIWithoutTokenHeader() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
@@ -307,13 +308,13 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationId2);
         restAPIPublisher.deleteAPI(apiId);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 
