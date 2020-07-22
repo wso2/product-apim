@@ -41,6 +41,7 @@ import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.scenario.test.common.clients.UserMgtClient;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -404,6 +405,7 @@ public class ScenarioTestBase {
                 tenantInfoBean = tenantManagementServiceClient.getTenant(domain);
                 if (tenantInfoBean.getActive()) {
                     isActive = true;
+                    break;
                 }
                 log.info("Waiting for the tenant " + domain + " to get activated");
                 Thread.sleep(3000);
@@ -412,8 +414,9 @@ public class ScenarioTestBase {
                     log.error("Tenant domain " + domain + "activation failed");
                     break;
                 }
+                isActive = false;
             }
-            return true;
+            return isActive;
         } catch (Exception e) {
             throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
         }
@@ -439,6 +442,11 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = new UserManagementClient(keyManagerURL, adminUsername,
                 adminPassword);
         return userManagementClient;
+    }
+
+    private static UserMgtClient getRemoteUserMgtClient(String adminUsername, String adminPassword)
+            throws AxisFault {
+        return new UserMgtClient(keyManagerURL, adminUsername, adminPassword);
     }
 
     /**
@@ -492,13 +500,13 @@ public class ScenarioTestBase {
         log.info("Response Message : " + httpResponse.getData());
     }
 
-    public static void createUserWithCreatorRole(String username, String password,
-                                                 String adminUsername, String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
+    public static void createUserWithCreatorRole(String username, String password, String adminUsername,
+                                                 String adminPassword) throws APIManagementException {
+        UserMgtClient userMgtClient;
         try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
-                userManagementClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE}, username);
+            userMgtClient = getRemoteUserMgtClient(adminUsername, adminPassword);
+            if (!userMgtClient.isExistingUser(username)) {
+                userMgtClient.addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE});
             }
             Thread.sleep(10000);
         } catch (Exception e) {
@@ -508,44 +516,43 @@ public class ScenarioTestBase {
 
     public static void createUserWithPublisherAndCreatorRole(String username, String password, String adminUsername,
                                                              String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
+        UserMgtClient userMgtClient;
         try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userMgtClient = getRemoteUserMgtClient(adminUsername, adminPassword);
 
-            if (!userManagementClient.userNameExists(ScenarioTestConstants.CREATOR_ROLE, username)) {
-                userManagementClient
+            if (!userMgtClient.isExistingUser(username)) {
+                userMgtClient
                         .addUser(username, password, new String[]{ScenarioTestConstants.CREATOR_ROLE,
-                                ScenarioTestConstants.PUBLISHER_ROLE}, username);
+                                ScenarioTestConstants.PUBLISHER_ROLE});
             }
             Thread.sleep(10000);
         } catch (Exception e) {
             throw new APIManagementException("Unable to create user with publisher and creator role " + username, e);
         }
-
     }
 
-    public void createUserWithPublisherRole(String username, String password, String adminUsername,
-                                            String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
-        try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient
-                    .addUser(username, password, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, username);
-        } catch (Exception e) {
-            throw new APIManagementException("Unable to create user with publisher role " + username, e);
-        }
+//    public void createUserWithPublisherRole(String username, String password, String adminUsername,
+//                                            String adminPassword) throws APIManagementException {
+//        UserManagementClient userManagementClient = null;
+//        try {
+//            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+//            userManagementClient
+//                    .addUser(username, password, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, username);
+//        } catch (Exception e) {
+//            throw new APIManagementException("Unable to create user with publisher role " + username, e);
+//        }
+//
+//    }
 
-    }
-
-    public static void createUserWithSubscriberRole(String username, String password,
-                                                    String adminUsername, String adminPassword)
-            throws RemoteException, UserAdminUserAdminException, APIManagementException {
-        UserManagementClient userManagementClient = null;
+    public static void createUserWithSubscriberRole(String username, String password, String adminUsername,
+                                                    String adminPassword)
+            throws APIManagementException {
+        UserMgtClient userMgtClient;
         try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            if (!userManagementClient.userNameExists(ScenarioTestConstants.SUBSCRIBER_ROLE, username)) {
-                userManagementClient
-                        .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE}, username);
+            userMgtClient = getRemoteUserMgtClient(adminUsername, adminPassword);
+            if (!userMgtClient.isExistingUser(username)) {
+                userMgtClient
+                        .addUser(username, password, new String[]{ScenarioTestConstants.SUBSCRIBER_ROLE});
             }
             Thread.sleep(10000);
         } catch (Exception e) {
@@ -553,12 +560,14 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createUser(String username, String password, String[] roleList,
-                           String adminUsername, String adminPassword) throws APIManagementException {
-        UserManagementClient userManagementClient = null;
+    public void createUser(String username, String password, String[] roleList, String adminUsername,
+                           String adminPassword) throws APIManagementException {
+        UserMgtClient userMgtClient;
         try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addUser(username, password, roleList, username);
+            userMgtClient = getRemoteUserMgtClient(adminUsername, adminPassword);
+            if (!userMgtClient.isExistingUser(username)) {
+                userMgtClient.addUser(username, password, roleList);
+            }
             Thread.sleep(10000);
         } catch (Exception e) {
             for (String s : roleList) {
@@ -603,10 +612,10 @@ public class ScenarioTestBase {
 
     public void deleteUser(String username, String adminUsername, String adminPassword) throws APIManagementException {
 
-        UserManagementClient userManagementClient;
+        UserMgtClient userMgtClient;
         try {
-            userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.deleteUser(username);
+            userMgtClient = getRemoteUserMgtClient(adminUsername, adminPassword);
+            userMgtClient.deleteUser(username);
         } catch (Exception e) {
             throw new APIManagementException("Unable to delete user :" + username, e);
         }
