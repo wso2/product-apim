@@ -17,7 +17,7 @@
 {% for key,value in synapse_properties.items() %}
 {{key}}={{value}}
 {% endfor %}
-{% if apim.sync_runtime_artifacts.gateway.save_artifacts_locally is defined %}
-synapse.artifacts.file.storage.enabled={{apim.sync_runtime_artifacts.gateway.save_artifacts_locally}}
+{% if apim.sync_runtime_artifacts.gateway is defined %}
+synapse.artifacts.file.storage.enabled=false
 {% endif %}
 

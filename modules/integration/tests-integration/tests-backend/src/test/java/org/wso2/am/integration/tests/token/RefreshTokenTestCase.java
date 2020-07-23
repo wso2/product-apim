@@ -31,6 +31,7 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -128,29 +129,6 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
                 "&scope=PRODUCTION";
         URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
 
-        HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
-        //get an access token for the first time
-        String firstAccessToken = firstAccessTokenGenerationResponse.getString("access_token");
-
-        HttpResponse secondResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                tokenEndpointURL);
-        JSONObject secondAccessTokenGenerationResponse = new JSONObject(secondResponse.getData());
-        //get an access token for the second time (using the same consumerKey, consumerSecret)
-        String secondAccessToken = secondAccessTokenGenerationResponse.getString("access_token");
-        String secondrefreshToken = secondAccessTokenGenerationResponse.getString("refresh_token");
-        //compare the two tokens, those should be equal
-        assertEquals(firstAccessToken, secondAccessToken, "Token mismatch while generating access token twice.");
-
-        //get an access token for the third time (using refresh grant type)
-        String requestBodyForRefreshGrant = "grant_type=refresh_token&refresh_token=" + secondrefreshToken;
-        HttpResponse thirdResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
-                requestBodyForRefreshGrant, tokenEndpointURL);
-        JSONObject thirdAccessTokenGenerationResponse = new JSONObject(thirdResponse.getData());
-        String thirdAccessToken = thirdAccessTokenGenerationResponse.getString("access_token");
-        //compare the two tokens, those should not be equal
-        assertNotEquals(firstAccessToken, thirdAccessToken, "Both tokens can not be the same");
         JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
                 consumerSecret, requestBody, tokenEndpointURL).getData());
 
@@ -160,7 +138,8 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check Access Token
-        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
+        requestHeaders.put("Authorization", "Bearer " + tokenJti);
         requestHeaders.put("accept", "text/xml");
 
         String apiUrl = getAPIInvocationURLHttp("refreshTokenTestAPI/1.0.0/customers/123");
@@ -189,7 +168,8 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         requestHeaders = new HashMap<String, String>();
         //Check with new Access Token
-        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
+        requestHeaders.put("Authorization", "Bearer " + tokenJti);
         requestHeaders.put("accept", "text/xml");
         httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
 

@@ -36,6 +36,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -45,6 +46,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +81,8 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"throttling"}, description = "API Throttling Test", enabled = true)
-    public void testAPIThrottling_1() throws APIManagerIntegrationTestException, XPathExpressionException, IOException, ApiException, org.wso2.am.integration.clients.store.api.ApiException {
+    public void testAPIThrottling_1() throws APIManagerIntegrationTestException, XPathExpressionException, IOException,
+            ApiException, org.wso2.am.integration.clients.store.api.ApiException, ParseException {
 
         List<APIOperationsDTO> apiOperationsDTOS = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
@@ -126,7 +129,8 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
         String invokeURL = getAPIInvocationURLHttps(apiContext);
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
         log.info("=============================== Headers : " + requestHeaders);
         log.info("=============================== invokeURL : " + invokeURL);
 

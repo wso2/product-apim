@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -21,6 +22,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -67,8 +69,9 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         createNewSubscriptionPolicyObject(subscriptionThrottlePolicyDTO);
         restAPIAdminUser = new RestAPIAdminImpl("admin", "admin", "carbon.super",
                 adminURLHttps);
-        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.addSubscriptionPolicy(subscriptionThrottlePolicyDTO,"application/json");
-        assertEquals(response.getResponseCode(), 201);
+        ApiResponse<SubscriptionThrottlePolicyDTO>
+                response = restAPIAdminUser.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO);
+        assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
 
         //create  and publish GraphQL API
         schemaDefinition = IOUtils.toString(
@@ -225,10 +228,11 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
                 "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
 
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
         requestHeaders.put("Content-Type",  "application/json");
 
         JSONObject queryObject = new JSONObject();
