@@ -26,6 +26,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -122,6 +123,16 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
+
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
@@ -174,6 +185,16 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
+
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
@@ -221,6 +242,16 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
         restAPIPublisherNew.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
@@ -270,6 +301,16 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
         restAPIPublisherNew.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");

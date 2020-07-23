@@ -273,7 +273,15 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         getAPI(apiId);
         publishAPI(apiId);
         // Wait until the tags are indexed in store
-        Thread.sleep(15000);
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiId, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiId, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiId);
 
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -329,8 +337,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         getAPI(apiIdPublic);
         publishAPI(apiIdPublic);
-        // Wait until the tags are indexed in store
-        Thread.sleep(15000);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdPublic, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdPublic, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiIdPublic);
 
 
         try {
@@ -404,8 +420,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         getAPI(apiIdSub);
         publishAPI(apiIdSub);
-        // Wait until the tags are indexed in store
-        Thread.sleep(100000);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdSub, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdSub, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiIdSub);
 
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {

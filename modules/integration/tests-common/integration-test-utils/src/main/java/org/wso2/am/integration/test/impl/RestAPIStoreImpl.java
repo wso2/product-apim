@@ -59,6 +59,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
 import java.io.IOException;
 import java.net.URL;
@@ -1759,5 +1760,30 @@ public class RestAPIStoreImpl {
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
+    }
+
+    /**
+     * Check whether the specific api sis available in store.
+     *
+     * @param apiId apiID
+     * @param tenantDomain tenant domain.
+     * @return
+     * @throws ApiException Throws if an error occurred when getting an api.
+     */
+    public boolean isAvailableInDevPortal(String apiId, String tenantDomain) throws ApiException {
+        boolean isAvailable = false;
+        long maxWait = 0;
+        APIDTO response;
+        while (!isAvailable) {
+            response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+            if(response != null && response.getId().equals(apiId)) {
+                return true;
+            }
+            maxWait = maxWait + 3000;
+            if (maxWait > 60000) {
+                break;
+            }
+        }
+        return false;
     }
 }

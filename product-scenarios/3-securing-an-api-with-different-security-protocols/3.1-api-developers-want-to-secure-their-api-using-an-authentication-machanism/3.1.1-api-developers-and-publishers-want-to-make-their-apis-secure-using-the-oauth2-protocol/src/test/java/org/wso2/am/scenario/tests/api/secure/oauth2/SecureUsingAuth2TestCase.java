@@ -151,9 +151,8 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                     "/customers/123");
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
-        }
+        log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
+
         HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation. \n API response : " + apiResponse.getData());
@@ -259,7 +258,15 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         apidto.setAuthorizationHeader(customAuth);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
-        Thread.sleep(3000);
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiId);
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDtoStore = restAPIStore.getAPI(apiId);
         apiDtoStore.getAuthorizationHeader();
         assertEquals(apiDtoStore.getAuthorizationHeader(), customAuth, "Authorization header update failed");
