@@ -1,6 +1,0 @@
-<module name="utils" xmlns="http://wso2.org/projects/jaggery/module.xml">
-    <script>
-        <name>xml</name>
-        <path>scripts/xml/xml.js</path>
-    </script>   
-</module>
