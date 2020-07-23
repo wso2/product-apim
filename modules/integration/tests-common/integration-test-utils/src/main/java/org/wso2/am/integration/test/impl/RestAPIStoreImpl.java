@@ -77,7 +77,7 @@ import javax.xml.xpath.XPathExpressionException;
  */
 public class RestAPIStoreImpl {
 
-    private static final Log log = LogFactory.getLog(SecureUsingAuth2NegativeTestCases.class);
+    private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
 
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
