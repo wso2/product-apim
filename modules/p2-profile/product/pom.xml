@@ -498,12 +498,6 @@
                                     org.wso2.carbon.registry:org.wso2.carbon.registry.task.feature:${carbon.registry.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.jaggeryjs.modules:ws.feature:${ws.feature.version}
                                 </featureArtifactDef>
 
@@ -1231,14 +1225,6 @@
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature.group</id>
@@ -1744,14 +1730,6 @@
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.tracing.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -2250,14 +2228,6 @@
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.metrics.server.feature.group</id>
@@ -2704,14 +2674,6 @@
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
                               
                                 <feature>
                                     <id>org.wso2.carbon.metrics.server.feature.group</id>
@@ -3140,14 +3102,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
