@@ -21,17 +21,34 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.admin.ApiClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.AdvancedPolicyCollectionApi;
+import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationCollectionApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
+import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
+import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
+import org.wso2.am.integration.clients.admin.api.LabelApi;
+import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
 
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
 
 import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
@@ -52,8 +69,18 @@ public class RestAPIAdminImpl {
     public WorkflowCollectionApi workflowCollectionApi = new WorkflowCollectionApi();
     public WorkflowsIndividualApi workflowsIndividualApi = new WorkflowsIndividualApi();
     private SettingsApi settingsApi = new SettingsApi();
+    private ApplicationPolicyIndividualApi applicationPolicyIndividualApi = new ApplicationPolicyIndividualApi();
+    public ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
     private SubscriptionPolicyIndividualApi subscriptionPolicyIndividualApi = new SubscriptionPolicyIndividualApi();
     private SubscriptionPolicyCollectionApi subscriptionPolicyCollectionApi = new SubscriptionPolicyCollectionApi();
+    private CustomRulesIndividualApi customRulesIndividualApi = new CustomRulesIndividualApi();
+    private CustomRulesCollectionApi customRulesCollectionApi = new CustomRulesCollectionApi();
+    private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
+    private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
+    private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
+    private ApplicationApi applicationApi = new ApplicationApi();
+    private LabelApi labelApi = new LabelApi();
+    private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -109,8 +136,18 @@ public class RestAPIAdminImpl {
         keyManagerCollectionApi.setApiClient(apiAdminClient);
         keyManagerIndividualApi.setApiClient(apiAdminClient);
         settingsApi.setApiClient(apiAdminClient);
+        applicationPolicyIndividualApi.setApiClient(apiAdminClient);
+        applicationPolicyCollectionApi.setApiClient(apiAdminClient);
         subscriptionPolicyIndividualApi.setApiClient(apiAdminClient);
         subscriptionPolicyCollectionApi.setApiClient(apiAdminClient);
+        customRulesIndividualApi.setApiClient(apiAdminClient);
+        customRulesCollectionApi.setApiClient(apiAdminClient);
+        advancedPolicyIndividualApi.setApiClient(apiAdminClient);
+        advancedPolicyCollectionApi.setApiClient(apiAdminClient);
+        applicationCollectionApi.setApiClient(apiAdminClient);
+        applicationApi.setApiClient(apiAdminClient);
+        labelApi.setApiClient(apiAdminClient);
+        labelCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
@@ -147,36 +184,303 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to create an application throttling policy.
+     *
+     * @param applicationThrottlePolicyDTO Application throttling policy DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException if an error occurs while creating the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> addApplicationThrottlingPolicy(
+            ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
+
+        return applicationPolicyCollectionApi
+                .throttlingPoliciesApplicationPostWithHttpInfo(applicationThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE);
+    }
+
+    /**
+     * This method is used to retrieve an application throttling policy.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException if an error occurs while retrieving the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> getApplicationThrottlingPolicy(String policyId)
+            throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update an application throttling policy.
+     *
+     * @param policyId                     Policy Id of the application throttling policy to be updated.
+     * @param applicationThrottlePolicyDTO Application throttling policy DTO which contains the update content.
+     * @return API response returned by the API call.
+     * @throws ApiException if an error occurs while updating the application throttling policy.
+     */
+    public ApiResponse<ApplicationThrottlePolicyDTO> updateApplicationThrottlingPolicy(String policyId,
+            ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, applicationThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+    }
+
+    /**
+     * This method is used to delete an application throttling policy.
+     *
+     * @param policyId Policy Id of the application throttling policy to be deleted.
+     * @return API response returned by the API call.
+     * @throws ApiException if an error occurs while deleting the application throttling policy.
+     */
+    public ApiResponse<Void> deleteApplicationThrottlingPolicy(String policyId) throws ApiException {
+
+        return applicationPolicyIndividualApi
+                .throttlingPoliciesApplicationPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
      * This method is used to create a subscription throttling policy.
      *
-     * @param subscriptionThrottlePolicyDTO subscription throttling policy DTO.
-     * @param contentType                   Content type.
-     * @return returns the created subscription policy ID.
-     * @throws ApiException Throws if an error occurred while creating a new subscription policy.
+     * @param subscriptionThrottlePolicyDTO Subscription throttling policy DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while creating the new subscription throttling policy.
      */
-    public HttpResponse addSubscriptionPolicy(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO, String contentType) throws ApiException {
-        SubscriptionThrottlePolicyDTO subscriptionPolicyDTOResponse = subscriptionPolicyCollectionApi
-                .throttlingPoliciesSubscriptionPost(subscriptionThrottlePolicyDTO, contentType);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(subscriptionPolicyDTOResponse.getPolicyId())) {
-            response = new HttpResponse(subscriptionPolicyDTOResponse.getPolicyId(), 201);
-        }
-        return response;
+    public ApiResponse<SubscriptionThrottlePolicyDTO> addSubscriptionThrottlingPolicy(
+            SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
+        return subscriptionPolicyCollectionApi
+                .throttlingPoliciesSubscriptionPostWithHttpInfo(subscriptionThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE);
+
+    }
+
+    /**
+     * This method is used to retrieve a subscription throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the subscription throttling policy.
+     */
+    public ApiResponse<SubscriptionThrottlePolicyDTO> getSubscriptionThrottlingPolicy(String policyId)
+            throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update a subscription throttling policy.
+     *
+     * @param policyId                      Policy Id of the subscription throttling policy to be updated.
+     * @param subscriptionThrottlePolicyDTO Subscription throttling policy DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the subscription throttling policy.
+     */
+    public ApiResponse<SubscriptionThrottlePolicyDTO> updateSubscriptionThrottlingPolicy(String policyId,
+            SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId, subscriptionThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
     }
 
     /**
      * This method is used to delete a subscription throttling policy.
      *
-     * @param policyId subscription throttling policy Id.
-     * @return returns the created subscription policy ID.
-     * @throws ApiException Throws if an error occurred while creating a new subscription policy.
+     * @param policyId Subscription throttling policy Id.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while deleting the subscription throttling policy.
      */
-    public HttpResponse deleteSubscriptionPolicy(String policyId) throws ApiException {
-        subscriptionPolicyIndividualApi
-                .throttlingPoliciesSubscriptionPolicyIdDelete(policyId, null, null);
-        return new HttpResponse("Policy deleted successfully", 200);
+    public ApiResponse<Void> deleteSubscriptionThrottlingPolicy(String policyId) throws ApiException {
+
+        return subscriptionPolicyIndividualApi
+                .throttlingPoliciesSubscriptionPolicyIdDeleteWithHttpInfo(policyId, null, null);
     }
+
+    /**
+     * This method is used to create an custom throttling policy.
+     *
+     * @param customRuleDTO Custom throttling policy DTO to be added.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while creating the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> addCustomThrottlingPolicy(CustomRuleDTO customRuleDTO) throws ApiException {
+
+        return customRulesCollectionApi
+                .throttlingPoliciesCustomPostWithHttpInfo(customRuleDTO, Constants.APPLICATION_JSON_CONTENT_TYPE);
+    }
+
+    /**
+     * This method is used to retrieve a custom throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> getCustomThrottlingPolicy(String policyId) throws ApiException {
+
+        return customRulesIndividualApi
+                .throttlingPoliciesCustomRuleIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update a custom throttling policy.
+     *
+     * @param policyId      Policy Id of the custom throttling policy to be updated.
+     * @param customRuleDTO Custom throttling policy DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the custom throttling policy.
+     */
+    public ApiResponse<CustomRuleDTO> updateCustomThrottlingPolicy(String policyId, CustomRuleDTO customRuleDTO)
+            throws ApiException {
+
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
+                Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+    }
+
+    /**
+     * This method is used to delete a custom throttling policy.
+     *
+     * @param policyId Policy Id of the custom throttling policy to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the custom throttling policy.
+     */
+    public ApiResponse<Void> deleteCustomThrottlingPolicy(String policyId) throws ApiException {
+
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to create an advanced throttling policy.
+     *
+     * @param advancedThrottlePolicyDTO Advanced throttling policy DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while creating the new advanced policy.
+     */
+    public ApiResponse<AdvancedThrottlePolicyDTO> addAdvancedThrottlingPolicy(
+            AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
+
+        return advancedPolicyCollectionApi.throttlingPoliciesAdvancedPostWithHttpInfo(advancedThrottlePolicyDTO,
+                Constants.APPLICATION_JSON_CONTENT_TYPE);
+
+    }
+
+    /**
+     * This method is used to retrieve an advanced throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the advanced throttling policy.
+     */
+    public ApiResponse<AdvancedThrottlePolicyDTO> getAdvancedThrottlingPolicy(String policyId) throws ApiException {
+
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to update an advanced throttling policy.
+     *
+     * @param policyId                  Policy Id of the advanced throttling policy to be updated.
+     * @param advancedThrottlePolicyDTO Advanced throttling policy DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the advanced throttling policy.
+     */
+    public ApiResponse<AdvancedThrottlePolicyDTO> updateAdvancedThrottlingPolicy(String policyId,
+            AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
+
+        return advancedPolicyIndividualApi
+                .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, advancedThrottlePolicyDTO,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+    }
+
+    /**
+     * This method is used to delete an advanced throttling policy.
+     *
+     * @param policyId Policy Id of the advanced throttling policy to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the advanced throttling policy.
+     */
+    public ApiResponse<Void> deleteAdvancedThrottlingPolicy(String policyId) throws ApiException {
+
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * This method is used to add a label.
+     *
+     * @param labelDTO Label DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new label.
+     */
+    public ApiResponse<LabelDTO> addLabel(LabelDTO labelDTO) throws ApiException {
+
+        return labelApi.labelsPostWithHttpInfo(labelDTO);
+    }
+
+    /**
+     * This method is used to retrieve all labels.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while retrieving all labels.
+     */
+    public ApiResponse<LabelListDTO> getLabels() throws ApiException {
+
+        return labelCollectionApi.labelsGetWithHttpInfo();
+    }
+
+    /**
+     * This method is used to update a label.
+     *
+     * @param labelId  Label Id of the label to be updated.
+     * @param labelDTO Label DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the label.
+     */
+    public ApiResponse<LabelDTO> updateLabel(String labelId, LabelDTO labelDTO) throws ApiException {
+
+        return labelApi.labelsLabelIdPutWithHttpInfo(labelId, labelDTO);
+    }
+
+    /**
+     * This method is used to delete a label.
+     *
+     * @param labelId Label Id of the label to be updated.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the label.
+     */
+    public ApiResponse<Void> deleteLabel(String labelId) throws ApiException {
+
+        return labelApi.labelsLabelIdDeleteWithHttpInfo(labelId, null, null);
+    }
+
+    /**
+     * This method is used to retrieve applications.
+     *
+     * @param user            Username of the application creator.
+     * @param limit           Maximum number of applications to return.
+     * @param offset          Starting point within the complete list of applications qualified.
+     * @param appTenantDomain Tenant domain of the applications to get.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving applications.
+     */
+    public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
+            String appTenantDomain) throws ApiException {
+
+        return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null, null, appTenantDomain);
+    }
+
+    /**
+     * This method is used to change the owner of an application.
+     *
+     * @param newOwner      New owner of the application.
+     * @param applicationId Application ID of the application.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while changing the owner of an application.
+     */
+    public ApiResponse<Void> changeApplicationOwner(String newOwner, String applicationId) throws ApiException {
+
+        return applicationApi.applicationsApplicationIdChangeOwnerPostWithHttpInfo(newOwner, applicationId);
+    }
+
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {
         WorkflowInfoDTO workflowInfodto = null;
         HttpResponse response = null;
