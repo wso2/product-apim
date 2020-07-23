@@ -1789,6 +1789,7 @@ public class RestAPIStoreImpl {
             }
             maxWait = maxWait + 3000;
             if (maxWait > 60000) {
+                log.info("API not available in store api id: " + apiId);
                 break;
             }
         }
