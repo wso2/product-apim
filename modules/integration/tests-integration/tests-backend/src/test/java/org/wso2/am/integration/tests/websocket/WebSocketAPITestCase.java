@@ -54,6 +54,7 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -223,12 +224,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER);
-            invokeAPI(client, accessToken, AUTH_IN.QUERY);
+            invokeAPI(client, tokenJti, AUTH_IN.HEADER);
+            invokeAPI(client, tokenJti, AUTH_IN.QUERY);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -318,7 +320,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        testThrottling(userAccessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
+        testThrottling(tokenJti);
     }
 
     @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
