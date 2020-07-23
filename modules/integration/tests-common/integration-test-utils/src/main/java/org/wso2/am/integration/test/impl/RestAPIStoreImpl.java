@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
@@ -74,6 +76,9 @@ import javax.xml.xpath.XPathExpressionException;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+
+    private static final Log log = LogFactory.getLog(SecureUsingAuth2NegativeTestCases.class);
+
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
@@ -1768,15 +1773,18 @@ public class RestAPIStoreImpl {
      * @param apiId apiID
      * @param tenantDomain tenant domain.
      * @return
-     * @throws ApiException Throws if an error occurred when getting an api.
      */
-    public boolean isAvailableInDevPortal(String apiId, String tenantDomain) throws ApiException {
+    public boolean isAvailableInDevPortal(String apiId, String tenantDomain) {
         boolean isAvailable = false;
         long maxWait = 0;
-        APIDTO response;
+        APIDTO response = null;
         while (!isAvailable) {
-            response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
-            if(response != null && response.getId().equals(apiId)) {
+            try {
+                response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+            } catch (ApiException e) {
+                log.info("Waiting for api " + apiId + " to be available in store.");
+            }
+            if (response != null && response.getId().equals(apiId)) {
                 return true;
             }
             maxWait = maxWait + 3000;
