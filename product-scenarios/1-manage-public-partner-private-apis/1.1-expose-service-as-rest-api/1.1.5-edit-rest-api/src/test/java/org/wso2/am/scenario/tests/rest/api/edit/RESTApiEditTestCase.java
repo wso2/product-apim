@@ -151,6 +151,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Update API with the description and tiersCollection & validate the result
         apidto.setDescription("Description Changed");
+        apidto.description("Description Changed");
         List<String> tiersCollectionList = new ArrayList<>();
         tiersCollectionList.add("Unlimited");
         tiersCollectionList.add("Gold");
