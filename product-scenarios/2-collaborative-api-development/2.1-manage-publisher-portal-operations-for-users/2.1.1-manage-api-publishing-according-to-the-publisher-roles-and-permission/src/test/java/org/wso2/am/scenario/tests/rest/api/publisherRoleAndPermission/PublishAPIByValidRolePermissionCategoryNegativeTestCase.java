@@ -154,10 +154,10 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -225,11 +225,11 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -294,10 +294,10 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -364,11 +364,11 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
