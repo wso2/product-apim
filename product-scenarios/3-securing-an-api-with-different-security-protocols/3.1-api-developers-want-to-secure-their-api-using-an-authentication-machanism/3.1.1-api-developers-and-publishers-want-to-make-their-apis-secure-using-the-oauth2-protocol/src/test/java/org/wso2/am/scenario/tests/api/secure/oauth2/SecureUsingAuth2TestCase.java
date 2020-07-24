@@ -106,6 +106,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         }
         super.init(userMode);
         String apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        log.info("apiEndPointUrl in SecureUsingAuth2TestCase " + apiEndPointUrl);
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(TEST_API_1_NAME, "/" + TEST_API_1_CONTEXT, TEST_API_1_VERSION,
                 API_CREATOR_PUBLISHER_USERNAME, new URL(apiEndPointUrl));
 
@@ -151,7 +152,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                     "/customers/123");
         }
 
-        log.debug("Gateway HTTPS URL : " + gatewayHttpsUrl);
+        log.info("Gateway HTTPS URL : " + gatewayHttpsUrl);
 
         HttpResponse apiResponse = HttpClient.doGet(gatewayHttpsUrl, requestHeaders);
         assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),

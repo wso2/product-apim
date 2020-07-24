@@ -152,11 +152,11 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         } finally {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
-                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
@@ -220,12 +220,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
                 deleteRole(creatorRole, ADMIN_USERNAME, ADMIN_PW);
-                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 deleteRole(creatorRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
