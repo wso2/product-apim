@@ -1224,11 +1224,11 @@
         <carbon.analytics.common.version>5.2.26</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-	<carbon.apimgt.version>6.7.127</carbon.apimgt.version>
+	<carbon.apimgt.version>6.7.139</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.34</carbon.registry.version>
+        <carbon.registry.version>4.7.35</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1246,7 +1246,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.48</carbon.mediation.version>
+        <carbon.mediation.version>4.7.57</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.17.5</carbon.identity.version>
