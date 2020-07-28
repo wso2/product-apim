@@ -374,7 +374,7 @@ public class ScenarioTestBase {
                 tenantManagementServiceClient.addTenant(domain, adminUsername, adminPassword, "demo");
                 tenantManagementServiceClient.activateTenant(domain);
             }
-            Thread.sleep(10000);
+            isActivated(domain);
         } catch (Exception e) {
             throw new APIManagementException("Unable to add new tenant and activate " + domain, e);
         }
