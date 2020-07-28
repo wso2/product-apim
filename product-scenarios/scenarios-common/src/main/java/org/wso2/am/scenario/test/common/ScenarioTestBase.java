@@ -581,10 +581,12 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addRole(role,
-                    new String[]{},
-                    permisionArray
-            );
+            if (!userManagementClient.roleNameExists(role)){
+                userManagementClient.addRole(role,
+                        new String[]{},
+                        permisionArray
+                );
+            }
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
