@@ -86,8 +86,9 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPI(APILifeCycleState state) throws Exception {
         String name = API_NAME_PREFIX + state.toString();
-        String apiID = createApi(name);
+        String apiID = createApi(name + state.toString());
         changeApiStateTo(apiID, state);
+        Thread.sleep(10000);
         restAPIPublisher.deleteAPI(apiID);
     }
 
@@ -95,9 +96,10 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPIAfterDeleteSubscribedApplication(APILifeCycleState state) throws Exception {
         String name = API_NAME_PREFIX + "deleteSubApp_" + state.toString();
-        String apiID = createApi(name);
+        String apiID = createApi(name + state.toString());
         String applicationID = createApplication(name);
         changeApiStateTo(apiID, state);
+        Thread.sleep(10000);
         HttpResponse subscriptionResponse;
         if (state.equals(APILifeCycleState.PUBLISHED)) {
             subscriptionResponse = createSubscription(apiID, applicationID);
@@ -111,9 +113,10 @@ public class DeleteExistingAPIsTestCases extends ScenarioTestBase {
             dataProviderClass = ScenarioDataProvider.class)
     public void testDeleteAPIAfterUnsubscribeApplication(APILifeCycleState state) throws Exception {
         String name = API_NAME_PREFIX + "unsubApp_" + state.toString();
-        String apiID = createApi(name);
+        String apiID = createApi(name + state.toString());
         String applicationID = createApplication(name);
         changeApiStateTo(apiID, state);
+        Thread.sleep(10000);
         HttpResponse subscriptionResponse = null;
         if (state.equals(APILifeCycleState.PUBLISHED)) {
             subscriptionResponse = createSubscription(apiID, applicationID);

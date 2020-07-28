@@ -118,7 +118,7 @@ public class ApplicationCreationTestCases extends ScenarioTestBase {
         assertEquals(applicationData.get(THROTTLING_POLICY), APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 "Error in application creation with mandatory and optional values. Application TIER");
         String TOKEN_TYPE = "tokenType";
-        assertEquals(((JSONObject) applicationData.get(TOKEN_TYPE)).get("value"), ApplicationDTO.TokenTypeEnum.OAUTH.getValue(),
+        assertEquals(((JSONObject) applicationData.get(TOKEN_TYPE)).get("value"), ApplicationDTO.TokenTypeEnum.JWT.getValue(),
                 "Error in application creation with mandatory and optional values. Application TOKEN_TYPE");
 
         restAPIStore.deleteApplication(applicationResponse.getData());
