@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **hasThumbnail** | **Boolean** |  |  [optional]
 **state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the store  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
+**enableStore** | **Boolean** |  |  [optional]
 **responseCachingEnabled** | **Boolean** |  |  [optional]
 **cacheTimeout** | **Integer** |  |  [optional]
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) | The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED. |  [optional]

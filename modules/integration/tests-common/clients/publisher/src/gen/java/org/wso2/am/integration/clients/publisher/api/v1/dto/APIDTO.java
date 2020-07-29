@@ -87,6 +87,9 @@ public class APIDTO {
   @SerializedName("enableSchemaValidation")
   private Boolean enableSchemaValidation = null;
 
+  @SerializedName("enableStore")
+  private Boolean enableStore = null;
+
   /**
    * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
    */
@@ -699,6 +702,24 @@ public class APIDTO {
 
   public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
     this.enableSchemaValidation = enableSchemaValidation;
+  }
+
+  public APIDTO enableStore(Boolean enableStore) {
+    this.enableStore = enableStore;
+    return this;
+  }
+
+   /**
+   * Get enableStore
+   * @return enableStore
+  **/
+  @ApiModelProperty(example = "true", value = "")
+  public Boolean isEnableStore() {
+    return enableStore;
+  }
+
+  public void setEnableStore(Boolean enableStore) {
+    this.enableStore = enableStore;
   }
 
   public APIDTO type(TypeEnum type) {
@@ -1440,6 +1461,7 @@ public class APIDTO {
         Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
         Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
         Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
+        Objects.equals(this.enableStore, API.enableStore) &&
         Objects.equals(this.type, API.type) &&
         Objects.equals(this.transport, API.transport) &&
         Objects.equals(this.tags, API.tags) &&
@@ -1477,7 +1499,7 @@ public class APIDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
+    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
   }
 
 
@@ -1501,6 +1523,7 @@ public class APIDTO {
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
+    sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");

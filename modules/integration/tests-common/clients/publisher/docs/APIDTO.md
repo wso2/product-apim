@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **hasThumbnail** | **Boolean** |  |  [optional]
 **isDefaultVersion** | **Boolean** |  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
+**enableStore** | **Boolean** |  |  [optional]
 **type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
