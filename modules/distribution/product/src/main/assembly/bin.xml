@@ -1665,6 +1665,17 @@
             <source>src/main/resources/client-truststore.jks</source>
             <outputDirectory>wso2am-${pom.version}/repository/resources/security/</outputDirectory>
         </file>
+        <!-- Coping lerna related files -->
+        <file>
+            <source>src/main/conf/lerna/lerna.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <destName>lerna.json</destName>
+        </file>
+        <file>
+            <source>src/main/conf/lerna/package.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <destName>package.json</destName>
+        </file>
     </files>
 
 </assembly>
