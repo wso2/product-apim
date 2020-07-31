@@ -238,7 +238,7 @@ swagger-inflector-oas3_2.0.5.wso2v1.jar                                         
 org.wso2.carbon.core.commons.stub_4.6.0.jar                                                         bundle         apache2
 ant_1.7.0.wso2v1.jar                                                                                bundle         apache2
 csrfguard_3.1.0.wso2v3.jar                                                                          bundle         bsd
-wso2is.key.manager_1.0.14.jar                                                                       bundle         apache2
+wso2is.key.manager_1.0.15.jar                                                                       bundle         apache2
 org.wso2.carbon.event.client.stub_4.7.32.jar                                                        bundle         apache2
 commons-fileupload_1.3.3.wso2v1.jar                                                                 bundle         apache2
 org.wso2.carbon.identity.core.ui_5.17.5.jar                                                         bundle         apache2
@@ -585,7 +585,7 @@ org.objenesis_2.1.0.jar                                                         
 ajaxtags_1.3.0.beta-rc7-wso2v1.jar                                                                  bundle         apache2
 jericho-html-2.4.jar                                                                                jarinbundle    epl1
 org.wso2.carbon.core_4.6.0.jar                                                                      bundle         apache2
-wso2is.key.manager.core_1.0.14.jar                                                                  bundle         apache2
+wso2is.key.manager.core_1.0.15.jar                                                                  bundle         apache2
 org.wso2.carbon.identity.auth.valve_1.4.0.jar                                                       bundle         apache2
 org.wso2.carbon.identity.notification.mgt_5.17.5.jar                                                bundle         apache2
 io.github.openfeign.feign-slf4j_11.0.0.jar                                                          bundle         apache2
@@ -647,7 +647,7 @@ org.wso2.carbon.mediation.ntaskadmin_4.7.60.jar                                 
 okio_2.4.0.wso2v1.jar                                                                               bundle         apache2
 org.wso2.carbon.consent.mgt.ui_2.2.8.jar                                                            bundle         apache2
 org.wso2.carbon.identity.password.policy_1.4.1.jar                                                  bundle         apache2
-wso2is.notification.event.handlers_1.0.14.jar                                                       bundle         apache2
+wso2is.notification.event.handlers_1.0.15.jar                                                       bundle         apache2
 org.wso2.carbon.event.receiver.admin_5.2.26.jar                                                     bundle         apache2
 org.wso2.carbon.webapp.mgt_4.10.1.jar                                                               bundle         apache2
 com.google.guava_27.0.0.jre.jar                                                                     bundle         apache2
