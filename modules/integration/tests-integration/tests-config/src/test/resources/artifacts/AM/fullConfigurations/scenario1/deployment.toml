@@ -130,7 +130,7 @@ enable_user_claims = true
 [apim.oauth_config]
 enable_outbound_auth_header = true
 default_app_scope = "am_custom_application_scope"
-white_listed_scopes = ["^device_.*","openid","custom_device"]
+allowed_scopes = ["^device_.*","openid","custom_device"]
 auth_header = "X-Authorization"
 revoke_endpoint = "https://localhost:8243/revoke"
 enable_token_encryption = true
