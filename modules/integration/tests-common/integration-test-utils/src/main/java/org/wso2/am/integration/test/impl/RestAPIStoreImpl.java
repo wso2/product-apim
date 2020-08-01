@@ -56,6 +56,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
+import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -88,6 +90,7 @@ public class RestAPIStoreImpl {
     public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     ApiClient apiStoreClient = new ApiClient();
+    public UsersApi usersApi = new UsersApi();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -131,6 +134,7 @@ public class RestAPIStoreImpl {
         apiKeysApi.setApiClient(apiStoreClient);
         keyManagersCollectionApi.setApiClient(apiStoreClient);
         graphQlPoliciesApi.setApiClient(apiStoreClient);
+        usersApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
@@ -147,6 +151,7 @@ public class RestAPIStoreImpl {
         applicationKeysApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         keyManagersCollectionApi.setApiClient(apiStoreClient);
+        usersApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
@@ -1645,24 +1650,29 @@ public class RestAPIStoreImpl {
     /**
      * Change password of the user
      *
-     * @param username        username of the user
      * @param currentPassword current password of the user
      * @param newPassword     new password of the user
      * @return
-     * @throws APIManagerIntegrationTestException if failed to change password
+     * @throws ApiException if failed to change password
      */
-    public HttpResponse changePassword(String username, String currentPassword, String newPassword)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            return HTTPSClientUtils.doPost(new URL(
-//                    backendURL + "store/site/blocks/user/user-info/ajax/user-info.jag?action=changePassword" +
-//                            "&username=" + username + "&currentPassword=" +
-//                            currentPassword + "&newPassword=" + newPassword), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to change password. Error: " + e.getMessage(), e);
-//        }
-        return null;
+    public HttpResponse changePassword(String currentPassword, String newPassword)
+            throws ApiException {
+
+        HttpResponse response = null;
+
+        CurrentAndNewPasswordsDTO currentAndNewPasswordsDTO = new CurrentAndNewPasswordsDTO();
+        currentAndNewPasswordsDTO.setCurrentPassword(currentPassword);
+        currentAndNewPasswordsDTO.setNewPassword(newPassword);
+
+        ApiResponse<Void> changePasswordResponse =
+                usersApi.changeUserPasswordWithHttpInfo(currentAndNewPasswordsDTO);
+
+        Assert.assertEquals(changePasswordResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        if (changePasswordResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully changed user password", 200);
+        }
+        return response;
     }
 
     /**

@@ -325,6 +325,7 @@
           group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.am.integration.tests.login.PasswordChangeTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-workflow" preserve-order="true" parallel="false" group-by-instances="true">
