@@ -3696,7 +3696,7 @@ paths:
   #######################################################################
   # The "Change logged-in User Password" Processing Function resource API
   #######################################################################
-  '/damn/change-password':
+  '/me/change-password':
 
     #-----------------------------------------------------
     # Change password of the logged-in user

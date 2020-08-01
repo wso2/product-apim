@@ -67,7 +67,7 @@ public class UsersApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/damn/change-password";
+        String localVarPath = "/me/change-password";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();

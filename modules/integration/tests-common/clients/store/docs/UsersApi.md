@@ -4,7 +4,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**changeUserPassword**](UsersApi.md#changeUserPassword) | **POST** /damn/change-password | Change the password of the user
+[**changeUserPassword**](UsersApi.md#changeUserPassword) | **POST** /me/change-password | Change the password of the user
 
 
 <a name="changeUserPassword"></a>
