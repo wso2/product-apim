@@ -23,7 +23,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v3.2.0 - 5th August 2020</title>
+    <title>WSO2 API Manager v3.2.0 - 6th August 2020</title>
 </head>
 <body>
 <div id="main-content">
@@ -79,7 +79,7 @@
 
     <h2>Bug Fixes And Improvements in 3.2.0</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aissue+is%3Aclosed+closed%3A2020-03-20..2020-08-05">product-apim</a>)
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aissue+is%3Aclosed+closed%3A2020-03-20..2020-08-06">product-apim</a>)
         </li>
     </ul>
 
