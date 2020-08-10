@@ -36,9 +36,17 @@ password = "wso2carbon"
 service_url = "https://km.wso2.com:443/services/"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
-#pool.init_idle_capacity=50
-#pool.max_idle=100
-#custom_key_validation_handler="org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
+
+# JWT Generation
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+#enable_user_claims = true
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 # Traffic Manager configurations
 [apim.throttling]
@@ -72,12 +80,17 @@ analytics_auth_url=["ssl://analytics1.local:7712"]
 analytics_url=["tcp://analytics2.local:7612"]
 analytics_auth_url=["ssl://analytics2.local:7712"]
 
+# Caches
 [apim.cache.gateway_token]
 enable = true
 expiry_time = 15
 
 [apim.cache.resource]
 enable = true
+
+[apim.cache.jwt_claim]
+enable = true
+expiry_time = 900
 
 [apim.oauth_config]
 remove_outbound_auth_header = true

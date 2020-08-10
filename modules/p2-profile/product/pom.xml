@@ -2278,6 +2278,10 @@
                                     <version>${identity.apps.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>wso2is.key.manager.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
@@ -2728,6 +2732,10 @@
                                 <feature>
                                     <id>org.wso2.identity.apps.recovery.portal.server.feature.group</id>
                                     <version>${identity.apps.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>wso2is.key.manager.feature.group</id>

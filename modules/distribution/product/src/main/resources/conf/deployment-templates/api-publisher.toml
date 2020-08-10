@@ -50,6 +50,12 @@ password= "${admin.password}"
 http_endpoint = "http://api.gw.wso2.com:8280/"
 https_endpoint = "https://api.gw.wso2.com:8243/"
 
+# key manager implementation
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
 username= "$ref{super_admin.username}"
@@ -98,7 +104,6 @@ client_registration_username = "$ref{super_admin.username}"
 client_registration_password = "$ref{super_admin.password}"
 
 [apim.event_hub]
-service_url = "https://tm1.local:9443"
 event_listening_endpoints = ["tcp://tm1.local:5672"]
 
 [[apim.event_hub.publish.url_group]]
