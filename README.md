@@ -276,4 +276,4 @@ Crypto Notice
 * Bouncycastle     : http://www.bouncycastle.org/
 
 --------------------------------------------------------------------------------
-(c) Copyright 2018 WSO2 Inc.
+(c) Copyright 2020 WSO2 Inc.
