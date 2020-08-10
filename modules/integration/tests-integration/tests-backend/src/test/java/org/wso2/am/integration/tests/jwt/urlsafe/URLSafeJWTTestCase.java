@@ -51,6 +51,7 @@ import org.wso2.carbon.user.core.UserStoreException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+
 import javax.ws.rs.core.Response;
 
 import static org.testng.AssertJUnit.assertTrue;
@@ -143,14 +144,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -200,14 +199,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -258,6 +255,7 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
 
     @Factory(dataProvider = "userModeDataProvider")
     public URLSafeJWTTestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
