@@ -39,6 +39,12 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
+# key manager implementation
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
 [[apim.gateway.environment]]
 name= "Production and Sandbox"
 type= "hybrid"
@@ -89,7 +95,6 @@ name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
 
 [apim.event_hub]
-service_url = "https://tm1.local:9443"
 event_listening_endpoints = ["tcp://tm1.local:5672"]
 
 [[apim.event_hub.publish.url_group]]
