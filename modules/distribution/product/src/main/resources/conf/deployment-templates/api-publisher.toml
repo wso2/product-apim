@@ -71,9 +71,10 @@ analytics_auth_url=["ssl://analytic2.local:7712"]
 
 # Traffic Manager configurations
 [apim.throttling]
-service_url = "https://tm.wso2.com:443/services/"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
+service_url = "https://tm.wso2.com:443/services/"
+throttle_decision_endpoints = ["tcp://tm1.local:5672","tcp://tm2.local:5672"]
 
 [[apim.throttling.url_group]]
 traffic_manager_urls=["tcp://tm1.local:9611"]
@@ -102,10 +103,3 @@ token_endpoint = "https://localhost:8243/token"
 client_registration_endpoint = "https://localhost:9443/client-registration/v0.17/register"
 client_registration_username = "$ref{super_admin.username}"
 client_registration_password = "$ref{super_admin.password}"
-
-[apim.event_hub]
-event_listening_endpoints = ["tcp://tm1.local:5672"]
-
-[[apim.event_hub.publish.url_group]]
-urls = ["tcp://tm1.local:9611"]
-auth_urls = ["ssl://tm1.local:9711"]
