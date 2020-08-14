@@ -1224,7 +1224,7 @@
         <carbon.analytics.common.version>5.2.26</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.7.190</carbon.apimgt.version>
+        <carbon.apimgt.version>6.7.191</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1246,7 +1246,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.60</carbon.mediation.version>
+        <carbon.mediation.version>4.7.61</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.17.5</carbon.identity.version>
@@ -1415,7 +1415,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.0.16</wso2is.km.version>
-        <okta.keymanager.feature.version>3.0.2</okta.keymanager.feature.version>
+        <okta.keymanager.feature.version>3.0.3</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.2</keycloak.keymanager.feature.version>
     </properties>
 
