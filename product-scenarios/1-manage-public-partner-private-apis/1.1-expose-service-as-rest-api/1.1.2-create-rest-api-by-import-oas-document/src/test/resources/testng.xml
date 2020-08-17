@@ -20,8 +20,8 @@
 <suite name="ApiManager-scenario-tests-suite">
     <test name="1.1.2-create-rest-api-by-import-aos-document" preserve-order="true" verbose="2" parallel="false">
         <classes>
-<!--            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocTestCase"/>-->
-<!--            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocNegativeTestCase"/>-->
+            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocTestCase"/>
+            <class name="org.wso2.am.scenario.tests.rest.api.creation.RESTApiCreationUsingOASDocNegativeTestCase"/>
         </classes>
     </test>
 </suite>
