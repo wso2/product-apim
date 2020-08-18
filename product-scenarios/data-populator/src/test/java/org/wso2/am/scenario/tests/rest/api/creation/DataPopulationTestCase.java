@@ -115,49 +115,47 @@ public class DataPopulationTestCase extends ScenarioTestBase {
 
     @Test(description = "populateData")
     public void populateData() throws Exception {
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
-
-        if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
-            //Add and activate wso2.com tenant
-            createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
-                    TENANT_ADMIN_PW);
-        }
-
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
-        //DCR call for publisher app
-        DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
-                RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
-                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
-        ClientAuthenticator.makeDCRRequest(publisherParamRequest);
-        //DCR call for dev portal app
-        DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
-                RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                RestAPIStoreImpl.username, RestAPIStoreImpl.password,
-                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
-        ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+        for (int i = 0; i <= 100; i++) {
+            addTenantAndActivate(i + ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+                //Add and activate wso2.com tenant
+                createUserWithPublisherAndCreatorRole(i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                        "admin@" + i + "wso2.com", TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, "admin@" + i + "wso2.com",
+                        TENANT_ADMIN_PW);
+            }
+            //DCR call for publisher app
+            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+                    RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
+                    "admin", TENANT_ADMIN_PW,
+                    i + ScenarioTestConstants.TENANT_WSO2);
+            ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+            //DCR call for dev portal app
+            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+                    RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                    "admin", TENANT_ADMIN_PW,
+                    i + ScenarioTestConstants.TENANT_WSO2);
+            ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
-        restAPIPublisher = new RestAPIPublisherImpl(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                ScenarioTestConstants.TENANT_WSO2, baseUrl);
+            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl("admin@" + i + "wso2.com", RestAPIPublisherImpl.password,
+                    i + "wso2.com", baseUrl);
 
-        restAPIStore = new RestAPIStoreImpl(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
-                ScenarioTestConstants.TENANT_WSO2, baseUrl);
+            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl("admin@" + i + "wso2.com", RestAPIPublisherImpl.password,
+                    i + "wso2.com", baseUrl);
 
-        String apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
-                API_CREATOR_PUBLISHER_USERNAME, restAPIPublisher);
+            String apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
+                    i + API_CREATOR_PUBLISHER_USERNAME + "@" + i + ScenarioTestConstants.TENANT_WSO2, restAPIPublisherNew);
+            publishAPI(apiId, restAPIPublisherNew);
+            String applicationID = createApplication("SampleApplication", restAPIStoreNew);
+            String subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
+            String accessToken = generateKeys(applicationID, restAPIStoreNew);
 
-        publishAPI(apiId, restAPIPublisher);
-        String applicationID = createApplication("SampleApplication", restAPIStore);
-        String subscriptionId = createSubscription(apiId, applicationID, restAPIStore);
-        String accessToken = generateKeys(applicationID, restAPIStore);
-
-        log.info("API ID: " + apiId);
-        log.info("APPLICATION ID: " + applicationID);
-        log.info("SUBSCRIPTION ID: " + subscriptionId);
-        log.info("ACCESS TOKEN: " + accessToken);
-
+            log.info("API ID: " + apiId);
+            log.info("APPLICATION ID: " + applicationID);
+            log.info("SUBSCRIPTION ID: " + subscriptionId);
+            log.info("ACCESS TOKEN: " + accessToken);
+        }
         System.out.println("Done");
     }
 
