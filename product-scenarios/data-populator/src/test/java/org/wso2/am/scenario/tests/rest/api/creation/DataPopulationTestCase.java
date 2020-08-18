@@ -118,7 +118,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
         for (int i = 0; i <= 100; i++) {
             addTenantAndActivate(i + ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
-            if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
+            if (isActivated(i + ScenarioTestConstants.TENANT_WSO2)) {
                 //Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                         "admin@" + i + "wso2.com", TENANT_ADMIN_PW);
@@ -138,10 +138,10 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                     i + ScenarioTestConstants.TENANT_WSO2);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
-            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl("admin@" + i + "wso2.com", RestAPIPublisherImpl.password,
+            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl("admin", RestAPIPublisherImpl.password,
                     i + "wso2.com", baseUrl);
 
-            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl("admin@" + i + "wso2.com", RestAPIPublisherImpl.password,
+            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl("admin", RestAPIPublisherImpl.password,
                     i + "wso2.com", baseUrl);
 
             String apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
@@ -155,8 +155,9 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             log.info("APPLICATION ID: " + applicationID);
             log.info("SUBSCRIPTION ID: " + subscriptionId);
             log.info("ACCESS TOKEN: " + accessToken);
+            log.info("Artifacts deployed for tenant: " + i + ScenarioTestConstants.TENANT_WSO2);
         }
-        System.out.println("Done");
+        log.info("DONE");
     }
 
     private String createAPI(String apiName, String apiContext, String apiResource, String apiVersion,
