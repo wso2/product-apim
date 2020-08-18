@@ -25,6 +25,12 @@
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
     <version>3.1.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
+        </dependency>
+    </dependencies>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
