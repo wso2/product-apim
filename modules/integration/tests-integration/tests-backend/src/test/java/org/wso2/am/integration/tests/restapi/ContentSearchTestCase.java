@@ -41,7 +41,6 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -81,7 +80,8 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+        return new Object[][] {
+                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN },
                 new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
                 new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
@@ -96,10 +96,6 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
-        APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
-                user.getUserName(), description);
-
-        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
         if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
             user1 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + user1;
             user2 = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + user2;
@@ -119,6 +115,11 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 .addUser(user1, password, new String[] { role1, "Internal/publisher", "Internal/subscriber" }, user1);
         userManagementClient1
                 .addUser(user2, password, new String[] { role2, "Internal/publisher", "Internal/subscriber" }, user2);
+
+        APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
+                user.getUserName(), description);
+
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         restAPIPublisherFirstUser = new RestAPIPublisherImpl(user1, password, user.getUserDomain(), publisherURLHttps);
