@@ -119,8 +119,8 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         for (int i = 3; i <= 100; i++) {
             String apiId;
             String applicationID;
-            String subscriptionId;
-            String accessToken;
+            String subscriptionId = null;
+            String accessToken = null;
             addTenantAndActivate(i + ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(i + ScenarioTestConstants.TENANT_WSO2)) {
                 //Add and activate wso2.com tenant
@@ -153,8 +153,11 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                     i + API_CREATOR_PUBLISHER_USERNAME + "@" + i + ScenarioTestConstants.TENANT_WSO2, restAPIPublisherNew);
             publishAPI(apiId, restAPIPublisherNew);
             applicationID = createApplication("SampleApplication", restAPIStoreNew);
-            subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
-            accessToken = generateKeys(applicationID, restAPIStoreNew);
+
+            if (restAPIStoreNew.isAvailableInDevPortal(apiId, i + "wso2.com")) {
+                subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
+                accessToken = generateKeys(applicationID, restAPIStoreNew);
+            }
 
             log.info("API ID: " + apiId);
             log.info("APPLICATION ID: " + applicationID);
