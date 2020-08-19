@@ -128,20 +128,20 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
                     RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                    "admin", TENANT_ADMIN_PW,
+                    i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                     i + ScenarioTestConstants.TENANT_WSO2);
             ClientAuthenticator.makeDCRRequest(publisherParamRequest);
             //DCR call for dev portal app
             DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
                     RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                    "admin", TENANT_ADMIN_PW,
+                    i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
                     i + ScenarioTestConstants.TENANT_WSO2);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
-            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl("admin", RestAPIPublisherImpl.password,
+            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
                     i + "wso2.com", baseUrl);
 
-            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl("admin", RestAPIPublisherImpl.password,
+            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
                     i + "wso2.com", baseUrl);
 
             String apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
