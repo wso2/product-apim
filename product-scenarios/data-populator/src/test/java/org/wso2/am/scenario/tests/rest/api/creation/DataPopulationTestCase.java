@@ -149,23 +149,23 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                 // Wait unlit throttle policies get deployed.
                 Thread.sleep(10000);
                 for (int j = 1; j <= 10; j++) {
-                    apiId = createAPI("SampleAPI" + j, "/customers" + j, "/", "1.0.0",
+                    apiId = createAPI("SampleAPI" + i + j, "/customers" + i + j, "/", "1.0.0",
                             publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
                     publishAPI(apiId, restAPIPublisherNew);
                     log.info("API added successfully ID: " + apiId);
 
                     for (int k = 1; k <= 10; k++) {
                         //Add devPortal user
-                        createUserWithSubscriberRole(devPortalUsername + k, API_SUBSCRIBER_PW, tenantAdminUsername,
+                        createUserWithSubscriberRole(devPortalUsername + i + k, API_SUBSCRIBER_PW, tenantAdminUsername,
                                 TENANT_ADMIN_PW);
                         //DCR call for dev portal app.
                         DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
                                 RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
-                                RestAPIStoreImpl.grantType, dcrURL, devPortalUsername + k, API_SUBSCRIBER_PW, tenantDomain);
+                                RestAPIStoreImpl.grantType, dcrURL, devPortalUsername + i + k, API_SUBSCRIBER_PW, tenantDomain);
                         ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
-                        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + k, API_SUBSCRIBER_PW,
+                        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + i + k, API_SUBSCRIBER_PW,
                                 tenantDomain, baseUrl);
-                        applicationID = createApplication("SampleApplication" + i + k, restAPIStoreNew);
+                        applicationID = createApplication("SampleApplication" + i + j + k, restAPIStoreNew);
 
                         if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
                             subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
