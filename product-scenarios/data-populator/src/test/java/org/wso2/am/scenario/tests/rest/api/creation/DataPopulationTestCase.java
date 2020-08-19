@@ -116,7 +116,11 @@ public class DataPopulationTestCase extends ScenarioTestBase {
     @Test(description = "populateData")
     public void populateData() throws Exception {
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 3; i <= 100; i++) {
+            String apiId;
+            String applicationID;
+            String subscriptionId;
+            String accessToken;
             addTenantAndActivate(i + ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(i + ScenarioTestConstants.TENANT_WSO2)) {
                 //Add and activate wso2.com tenant
@@ -125,6 +129,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                 createUserWithSubscriberRole(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, "admin@" + i + "wso2.com",
                         TENANT_ADMIN_PW);
             }
+            Thread.sleep(10000);
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
                     RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
@@ -144,18 +149,19 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
                     i + "wso2.com", baseUrl);
 
-            String apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
+            apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
                     i + API_CREATOR_PUBLISHER_USERNAME + "@" + i + ScenarioTestConstants.TENANT_WSO2, restAPIPublisherNew);
             publishAPI(apiId, restAPIPublisherNew);
-            String applicationID = createApplication("SampleApplication", restAPIStoreNew);
-            String subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
-            String accessToken = generateKeys(applicationID, restAPIStoreNew);
+            applicationID = createApplication("SampleApplication", restAPIStoreNew);
+            subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
+            accessToken = generateKeys(applicationID, restAPIStoreNew);
 
             log.info("API ID: " + apiId);
             log.info("APPLICATION ID: " + applicationID);
             log.info("SUBSCRIPTION ID: " + subscriptionId);
             log.info("ACCESS TOKEN: " + accessToken);
             log.info("Artifacts deployed for tenant: " + i + ScenarioTestConstants.TENANT_WSO2);
+            System.gc();
         }
         log.info("DONE");
     }
