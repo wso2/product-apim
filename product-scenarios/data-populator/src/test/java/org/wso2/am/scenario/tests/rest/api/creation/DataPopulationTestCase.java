@@ -54,7 +54,6 @@ public class DataPopulationTestCase extends ScenarioTestBase {
 
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_PW = "admin";
-    private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
     private static final String TENANT_ADMIN_PW = "admin";
     private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
     private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
@@ -116,45 +115,50 @@ public class DataPopulationTestCase extends ScenarioTestBase {
     @Test(description = "populateData")
     public void populateData() throws Exception {
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
-        for (int i = 3; i <= 100; i++) {
-            String apiId;
-            String applicationID;
-            String subscriptionId = null;
-            String accessToken = null;
-            addTenantAndActivate(i + ScenarioTestConstants.TENANT_WSO2, ADMIN_USERNAME, ADMIN_PW);
-            if (isActivated(i + ScenarioTestConstants.TENANT_WSO2)) {
+        String apiId;
+        String applicationID;
+        String subscriptionId = null;
+        String accessToken = null;
+        for (int i = 0; i < 100; i++) {
+            String tenantDomain = i + ScenarioTestConstants.TENANT_WSO2;
+            String tenantAdminUsername = ADMIN_USERNAME + "@" + tenantDomain;
+            String publisherUsername = i + API_CREATOR_PUBLISHER_USERNAME;
+            String devPortalUsername = i + API_SUBSCRIBER_USERNAME;
+
+            addTenantAndActivate(tenantDomain, ADMIN_USERNAME, ADMIN_PW);
+            if (isActivated(tenantDomain)) {
                 //Add and activate wso2.com tenant
-                createUserWithPublisherAndCreatorRole(i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                        "admin@" + i + "wso2.com", TENANT_ADMIN_PW);
-                createUserWithSubscriberRole(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, "admin@" + i + "wso2.com",
+                createUserWithPublisherAndCreatorRole(publisherUsername, API_CREATOR_PUBLISHER_PW,
+                        tenantAdminUsername, TENANT_ADMIN_PW);
+                createUserWithSubscriberRole(devPortalUsername, API_SUBSCRIBER_PW, tenantAdminUsername,
                         TENANT_ADMIN_PW);
             }
             Thread.sleep(10000);
             //DCR call for publisher app
             DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
                     RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                    i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                    i + ScenarioTestConstants.TENANT_WSO2);
+                    publisherUsername, API_CREATOR_PUBLISHER_PW,
+                    tenantDomain);
             ClientAuthenticator.makeDCRRequest(publisherParamRequest);
             //DCR call for dev portal app
             DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
                     RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                    i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
-                    i + ScenarioTestConstants.TENANT_WSO2);
+                    devPortalUsername, API_SUBSCRIBER_PW,
+                    tenantDomain);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
-            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(i + API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                    i + "wso2.com", baseUrl);
+            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername, API_CREATOR_PUBLISHER_PW,
+                    tenantDomain, baseUrl);
 
-            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(i + API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW,
-                    i + "wso2.com", baseUrl);
+            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername, API_SUBSCRIBER_PW,
+                    tenantDomain, baseUrl);
 
             apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
-                    i + API_CREATOR_PUBLISHER_USERNAME + "@" + i + ScenarioTestConstants.TENANT_WSO2, restAPIPublisherNew);
+                    publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
             publishAPI(apiId, restAPIPublisherNew);
             applicationID = createApplication("SampleApplication", restAPIStoreNew);
 
-            if (restAPIStoreNew.isAvailableInDevPortal(apiId, i + "wso2.com")) {
+            if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
                 subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
                 accessToken = generateKeys(applicationID, restAPIStoreNew);
             }
@@ -163,7 +167,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             log.info("APPLICATION ID: " + applicationID);
             log.info("SUBSCRIPTION ID: " + subscriptionId);
             log.info("ACCESS TOKEN: " + accessToken);
-            log.info("Artifacts deployed for tenant: " + i + ScenarioTestConstants.TENANT_WSO2);
+            log.info("Artifacts deployed for tenant: " + tenantDomain);
             System.gc();
         }
         log.info("DONE");
