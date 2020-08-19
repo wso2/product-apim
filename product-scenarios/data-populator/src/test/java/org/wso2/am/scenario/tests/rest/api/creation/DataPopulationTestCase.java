@@ -119,7 +119,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         String applicationID;
         String subscriptionId = null;
         String accessToken = null;
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 2; i++) {
             String tenantDomain = i + ScenarioTestConstants.TENANT_WSO2;
             String tenantAdminUsername = ADMIN_USERNAME + "@" + tenantDomain;
             String publisherUsername = i + API_CREATOR_PUBLISHER_USERNAME;
@@ -128,27 +128,26 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             addTenantAndActivate(tenantDomain, ADMIN_USERNAME, ADMIN_PW);
             if (isActivated(tenantDomain)) {
                 //Add and activate wso2.com tenant
-                createUserWithPublisherAndCreatorRole(publisherUsername, API_CREATOR_PUBLISHER_PW,
-                        tenantAdminUsername, TENANT_ADMIN_PW);
+                createUserWithPublisherAndCreatorRole(publisherUsername, API_CREATOR_PUBLISHER_PW, tenantAdminUsername,
+                        TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(devPortalUsername, API_SUBSCRIBER_PW, tenantAdminUsername,
                         TENANT_ADMIN_PW);
             }
             Thread.sleep(10000);
             //DCR call for publisher app
-            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
-                    RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                    publisherUsername, API_CREATOR_PUBLISHER_PW,
-                    tenantDomain);
+            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName,
+                    RestAPIPublisherImpl.callBackURL, RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner,
+                    RestAPIPublisherImpl.grantType, dcrURL, publisherUsername, API_CREATOR_PUBLISHER_PW, tenantDomain);
             ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+
             //DCR call for dev portal app
-            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
-                    RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                    devPortalUsername, API_SUBSCRIBER_PW,
-                    tenantDomain);
+            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
+                    RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
+                    RestAPIStoreImpl.grantType, dcrURL, devPortalUsername, API_SUBSCRIBER_PW, tenantDomain);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
-            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername, API_CREATOR_PUBLISHER_PW,
-                    tenantDomain, baseUrl);
+            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername,
+                    API_CREATOR_PUBLISHER_PW,  tenantDomain, baseUrl);
 
             RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername, API_SUBSCRIBER_PW,
                     tenantDomain, baseUrl);
@@ -170,7 +169,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             log.info("Artifacts deployed for tenant: " + tenantDomain);
             System.gc();
         }
-        log.info("DONE");
+        log.info("All the artifacts deployed successfully");
     }
 
     private String createAPI(String apiName, String apiContext, String apiResource, String apiVersion,
