@@ -148,40 +148,37 @@ public class DataPopulationTestCase extends ScenarioTestBase {
 
                 // Wait unlit throttle policies get deployed.
                 Thread.sleep(10000);
-                List<String> apiIds = new ArrayList<>();
                 for (int j = 1; j <= 10; j++) {
                     apiId = createAPI("SampleAPI" + j, "/customers" + j, "/", "1.0.0",
                             publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
                     publishAPI(apiId, restAPIPublisherNew);
-                    apiIds.add(apiId);
                     log.info("API added successfully ID: " + apiId);
-                }
 
+                    for (int k = 1; k <= 10; k++) {
+                        //Add devPortal user
+                        createUserWithSubscriberRole(devPortalUsername + k, API_SUBSCRIBER_PW, tenantAdminUsername,
+                                TENANT_ADMIN_PW);
+                        //DCR call for dev portal app.
+                        DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
+                                RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
+                                RestAPIStoreImpl.grantType, dcrURL, devPortalUsername + k, API_SUBSCRIBER_PW, tenantDomain);
+                        ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+                        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + k, API_SUBSCRIBER_PW,
+                                tenantDomain, baseUrl);
+                        applicationID = createApplication("SampleApplication" + k, restAPIStoreNew);
 
-                for (int k = 1; k <= 10; k++) {
-                    //Add devPortal user
-                    createUserWithSubscriberRole(devPortalUsername + k, API_SUBSCRIBER_PW, tenantAdminUsername,
-                            TENANT_ADMIN_PW);
-                    //DCR call for dev portal app.
-                    DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
-                            RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
-                            RestAPIStoreImpl.grantType, dcrURL, devPortalUsername + k, API_SUBSCRIBER_PW, tenantDomain);
-                    ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
-                    RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + k, API_SUBSCRIBER_PW,
-                            tenantDomain, baseUrl);
-                    applicationID = createApplication("SampleApplication" + k, restAPIStoreNew);
-
-                    if (restAPIStoreNew.isAvailableInDevPortal(apiIds.get(k - 1), tenantDomain)) {
-                        subscriptionId = createSubscription(apiIds.get(k - 1), applicationID, restAPIStoreNew);
-                        accessToken = generateKeys(applicationID, restAPIStoreNew);
+                        if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
+                            subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
+                            accessToken = generateKeys(applicationID, restAPIStoreNew);
+                        }
+                        log.info("APPLICATION created successfully ID: " + applicationID);
+                        log.info("SUBSCRIPTION created successfully ID: " + subscriptionId);
+                        log.info("ACCESS generated successfully TOKEN: " + accessToken);
                     }
-                    log.info("APPLICATION created successfully ID: " + applicationID);
-                    log.info("SUBSCRIPTION created successfully ID: " + subscriptionId);
-                    log.info("ACCESS generated successfully TOKEN: " + accessToken);
                 }
                 log.info("Artifacts deployed for tenant: " + tenantDomain);
-                System.gc();
             }
+            System.gc();
         }
         log.info("All the artifacts deployed successfully");
     }
