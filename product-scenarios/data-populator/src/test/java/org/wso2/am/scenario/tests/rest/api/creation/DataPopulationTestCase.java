@@ -125,7 +125,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         String applicationID;
         String subscriptionId = null;
         String accessToken = null;
-        for (int i = 8; i <= 100; i++) {
+        for (int i = 1; i <= 100; i++) {
             String tenantDomain = i + ScenarioTestConstants.TENANT_WSO2;
             String tenantAdminUsername = ADMIN_USERNAME + "@" + tenantDomain;
             String publisherUsername = i + API_CREATOR_PUBLISHER_USERNAME;
@@ -165,7 +165,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                         ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
                         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + k, API_SUBSCRIBER_PW,
                                 tenantDomain, baseUrl);
-                        applicationID = createApplication("SampleApplication" + k, restAPIStoreNew);
+                        applicationID = createApplication("SampleApplication" + i + k, restAPIStoreNew);
 
                         if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
                             subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
