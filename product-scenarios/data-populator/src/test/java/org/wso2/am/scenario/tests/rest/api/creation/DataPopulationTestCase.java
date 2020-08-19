@@ -66,8 +66,6 @@ public class DataPopulationTestCase extends ScenarioTestBase {
     private boolean default_version_checked = true;
     private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String resourcePathLocation = System.getenv("PROJECT_LOCATION")
-            + "/product-scenarios/scenarios-common/src/main/resources";
     private static List<String> subscriptionAvailableTenants = new ArrayList<>();
 
     // All tests in this class will run with a super tenant API creator and a tenant API creator.
@@ -79,7 +77,6 @@ public class DataPopulationTestCase extends ScenarioTestBase {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws XPathExpressionException {
 
-        System.setProperty("framework.resource.location", resourcePathLocation + "/");
         //create store server instance based on configuration given at automation.xml
         storeContext =
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
@@ -115,7 +112,6 @@ public class DataPopulationTestCase extends ScenarioTestBase {
             subscriptionAvailableTenants.add(ScenarioTestConstants.TENANT_WSO2);
         }
         subscriptionAvailableTenants.add(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-        System.setProperty("javax.net.ssl.trustStore", resourcePathLocation + "/keystores/client-truststore.jks");
     }
 
     @Test(description = "populateData")
