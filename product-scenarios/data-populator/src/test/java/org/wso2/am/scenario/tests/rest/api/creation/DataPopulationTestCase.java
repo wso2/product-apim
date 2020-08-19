@@ -119,55 +119,63 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         String applicationID;
         String subscriptionId = null;
         String accessToken = null;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 1; i <= 100; i++) {
             String tenantDomain = i + ScenarioTestConstants.TENANT_WSO2;
             String tenantAdminUsername = ADMIN_USERNAME + "@" + tenantDomain;
             String publisherUsername = i + API_CREATOR_PUBLISHER_USERNAME;
             String devPortalUsername = i + API_SUBSCRIBER_USERNAME;
 
+            //Add and activate tenant
             addTenantAndActivate(tenantDomain, ADMIN_USERNAME, ADMIN_PW);
+            // Wait unlit the tenant artifacts deployed. Ex: Throttle policies.
+            Thread.sleep(10000);
             if (isActivated(tenantDomain)) {
-                //Add and activate wso2.com tenant
+                //Add publisher user
                 createUserWithPublisherAndCreatorRole(publisherUsername, API_CREATOR_PUBLISHER_PW, tenantAdminUsername,
                         TENANT_ADMIN_PW);
-                createUserWithSubscriberRole(devPortalUsername, API_SUBSCRIBER_PW, tenantAdminUsername,
-                        TENANT_ADMIN_PW);
+
+                //DCR call for publisher app.
+                DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName,
+                        RestAPIPublisherImpl.callBackURL, RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner,
+                        RestAPIPublisherImpl.grantType, dcrURL, publisherUsername, API_CREATOR_PUBLISHER_PW, tenantDomain);
+                ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+                RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername,
+                        API_CREATOR_PUBLISHER_PW, tenantDomain, baseUrl);
+
+                List<String> apiIds = new ArrayList<>();
+                for (int j = 1; j <= 10; j++) {
+                    apiId = createAPI("SampleAPI" + j, "/customers" + j, "/", "1.0.0",
+                            publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
+                    publishAPI(apiId, restAPIPublisherNew);
+                    apiIds.add(apiId);
+                    log.info("API added successfully ID: " + apiId);
+                }
+
+
+                for (int k = 1; k <= 10; k++) {
+                    //Add devPortal user
+                    createUserWithSubscriberRole(devPortalUsername + k, API_SUBSCRIBER_PW, tenantAdminUsername,
+                            TENANT_ADMIN_PW);
+                    //DCR call for dev portal app.
+                    DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
+                            RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
+                            RestAPIStoreImpl.grantType, dcrURL, devPortalUsername + k, API_SUBSCRIBER_PW, tenantDomain);
+                    ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
+                    RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername + k, API_SUBSCRIBER_PW,
+                            tenantDomain, baseUrl);
+                    applicationID = createApplication("SampleApplication" + k, restAPIStoreNew);
+
+                    if (restAPIStoreNew.isAvailableInDevPortal(apiIds.get(k), tenantDomain)) {
+                        subscriptionId = createSubscription(apiIds.get(k), applicationID, restAPIStoreNew);
+                        accessToken = generateKeys(applicationID, restAPIStoreNew);
+                    }
+                    log.info("APPLICATION created successfully ID: " + applicationID);
+                    log.info("SUBSCRIPTION created successfully ID: " + subscriptionId);
+                    log.info("ACCESS generated successfully TOKEN: " + accessToken);
+                }
+                log.info("Artifacts deployed for tenant: " + tenantDomain);
+                System.gc();
             }
-            Thread.sleep(10000);
-            //DCR call for publisher app
-            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName,
-                    RestAPIPublisherImpl.callBackURL, RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner,
-                    RestAPIPublisherImpl.grantType, dcrURL, publisherUsername, API_CREATOR_PUBLISHER_PW, tenantDomain);
-            ClientAuthenticator.makeDCRRequest(publisherParamRequest);
-
-            //DCR call for dev portal app
-            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName,
-                    RestAPIStoreImpl.callBackURL, RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner,
-                    RestAPIStoreImpl.grantType, dcrURL, devPortalUsername, API_SUBSCRIBER_PW, tenantDomain);
-            ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
-
-            RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername,
-                    API_CREATOR_PUBLISHER_PW,  tenantDomain, baseUrl);
-
-            RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(devPortalUsername, API_SUBSCRIBER_PW,
-                    tenantDomain, baseUrl);
-
-            apiId = createAPI("SampleAPI", "/customers", "/", "1.0.0",
-                    publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
-            publishAPI(apiId, restAPIPublisherNew);
-            applicationID = createApplication("SampleApplication", restAPIStoreNew);
-
-            if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
-                subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
-                accessToken = generateKeys(applicationID, restAPIStoreNew);
-            }
-
-            log.info("API ID: " + apiId);
-            log.info("APPLICATION ID: " + applicationID);
-            log.info("SUBSCRIPTION ID: " + subscriptionId);
-            log.info("ACCESS TOKEN: " + accessToken);
-            log.info("Artifacts deployed for tenant: " + tenantDomain);
-            System.gc();
         }
         log.info("All the artifacts deployed successfully");
     }
