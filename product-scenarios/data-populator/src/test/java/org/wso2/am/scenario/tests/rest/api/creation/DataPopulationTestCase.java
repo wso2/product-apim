@@ -42,6 +42,7 @@ import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.net.MalformedURLException;
@@ -65,8 +66,9 @@ public class DataPopulationTestCase extends ScenarioTestBase {
     private boolean default_version_checked = true;
     private final String APPLICATION_DESCRIPTION = "ApplicationDescription";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String resourcePathLocation
-            = "/Users/prasanna/work/apim/product-apim/product-scenarios/scenarios-common/src/main/resources";
+    private static final String resourcePathLocation = System.getenv("PROJECT_LOCATION")
+            + "/product-scenarios/scenarios-common/src/main/resources";
+    private static List<String> subscriptionAvailableTenants = new ArrayList<>();
 
     // All tests in this class will run with a super tenant API creator and a tenant API creator.
     @Factory(dataProvider = "userModeDataProvider")
@@ -109,6 +111,10 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                 APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
         backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
         setup();
+        for (int i = 1; i <= 100; i++) {
+            subscriptionAvailableTenants.add(ScenarioTestConstants.TENANT_WSO2);
+        }
+        subscriptionAvailableTenants.add(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         System.setProperty("javax.net.ssl.trustStore", resourcePathLocation + "/keystores/client-truststore.jks");
     }
 
@@ -119,7 +125,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         String applicationID;
         String subscriptionId = null;
         String accessToken = null;
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 8; i <= 100; i++) {
             String tenantDomain = i + ScenarioTestConstants.TENANT_WSO2;
             String tenantAdminUsername = ADMIN_USERNAME + "@" + tenantDomain;
             String publisherUsername = i + API_CREATOR_PUBLISHER_USERNAME;
@@ -127,8 +133,6 @@ public class DataPopulationTestCase extends ScenarioTestBase {
 
             //Add and activate tenant
             addTenantAndActivate(tenantDomain, ADMIN_USERNAME, ADMIN_PW);
-            // Wait unlit the tenant artifacts deployed. Ex: Throttle policies.
-            Thread.sleep(10000);
             if (isActivated(tenantDomain)) {
                 //Add publisher user
                 createUserWithPublisherAndCreatorRole(publisherUsername, API_CREATOR_PUBLISHER_PW, tenantAdminUsername,
@@ -142,6 +146,8 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                 RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername,
                         API_CREATOR_PUBLISHER_PW, tenantDomain, baseUrl);
 
+                // Wait unlit throttle policies get deployed.
+                Thread.sleep(10000);
                 List<String> apiIds = new ArrayList<>();
                 for (int j = 1; j <= 10; j++) {
                     apiId = createAPI("SampleAPI" + j, "/customers" + j, "/", "1.0.0",
@@ -165,8 +171,8 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                             tenantDomain, baseUrl);
                     applicationID = createApplication("SampleApplication" + k, restAPIStoreNew);
 
-                    if (restAPIStoreNew.isAvailableInDevPortal(apiIds.get(k), tenantDomain)) {
-                        subscriptionId = createSubscription(apiIds.get(k), applicationID, restAPIStoreNew);
+                    if (restAPIStoreNew.isAvailableInDevPortal(apiIds.get(k - 1), tenantDomain)) {
+                        subscriptionId = createSubscription(apiIds.get(k - 1), applicationID, restAPIStoreNew);
                         accessToken = generateKeys(applicationID, restAPIStoreNew);
                     }
                     log.info("APPLICATION created successfully ID: " + applicationID);
@@ -214,7 +220,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
 //        apiCreationDTO.setResponseCachingEnabled(false);
 //        apiCreationDTO.setEndpointSecurity(securityDTO);
 //        apiCreationDTO.setBusinessInformation(businessDTO);
-//        apiCreationDTO.setSubscriptionAvailableTenants(subscriptionTenants);
+        apiCreationDTO.setSubscriptionAvailableTenants(subscriptionAvailableTenants);
         apiCreationDTO.setIsDefaultVersion(default_version_checked);
         apiCreationDTO.setTransport(transports);
 
