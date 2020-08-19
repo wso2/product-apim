@@ -911,7 +911,7 @@ jaxb-impl-2.4.0-b180830.0438.jar                                                
 geronimo-jta_1.1_spec-1.1.jar                                                                       jar            apache2
 jaxws-ri-2.3.2.wso2v1.jar                                                                           bundle         apache2 + edl1
 log4j-api-2.12.0.jar                                                                                bundle         apache2
-org.wso2.ciphertool-1.1.9.jar                                                                       bundle         apache2
+org.wso2.ciphertool-1.1.15.jar                                                                       bundle         apache2
 activation-1.1.1.jar                                                                                jar            cddl1
 cava-toml-0.5.0.jar                                                                                 jar            apache2
 xalan-2.7.2.wso2v2.jar                                                                              bundle         apache2
