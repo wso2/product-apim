@@ -109,7 +109,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
         setup();
         for (int i = 1; i <= 100; i++) {
-            subscriptionAvailableTenants.add(ScenarioTestConstants.TENANT_WSO2);
+            subscriptionAvailableTenants.add(i + ScenarioTestConstants.TENANT_WSO2);
         }
         subscriptionAvailableTenants.add(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
     }
