@@ -783,7 +783,7 @@ siddhi-extension-map_3.2.6.jar                                                  
 xmlbeans_2.3.0.wso2v1.jar                                                                           bundle         apache2
 org.wso2.carbon.consent.mgt.core_2.2.8.jar                                                          bundle         apache2
 org.antlr.antlr4-runtime-osgi_4.5.1.jar                                                             bundle         asm
-okta.key.manager_3.0.3.jar                                                                          bundle         apache2
+okta.key.manager_3.0.5.jar                                                                          bundle         apache2
 axiom_1.2.11.wso2v16.jar                                                                            bundle         apache2
 org.wso2.carbon.event.publisher.ui_5.2.26.jar                                                       bundle         apache2
 org.wso2.carbon.identity.application.mgt.stub_5.17.5.jar                                            bundle         apache2
