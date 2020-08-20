@@ -80,9 +80,9 @@ public class ClientAuthenticator {
             }
             String postParams;
             if (APIMIntegrationConstants.GRANT_TYPE.PASSWORD.equals(grantType)) {
-                postParams = "grant_type=password&username=" + username + "&password=" + password;
+                postParams = "grant_type=password&username=" + username + "&password=" + password + "&validity_period=360000";
             } else {
-                postParams = "grant_type=client_credentials";
+                postParams = "grant_type=client_credentials" + "&validity_period=360000";
             }
             if (!scopeList.isEmpty()) {
                 postParams += "&scope=" + scopeList+" device_"+count;
