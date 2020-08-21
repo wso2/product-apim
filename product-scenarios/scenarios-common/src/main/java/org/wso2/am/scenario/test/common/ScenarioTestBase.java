@@ -38,16 +38,17 @@ import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceCl
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
+import org.wso2.carbon.user.mgt.stub.types.carbon.UIPermissionNode;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -300,20 +301,54 @@ public class ScenarioTestBase {
         }
     }
 
-    public void createRole(String adminUsername, String adminPassword, String role,
-                           String[] permisionArray) throws APIManagementException {
+    public void createRole(String adminUsername, String adminPassword, String role, String[] permisionArray)
+            throws APIManagementException {
 
         UserManagementClient userManagementClient = null;
+        long waitTime = System.currentTimeMillis() + ScenarioTestConstants.TIMEOUT_USER_ROLE_PERMISSION_UPDATE;
+
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            userManagementClient.addRole(role,
-                    new String[]{},
-                    permisionArray
-                   );
+
+            while (waitTime > System.currentTimeMillis()) {
+                userManagementClient.addRole(role,
+                        new String[]{},
+                        permisionArray
+                );
+
+                List<String> uiPermissionArray = new ArrayList<>();
+                for (UIPermissionNode x : userManagementClient.getRolePermissions(role).getNodeList()) {
+                    if (x.getResourcePath().contains("/permission/admin")) {
+                        uiPermissionArray.add(x.getResourcePath());
+                    }
+                }
+
+                boolean isPermissionExist  = false;
+                for (String uiPermission : uiPermissionArray) {
+                    for (String perm : permisionArray)
+                        isPermissionExist = perm.contains(uiPermission);
+                }
+                if (isPermissionExist) {
+                    log.info("Role :" + role + " contains all the permissions in : " +
+                            "" + Arrays.toString(permisionArray));
+                    break;
+                } else {
+                    try {
+                        log.info("Role :" + role + " doesn't contains the " + Arrays.toString(permisionArray));
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+
+            if(waitTime < System.currentTimeMillis()) {
+                log.error("Waiting time has been exceeded to add the permissions in "+ Arrays.toString(permisionArray)
+                        + " to role " + role);
+            }
         } catch (Exception e) {
             throw new APIManagementException("Unable to create role :" + role, e);
         }
-
     }
 
     public void updateRole(String adminUsername, String adminPassword, String role, String[] userList,
@@ -390,6 +425,11 @@ public class ScenarioTestBase {
                 }
             }
         }
+
+        if(waitTime < System.currentTimeMillis()) {
+            log.error("Wait time exceeded."+ "username");
+        }
+
         if(apiResponseStore != null && !apiResponseStore.getData().contains(apiName)) {
             log.info("API :" + apiName + " was not found in store at the end of wait time.");
             Assert.assertTrue(false, "API not found in store : " + apiName);
@@ -649,7 +689,7 @@ public class ScenarioTestBase {
         long waitTime = currentTime + WAIT_TIME;
         String colonSeparatedHeader = "admin" + ':' + "admin";
         String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
-        Map headerMap = new HashMap();
+        Map<String, String> headerMap = new HashMap<>();
         headerMap.put("Authorization",authorizationHeader);
         String tenantIdentifier = getTenantIdentifier(apiProvider);
 
