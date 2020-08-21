@@ -323,7 +323,7 @@ public class ScenarioTestBase {
                     }
                 }
 
-                boolean isPermissionExist  = false;
+                boolean isPermissionExist = false;
                 for (String uiPermission : uiPermissionArray) {
                     for (String perm : permisionArray)
                         isPermissionExist = perm.contains(uiPermission);
@@ -342,8 +342,8 @@ public class ScenarioTestBase {
                 }
             }
 
-            if(waitTime < System.currentTimeMillis()) {
-                log.error("Waiting time has been exceeded to add the permissions in "+ Arrays.toString(permisionArray)
+            if (waitTime < System.currentTimeMillis()) {
+                log.error("Waiting time has been exceeded to add the permissions in " + Arrays.toString(permisionArray)
                         + " to role " + role);
             }
         } catch (Exception e) {
