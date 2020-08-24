@@ -107,16 +107,13 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
         backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
-        setup();
-        for (int i = 1; i <= 100; i++) {
-            subscriptionAvailableTenants.add(i + ScenarioTestConstants.TENANT_WSO2);
-        }
         subscriptionAvailableTenants.add(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+	setup();
     }
 
     @Test(description = "populateData")
     public void populateData() throws Exception {
-        String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.16/register";
+        String dcrURL = "https://localhost:9443/client-registration/v0.16/register";
         String apiId;
         String applicationID;
         String subscriptionId = null;
@@ -139,11 +136,13 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                         RestAPIPublisherImpl.callBackURL, RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner,
                         RestAPIPublisherImpl.grantType, dcrURL, publisherUsername, API_CREATOR_PUBLISHER_PW, tenantDomain);
                 ClientAuthenticator.makeDCRRequest(publisherParamRequest);
+                RestAPIPublisherImpl restAPIPublisher = new RestAPIPublisherImpl("admin",
+                        "admin", tenantDomain, baseUrl);
                 RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(publisherUsername,
                         API_CREATOR_PUBLISHER_PW, tenantDomain, baseUrl);
 
                 // Wait unlit throttle policies get deployed.
-                Thread.sleep(10000);
+                Thread.sleep(5000);
                 for (int j = 1; j <= 10; j++) {
                     apiId = createAPI("SampleAPI" + "_" + i + "_" + j, "/customers" + "_" + i + "_" + j, "/", "1.0.0",
                             publisherUsername + "@" + tenantDomain, restAPIPublisherNew);
@@ -151,6 +150,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                     log.info("API added successfully ID: " + apiId);
 
                     for (int k = 1; k <= 10; k++) {
+                        Thread.sleep(2000);
                         //Add devPortal user
                         createUserWithSubscriberRole(devPortalUsername + i + "_" + j + "_" + k, API_SUBSCRIBER_PW, tenantAdminUsername,
                                 TENANT_ADMIN_PW);
@@ -163,6 +163,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
                                 tenantDomain, baseUrl);
                         applicationID = createApplication("SampleApplication" + "_" + i + "_" + j + k, restAPIStoreNew);
 
+                        Thread.sleep(2000);
                         if (restAPIStoreNew.isAvailableInDevPortal(apiId, tenantDomain)) {
                             subscriptionId = createSubscription(apiId, applicationID, restAPIStoreNew);
                             accessToken = generateKeys(applicationID, restAPIStoreNew);
@@ -217,7 +218,11 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         apiCreationDTO.setIsDefaultVersion(default_version_checked);
         apiCreationDTO.setTransport(transports);
 
-        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        List<String> gatewayEnvironments = new ArrayList<>();
+        gatewayEnvironments.add("Production and Sandbox");
+        apiCreationDTO.setGatewayEnvironments(gatewayEnvironments);
+
+        String endpointUrl = "http://localhost:8688/";
 
         URL endpoint = new URL(endpointUrl);
         JSONParser parser = new JSONParser();
@@ -268,7 +273,7 @@ public class DataPopulationTestCase extends ScenarioTestBase {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
         grantTypes.add("password");
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600"
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "-1"
                 , null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
         return applicationKeyDTO.getToken().getAccessToken();
