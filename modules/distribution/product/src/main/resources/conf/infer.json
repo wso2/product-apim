@@ -38,7 +38,7 @@
       "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
       "oauth.extensions.callback_handlers": [
         {
-          "class": "org.wso2.carbon.apimgt.tokenmgt.util.APIManagerOAuthCallbackHandler"
+          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
         }
       ]
     },
@@ -61,7 +61,7 @@
       "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
       "oauth.extensions.callback_handlers": [
         {
-          "class": "org.wso2.carbon.apimgt.tokenmgt.util.APIManagerOAuthCallbackHandler"
+          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
         }
       ]
     },
@@ -84,7 +84,7 @@
       "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
       "oauth.extensions.callback_handlers": [
         {
-          "class": "org.wso2.carbon.apimgt.tokenmgt.util.APIManagerOAuthCallbackHandler"
+          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
         }
       ]
     },
@@ -116,7 +116,7 @@
       "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
       "oauth.extensions.callback_handlers": [
         {
-          "class": "org.wso2.carbon.apimgt.tokenmgt.util.APIManagerOAuthCallbackHandler"
+          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
         }
       ]
     }
