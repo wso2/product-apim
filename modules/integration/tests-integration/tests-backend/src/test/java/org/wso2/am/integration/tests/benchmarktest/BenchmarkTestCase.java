@@ -184,7 +184,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
             applicationID = benchmarkUtils.createAnApplication("MyTestAPP","");
             benchmarkUtils.addSubscription(apiUUID,applicationID,"");
             benchmarkUtils.invokeAPI("samplecontext",benchmarkUtils.generateApplicationToken(applicationID, ""), corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"http");
+            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
             benchmarkUtils.validateBenchmark(12,actualCount);
         }
 
