@@ -18,8 +18,6 @@
 
 package org.wso2.am.integration.tests.benchmarktest;
 
-import static io.restassured.RestAssured.given;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.LocalTime;
@@ -39,29 +37,29 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     public class BenchmarkTestCase extends APIMIntegrationBaseTest {
-    public static String apimHost;
-    String apiUUID;
-        String applicationID;
-        String corellationID;
-        String testName;
-        String context;
-        LocalTime startTime;
-        private static List<String> apiIdList = new ArrayList<>();
-        private static List<String> appIdList = new ArrayList<>();
 
-        BenchmarkUtils benchmarkUtils = new BenchmarkUtils();
     private int benchmark;
+    private static String apimHost;
+    private String apiUUID;
+    private String applicationID;
+    private String corellationID;
+    private String testName;
+    private String context;
+    private LocalTime startTime;
+    private static List<String> apiIdList = new ArrayList<>();
+    private static List<String> appIdList = new ArrayList<>();
+
+    BenchmarkUtils benchmarkUtils = new BenchmarkUtils();
 
     @BeforeClass(alwaysRun = true)
         public void setEnvironment() throws Exception {
             RestAssured.useRelaxedHTTPSValidation();
             apimHost = benchmarkUtils.getApimURL();
             System.setProperty("apim.url", apimHost);
-            System.out.println("BeforeClass APIM_URL is : "+ System.getProperty("apim.url"));
         }
 
         @BeforeMethod
-        public void generateConsumerCredentialsAndToken(){
+        public void generateConsumerCredentialsAndToken() throws IOException {
             benchmarkUtils.generateConsumerCredentialsAndAccessToken();
         }
 
@@ -72,10 +70,9 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
             testName = method.getName();
             String corellationID = benchmarkUtils.setActivityID();
             LocalTime startTime = benchmarkUtils.getCurrentTimeStamp();
-            System.out.println("Start time is : "+startTime);
             apiUUID = benchmarkUtils.createRestAPI("TestAPI"+testType,"samplecontext"+testType,corellationID );
             apiIdList.add(apiUUID);
-          int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
             benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
             benchmarkUtils.validateBenchmark(benchmark,actualCount);
         }
@@ -257,11 +254,9 @@ public void cleanTestData() throws InterruptedException {
     if(appIdList!=null){
     for (String appId : appIdList) {
         benchmarkUtils.deleteApplication(appId);
-        System.out.println("Apps are DELETETD " +appId);
     }}
     for (String apiId : apiIdList) {
         benchmarkUtils.deleteRestAPI(apiId);
-        System.out.println("Apis are DELETETD " +apiId);
     }
 }
         @DataProvider(name = "testType")

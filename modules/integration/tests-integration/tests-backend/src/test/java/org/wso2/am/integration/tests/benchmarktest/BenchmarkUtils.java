@@ -3,25 +3,17 @@ package org.wso2.am.integration.tests.benchmarktest;
 import static io.restassured.RestAssured.given;
 import static junit.framework.Assert.assertFalse;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -30,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +30,6 @@ import io.restassured.response.Response;
 import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.wso2.carbon.automation.engine.frameworkutils.enums.OperatingSystems;
-import org.wso2.carbon.base.ServerConfiguration;
 
 public class BenchmarkUtils {
 
@@ -49,24 +39,26 @@ public class BenchmarkUtils {
     String apiUUID;
     String applicationID;
     String accessToken;
+    public static String apimURL;
     private static final String CARBON_XML_HOSTNAME = "HostName";
     private static final int PORT_OFFSET = 500;
-    private static int apimport = 9443 + PORT_OFFSET;
+    private static int apimPort = 9443 + PORT_OFFSET;
     private static int gatewayport = 8243 + PORT_OFFSET;
+    private static final String APIM_URL_SYSTEM_PROPERTY = "apim.url";
     private static final String APIM_HOST = "192.168.1.5";
-    public static String APIM_URL = "https://" + APIM_HOST + ':' + apimport;
-    private static String TOKEN_URL = "https://" + APIM_HOST + ':' +gatewayport;
-    private static String TARGET_URL = "https://" + APIM_HOST + ':' +gatewayport;
+    public static String APIM_URL = "https://" + apimURL + ':' + apimPort;
+    private static String GATEWAY_URL = "https://" + apimURL + ':' + gatewayport;
     private final String SUPER_TENANT_USERNAME = "admin";
     private final String SUPER_TENANT_PASSWORD = "admin";
-    private static final String APIM_HOME = System.getProperty("carbon.home");;
+    private static final String APIM_HOME = System.getProperty("carbon.home");
     private static final String IN_FILE_PATH = APIM_HOME+"/repository/logs/correlation.log";
     private static final String OUT_FILE_PATH = "logs/";
     static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
-                                     "reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
+                                     "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
     private String apimHost;
 
-    public void generateConsumerCredentialsAndAccessToken() {
+    public void generateConsumerCredentialsAndAccessToken() throws IOException {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                 .auth()
@@ -93,6 +85,7 @@ public class BenchmarkUtils {
     }
 
     public String generateAccessToken(String scope) {
+        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         Response response =
             given()
                 .auth()
@@ -103,7 +96,7 @@ public class BenchmarkUtils {
                 .formParam("password",SUPER_TENANT_PASSWORD)
                 .formParam("scope",scope).
                     when().
-                    post(TOKEN_URL+"/token");
+                    post(GATEWAY_URL + "/token");
         String responseBody = response.getBody().asString();
         JsonPath jsonResponse = new JsonPath(responseBody);
         statusCode = response.getStatusCode();
@@ -113,6 +106,7 @@ public class BenchmarkUtils {
     }
 
     public String createRestAPI(String apiName, String apiContext, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -134,6 +128,7 @@ public class BenchmarkUtils {
     }
 
     public void deleteRestAPI(String apiID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -147,6 +142,7 @@ public class BenchmarkUtils {
     }
 
     public void publishAPI(String apiID, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -163,6 +159,7 @@ public class BenchmarkUtils {
     }
 
     public String createAnApplication(String appName, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+accessToken)
@@ -181,6 +178,7 @@ public class BenchmarkUtils {
     }
 
     public void addSubscription(String apiID, String appID,String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -198,6 +196,7 @@ public class BenchmarkUtils {
     }
 
     public String generateApplicationToken(String appID, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -225,6 +224,7 @@ public class BenchmarkUtils {
     }
 
     public void deleteApplication(String appID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -238,12 +238,13 @@ public class BenchmarkUtils {
     }
 
     public void invokeAPI(String context, String token, String activityID) {
+        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         Response response =
             given()
                    .header("Authorization","Bearer "+ token)
                    .header("activityid", activityID).
                        when().
-                       get(TARGET_URL+"/"+context+"/v1.0/posts/1");
+                       get(GATEWAY_URL + "/" + context + "/v1.0/posts/1");
         String responseBody = response.getBody().asString();
         JsonPath jsonResponse = new JsonPath(responseBody);
         statusCode = response.getStatusCode();
@@ -251,6 +252,7 @@ public class BenchmarkUtils {
     }
 
     public void retrieveAllApisFromPublisher(int limit, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given().log().all()
                    .header("Authorization","Bearer "+ accessToken)
@@ -266,6 +268,7 @@ public class BenchmarkUtils {
     }
 
     public void retrieveAnApiFromPublisher(String activityID, String apiID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given().log().all()
                    .header("Authorization","Bearer "+ accessToken)
@@ -281,6 +284,7 @@ public class BenchmarkUtils {
     }
 
     public void retrieveAnApiFromStore(String activityID, String apiID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given().log().all()
                    .header("Authorization","Bearer "+ accessToken)
@@ -296,6 +300,7 @@ public class BenchmarkUtils {
     }
 
     public int getDevPortalApiCount() {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                    .header("Authorization","Bearer "+ accessToken)
@@ -311,6 +316,7 @@ public class BenchmarkUtils {
     }
 
     public int getPublisherApiCount() {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given()
                 .header("Authorization","Bearer "+ accessToken)
@@ -326,6 +332,7 @@ public class BenchmarkUtils {
     }
 
     public void retrieveAllApisFromStore(int limit, String activityID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
             given().log().all()
                    .header("Authorization","Bearer "+ accessToken)
@@ -341,6 +348,8 @@ public class BenchmarkUtils {
     }
 
     public void retrieveAnAPI(String apiID) {
+        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         Response response =
             given().log().all()
                    .header("Authorization","Bearer "+ accessToken)
@@ -373,7 +382,6 @@ public class BenchmarkUtils {
         int noOfLinesExecuted = 0;
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
 //             lines executed are logged in to a file starting with test method name,
-
              Writer writer = new BufferedWriter(
                  new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile +"_"+testType+ ".log"), "utf-8"))
         ) {
@@ -396,12 +404,11 @@ public class BenchmarkUtils {
                         }
                     }
                 }
-                }
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("NO. of statements executed : "+noOfLinesExecuted);
         return noOfLinesExecuted;
     }
 
@@ -422,7 +429,6 @@ public class BenchmarkUtils {
         assertFalse(
             "Exceeds limit! " + actualCount + " were Executed, but the Benchmark value is " + benchmark,
             exceedsLimit);
-
     }
 
     public static String getSystemResourceLocation() {
@@ -454,7 +460,6 @@ public class BenchmarkUtils {
     public String getApimURL() throws IOException {
         String carbonLog = APIM_HOME + "/repository/logs/wso2carbon.log";
         String url = null;
-        String host = null;
         BufferedReader bufferedReader = new BufferedReader(new FileReader(carbonLog));
 //             lines executed are logged in to a file starting with test method name,
         {
@@ -465,7 +470,6 @@ public class BenchmarkUtils {
 
                     url = logLine.substring(logLine.indexOf("https://") + 8 , logLine.length());
                     apimHost = url.substring(0, url.indexOf(':'));
-                    System.out.println("url is "+apimHost);
                 }
             }
         }
@@ -478,8 +482,6 @@ public class BenchmarkUtils {
         if(!f.exists()){
             f.createNewFile();
         }
-            System.out.println(testName +" ===== Actual count is "+actual+ "   Benchmark is  " + benchmark);
-
         BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
         bw.append(testName +" ===== Actual count is "+actual+ "   Benchmark is  " + benchmark);
         bw.newLine();
