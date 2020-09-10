@@ -1,0 +1,14 @@
+[
+  {
+    "API_CREATE":"925",
+    "API_PUBLISH" : "1090",
+    "RETRIEVE_ALL_PUBLISHER" : "45",
+    "RETRIEVE_ALL_STORE" : "133",
+    "RETRIEVE_API_PUBLISHER" : "18",
+    "RETRIEVE_API_STORE" : "18",
+    "CREATE_APPLICATION" : "282",
+    "SUBSCRIBE_TO_API" : "51",
+    "GENERATE_JWT_TOKEN" : "126",
+    "INVOKE_API" :"142"
+  }
+]

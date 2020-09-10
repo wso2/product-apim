@@ -19,252 +19,255 @@
 package org.wso2.am.integration.tests.benchmarktest;
 
 import static io.restassured.RestAssured.given;
-import static org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider.getExecutionEnvironment;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import io.restassured.RestAssured;
-import org.apache.commons.io.FileUtils;
-import org.testng.Assert;
+import org.json.simple.parser.ParseException;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     public class BenchmarkTestCase extends APIMIntegrationBaseTest {
-        int statusCode;
-        String publisherConsumerSecret;
-        String publisherConsumerKey;
-        String apiUUID;
+    public static String apimHost;
+    String apiUUID;
         String applicationID;
         String corellationID;
         String testName;
         String context;
+        LocalTime startTime;
         private static List<String> apiIdList = new ArrayList<>();
         private static List<String> appIdList = new ArrayList<>();
 
         BenchmarkUtils benchmarkUtils = new BenchmarkUtils();
+    private int benchmark;
 
-        //        private static final Log log = LogFactory.getLog(org.wso2.am.integration.tests.tests.ConfigDeploymentConfig.class);
-        private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
-        private ServerConfigurationManager serverConfigurationManager;
-        private AutomationContext superTenantKeyManagerContext;
-        private ResourceAdminServiceClient resourceAdminServiceClient;
-
-        @BeforeClass(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
         public void setEnvironment() throws Exception {
             RestAssured.useRelaxedHTTPSValidation();
-            System.setProperty("enableCorrelationLogs","true");
+            apimHost = benchmarkUtils.getApimURL();
+            System.setProperty("apim.url", apimHost);
+            System.out.println("BeforeClass APIM_URL is : "+ System.getProperty("apim.url"));
         }
 
-        public void updateConfig() throws IOException {
-            String APIM_HOME = System.getProperty("carbon.home");
-            Path path = Paths.get(APIM_HOME+"/bin/wso2server.sh");
-            Charset charset = StandardCharsets.UTF_8;
-            String content = new String(Files.readAllBytes(path), charset);
-            content = content.replaceAll("-DenableCorrelationLogs=false", "-DenableCorrelationLogs=true");
-            Files.write(path, content.getBytes(charset));
+        @BeforeMethod
+        public void generateConsumerCredentialsAndToken(){
+            benchmarkUtils.generateConsumerCredentialsAndAccessToken();
         }
 
-        @Test
-        public void createRestApi() throws IOException {
-
-            System.out.println("home are set to : "+ System.getProperty("carbon.home"));
-            System.out.println("Corelation logs are set to : "+ System.getProperty("enableCorrelationLogs"));
-
+        @Test(dataProvider = "testType")
+        public void createRestApi(String testType,Method method)
+            throws IOException, InterruptedException, ParseException {
+            benchmark = BenchmarkUtils.getBenchmark(testType, "API_CREATE");
+            testName = method.getName();
             String corellationID = benchmarkUtils.setActivityID();
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI","samplecontext",corellationID );
+            LocalTime startTime = benchmarkUtils.getCurrentTimeStamp();
+            System.out.println("Start time is : "+startTime);
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI"+testType,"samplecontext"+testType,corellationID );
             apiIdList.add(apiUUID);
-//            benchmarkUtils.deleteRestAPI(apiUUID);
-          int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-          benchmarkUtils.validateBenchmark(12,actualCount);
+          int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
         }
 
-
-        @Test
-        public void publishRestApi() {
+        @Test(dataProvider = "testType")
+        public void publishRestApi(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            benchmark = BenchmarkUtils.getBenchmark(testType, "API_PUBLISH");
             String corellationID = benchmarkUtils.setActivityID();
-
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI","samplecontext","" );
+            testName = method.getName();
+            context = "testcontext_"+testName+testType;
+            apiUUID = benchmarkUtils.createRestAPI(testName+testType,context,"" );
+            LocalTime startTime = benchmarkUtils.getCurrentTimeStamp();
             benchmarkUtils.publishAPI(apiUUID, corellationID);
             apiIdList.add(apiUUID);
-//            benchmarkUtils.deleteRestAPI(apiUUID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-            benchmarkUtils.validateBenchmark(34,actualCount);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
         }
 
-        @Test
-        public void retieveAllApisFromPublisher() throws InterruptedException {
+        @Test(dataProvider = "testType")
+        public void retrieveAllApisFromPublisher(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            testName = method.getName();
+            benchmark = BenchmarkUtils.getBenchmark(testType, "RETRIEVE_ALL_PUBLISHER");
+            int noOfAPISCreated = 20;
+            int noOfAPISRetrieved = 10;
+            context = "testcontext_"+testName+testType;
             String corellationID = benchmarkUtils.setActivityID();
 
-            for(int i= 0; i<20; i++){
-                benchmarkUtils.generateConsumerCredentials();
-                apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+i, "samplecontext_"+i, "");
+            for(int i= 0; i<noOfAPISCreated; i++){
+                apiUUID = benchmarkUtils.createRestAPI(testName+testType+i, context+i, "");
                 benchmarkUtils.publishAPI(apiUUID, "");
                 apiIdList.add(apiUUID);
             }
-            Thread.sleep(1000);
-            benchmarkUtils.retrieveAllApisFromPublisher(10, corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-          benchmarkUtils.validateBenchmark(34,actualCount);
-        }
+            LocalTime startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.retrieveAllApisFromPublisher(noOfAPISRetrieved, corellationID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);        }
 
-                @Test
-        public void retieveAllApisFromDevPortal() throws InterruptedException {
-            String corellationID = benchmarkUtils.setActivityID();
+        @Test(dataProvider = "testType")
+        public void retrieveAllApisFromDevPortal(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
             int noOfApisCreated = 20;
+            int noOfAPISRetrieved = 10;
+            benchmark = BenchmarkUtils.getBenchmark(testType, "RETRIEVE_ALL_STORE");
+            testName = method.getName();
+            context = "testcontext_"+testName;
+            String corellationID = benchmarkUtils.setActivityID();
             for(int i= 0; i<noOfApisCreated; i++){
-                benchmarkUtils.generateConsumerCredentials();
-                apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+i, "samplecontext_"+i, "");
+                apiUUID = benchmarkUtils.createRestAPI(testName+testType+i, context+testType+i, "");
                 benchmarkUtils.publishAPI(apiUUID, "");
                 apiIdList.add(apiUUID);
             }
             while (!(benchmarkUtils.getDevPortalApiCount() >= noOfApisCreated)) {
                         Thread.sleep(1000); }
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.retrieveAllApisFromStore(noOfAPISRetrieved, corellationID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);        }
 
-            benchmarkUtils.retrieveAllApisFromStore(10, corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-          benchmarkUtils.validateBenchmark(34,actualCount);
-        }
-
-                @Test
-        public void retieveAnApiFromPublisher(Method method) throws InterruptedException {
-            testName = method.getName();
-            context = "testcontext_"+testName;
-            corellationID = benchmarkUtils.setActivityID();
-
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName,context,"" );
-            benchmarkUtils.publishAPI(apiUUID, "");
-            apiIdList.add(apiUUID);
-            benchmarkUtils.retrieveAnApiFromPublisher(corellationID, apiUUID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-            benchmarkUtils.validateBenchmark(34,actualCount);
-            apiIdList.add(apiUUID);
-        }
-
-        @Test
-        public void retieveAnApiFromStore(Method method) throws InterruptedException {
-            testName = method.getName();
-            context = "testcontext_"+testName;
-            corellationID = benchmarkUtils.setActivityID();
-
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName,context,"" );
-            benchmarkUtils.publishAPI(apiUUID, "");
-            benchmarkUtils.retrieveAnApiFromStore(corellationID, apiUUID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-            benchmarkUtils.validateBenchmark(34,actualCount);
-            apiIdList.add(apiUUID);
-        }
-
-        @Test
-        public void createAnApplication(Method method) {
-            testName = method.getName();
-            corellationID = benchmarkUtils.setActivityID();
-
-            benchmarkUtils.generateConsumerCredentials();
-            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName,corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-            benchmarkUtils.validateBenchmark(34,actualCount);
-            appIdList.add(applicationID);
-        }
-
-        @Test
-        public void subscribeToAnAPI(Method method) throws InterruptedException {
-            testName = method.getName();
-            context = "testcontext_"+testName;
-            corellationID = benchmarkUtils.setActivityID();
-
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName,context,"" );
-            benchmarkUtils.publishAPI(apiUUID,"");
-            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName,"");
-            benchmarkUtils.addSubscription(apiUUID,applicationID,corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"jdbc");
-            apiIdList.add(apiUUID);
-            appIdList.add(applicationID);
-            benchmarkUtils.validateBenchmark(44,actualCount);
-        }
-//
         @Test(dataProvider = "testType")
-        public void generateJwtAccessToken(String testType, Method method) {
+        public void retrieveAnApiFromPublisher(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            testName = method.getName();
+            context = "testcontext_"+testName;
+            corellationID = benchmarkUtils.setActivityID();
+            benchmark = BenchmarkUtils.getBenchmark(testType, "RETRIEVE_API_PUBLISHER");
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName+testType,context+testType,"" );
+            benchmarkUtils.publishAPI(apiUUID, "");
+            apiIdList.add(apiUUID);
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.retrieveAnApiFromPublisher(corellationID, apiUUID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            apiIdList.add(apiUUID);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
+        }
+
+        @Test(dataProvider = "testType")
+        public void retrieveAnApiFromStore(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            testName = method.getName();
+            context = "testcontext_"+testName;
+            corellationID = benchmarkUtils.setActivityID();
+            benchmark = BenchmarkUtils.getBenchmark(testType, "RETRIEVE_API_STORE");
+
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName+testType,context+testType,"" );
+            benchmarkUtils.publishAPI(apiUUID, "");
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.retrieveAnApiFromStore(corellationID, apiUUID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            apiIdList.add(apiUUID);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
+        }
+
+        @Test(dataProvider = "testType")
+        public void createAnApplication(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            testName = method.getName();
+            benchmark = BenchmarkUtils.getBenchmark(testType, "CREATE_APPLICATION");
+            corellationID = benchmarkUtils.setActivityID()+testName;
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName+testType,corellationID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            appIdList.add(applicationID);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
+        }
+
+        @Test(dataProvider = "testType")
+        public void subscribeToAnAPI(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
+            testName = method.getName();
+            context = "testcontext_"+testName;
+            benchmark = BenchmarkUtils.getBenchmark(testType, "SUBSCRIBE_TO_API");
+            corellationID = benchmarkUtils.setActivityID();
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName+testType,context+testType,"" );
+            benchmarkUtils.publishAPI(apiUUID,"");
+            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName+testType,"");
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.addSubscription(apiUUID,applicationID,corellationID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
+            apiIdList.add(apiUUID);
+            appIdList.add(applicationID);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
+    }
+
+        @Test(dataProvider = "testType")
+        public void generateJwtAccessToken(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
             testName = method.getName();
             context = "samplecontext_"+testName;
+            benchmark = BenchmarkUtils.getBenchmark(testType, "GENERATE_JWT_TOKEN");
             corellationID = benchmarkUtils.setActivityID();
 
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName,context,"" );
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName+testType,context+testType,"" );
             benchmarkUtils.publishAPI(apiUUID, "");
-            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName,"");
+            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName+testType,"");
             benchmarkUtils.addSubscription(apiUUID,applicationID,"");
+            startTime = benchmarkUtils.getCurrentTimeStamp();
             benchmarkUtils.generateApplicationToken(applicationID,corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,testType);
-            benchmarkUtils.validateBenchmark(34,actualCount);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
             apiIdList.add(apiUUID);
             appIdList.add(applicationID);
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
         }
 
-        @Test
-        public void invokeCreatedApi(Method method) throws XPathExpressionException, InterruptedException {
+        @Test(dataProvider = "testType")
+        public void invokeCreatedApi(String testType, Method method)
+            throws InterruptedException, IOException, ParseException {
             testName = method.getName();
             context = "samplecontext_"+testName;
             corellationID = benchmarkUtils.setActivityID();
+            benchmark = BenchmarkUtils.getBenchmark(testType, "INVOKE_API");
 
-
-            benchmarkUtils.generateConsumerCredentials();
-            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName,context,"" );
+            apiUUID = benchmarkUtils.createRestAPI("TestAPI_"+testName+testType,context+testType,"" );
             benchmarkUtils.publishAPI(apiUUID, "");
-            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName,"");
+            applicationID = benchmarkUtils.createAnApplication("MyTestAPP_"+testName+testType,"");
             benchmarkUtils.addSubscription(apiUUID,applicationID,"");
-            benchmarkUtils.invokeAPI(context,benchmarkUtils.generateApplicationToken(applicationID, ""), corellationID);
-            int actualCount =  benchmarkUtils.extractSqlQueries("sqlLog",corellationID,"http");
+            startTime = benchmarkUtils.getCurrentTimeStamp();
+            benchmarkUtils.invokeAPI(context+testType,benchmarkUtils.generateApplicationToken(applicationID, ""), corellationID);
+            int actualCount =  benchmarkUtils.extractCountsFromLog(testName, testType, startTime);
             apiIdList.add(apiUUID);
             appIdList.add(applicationID);
-            benchmarkUtils.validateBenchmark(12,actualCount);
-            System.out.println("WAITING HAS STARTED !!!!!!!!!!!!!!!!!!!!!!!!!");
-//     Thread.sleep(500000);
-        }
+            benchmarkUtils.writeResultsToFile(testType, testName, actualCount, benchmark);
+            benchmarkUtils.validateBenchmark(benchmark,actualCount);
+    }
 
 @AfterClass(alwaysRun = true)
 public void cleanTestData() throws InterruptedException {
             Thread.sleep(5000);
+
+    if(appIdList!=null){
     for (String appId : appIdList) {
         benchmarkUtils.deleteApplication(appId);
         System.out.println("Apps are DELETETD " +appId);
-    }
+    }}
     for (String apiId : apiIdList) {
         benchmarkUtils.deleteRestAPI(apiId);
         System.out.println("Apis are DELETETD " +apiId);
     }
 }
         @DataProvider(name = "testType")
-        public static Object[][] ApiDataProvide() {
+        public static Object[][] DataProvide() {
             return new Object[][]{
-                {"jdbc"}
+                {"jdbc"},{"http"}
             };
         }
     }
