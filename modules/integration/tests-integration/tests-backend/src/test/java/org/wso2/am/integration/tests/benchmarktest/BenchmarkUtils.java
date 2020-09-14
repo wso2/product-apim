@@ -1,8 +1,27 @@
+/*
+ *Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *WSO2 Inc. licenses this file to you under the Apache License,
+ *Version 2.0 (the "License"); you may not use this file except
+ *in compliance with the License.
+ *You may obtain a copy of the License at
+ *
+ *http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *Unless required by applicable law or agreed to in writing,
+ *software distributed under the License is distributed on an
+ *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *KIND, either express or implied.  See the License for the
+ *specific language governing permissions and limitations
+ *under the License.
+ */
+
 package org.wso2.am.integration.tests.benchmarktest;
 
 import static io.restassured.RestAssured.given;
 import static junit.framework.Assert.assertFalse;
 
+import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -25,6 +44,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.json.simple.parser.ParseException;
@@ -33,348 +53,45 @@ import org.wso2.carbon.automation.engine.frameworkutils.enums.OperatingSystems;
 
 public class BenchmarkUtils {
 
-    int statusCode;
-    String publisherConsumerSecret;
-    String publisherConsumerKey;
-    String apiUUID;
-    String applicationID;
-    String accessToken;
-    public static String apimURL;
-    private static final String CARBON_XML_HOSTNAME = "HostName";
     private static final int PORT_OFFSET = 500;
+    private static final String APIM_URL_SYSTEM_PROPERTY = "apim.url";
+    private static final String APIM_HOME = System.getProperty("carbon.home");
+    private static final String IN_FILE_PATH = APIM_HOME + "/repository/logs/correlation.log";
+    private static final String OUT_FILE_PATH = "logs/benchmark-tests/";
+    public static String apimUrl;
+    static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
+            "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
     private static int apimPort = 9443 + PORT_OFFSET;
     private static int gatewayport = 8243 + PORT_OFFSET;
-    private static final String APIM_URL_SYSTEM_PROPERTY = "apim.url";
-    private static final String APIM_HOST = "192.168.1.5";
-    public static String APIM_URL = "https://" + apimURL + ':' + apimPort;
-    private static String GATEWAY_URL = "https://" + apimURL + ':' + gatewayport;
+    private static String gateway_Url;
+    private final String RESTFUL_API_VERSION = "v1";
     private final String SUPER_TENANT_USERNAME = "admin";
     private final String SUPER_TENANT_PASSWORD = "admin";
-    private static final String APIM_HOME = System.getProperty("carbon.home");
-    private static final String IN_FILE_PATH = APIM_HOME+"/repository/logs/correlation.log";
-    private static final String OUT_FILE_PATH = "logs/";
-    static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
-                                     "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
-    private String apimHost;
+    private final String HTTP_PROTOCOL = "https://";
+    private int statusCode;
+    private String publisherConsumerSecret;
+    private String publisherConsumerKey;
+    private String apiUUID;
+    private String applicationID;
+    private String accessToken;
 
-    public void generateConsumerCredentialsAndAccessToken() throws IOException {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                .auth()
-                .preemptive()
-                .basic(SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD)
-                .header("Content-Type", "application/json").
-                    when().
-                    body("{\n" +
-                         "  \"callbackUrl\": \"www.google.lk\",\n" +
-                         "  \"clientName\": \"rest_api_publisher\",\n" +
-                         "  \"owner\": \"admin\",\n" +
-                         "  \"grantType\": \"password refresh_token\",\n" +
-                         "  \"saasApp\": true\n" +
-                         "}").
-                    post(APIM_URL+"/client-registration/v0.17/register");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-        publisherConsumerKey = jsonResponse.getString("clientId");
-        publisherConsumerSecret = jsonResponse.getString("clientSecret");
+    public static String setActivityID() {
 
-        generateAccessToken("apim:api_create apim:api_delete apim:api_view apim:api_publish apim:subscribe");
-    }
-
-    public String generateAccessToken(String scope) {
-        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
-        Response response =
-            given()
-                .auth()
-                .preemptive()
-                .basic(publisherConsumerKey, publisherConsumerSecret)
-                .formParam("grant_type","password")
-                .formParam("username",SUPER_TENANT_USERNAME)
-                .formParam("password",SUPER_TENANT_PASSWORD)
-                .formParam("scope",scope).
-                    when().
-                    post(GATEWAY_URL + "/token");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-//            Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-        accessToken = jsonResponse.getString("access_token");
-        return accessToken;
-    }
-
-    public String createRestAPI(String apiName, String apiContext, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       body("{\"name\":\""+apiName+"\",\"version\":\"v1.0\",\"context\":\""+apiContext+"\"," +
-                            "\"policies\":[\"Gold\"],\"endpointConfig\":{\"endpoint_type\":\"http\"," +
-                            "\"sandbox_endpoints\":{\"url\":\"https://jsonplaceholder.typicode.com/\"}," +
-                            "\"production_endpoints\":{\"url\":\"https://jsonplaceholder.typicode.com/\"}}," +
-                            "\"gatewayEnvironments\":[\"Production and Sandbox\"]}").
-                       post(APIM_URL+"/api/am/publisher/v1/apis");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
-        apiUUID = jsonResponse.getString("id");
-        return apiUUID;
-    }
-
-    public void deleteRestAPI(String apiID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json").
-                       when().
-                       delete(APIM_URL+"/api/am/publisher/v1/apis/"+apiID);
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-//        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting API");
-    }
-
-    public void publishAPI(String apiID, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID)
-                   .queryParam("apiId",apiID)
-                   .queryParam("action","Publish").
-                       when().
-                       post(APIM_URL+"/api/am/publisher/v1/apis/change-lifecycle");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public String createAnApplication(String appName, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       body("{\"name\":\""+appName+"\",\"throttlingPolicy\":\"Unlimited\",\"description\":\"test\"," +
-                            "\"tokenType\":\"JWT\",\"groups\":null,\"attributes\":{}}").
-                       post(APIM_URL+"/api/am/store/v1/applications");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
-        applicationID = jsonResponse.getString("applicationId");
-        return applicationID;
-    }
-
-    public void addSubscription(String apiID, String appID,String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       body("{\"throttlingPolicy\":\"Gold\",\n" +
-                            "    \"apiId\": \""+apiID+"\",\n" +
-                            "    \"applicationId\": \""+appID+"\"}").
-                       post(APIM_URL+"/api/am/store/v1/subscriptions");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
-    }
-
-    public String generateApplicationToken(String appID, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       body("{\n" +
-                            "  \"keyType\": \"PRODUCTION\",\n" +
-                            "  \"grantTypesToBeSupported\": [\n" +
-                            "    \"refresh_token\",\"urn:ietf:params:oauth:grant-type:saml2-bearer\"," +
-                            "\"password\",\"client_credentials\",\"iwa:ntlm\"," +
-                            "\"urn:ietf:params:oauth:grant-type:jwt-bearer\"\n" +
-                            "  ],\n" +
-                            "  \"callbackUrl\": \"string\",  \"scopes\": [\"am_application_scope\",\"default\"]," +
-                            "\"validityTime\": 3600,\"clientId\": \"\",\"clientSecret\": \"\"," +
-                            "\"additionalProperties\": \"\"\n" +
-                            "}").
-                       post(APIM_URL+"/api/am/store/v1/applications/"+appID+"/generate-keys");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-        String accessToken = jsonResponse.getString("token.accessToken");
-        return accessToken;
-    }
-
-    public void deleteApplication(String appID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json").
-                       when().
-                       delete(APIM_URL+"/api/am/store/v1/applications/"+appID);
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting application");
-    }
-
-    public void invokeAPI(String context, String token, String activityID) {
-        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ token)
-                   .header("activityid", activityID).
-                       when().
-                       get(GATEWAY_URL + "/" + context + "/v1.0/posts/1");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public void retrieveAllApisFromPublisher(int limit, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given().log().all()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       get(APIM_URL+"/api/am/publisher/v1/apis?limit="+limit+"&offset=0");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        response.then().log().all();
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public void retrieveAnApiFromPublisher(String activityID, String apiID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given().log().all()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       get(APIM_URL+"/api/am/publisher/v1/apis/"+apiID);
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        response.then().log().all();
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public void retrieveAnApiFromStore(String activityID, String apiID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given().log().all()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       get(APIM_URL+"/api/am/store/v1/apis/"+apiID);
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        response.then().log().all();
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public int getDevPortalApiCount() {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json").
-                       when().
-                       get(APIM_URL+"/api/am/store/v1/apis?limit=100&offset=0");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-        int count = Integer.parseInt(jsonResponse.getString("count"));
-        return count;
-    }
-
-    public int getPublisherApiCount() {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given()
-                .header("Authorization","Bearer "+ accessToken)
-                .header("Content-Type", "application/json").
-                    when().
-                    get(APIM_URL+"/api/am/publisher/v1/apis?limit=100&offset=0");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-        int count = Integer.parseInt(jsonResponse.getString("count"));
-        return count;
-    }
-
-    public void retrieveAllApisFromStore(int limit, String activityID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        Response response =
-            given().log().all()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json")
-                   .header("activityid", activityID).
-                       when().
-                       get(APIM_URL+"/api/am/store/v1/apis?limit="+limit+"&offset=0");
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        response.then().log().all();
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public void retrieveAnAPI(String apiID) {
-        APIM_URL = "https://" + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
-        GATEWAY_URL = "https://"+ System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
-        Response response =
-            given().log().all()
-                   .header("Authorization","Bearer "+ accessToken)
-                   .header("Content-Type", "application/json").
-                       when().
-                       get(APIM_URL+"/api/am/publisher/v1/apis/"+apiID);
-        String responseBody = response.getBody().asString();
-        JsonPath jsonResponse = new JsonPath(responseBody);
-        response.then().log().all();
-        statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
-    }
-
-    public static String setActivityID(){
         Date date = new Date();
-        String CorellationID = "log_test_"+ (new Timestamp(date.getTime()))+"_";
+        String CorellationID = "benchmark_correlationID_" + (new Timestamp(date.getTime())) + "_";
         return CorellationID;
     }
 
-    public static int extractCountsFromLog(String logFile, String testType , LocalTime startTime)
-        throws InterruptedException {
-        String logAttribute = null;
+    public static int extractCountsFromLog(String logFile, String testType, LocalTime startTime)
+            throws InterruptedException {
 
+        String logAttribute = null;
+        File directory = new File(OUT_FILE_PATH);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
         Thread.sleep(4000);
-        if (testType=="http"){
+        if (testType == "http") {
             logAttribute = "http-in-request";
         } else {
             logAttribute = testType;
@@ -383,23 +100,26 @@ public class BenchmarkUtils {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
 //             lines executed are logged in to a file starting with test method name,
              Writer writer = new BufferedWriter(
-                 new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile +"_"+testType+ ".log"), "utf-8"))
+                     new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile + "_" + testType + ".log"), "utf-8"))
         ) {
             String readLine;
             while ((readLine = bufferedReader.readLine()) != null) {
                 String logLine = readLine.toLowerCase();
-//                 lines executed will be captured with "jdbc"
-                if (logLine.contains("|"+logAttribute+"|") ){
+//                 lines executed will be captured with log Attribute
+                if (logLine.contains("|" + logAttribute + "|")) {
                     String regex = "(\\d{2}:\\d{2}:\\d{2})";
                     Matcher m = Pattern.compile(regex).matcher(logLine);
                     if (m.find()) {
                         LocalTime logtime = LocalTime.parse(m.group(1));
                         if (logtime.isAfter(startTime)) {
-                            logLine.substring(logLine.indexOf("|"+logAttribute+"|") + 3, logLine.length());
+                            logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
                             if (!logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
                                 noOfLinesExecuted++;
                                 writer.write(logLine);
                                 writer.write(System.lineSeparator());
+                                if (logLine.contains("slotdeletionexecutor")) {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -413,7 +133,8 @@ public class BenchmarkUtils {
     }
 
     public static LocalTime getCurrentTimeStamp() throws InterruptedException {
-        Thread.sleep( 15000);
+
+        Thread.sleep(15000);
         LocalDateTime ldt = LocalDateTime.now();
         LocalTime currentTime = LocalTime.parse(DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH).format(ldt));
         Thread.sleep(1000);
@@ -421,17 +142,21 @@ public class BenchmarkUtils {
     }
 
     public static void validateBenchmark(int benchmark, int actualCount) {
+
         boolean exceedsLimit = false;
+
+        benchmark = (int) (benchmark + (benchmark * 0.01));
 //        Validate if No. of statements executed exceeds the benchmark
         if (actualCount > benchmark) {
             exceedsLimit = true;
         }
         assertFalse(
-            "Exceeds limit! " + actualCount + " were Executed, but the Benchmark value is " + benchmark,
-            exceedsLimit);
+                "Exceeds limit! " + actualCount + " were Executed, but the Benchmark value is " + benchmark,
+                exceedsLimit);
     }
 
     public static String getSystemResourceLocation() {
+
         String resourceLocation;
         if (System.getProperty("os.name").toLowerCase().contains(OperatingSystems.WINDOWS.name().toLowerCase())) {
             resourceLocation = System.getProperty("framework.resource.location").replace("/", "\\");
@@ -443,32 +168,365 @@ public class BenchmarkUtils {
     }
 
     public static int getBenchmark(String testType, String scenario) throws IOException, ParseException {
+
         String benchmarkValue = null;
-        String resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-"+testType+".json";
+        String resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-" + testType + ".json";
 
         JSONParser parser = new JSONParser();
         JSONArray a = (JSONArray) parser.parse(new FileReader(resourceLocation));
 
-        for (Object o : a)
-        {
+        for (Object o : a) {
             JSONObject values = (JSONObject) o;
-             benchmarkValue = (String) values.get(scenario);
+            benchmarkValue = (String) values.get(scenario);
         }
         return Integer.parseInt(benchmarkValue);
     }
 
+    public static void writeResultsToFile(String fileName, String testName, int actual, int benchmark) throws IOException {
+
+        String outputFile = OUT_FILE_PATH + "Results_" + fileName + ".log";
+        File f = new File(outputFile);
+        if (!f.exists()) {
+            f.createNewFile();
+        }
+        BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
+        bw.append(testName + " ===== Actual count is " + actual + "   Benchmark is  " + benchmark);
+        bw.newLine();
+        bw.close();
+    }
+
+    public void generateConsumerCredentialsAndAccessToken() throws IOException {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .auth()
+                        .preemptive()
+                        .basic(SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD)
+                        .header("Content-Type", "application/json").
+                        when().
+                        body("{\n" +
+                                "  \"callbackUrl\": \"www.google.lk\",\n" +
+                                "  \"clientName\": \"rest_api_publisher\",\n" +
+                                "  \"owner\": \"admin\",\n" +
+                                "  \"grantType\": \"password refresh_token\",\n" +
+                                "  \"saasApp\": true\n" +
+                                "}").
+                        post(apimUrl + "/client-registration/v0.17/register");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+        publisherConsumerKey = jsonResponse.getString("clientId");
+        publisherConsumerSecret = jsonResponse.getString("clientSecret");
+
+        generateAccessToken("apim:api_create apim:api_delete apim:api_view apim:api_publish apim:subscribe");
+    }
+
+    public String generateAccessToken(String scope) {
+
+        gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
+        Response response =
+                given()
+                        .auth()
+                        .preemptive()
+                        .basic(publisherConsumerKey, publisherConsumerSecret)
+                        .formParam("grant_type", "password")
+                        .formParam("username", SUPER_TENANT_USERNAME)
+                        .formParam("password", SUPER_TENANT_PASSWORD)
+                        .formParam("scope", scope).
+                        when().
+                        post(gateway_Url + "/token");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+//            Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+        accessToken = jsonResponse.getString("access_token");
+        return accessToken;
+    }
+
+    public String createRestAPI(String apiName, String apiContext, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        body("{\"name\":\"" + apiName + "\",\"version\":\"v1.0\",\"context\":\"" + apiContext + "\"," +
+                                "\"policies\":[\"Gold\"],\"endpointConfig\":{\"endpoint_type\":\"http\"," +
+                                "\"sandbox_endpoints\":{\"url\":\"https://jsonplaceholder.typicode.com/\"}," +
+                                "\"production_endpoints\":{\"url\":\"https://jsonplaceholder.typicode.com/\"}}," +
+                                "\"gatewayEnvironments\":[\"Production and Sandbox\"]}").
+                        post(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
+        apiUUID = jsonResponse.getString("id");
+        return apiUUID;
+    }
+
+    public void deleteRestAPI(String apiID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json").
+                        when().
+                        delete(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis/" + apiID);
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+//        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting API");
+    }
+
+    public void publishAPI(String apiID, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID)
+                        .queryParam("apiId", apiID)
+                        .queryParam("action", "Publish").
+                        when().
+                        post(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis/change-lifecycle");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public String createAnApplication(String appName, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        body("{\"name\":\"" + appName + "\",\"throttlingPolicy\":\"Unlimited\",\"description\":\"test\"," +
+                                "\"tokenType\":\"JWT\",\"groups\":null,\"attributes\":{}}").
+                        post(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/applications");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
+        applicationID = jsonResponse.getString("applicationId");
+        return applicationID;
+    }
+
+    public void addSubscription(String apiID, String appID, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        body("{\"throttlingPolicy\":\"Gold\",\n" +
+                                "    \"apiId\": \"" + apiID + "\",\n" +
+                                "    \"applicationId\": \"" + appID + "\"}").
+                        post(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/subscriptions");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
+    }
+
+    public String generateApplicationToken(String appID, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        body("{\n" +
+                                "  \"keyType\": \"PRODUCTION\",\n" +
+                                "  \"grantTypesToBeSupported\": [\n" +
+                                "    \"refresh_token\",\"urn:ietf:params:oauth:grant-type:saml2-bearer\"," +
+                                "\"password\",\"client_credentials\",\"iwa:ntlm\"," +
+                                "\"urn:ietf:params:oauth:grant-type:jwt-bearer\"\n" +
+                                "  ],\n" +
+                                "  \"callbackUrl\": \"string\",  \"scopes\": [\"am_application_scope\",\"default\"]," +
+                                "\"validityTime\": 3600,\"clientId\": \"\",\"clientSecret\": \"\"," +
+                                "\"additionalProperties\": \"\"\n" +
+                                "}").
+                        post(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/applications/" + appID + "/generate-keys");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+        String accessToken = jsonResponse.getString("token.accessToken");
+        return accessToken;
+    }
+
+    public void deleteApplication(String appID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json").
+                        when().
+                        delete(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/applications/" + appID);
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting application");
+    }
+
+    public void invokeAPI(String context, String token, String activityID) {
+
+        gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + token)
+                        .header("activityid", activityID).
+                        when().
+                        get(gateway_Url + "/" + context + "/v1.0/posts/1");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public void retrieveAllApisFromPublisher(int limit, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        get(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis?limit=" + limit + "&offset=0");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public void retrieveApiFromPublisher(String activityID, String apiID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        get(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis/" + apiID);
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public void retrieveApiFromStore(String activityID, String apiID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        get(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/apis/" + apiID);
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public int getDevPortalApiCount() {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json").
+                        when().
+                        get(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/apis?limit=100&offset=0");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+        int count = Integer.parseInt(jsonResponse.getString("count"));
+        return count;
+    }
+
+    public int getPublisherApiCount() {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json").
+                        when().
+                        get(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis?limit=100&offset=0");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+        int count = Integer.parseInt(jsonResponse.getString("count"));
+        return count;
+    }
+
+    public void retrieveAllApisFromStore(int limit, String activityID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json")
+                        .header("activityid", activityID).
+                        when().
+                        get(apimUrl + "/api/am/store/" + RESTFUL_API_VERSION + "/apis?limit=" + limit + "&offset=0");
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
+    public void retrieveAnAPI(String apiID) {
+
+        apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
+        gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
+        Response response =
+                given()
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/json").
+                        when().
+                        get(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis/" + apiID);
+        String responseBody = response.getBody().asString();
+        JsonPath jsonResponse = new JsonPath(responseBody);
+        statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    }
+
     public String getApimURL() throws IOException {
+
         String carbonLog = APIM_HOME + "/repository/logs/wso2carbon.log";
         String url = null;
         BufferedReader bufferedReader = new BufferedReader(new FileReader(carbonLog));
 //             lines executed are logged in to a file starting with test method name,
+        String apimHost = null;
         {
             String readLine;
             while ((readLine = bufferedReader.readLine()) != null) {
                 String logLine = readLine.toLowerCase();
                 if (logLine.contains("api publisher default context :")) {
 
-                    url = logLine.substring(logLine.indexOf("https://") + 8 , logLine.length());
+                    url = logLine.substring(logLine.indexOf(HTTP_PROTOCOL) + 8, logLine.length());
                     apimHost = url.substring(0, url.indexOf(':'));
                 }
             }
@@ -476,17 +534,18 @@ public class BenchmarkUtils {
         return apimHost;
     }
 
-    public static void writeResultsToFile(String fileName, String testName, int actual, int benchmark) throws IOException {
-        String outputFile = OUT_FILE_PATH + "Results_"+fileName+ ".log";
-        File f = new File(outputFile);
-        if(!f.exists()){
-            f.createNewFile();
-        }
-        BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
-        bw.append(testName +" ===== Actual count is "+actual+ "   Benchmark is  " + benchmark);
-        bw.newLine();
-        bw.close();
+    public void validateBenchmarkResults(String testName, String testType, LocalTime startTime, int benchmark) throws InterruptedException, IOException {
+
+        int actualCount = extractCountsFromLog(testName, testType, startTime);
+        writeResultsToFile(testType, testName, actualCount, benchmark);
+        validateBenchmark(benchmark, actualCount);
     }
 
+    public void enableRestassuearedHttpLogs(boolean isEnabled) {
+
+        if (isEnabled == true) {
+            RestAssured.useRelaxedHTTPSValidation();
+        }
+    }
 
 }
