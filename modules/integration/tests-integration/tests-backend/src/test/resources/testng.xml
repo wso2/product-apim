@@ -18,7 +18,7 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="ApiManager-features-test-suite" verbose="10">
+<suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
 
