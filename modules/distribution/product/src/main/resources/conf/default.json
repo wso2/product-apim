@@ -288,5 +288,62 @@
       "permissions" : "/permission/admin/manage/identity/applicationmgt/create",
       "scopes" : "internal_application_mgt_create"
     }
+  ],
+  "qpid.nio": false,
+  "qpid.protectio.enabled": false,
+  "qpid.protectio.read_buffer_limit_size": "262144",
+  "qpid.protectio.write_buffer_limit_size": "262144",
+  "qpid.transport": "nio",
+  "qpid.socket_receive_buffer": "32768",
+  "qpid.socket_send_buffer": "32768",
+  "qpid.heartbeat.delay": "0",
+  "qpid.heartbeat.timeout_factor": 2.0,
+  "qpid.management.enabled": true,
+  "qpid.management.jmxport": "8999",
+  "qpid.management.ssl": false,
+  "qpid.management.keystore_path": "${conf}/qpid.keystore",
+  "qpid.management.keystore_password": "password",
+  "qpid.advanced.executor_pool_enabled": "true",
+  "qpid.advanced.pooled_allocator_enabled": false,
+  "qpid.advanced.direct_buffers_enabled": false,
+  "qpid.advanced.framesize": "65535",
+  "qpid.advanced.compress_buffer_on_queue": false,
+  "qpid.advanced.jmsx_user_id": false,
+  "qpid.advanced.locale": "en_US",
+  "qpid.security.principal_database_class": "org.wso2.carbon.andes.authentication.andes.CarbonBasedPrincipalDatabase",
+  "qpid.security.msg_auth": false,
+  "qpid.virtual_hosts": "${conf}/qpid-virtualhosts.xml",
+  "qpid.queue.auto_register": true,
+  "qpid.queue.view_message_counts": false,
+  "qpid.status_updates": "ON",
+  "governance.comparators": [
+    "org.wso2.carbon.governance.comparator.text.TextComparator",
+    "org.wso2.carbon.governance.comparator.wsdl.WSDLComparator"
+  ],
+  "governance.life_cycle_checklist_items_enabled": true,
+  "governance.endpoint_state_management": "disable",
+  "governance.default_endpoint_active_duration": "90",
+  "governance.associations": [
+    {
+      "type": "default",
+      "secures": "policy",
+      "owns": "soapservice,restservice,wsdl",
+      "depends": "soapservice,restservice,wsdl",
+      "usedby": "soapservice,restservice,wsdl"
+    },
+    {
+      "type": "restservice",
+      "secures": "policy",
+      "owns": "restservice,soapservice,wsdl",
+      "depends": "restservice,soapservice,wsdl",
+      "usedby": "restservice,soapservice,wsdl,endpoint"
+    },
+    {
+      "type": "soapservice",
+      "secures": "policy",
+      "owns": "soapservice,restservice,wsdl",
+      "depends": "soapservice,restservice,wsdl",
+      "usedby": "soapservice,restservice,wsdl,endpoint"
+    }
   ]
 }
