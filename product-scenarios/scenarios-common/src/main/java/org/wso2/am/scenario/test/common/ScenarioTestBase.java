@@ -309,13 +309,10 @@ public class ScenarioTestBase {
 
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
+            userManagementClient.addRole(role, new String[]{}, permisionArray);
+            Thread.sleep(500);
 
             while (waitTime > System.currentTimeMillis()) {
-                userManagementClient.addRole(role,
-                        new String[]{},
-                        permisionArray
-                );
-
                 List<String> uiPermissionArray = new ArrayList<>();
                 for (UIPermissionNode x : userManagementClient.getRolePermissions(role).getNodeList()) {
                     if (x.getResourcePath().contains("/permission/admin")) {
@@ -426,7 +423,7 @@ public class ScenarioTestBase {
             }
         }
 
-        if(waitTime < System.currentTimeMillis()) {
+        if (waitTime < System.currentTimeMillis()) {
             log.error("Wait time exceeded."+ "username");
         }
 
