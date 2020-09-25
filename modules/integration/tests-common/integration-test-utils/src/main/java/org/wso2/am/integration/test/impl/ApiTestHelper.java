@@ -278,7 +278,7 @@ public class ApiTestHelper {
 
         ApplicationTokenDTO token = applicationKeyDTO.getToken();
 
-        List<String> expectedScopes = new ArrayList<>(Arrays.asList("am_application_scope", "default"));
+        List<String> expectedScopes = new ArrayList<>(Arrays.asList("default"));
         expectedScopes.addAll(scopes);
         Assert.assertEquals(new HashSet<>(token.getTokenScopes()), new HashSet<>(expectedScopes));
 

@@ -195,7 +195,7 @@ case $1 in
 		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name \
-		'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'internal#data#v*.war' \
+		'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' \
 		-o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name \
 		'api#identity#user#v*.war' -o -name 'api#identity#oauth2#dcr#v*.war' -o -name 'api#identity#oauth2#v*.war' \
 		-o -name 'keymanager-operations.war' \) ); do
@@ -228,7 +228,7 @@ case $1 in
     replaceAxis2TemplateFile $pathToAxis2PublisherXmlTemplate
 		replaceTenantAxis2TemplateFile $pathToTenantAxis2PublisherXmlTemplate
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war'  -o -name 'internal#data#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -258,7 +258,7 @@ case $1 in
     replaceAxis2TemplateFile $pathToAxis2DevportalXmlTemplate
 		replaceTenantAxis2TemplateFile $pathToTenantAxis2DevportalXmlTemplate
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#store#v*.war' -o -name 'api#am#store.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' -o -name 'internal#data#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -315,7 +315,7 @@ case $1 in
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Gateway worker profile"
      	replaceDeploymentConfiguration gateway-worker $2
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not -name 'am#sample#pizzashack#v*.war'); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'am#sample#pizzashack#v*.war' -o -name 'api#am#gateway.war' \)); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

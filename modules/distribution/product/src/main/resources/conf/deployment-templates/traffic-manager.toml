@@ -42,12 +42,8 @@ password = "wso2carbon"
 # key manager implementation
 [apim.key_manager]
 service_url = "https://km.wso2.com:443/services/"
-username= "$ref{super_admin.username}"
 
 [apim.oauth_config]
 revoke_endpoint = "https://km.wso2.com:9443/oauth2/revoke"
 enable_token_encryption = false
 enable_token_hashing = false
-
-[oauth.oidc.id_token]
-issuer = "https://apim.am.wso2.com/oauth2/token"

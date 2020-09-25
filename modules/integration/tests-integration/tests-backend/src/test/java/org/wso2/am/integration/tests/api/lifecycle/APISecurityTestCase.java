@@ -466,46 +466,38 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         assertNotNull(apiKeyDTO, "API Key generation failed");
 
-        Map<String, String> requestHeaders1 = new HashMap<>();
-        requestHeaders1.put("accept", "text/xml");
-        requestHeaders1.put("apikey", apiKeyDTO.getApikey());
-        requestHeaders1.put("X-Forwarded-For", "152.23.5.6"); // a permitted ipv4 address
+        // a permitted ipv4 address
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "152.23.5.6", null);
         HttpResponse response1 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders1);
         Assert.assertEquals(response1.getResponseCode(), HttpStatus.SC_OK);
 
-        Map<String, String> requestHeaders2 = new HashMap<>();
-        requestHeaders2.put("accept", "text/xml");
-        requestHeaders2.put("apikey", apiKeyDTO.getApikey());
-        requestHeaders2.put("X-Forwarded-For", "192.168.1.6"); // a permitted ipv4 address
+        // a permitted ipv4 address
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "192.168.1.6", null);
         HttpResponse response2 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders2);
         Assert.assertEquals(response2.getResponseCode(), HttpStatus.SC_OK);
 
-        Map<String, String> requestHeaders3 = new HashMap<>();
-        requestHeaders3.put("accept", "text/xml");
-        requestHeaders3.put("apikey", apiKeyDTO.getApikey());
-        requestHeaders3.put("X-Forwarded-For", "192.168.5.6"); // a forbidden ipv4 address
+        // a forbidden ipv4 address
+        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "192.168.5.6", null);
         HttpResponse response3 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders3);
         Assert.assertEquals(response3.getResponseCode(), HttpStatus.SC_FORBIDDEN);
 
-        Map<String, String> requestHeaders4 = new HashMap<>();
-        requestHeaders4.put("accept", "text/xml");
-        requestHeaders4.put("apikey", apiKeyDTO.getApikey());
-        requestHeaders4.put("X-Forwarded-For", "2001:c00:0:0:0:0:c:4"); // a permitted ipv6 address
+        // a permitted ipv6 address
+        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                "2001:c00:0:0:0:0:c:4", null);
         HttpResponse response4 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
 
-        Map<String, String> requestHeaders5 = new HashMap<>();
-        requestHeaders5.put("accept", "text/xml");
-        requestHeaders5.put("apikey", apiKeyDTO.getApikey());
-        requestHeaders5.put("X-Forwarded-For", "2061:c00:0:0:0:0:0:0"); // a forbidden ipv6 address
+        // a forbidden ipv6 address
+        Map<String, String> requestHeaders5 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                "2061:c00:0:0:0:0:0:0", null);
         HttpResponse response5 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders5);
@@ -522,49 +514,54 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         assertNotNull(apiKeyDTO, "API Key generation failed");
 
-        Map<String, String> requestHeaders1 = new HashMap<>();
-        requestHeaders1.put("accept", "text/xml");
-        requestHeaders1.put("apikey", apiKeyDTO.getApikey());
         // matches against a permitted referer which matches an exact referer path
-        requestHeaders1.put("Referer", "www.abc.com/path");
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                null, "www.abc.com/path");
         HttpResponse response1 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders1);
         Assert.assertEquals(response1.getResponseCode(), HttpStatus.SC_OK);
 
-        Map<String, String> requestHeaders2 = new HashMap<>();
-        requestHeaders2.put("accept", "text/xml");
-        requestHeaders2.put("apikey", apiKeyDTO.getApikey());
         // does not match against any permitted referer
-        requestHeaders2.put("Referer", "www.abc.com/path2");
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                null, "www.abc.com/path2");
         HttpResponse response2 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders2);
         Assert.assertEquals(response2.getResponseCode(), HttpStatus.SC_FORBIDDEN);
 
-
-        Map<String, String> requestHeaders3 = new HashMap<>();
-        requestHeaders3.put("accept", "text/xml");
-        requestHeaders3.put("apikey", apiKeyDTO.getApikey());
         // matches against permitted referer which matches urls of a specific sub domain using a wild card
-        requestHeaders3.put("Referer", "sub.cds.com/path1/path2");
+        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                null, "sub.cds.com/path1/path2");
         HttpResponse response3 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders3);
         Assert.assertEquals(response3.getResponseCode(), HttpStatus.SC_OK);
 
-        Map<String, String> requestHeaders4 = new HashMap<>();
-        requestHeaders4.put("accept", "text/xml");
-        requestHeaders4.put("apikey", apiKeyDTO.getApikey());
+
         // matches against permitted referer which matches urls of a specific sub domain of any domain
         // using wild cards
-        requestHeaders4.put("Referer", "example.gef.com/path1");
+        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+                null, "example.gef.com/path1");
         HttpResponse response4 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
     }
 
+    private Map<String, String> createRequestHeadersForAPIKey(String apiKey, String ip, String referer) {
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("apikey", apiKey);
+        if (ip != null) {
+            requestHeaders.put("X-Forwarded-For", ip);
+        }
+        if (referer != null) {
+            requestHeaders.put("Referer", referer);
+        }
+        return requestHeaders;
+    }
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {

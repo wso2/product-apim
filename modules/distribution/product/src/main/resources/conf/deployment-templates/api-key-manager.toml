@@ -39,50 +39,10 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
-# Caches
-[apim.cache.km_token]
-enable = false
-expiry_time = 15
-
-[apim.cache.jwt_claim]
-enable = true
-expiry_time = 900
-
-# JWT Generation
-[apim.jwt]
-enable = true
-encoding = "base64" # base64,base64url
-#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
-claim_dialect = "http://wso2.org/claims"
-header = "X-JWT-Assertion"
-signing_algorithm = "SHA256withRSA"
-#enable_user_claims = true
-#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
-
-[apim.throttling]
-# Required for JWT revocation
-[[apim.throttling.url_group]]
-traffic_manager_urls=["tcp://tm1.local:9611"]
-traffic_manager_auth_urls=["ssl://tm1.local:9711"]
-
-[[apim.throttling.url_group]]
-traffic_manager_urls=["tcp://tm2.local:9611"]
-traffic_manager_auth_urls=["ssl://tm2.local:9711"]
 
 [[event_handler]]
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
-
-[apim.event_hub]
-service_url = "https://tm1.local:9443"
-event_listening_endpoints = ["tcp://tm1.local:5672"]
-
-[[apim.event_hub.publish.url_group]]
-urls = ["tcp://tm1.local:9611"]
-auth_urls = ["ssl://tm1.local:9711"]
-
-[oauth.oidc.id_token]
-issuer = "https://apim.am.wso2.com/oauth2/token"
 
 [[event_listener]]
 id = "token_revocation"
@@ -90,7 +50,21 @@ type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
 name = "org.wso2.is.notification.ApimOauthEventInterceptor"
 order = 1
 [event_listener.properties]
-notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+notification_endpoint = "https://tm.wso2.com:443/internal/data/v1/notify"
 username = "${admin.username}"
 password = "${admin.password}"
 'header.X-WSO2-KEY-MANAGER' = "default"
+
+# Traffic Manager configurations
+[apim.throttling]
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+throttle_decision_endpoints = ["tcp://tm1.local:5672","tcp://tm2.local:5672"]
+
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm1.local:9611"]
+traffic_manager_auth_urls=["ssl://tm1.local:9711"]
+
+[[apim.throttling.url_group]]
+traffic_manager_urls=["tcp://tm2.local:9611"]
+traffic_manager_auth_urls=["ssl://tm2.local:9711"]

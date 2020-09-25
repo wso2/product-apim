@@ -34,6 +34,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -52,20 +53,19 @@ import org.wso2.carbon.identity.application.common.model.xsd.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.application.mgt.stub.IdentityApplicationManagementServiceIdentityApplicationManagementException;
 import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceClaimMetadataException;
-import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ExternalClaimDTO;
 import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 
-import javax.ws.rs.core.Response;
-
-import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 public class JWTTestCase extends APIManagerLifecycleBaseTest {
@@ -79,13 +79,15 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private String providerName;
     private String apiVersion = "1.0.0";
     private String oauthApplicationName = "OauthAppForJWTTest";
-    private String jwtApplicationName = "JWTAppFOrJWTTest";
+    private String jwtApplicationName = "JWTAppForJWTTest";
+    private String apiKeyApplicationName = "ApiKeyAppForJWTTest";
 
     private String endpointURL;
     String users[] = {"subscriberUser2", "subscriberUser2@wso2.com", "subscriberUser2@abc.com"};
     String enduserPassword = "password@123";
     private String oauthApplicationId;
     private String jwtApplicationId;
+    private String apiKeyApplicationId;
     private String apiId;
     URL tokenEndpointURL;
 
@@ -108,14 +110,27 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         ApplicationDTO.TokenTypeEnum.JWT);
         jwtApplicationId = applicationDTO.getData();
+        //create API Key Base App
+        applicationDTO =
+                restAPIStore.createApplication(apiKeyApplicationName, "API Key Application",
+                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
+                        ApplicationDTO.TokenTypeEnum.JWT);
+        apiKeyApplicationId = applicationDTO.getData();
 
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointURL));
         apiRequest.setVersion(apiVersion);
         apiRequest.setVisibility("public");
         apiRequest.setProvider(providerName);
+
+        List<String> securitySchemes = new ArrayList<>();
+        securitySchemes.add("oauth2");
+        securitySchemes.add("api_key");
+        apiRequest.setSecurityScheme(securitySchemes);
+
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
         restAPIStore.subscribeToAPI(apiId, oauthApplicationId, TIER_GOLD);
         restAPIStore.subscribeToAPI(apiId, jwtApplicationId, TIER_GOLD);
+        restAPIStore.subscribeToAPI(apiId, apiKeyApplicationId, TIER_GOLD);
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -124,6 +139,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        restAPIStore.generateAPIKeys(apiKeyApplicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
         createUser();
         createClaimMapping();
     }
@@ -157,16 +174,12 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
             String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
             log.debug("Decoded JWTString = " + decodedJWTString);
-
-            if (userMode == TestUserMode.SUPER_TENANT_ADMIN || userMode == TestUserMode.SUPER_TENANT_USER ||
-                    userMode == TestUserMode.SUPER_TENANT_EMAIL_USER) {
-                //Do the signature verification for super tenant as tenant key store not there accessible
-                String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-                byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-                String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-                boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-                assertTrue("JWT signature verification failed", isSignatureValid);
-            }
+            //Do the signature verification for super tenant as tenant key store not there accessible
+            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+            assertTrue("JWT signature verification failed", isSignatureValid);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -206,7 +219,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
                     applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"openid"});
-            log.info("Acess Token Generated in JWT ==" + accessToken);
+            log.info("Access Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
             get.addHeader("Authorization", "Bearer " + accessToken);
@@ -224,14 +237,11 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
             log.debug("Decoded JWTString = " + decodedJWTString);
 
-            if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-                //Do the signature verification for super tenant as tenant key store not there accessible
-                String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-                byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-                String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-                boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-                assertTrue("JWT signature verification failed", isSignatureValid);
-            }
+            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+            assertTrue("JWT signature verification failed", isSignatureValid);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -260,6 +270,61 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             assertTrue("JWT claim received is invalid", bExceptionOccured);
 
         }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
+    public void testEnableJWTAndClaimsForAPIKeyApp() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+
+        log.info("Access Token Generated in JWT ==" + apiKeyDTO.getApikey());
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("apikey", apiKeyDTO.getApikey());
+        HttpResponse response = httpclient.execute(get);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation");
+
+        //check JWT headers
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
+        log.debug("Decoded JWTString = " + decodedJWTString);
+
+        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
+        log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
+        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
+        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
+        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+        JSONObject jsonObject = new JSONObject(decodedJWTString);
+
+        // check default claims
+        checkDefaultUserClaims(jsonObject, apiKeyApplicationName);
+        // check API details
+        log.info("JWT Received ==" + jsonObject.toString());
+        String claim = jsonObject.getString("http://wso2.org/claims/apiname");
+        assertTrue("JWT claim API name not received " + claim, claim.contains(apiName));
+        claim = jsonObject.getString("http://wso2.org/claims/version");
+        assertTrue("JWT claim API version not received " + claim, claim.contains(apiVersion));
+        claim = jsonObject.getString("http://wso2.org/claims/apicontext");
+        assertTrue("JWT claim API context not received " + claim, claim.contains(apiContext));
+
+        boolean bExceptionOccured = false;
+        try {
+            jsonObject.getString("http://wso2.org/claims/wrongclaim");
+        } catch (JSONException e) {
+            bExceptionOccured = true;
+        }
+        assertTrue("JWT claim received is invalid", bExceptionOccured);
     }
 
     @AfterClass(alwaysRun = true)
