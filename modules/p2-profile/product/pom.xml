@@ -641,7 +641,9 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.keycloak:keycloak.key.manager.feature:${keycloak.keymanager.feature.version}
                                 </featureArtifactDef>
-
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.persistence.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1394,6 +1396,10 @@
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1798,6 +1804,10 @@
                                 <feature>
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2293,6 +2303,10 @@
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2753,6 +2767,10 @@
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3182,6 +3200,10 @@
                                     <id>wso2is.key.manager.notification.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3480,6 +3502,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
