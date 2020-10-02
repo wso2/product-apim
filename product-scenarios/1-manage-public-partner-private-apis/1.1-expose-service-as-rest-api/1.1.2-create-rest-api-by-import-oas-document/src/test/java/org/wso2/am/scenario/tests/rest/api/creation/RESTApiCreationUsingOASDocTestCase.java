@@ -311,8 +311,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
 
         //Assert resources
-        JSONObject resourceGET = (JSONObject) resources.get(0);
-        JSONObject resourcePOST = (JSONObject) resources.get(1);
+        JSONObject resourcePOST = (JSONObject) resources.get(0);
+        JSONObject resourceGET = (JSONObject) resources.get(1);
         assertPOSTResource(resourcePOST);
         assertGETResource(resourceGET);
 
