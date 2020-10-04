@@ -40,8 +40,8 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
 
     private static final String SUPERTENANT_USERNAME = "admin";
     private static final String SUPERTENANT_PASSWORD = "admin";
-    private static final String TENANT_USERNAME = "nironw@wso2.com";
-    private static final String TENANT_PASSWORD = "nironw";
+    private static final String TENANT_USERNAME = "testuser22@wso2.com";
+    private static final String TENANT_PASSWORD = "testuser22";
     BenchmarkUtils benchmarkUtils = new BenchmarkUtils();
     private int benchmark;
     private String apiUUID;
@@ -64,7 +64,7 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-// Benchmark values are defined in "src/test/resources/benchmark-values"
+    // Benchmark values are defined in "src/test/resources/benchmark-values"
         RestAssured.useRelaxedHTTPSValidation();
         benchmarkUtils.enableRestassuredHttpLogs(Boolean.valueOf(System.getProperty("okHttpLogs")));
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
@@ -147,8 +147,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
             benchmarkUtils.publishAPI(apiUUID, "");
             apiIdList.add(apiUUID);
         }
-        while (!(benchmarkUtils.getDevPortalApiCount() >= noOfApisCreated)) {
+        int i = 0;
+        while (!(benchmarkUtils.getDevPortalApiCount() >= noOfApisCreated) || i==5) {
             Thread.sleep(1000);
+            i++;
         }
         startTime = benchmarkUtils.getCurrentTimeStamp();
         benchmarkUtils.retrieveAllApisFromStore(noOfAPISRetrieved, corellationID);
@@ -196,7 +198,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         benchmarkUtils.deleteRestAPI(apiUUID);
     }
 
-    //
     @Test(dataProvider = "testMetric", priority = 0)
     public void createAnApplication(String testMetric, String userName, String password, Method method)
         throws InterruptedException, IOException, ParseException {
