@@ -29,7 +29,6 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -39,6 +38,10 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class BenchmarkTestCase extends APIMIntegrationBaseTest {
 
+    private static final String SUPERTENANT_USERNAME = "admin";
+    private static final String SUPERTENANT_PASSWORD = "admin";
+    private static final String TENANT_USERNAME = "nironw@wso2.com";
+    private static final String TENANT_PASSWORD = "nironw";
     BenchmarkUtils benchmarkUtils = new BenchmarkUtils();
     private int benchmark;
     private String apiUUID;
@@ -51,29 +54,28 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     @DataProvider(name = "testMetric")
     public static Object[][] DataProvider() {
 
-        return new Object[][]{
-                {"jdbc"}, {"http"}
+        return new Object[][] {
+            {"jdbc", SUPERTENANT_USERNAME, SUPERTENANT_PASSWORD},
+            {"http", SUPERTENANT_USERNAME, SUPERTENANT_PASSWORD},
+            {"jdbc", TENANT_USERNAME, TENANT_PASSWORD},
+            {"http", TENANT_USERNAME, TENANT_PASSWORD}
         };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 // Benchmark values are defined in "src/test/resources/benchmark-values"
-        benchmarkUtils.enableRestassuearedHttpLogs(Boolean.valueOf(System.getProperty("okHttpLogs")));
+        RestAssured.useRelaxedHTTPSValidation();
+        benchmarkUtils.enableRestassuredHttpLogs(Boolean.valueOf(System.getProperty("okHttpLogs")));
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
         System.setProperty("apim.url", benchmarkUtils.getApimURL());
     }
 
-    @BeforeMethod
-    public void generateConsumerCredentialsAndToken() throws IOException {
-
-        benchmarkUtils.generateConsumerCredentialsAndAccessToken();
-    }
-
     @Test(dataProvider = "testMetric", priority = 1)
-    public void createRestApi(String testMetric, Method method)
-            throws IOException, InterruptedException, ParseException {
+    public void createRestApi(String testMetric, String userName, String password, Method method)
+        throws IOException, InterruptedException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "API_CREATE");
         testName = method.getName();
         String corellationID = benchmarkUtils.setActivityID();
@@ -85,9 +87,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 2)
-    public void publishRestApi(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void publishRestApi(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "API_PUBLISH");
         String corellationID = benchmarkUtils.setActivityID();
         testName = method.getName();
@@ -101,9 +104,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 3)
-    public void retrieveAllApisFromPublisher(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void retrieveAllApisFromPublisher(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         List<String> apiIdList = new ArrayList<>();
         testName = method.getName();
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "RETRIEVE_ALL_PUBLISHER");
@@ -127,9 +131,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 4)
-    public void retrieveAllApisFromDevPortal(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void retrieveAllApisFromDevPortal(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         List<String> apiIdList = new ArrayList<>();
         int noOfApisCreated = 20;
         int noOfAPISRetrieved = 10;
@@ -155,9 +160,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 5)
-    public void retrieveAnApiFromPublisher(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void retrieveAnApiFromPublisher(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         testName = method.getName();
         context = "testcontext_" + testName;
         corellationID = benchmarkUtils.setActivityID();
@@ -172,9 +178,10 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 6)
-    public void retrieveAnApiFromStore(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void retrieveAnApiFromStore(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         testName = method.getName();
         context = "testcontext_" + testName;
         corellationID = benchmarkUtils.setActivityID();
@@ -189,11 +196,13 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         benchmarkUtils.deleteRestAPI(apiUUID);
     }
 
+    //
     @Test(dataProvider = "testMetric", priority = 0)
-    public void createAnApplication(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void createAnApplication(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
         testName = method.getName();
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "CREATE_APPLICATION");
         corellationID = benchmarkUtils.setActivityID() + testName;
         startTime = benchmarkUtils.getCurrentTimeStamp();
@@ -204,10 +213,11 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 7)
-    public void subscribeToAnAPI(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void subscribeToAnAPI(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
         testName = method.getName();
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         context = "testcontext_" + testName;
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "SUBSCRIBE_TO_API");
         corellationID = benchmarkUtils.setActivityID();
@@ -223,10 +233,11 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 8)
-    public void generateJwtAccessToken(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
+    public void generateJwtAccessToken(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
 
         testName = method.getName();
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         context = "samplecontext_" + testName;
         benchmark = BenchmarkUtils.getBenchmark(testMetric, "GENERATE_JWT_TOKEN");
         corellationID = benchmarkUtils.setActivityID();
@@ -244,9 +255,9 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(dataProvider = "testMetric", priority = 9)
-    public void invokeCreatedApi(String testMetric, Method method)
-            throws InterruptedException, IOException, ParseException {
-
+    public void invokeCreatedApi(String testMetric, String userName, String password, Method method)
+        throws InterruptedException, IOException, ParseException {
+        benchmarkUtils.generateConsumerCredentialsAndAccessToken(userName, password);
         testName = method.getName();
         context = "samplecontext_" + testName;
         corellationID = benchmarkUtils.setActivityID();

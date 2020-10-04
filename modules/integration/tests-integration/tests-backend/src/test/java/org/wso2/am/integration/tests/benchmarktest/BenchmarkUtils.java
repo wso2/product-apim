@@ -61,12 +61,13 @@ public class BenchmarkUtils {
     public static String apimUrl;
     static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
             "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
-    private static int apimPort = 9443 + PORT_OFFSET;
+    public static int apimPort = 9443 + PORT_OFFSET;
     private static int gatewayport = 8243 + PORT_OFFSET;
     private static String gateway_Url;
     private final String RESTFUL_API_VERSION = "v1";
     private final String SUPER_TENANT_USERNAME = "admin";
     private final String SUPER_TENANT_PASSWORD = "admin";
+    private static final String SUPER_TENANT = "superTenant";
     private final String HTTP_PROTOCOL = "https://";
     private int statusCode;
     private String publisherConsumerSecret;
@@ -74,6 +75,7 @@ public class BenchmarkUtils {
     private String apiUUID;
     private String applicationID;
     private String accessToken;
+    public static String tenant;
 
     public static String setActivityID() {
 
@@ -84,7 +86,12 @@ public class BenchmarkUtils {
 
     public static int extractCountsFromLog(String logFile, String testType, LocalTime startTime)
             throws InterruptedException {
-
+        String tenantName;
+        if(tenant!=SUPER_TENANT){
+            tenantName = tenant.substring(0, tenant.indexOf('.'));
+        }
+        else {  tenantName=tenant;
+        }
         String logAttribute = null;
         File directory = new File(OUT_FILE_PATH);
         if (!directory.exists()) {
@@ -100,7 +107,7 @@ public class BenchmarkUtils {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
 //             lines executed are logged in to a file starting with test method name,
              Writer writer = new BufferedWriter(
-                     new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile + "_" + testType + ".log"), "utf-8"))
+                     new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile + "_" + testType +"_"+tenantName+".log"), "utf-8"))
         ) {
             String readLine;
             while ((readLine = bufferedReader.readLine()) != null) {
@@ -170,8 +177,14 @@ public class BenchmarkUtils {
     public static int getBenchmark(String testType, String scenario) throws IOException, ParseException {
 
         String benchmarkValue = null;
-        String resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-" + testType + ".json";
-
+        String resourceLocation;
+        String tenantName;
+        if(tenant!=SUPER_TENANT){
+            tenantName = "tenant";
+        }
+        else {  tenantName=tenant;
+        }
+        resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-" + testType +"-"+ tenantName +".json";
         JSONParser parser = new JSONParser();
         JSONArray a = (JSONArray) parser.parse(new FileReader(resourceLocation));
 
@@ -183,32 +196,40 @@ public class BenchmarkUtils {
     }
 
     public static void writeResultsToFile(String fileName, String testName, int actual, int benchmark) throws IOException {
-
+        String tenantName;
+        if(tenant!=SUPER_TENANT){
+            tenantName = tenant.substring(0, tenant.indexOf('.'));
+        }
+        else {  tenantName= tenant;
+        }
         String outputFile = OUT_FILE_PATH + "Results_" + fileName + ".log";
         File f = new File(outputFile);
         if (!f.exists()) {
             f.createNewFile();
         }
         BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
-        bw.append(testName + " ===== Actual count is " + actual + "   Benchmark is  " + benchmark);
+        bw.append(testName +"  :  "+ tenantName +"  :  Actual count is " + actual + "   Benchmark is  " + benchmark);
         bw.newLine();
         bw.close();
     }
 
-    public void generateConsumerCredentialsAndAccessToken() throws IOException {
-
+    public void generateConsumerCredentialsAndAccessToken(String userName, String password) throws IOException {
+        setTenancy(userName);
+        if(System.getProperty(APIM_URL_SYSTEM_PROPERTY) == null){
+            System.setProperty(APIM_URL_SYSTEM_PROPERTY, getApimURL());
+        }
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
                 given()
                         .auth()
                         .preemptive()
-                        .basic(SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD)
+                        .basic(userName, password)
                         .header("Content-Type", "application/json").
                         when().
                         body("{\n" +
                                 "  \"callbackUrl\": \"www.google.lk\",\n" +
                                 "  \"clientName\": \"rest_api_publisher\",\n" +
-                                "  \"owner\": \"admin\",\n" +
+                                "  \"owner\": \""+userName+"\",\n" +
                                 "  \"grantType\": \"password refresh_token\",\n" +
                                 "  \"saasApp\": true\n" +
                                 "}").
@@ -220,10 +241,18 @@ public class BenchmarkUtils {
         publisherConsumerKey = jsonResponse.getString("clientId");
         publisherConsumerSecret = jsonResponse.getString("clientSecret");
 
-        generateAccessToken("apim:api_create apim:api_delete apim:api_view apim:api_publish apim:subscribe");
+        generateAccessToken("apim:api_create apim:api_delete apim:api_view apim:api_publish apim:subscribe",userName,password);
     }
 
-    public String generateAccessToken(String scope) {
+    public void setTenancy(String userName){
+if (userName.contains("@")){
+    tenant = userName.substring(userName.lastIndexOf("@") + 1);
+} else {
+    tenant = SUPER_TENANT;
+}
+    }
+
+    public String generateAccessToken(String scope,String userName, String password) {
 
         gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         Response response =
@@ -232,8 +261,8 @@ public class BenchmarkUtils {
                         .preemptive()
                         .basic(publisherConsumerKey, publisherConsumerSecret)
                         .formParam("grant_type", "password")
-                        .formParam("username", SUPER_TENANT_USERNAME)
-                        .formParam("password", SUPER_TENANT_PASSWORD)
+                        .formParam("username", userName)
+                        .formParam("password", password)
                         .formParam("scope", scope).
                         when().
                         post(gateway_Url + "/token");
@@ -291,8 +320,8 @@ public class BenchmarkUtils {
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Content-Type", "application/json")
                         .header("activityid", activityID)
-                        .queryParam("apiId", apiID)
-                        .queryParam("action", "Publish").
+                        .queryParam("action", "Publish")
+                        .queryParam("apiId", apiID).
                         when().
                         post(apimUrl + "/api/am/publisher/" + RESTFUL_API_VERSION + "/apis/change-lifecycle");
         String responseBody = response.getBody().asString();
@@ -387,12 +416,17 @@ public class BenchmarkUtils {
     public void invokeAPI(String context, String token, String activityID) {
 
         gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
+        String urlPath = gateway_Url + "/" + context + "/v1.0/posts/1";
+        if (tenant!= SUPER_TENANT){
+            urlPath = gateway_Url + "/t/"+tenant +"/"+ context + "/v1.0/posts/1";
+        }
+        System.out.println("Tenant is :   "+urlPath);
         Response response =
                 given()
                         .header("Authorization", "Bearer " + token)
                         .header("activityid", activityID).
                         when().
-                        get(gateway_Url + "/" + context + "/v1.0/posts/1");
+                        get(urlPath);
         String responseBody = response.getBody().asString();
         JsonPath jsonResponse = new JsonPath(responseBody);
         statusCode = response.getStatusCode();
@@ -541,7 +575,7 @@ public class BenchmarkUtils {
         validateBenchmark(benchmark, actualCount);
     }
 
-    public void enableRestassuearedHttpLogs(boolean isEnabled) {
+    public void enableRestassuredHttpLogs(boolean isEnabled) {
 
         if (isEnabled == true) {
             RestAssured.useRelaxedHTTPSValidation();

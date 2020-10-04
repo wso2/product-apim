@@ -140,6 +140,10 @@
                         <userName>testu3</userName>
                         <password>testu3pass</password>
                     </user>
+                    <user key="userKey4">
+                        <userName>niron</userName>
+                        <password>niron</password>
+                    </user>
                     <user key="emailUser">
                         <userName>test@gmail.com</userName>
                         <password>testuser31</password>
@@ -196,6 +200,10 @@
                     <user key="user2">
                         <userName>testuser21</userName>
                         <password>testuser21</password>
+                    </user>
+                    <user key="user3">
+                        <userName>nironw</userName>
+                        <password>nironw</password>
                     </user>
                     <user key="emailUser">
                         <userName>test@gmail.com</userName>
