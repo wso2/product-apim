@@ -64,17 +64,15 @@ public class BenchmarkUtils {
     public static int apimPort = 9443 + PORT_OFFSET;
     private static int gatewayport = 8243 + PORT_OFFSET;
     private static String gateway_Url;
-    private final String RESTFUL_API_VERSION = "v1";
-    private final String SUPER_TENANT_USERNAME = "admin";
-    private final String SUPER_TENANT_PASSWORD = "admin";
+    private static final String RESTFUL_API_VERSION = "v1";
     private static final String SUPER_TENANT = "superTenant";
-    private final String HTTP_PROTOCOL = "https://";
-    private int statusCode;
-    private String publisherConsumerSecret;
-    private String publisherConsumerKey;
-    private String apiUUID;
-    private String applicationID;
-    private String accessToken;
+    private static final String HTTP_PROTOCOL = "https://";
+    private static int statusCode;
+    private static String publisherConsumerSecret;
+    private static String publisherConsumerKey;
+    private static String apiUUID;
+    private static String applicationID;
+    private static String accessToken;
     public static String tenant;
 
     public static String setActivityID() {
@@ -105,19 +103,19 @@ public class BenchmarkUtils {
         }
         int noOfLinesExecuted = 0;
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
-//             lines executed are logged in to a file starting with test method name,
+    // lines executed are logged in to a file starting with test method name,
              Writer writer = new BufferedWriter(
                      new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile + "_" + testType +"_"+tenantName+".log"), "utf-8"))
         ) {
             String readLine;
             while ((readLine = bufferedReader.readLine()) != null) {
                 String logLine = readLine.toLowerCase();
-//                 lines executed will be captured with log Attribute
+    // lines executed will be captured with log Attribute
                 if (logLine.contains("|" + logAttribute + "|")) {
                     String regex = "(\\d{2}:\\d{2}:\\d{2})";
-                    Matcher m = Pattern.compile(regex).matcher(logLine);
-                    if (m.find()) {
-                        LocalTime logtime = LocalTime.parse(m.group(1));
+                    Matcher matcher = Pattern.compile(regex).matcher(logLine);
+                    if (matcher.find()) {
+                        LocalTime logtime = LocalTime.parse(matcher.group(1));
                         if (logtime.isAfter(startTime)) {
                             logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
                             if (!logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
@@ -153,7 +151,7 @@ public class BenchmarkUtils {
         boolean exceedsLimit = false;
 
         benchmark = (int) (benchmark + (benchmark * 0.01));
-//        Validate if No. of statements executed exceeds the benchmark
+    // Validate if No. of statements executed exceeds the benchmark
         if (actualCount > benchmark) {
             exceedsLimit = true;
         }
@@ -213,7 +211,7 @@ public class BenchmarkUtils {
         bw.close();
     }
 
-    public void generateConsumerCredentialsAndAccessToken(String userName, String password) throws IOException {
+    public static void generateConsumerCredentialsAndAccessToken(String userName, String password) throws IOException {
         setTenancy(userName);
         if(System.getProperty(APIM_URL_SYSTEM_PROPERTY) == null){
             System.setProperty(APIM_URL_SYSTEM_PROPERTY, getApimURL());
@@ -244,15 +242,15 @@ public class BenchmarkUtils {
         generateAccessToken("apim:api_create apim:api_delete apim:api_view apim:api_publish apim:subscribe",userName,password);
     }
 
-    public void setTenancy(String userName){
-if (userName.contains("@")){
+    public static void setTenancy(String userName){
+    if (userName.contains("@")){
     tenant = userName.substring(userName.lastIndexOf("@") + 1);
-} else {
+    } else {
     tenant = SUPER_TENANT;
-}
+    }
     }
 
-    public String generateAccessToken(String scope,String userName, String password) {
+    public static String generateAccessToken(String scope, String userName, String password) {
 
         gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         Response response =
@@ -269,12 +267,12 @@ if (userName.contains("@")){
         String responseBody = response.getBody().asString();
         JsonPath jsonResponse = new JsonPath(responseBody);
         statusCode = response.getStatusCode();
-//            Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
+    Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
         accessToken = jsonResponse.getString("access_token");
         return accessToken;
     }
 
-    public String createRestAPI(String apiName, String apiContext, String activityID) {
+    public static String createRestAPI(String apiName, String apiContext, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -297,7 +295,7 @@ if (userName.contains("@")){
         return apiUUID;
     }
 
-    public void deleteRestAPI(String apiID) {
+    public static void deleteRestAPI(String apiID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -309,10 +307,9 @@ if (userName.contains("@")){
         String responseBody = response.getBody().asString();
         JsonPath jsonResponse = new JsonPath(responseBody);
         statusCode = response.getStatusCode();
-//        Assert.assertEquals(statusCode /*actual value*/,  HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting API");
     }
 
-    public void publishAPI(String apiID, String activityID) {
+    public static void publishAPI(String apiID, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -330,7 +327,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public String createAnApplication(String appName, String activityID) {
+    public static String createAnApplication(String appName, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -350,7 +347,7 @@ if (userName.contains("@")){
         return applicationID;
     }
 
-    public void addSubscription(String apiID, String appID, String activityID) {
+    public static void addSubscription(String apiID, String appID, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -369,7 +366,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_CREATED /*expected value*/, "Incorrect status code returned");
     }
 
-    public String generateApplicationToken(String appID, String activityID) {
+    public static String generateApplicationToken(String appID, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -398,7 +395,7 @@ if (userName.contains("@")){
         return accessToken;
     }
 
-    public void deleteApplication(String appID) {
+    public static void deleteApplication(String appID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -413,7 +410,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned when deleting application");
     }
 
-    public void invokeAPI(String context, String token, String activityID) {
+    public static void invokeAPI(String context, String token, String activityID) {
 
         gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
         String urlPath = gateway_Url + "/" + context + "/v1.0/posts/1";
@@ -433,7 +430,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public void retrieveAllApisFromPublisher(int limit, String activityID) {
+    public static void retrieveAllApisFromPublisher(int limit, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -449,7 +446,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public void retrieveApiFromPublisher(String activityID, String apiID) {
+    public static void retrieveApiFromPublisher(String activityID, String apiID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -465,7 +462,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public void retrieveApiFromStore(String activityID, String apiID) {
+    public static void retrieveApiFromStore(String activityID, String apiID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -481,7 +478,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public int getDevPortalApiCount() {
+    public static int getDevPortalApiCount() {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -498,7 +495,7 @@ if (userName.contains("@")){
         return count;
     }
 
-    public int getPublisherApiCount() {
+    public static int getPublisherApiCount() {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -515,7 +512,7 @@ if (userName.contains("@")){
         return count;
     }
 
-    public void retrieveAllApisFromStore(int limit, String activityID) {
+    public static void retrieveAllApisFromStore(int limit, String activityID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         Response response =
@@ -531,7 +528,7 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public void retrieveAnAPI(String apiID) {
+    public static void retrieveAnAPI(String apiID) {
 
         apimUrl = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + apimPort;
         gateway_Url = HTTP_PROTOCOL + System.getProperty(APIM_URL_SYSTEM_PROPERTY) + ':' + gatewayport;
@@ -547,12 +544,12 @@ if (userName.contains("@")){
         Assert.assertEquals(statusCode /*actual value*/, HttpStatus.SC_OK /*expected value*/, "Incorrect status code returned");
     }
 
-    public String getApimURL() throws IOException {
+    public static String getApimURL() throws IOException {
 
         String carbonLog = APIM_HOME + "/repository/logs/wso2carbon.log";
         String url = null;
         BufferedReader bufferedReader = new BufferedReader(new FileReader(carbonLog));
-//             lines executed are logged in to a file starting with test method name,
+    // lines executed are logged in to a file starting with test method name,
         String apimHost = null;
         {
             String readLine;
@@ -568,14 +565,14 @@ if (userName.contains("@")){
         return apimHost;
     }
 
-    public void validateBenchmarkResults(String testName, String testType, LocalTime startTime, int benchmark) throws InterruptedException, IOException {
+    public static void validateBenchmarkResults(String testName, String testType, LocalTime startTime, int benchmark) throws InterruptedException, IOException {
 
         int actualCount = extractCountsFromLog(testName, testType, startTime);
         writeResultsToFile(testType, testName, actualCount, benchmark);
         validateBenchmark(benchmark, actualCount);
     }
 
-    public void enableRestassuredHttpLogs(boolean isEnabled) {
+    public static void enableRestassuredHttpLogs(boolean isEnabled) {
 
         if (isEnabled == true) {
             RestAssured.useRelaxedHTTPSValidation();
