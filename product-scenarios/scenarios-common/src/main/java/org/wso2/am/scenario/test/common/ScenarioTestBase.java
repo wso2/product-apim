@@ -310,11 +310,32 @@ public class ScenarioTestBase {
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
             userManagementClient.addRole(role, new String[]{}, permisionArray);
+            if (userManagementClient.roleNameExists(role)) {
+                log.info("Role " + role + " has been added successfully to the user.");
+            } else {
+                throw new APIManagementException("Role " + role + " is not been added to the user successfully");
+            }
+
             Thread.sleep(500);
 
             while (waitTime > System.currentTimeMillis()) {
                 List<String> uiPermissionArray = new ArrayList<>();
-                for (UIPermissionNode x : userManagementClient.getRolePermissions(role).getNodeList()) {
+                UIPermissionNode[] uiPermissionNodes = null;
+                long rolePermissionAccessWaitTime = System.currentTimeMillis()
+                                                + ScenarioTestConstants.TIMEOUT_USER_ROLE_ACCESS;
+                while (rolePermissionAccessWaitTime > System.currentTimeMillis()) {
+                    try {
+                        uiPermissionNodes = userManagementClient.getRolePermissions(role).getNodeList();
+                        break;
+                    } catch (Exception e) {
+                        log.warn("Trying to get RolePermissions of the role " + role + " added");
+                    }
+                }
+                if (rolePermissionAccessWaitTime <= System.currentTimeMillis()) {
+                    throw new APIManagementException("Timeout exceeded to get RolePermissions of the role " + role +
+                                                    " added");
+                }
+                for (UIPermissionNode x : uiPermissionNodes) {
                     if (x.getResourcePath().contains("/permission/admin")) {
                         uiPermissionArray.add(x.getResourcePath());
                     }
@@ -344,7 +365,7 @@ public class ScenarioTestBase {
                         + " to role " + role);
             }
         } catch (Exception e) {
-            throw new APIManagementException("Unable to create role :" + role, e);
+            throw new APIManagementException("Error in creating the role :" + role, e);
         }
     }
 
