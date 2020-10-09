@@ -61,16 +61,14 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.xpath.XPathExpressionException;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -79,18 +77,18 @@ public class RestAPIStoreImpl {
 
     private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
 
-    public ApIsApi apIsApi = new ApIsApi();
-    public ApplicationsApi applicationsApi = new ApplicationsApi();
-    public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
-    public ApplicationKeysApi applicationKeysApi = new ApplicationKeysApi();
-    public CommentsApi commentsApi = new CommentsApi();
-    public RatingsApi ratingsApi = new RatingsApi();
-    public TagsApi tagsApi = new TagsApi();
-    public SdKsApi sdKsApi = new SdKsApi();
-    public ApiKeysApi apiKeysApi = new ApiKeysApi();
-    public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
-    public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
-    ApiClient apiStoreClient = new ApiClient();
+    public ApIsApi apIsApi;
+    public ApplicationsApi applicationsApi;
+    public SubscriptionsApi subscriptionIndividualApi;
+    public ApplicationKeysApi applicationKeysApi;
+    public CommentsApi commentsApi;
+    public RatingsApi ratingsApi;
+    public TagsApi tagsApi;
+    public SdKsApi sdKsApi;
+    public ApiKeysApi apiKeysApi;
+    public UnifiedSearchApi unifiedSearchApi;
+    public KeyManagersCollectionApi keyManagersCollectionApi;
+    public ApiClient apiStoreClient;
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -107,6 +105,22 @@ public class RestAPIStoreImpl {
     }
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+
+        log.info("Logging java class path " + System.getProperty("java.classpath"));
+        log.info("Logging java ApIsApi object" + apIsApi.getClass().getName());
+
+        apIsApi = new ApIsApi();
+        applicationsApi = new ApplicationsApi();
+        subscriptionIndividualApi = new SubscriptionsApi();
+        applicationKeysApi = new ApplicationKeysApi();
+        commentsApi = new CommentsApi();
+        ratingsApi = new RatingsApi();
+        tagsApi = new TagsApi();
+        sdKsApi = new SdKsApi();
+        apiKeysApi = new ApiKeysApi();
+        unifiedSearchApi = new UnifiedSearchApi();
+        keyManagersCollectionApi = new KeyManagersCollectionApi();
+
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
@@ -177,7 +191,7 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
-                                          ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+                                                             ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -225,7 +239,7 @@ public class RestAPIStoreImpl {
 
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
                                               String throttleTier,
-                                              ApplicationDTO.TokenTypeEnum tokenType){
+                                              ApplicationDTO.TokenTypeEnum tokenType) {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -308,7 +322,7 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                          List<String> grantTypes,Map<String,Object> additionalProperties,
+                                          List<String> grantTypes, Map<String, Object> additionalProperties,
                                           String keyManager)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
@@ -326,10 +340,10 @@ public class RestAPIStoreImpl {
     }
 
     public ApiResponse<ApplicationKeyDTO> generateKeysWithApiResponse(String applicationId, String validityTime,
-                                                           String callBackUrl,
-                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                                       List<String> grantTypes, Map<String,Object> additionalProperties,
-                                                       String keyManager)
+                                                                      String callBackUrl,
+                                                                      ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+                                                                      List<String> grantTypes, Map<String, Object> additionalProperties,
+                                                                      String keyManager)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -365,16 +379,16 @@ public class RestAPIStoreImpl {
     /**
      * Regenerate consumer secret of an application
      *
-     * @param applicationId - ID of the application
-     * @param keyType       - PRODUCTION or SANDBOX
+     * @param applicationId     - ID of the application
+     * @param keyType           - PRODUCTION or SANDBOX
      * @param applicationKeyDTO - application DTO to be updated
      * @return - APIResponse of update request
      * @throws ApiException - throws if update keys fails.
      */
     public ApiResponse<ApplicationKeyDTO> updateKeys(String applicationId, String keyType,
-            ApplicationKeyDTO applicationKeyDTO) throws Exception{
+                                                     ApplicationKeyDTO applicationKeyDTO) throws Exception {
 
-        return  applicationKeysApi
+        return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypePutWithHttpInfo(applicationId, keyType, applicationKeyDTO);
     }
 
@@ -401,7 +415,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if get application keys fails.
      */
     public ApiResponse<ApplicationKeyDTO> getApplicationKeysByKeyType(String applicationId,
-            String keyType) throws Exception {
+                                                                      String keyType) throws Exception {
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeGetWithHttpInfo(applicationId, keyType, null);
     }
@@ -431,7 +445,6 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     *
      * @return
      * @throws ApiException
      */
@@ -440,7 +453,6 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     *
      * @return
      * @throws ApiException
      */
@@ -467,7 +479,7 @@ public class RestAPIStoreImpl {
     /**
      * Retrieve the APIs according to the search query in Publisher.
      *
-     * @param query - The query on which the APIs needs to be filtered
+     * @param query        - The query on which the APIs needs to be filtered
      * @param tenantDomain - The tenant domain on which the APIs needs to be filtered
      * @return SearchResultListDTO - The search results of the query
      * @throws ApiException
@@ -483,7 +495,7 @@ public class RestAPIStoreImpl {
      * Get APIs for the given limit and offset values
      *
      * @param offset starting position
-     * @param limit maximum number of APIs to return
+     * @param limit  maximum number of APIs to return
      * @return APIs for the given limit and offset values
      * @throws ApiException
      */
@@ -716,8 +728,8 @@ public class RestAPIStoreImpl {
     /**
      * Clean up application registration by ID
      *
-     * @param applicationId   - application ID
-     * @param keyType - key type
+     * @param applicationId - application ID
+     * @param keyType       - key type
      * @return - http response of paginated published APIs
      * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
@@ -813,7 +825,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
-                                                    String description, String tokenType)
+                                                      String description, String tokenType)
             throws ApiException {
 
         ApplicationDTO dto = new ApplicationDTO();
@@ -957,12 +969,12 @@ public class RestAPIStoreImpl {
     /**
      * Update given Auth application
      *
-     * @param applicationId       auth application id
-     * @param applicationDTO      DTO of the application
+     * @param applicationId  auth application id
+     * @param applicationDTO DTO of the application
      * @return Http response of the update request
      * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
-    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO  applicationDTO) {
+    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO applicationDTO) {
 
         try {
             ApplicationDTO responseApplicationDTO = applicationsApi.applicationsApplicationIdPut(applicationId, applicationDTO, null);
@@ -1205,8 +1217,8 @@ public class RestAPIStoreImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
+     * @param commentId    - comment Id
+     * @param apiId        - api Id
      * @param tenantDomain - tenant domain
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
@@ -1311,13 +1323,13 @@ public class RestAPIStoreImpl {
     /**
      * Get the  web page with filtered API when  click the API Tag link
      *
-     * @param limit - number of APIs needs to be returned
-     * @param offset - offset where the APIs needs to be returned should start
+     * @param limit        - number of APIs needs to be returned
+     * @param offset       - offset where the APIs needs to be returned should start
      * @param tenantDomain - tenant domain of which the APIs to be returned
-     * @param query - query that needs to be passed to the backend
+     * @param query        - query that needs to be passed to the backend
      * @return APIListDTO - The DTO which contains the list of matching APIs
      * @throws ApiException - Exception throws when check the Authentication and
-     *                                            HTTPSClientUtils.sendGetRequest() method call
+     *                      HTTPSClientUtils.sendGetRequest() method call
      */
     public APIListDTO searchPaginatedAPIs(int limit, int offset, String tenantDomain, String query)
             throws ApiException {
@@ -1384,7 +1396,6 @@ public class RestAPIStoreImpl {
 //    }
 
     /**
-     *
      * @param tenantDomain
      * @return
      * @throws ApiException
@@ -1505,6 +1516,7 @@ public class RestAPIStoreImpl {
             throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
         }
     }
+
     /**
      * Wait for swagger document until its updated.
      *
@@ -1513,7 +1525,7 @@ public class RestAPIStoreImpl {
      * @param apiVersion       - API Version
      * @param expectedResponse - Expected response of the API
      * @param executionMode    - Mode of the test execution (Standalone or Platform)
-     * @throws IOException                              - Throws if Swagger document cannot be found
+     * @throws IOException              - Throws if Swagger document cannot be found
      * @throws XPathExpressionException - Throws if Swagger document cannot be found
      */
     public void waitForSwaggerDocument(String userName, String apiName, String apiVersion,
@@ -1612,8 +1624,8 @@ public class RestAPIStoreImpl {
     /**
      * Generate SDK for a given programming language
      *
-     * @param apiId The api id which the sdk should be downloaded.
-     * @param language  The required sdk language.
+     * @param apiId    The api id which the sdk should be downloaded.
+     * @param language The required sdk language.
      * @return org.apache.http.HttpResponse for the SDK generation
      * @throws APIManagerIntegrationTestException if failed to generate the SDK
      */
@@ -1628,8 +1640,8 @@ public class RestAPIStoreImpl {
     /**
      * Generate SDK for a given programming language
      *
-     * @param apiId The api id which the sdk should be downloaded.
-     * @param language  The required sdk language.
+     * @param apiId        The api id which the sdk should be downloaded.
+     * @param language     The required sdk language.
      * @param tenantDomain The tenant domain of the sdk to be generated
      * @return org.apache.http.HttpResponse for the SDK generation
      * @throws APIManagerIntegrationTestException if failed to generate the SDK
@@ -1706,7 +1718,6 @@ public class RestAPIStoreImpl {
     }
 
 
-
     /**
      * Generate user access key
      *
@@ -1764,13 +1775,13 @@ public class RestAPIStoreImpl {
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
-        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
+        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO);
     }
 
     /**
      * Check whether the specific api sis available in store.
      *
-     * @param apiId apiID
+     * @param apiId        apiID
      * @param tenantDomain tenant domain.
      * @return
      */
