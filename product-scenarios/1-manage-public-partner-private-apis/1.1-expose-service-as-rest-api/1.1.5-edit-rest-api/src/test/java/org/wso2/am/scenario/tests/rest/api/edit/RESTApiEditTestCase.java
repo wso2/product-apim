@@ -118,19 +118,9 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
                         TENANT_ADMIN_PW);
             }
         }
-
-        setup();
         super.init(userMode);
-
-        publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() +
-                apiProductionEndpointPostfixUrl;
         apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
+        log.info("Provider in RESTApiEditTestCase " + apiProviderName);
 
         //Create an API
         apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, apiProviderName, new URL(backendEndPoint));
@@ -161,6 +151,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
 
         //Update API with the description and tiersCollection & validate the result
         apidto.setDescription("Description Changed");
+        apidto.description("Description Changed");
         List<String> tiersCollectionList = new ArrayList<>();
         tiersCollectionList.add("Unlimited");
         tiersCollectionList.add("Gold");
@@ -185,7 +176,7 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
      * */
 //    TODO : Investgate test failures and fix
     @Test(description = "1.1.5.3", dataProvider = "OASDocsWithJSONFiles", dataProviderClass = ScenarioDataProvider.class
-            , dependsOnMethods = "testRESTAPIEditAlreadyCreatedApi", enabled = false)
+            , dependsOnMethods = "testRESTAPIEditAlreadyCreatedApi")
     public void testRESTAPIEditUsingOASJSON(String fileName) throws Exception {
 
         //Check availability of the API in publisher
@@ -412,13 +403,13 @@ public class RESTApiEditTestCase extends ScenarioTestBase {
         }
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
 //        verifyResponse(serviceResponse);
     }

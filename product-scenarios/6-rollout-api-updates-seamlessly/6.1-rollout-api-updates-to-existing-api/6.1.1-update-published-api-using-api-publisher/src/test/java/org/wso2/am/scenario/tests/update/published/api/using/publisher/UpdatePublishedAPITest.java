@@ -16,6 +16,8 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,8 +34,6 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
     private static final String UPDATE_RESOURCE = "/update";
     private static final String API_VERSION = "1.0.0";
 
-
-
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_PW = "admin";
     private static final String TENANT_ADMIN_USERNAME = "admin@wso2.com";
@@ -42,6 +42,8 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
     private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
     private static final String API_SUBSCRIBER_USERNAME = "andrew";
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    private static final Log log = LogFactory.getLog(UpdatePublishedAPITest.class);
 
     @Factory(dataProvider = "userModeDataProvider")
     public UpdatePublishedAPITest(TestUserMode userMode) {
@@ -149,6 +151,8 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
 
         String publisherSwaggerUpdated = restAPIPublisher.updateSwagger(apiId, modifiedResource);
         assertNotNull(publisherSwaggerUpdated);
+        log.info("publisherSwagger : "  + publisherSwagger + "/n");
+        log.info("publisherSwagger : "  + publisherSwaggerUpdated + "/n");
         publishAPI(apiId);
         String storeSwaggerUpdated = null;
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -200,13 +204,13 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

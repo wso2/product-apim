@@ -142,7 +142,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     }
 
 
-    @Test(description = "1.1.1.2")
+    @Test(description = "1.1.1.2" , dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
@@ -204,7 +204,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         validateOptionalField(serviceResponseGetApi);
     }
 
-    @Test(description = "1.1.1.4")
+    @Test(description = "1.1.1.4", dependsOnMethods = "testRESTAPICreationWithOptionalValues")
     public void testRESTAPICreationWithwildCardResource() throws Exception {
         apiName = "APIWildCard";
         apiContext = "apiwildcard";
@@ -261,13 +261,13 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         }
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

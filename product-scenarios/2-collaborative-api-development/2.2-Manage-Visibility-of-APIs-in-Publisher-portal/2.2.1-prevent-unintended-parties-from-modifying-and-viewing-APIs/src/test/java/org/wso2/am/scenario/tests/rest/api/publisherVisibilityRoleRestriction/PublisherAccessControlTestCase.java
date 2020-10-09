@@ -123,10 +123,10 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -169,10 +169,10 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPIByID(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -212,10 +212,10 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPIByID(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -244,13 +244,13 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

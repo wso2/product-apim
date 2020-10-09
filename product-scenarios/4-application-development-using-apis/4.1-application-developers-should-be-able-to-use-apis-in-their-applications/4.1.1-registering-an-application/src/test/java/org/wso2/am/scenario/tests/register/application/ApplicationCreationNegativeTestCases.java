@@ -92,16 +92,16 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     }
 
     @Test(description = "4.1.1.6", dataProvider = "InvalidMandatoryApplicationValuesDataProvider",
-            dataProviderClass = ScenarioDataProvider.class)
+            dataProviderClass = ScenarioDataProvider.class, dependsOnMethods = "testApplicationCreationWithMissingMandatoryValues")
     public void testApplicationCreationWithInvalidMandatoryValues(String applicationName, String tier,
-                                                                  String errorMessage) throws Exception {
+                                                                  String errorMessage) {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
                 "null", ApplicationDTO.TokenTypeEnum.OAUTH);
         assertEquals(applicationResponse, null, errorMessage);
     }
 
-    @Test(description = "4.1.1.7")
-    public void testDuplicateApplicationName() throws Exception {
+    @Test(description = "4.1.1.7", dependsOnMethods = "testApplicationCreationWithInvalidMandatoryValues")
+    public void testDuplicateApplicationName() {
         String APPLICATION_NAME = "Application";
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
@@ -183,15 +183,15 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(SUBSCRIBER_LOGIN_USERNAME_2, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

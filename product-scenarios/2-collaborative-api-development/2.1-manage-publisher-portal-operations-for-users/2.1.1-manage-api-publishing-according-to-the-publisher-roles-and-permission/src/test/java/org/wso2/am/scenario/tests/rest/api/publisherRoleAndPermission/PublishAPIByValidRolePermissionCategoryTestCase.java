@@ -26,6 +26,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.scenario.test.common.ScenarioDataProvider;
@@ -61,7 +62,6 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
 
-
     @Factory(dataProvider = "userModeDataProvider")
     public PublishAPIByValidRolePermissionCategoryTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -71,7 +71,7 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
     public void setEnvironment() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                                                  ADMIN_USERNAME, ADMIN_PW);
+                    ADMIN_USERNAME, ADMIN_PW);
             createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
             devPortalUser = "adminUser1";
         }
@@ -82,9 +82,9 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
             if (isActivated(ScenarioTestConstants.TENANT_WSO2)) {
 //           Add and activate wso2.com tenant
                 createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
-                                                      TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                        TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, TENANT_ADMIN_USERNAME,
-                                             TENANT_ADMIN_PW);
+                        TENANT_ADMIN_PW);
             }
             devPortalUser = "adminUser1" + "@" + ScenarioTestConstants.TENANT_WSO2;
         }
@@ -93,12 +93,12 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
     //TODO : Investigate test failures and fix
     @Test(description = "2.1.1.1", dataProvider = "ValidRoleDataProvider",
-          dataProviderClass = ScenarioDataProvider.class, enabled = false)
+            dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAPIByValidRoleAssignedUser(String role) throws Exception {
 
         apiName = "API_" + count;
-        apiContext = "/verify"+ count;
-        devPortalUser = devPortalUser+count;
+        apiContext = "/verify" + count;
+        devPortalUser = devPortalUser + count;
         count++;
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, API_CREATOR_PUBLISHER_USERNAME, new URL(backendEndPoint));
@@ -111,17 +111,27 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createUser(devPortalUser, "password123$", new String[]{role},
-                       ADMIN_USERNAME, ADMIN_PW);
+                    ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             createUser(devPortalUser, "password123$", new String[]{role},
-                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
         restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
-        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID,false);
+        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
@@ -129,22 +139,22 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
 
     //TODO : Investigate test failures and fix
     @Test(description = "2.1.1.2", dataProvider = "ValidPermissionDataProvider",
-          dataProviderClass = ScenarioDataProvider.class, enabled = false)
+            dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAPIByValidPermissionUser(String[] permissionList) throws Exception {
 
         apiName = "API_1.2_" + count;
-        apiContext = "/verify1.2_"+ count;
-        devPortalUser = devPortalUser+count;
+        apiContext = "/verify1.2_" + count;
+        devPortalUser = devPortalUser + count;
         userRole = "role" + count;
         count++;
 
@@ -159,21 +169,31 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionList);
             createUser(devPortalUser, "password123$", new String[]{userRole},
-                       ADMIN_USERNAME, ADMIN_PW);
-            updateUser(devPortalUser,new String[]{ScenarioTestConstants.PUBLISHER_ROLE},new String[]{null},ADMIN_USERNAME,ADMIN_PW);
+                    ADMIN_USERNAME, ADMIN_PW);
+            updateUser(devPortalUser, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, new String[]{null}, ADMIN_USERNAME, ADMIN_PW);
 
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionList);
             createUser(devPortalUser, "password123$", new String[]{userRole},
-                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            updateUser(devPortalUser,new String[]{ScenarioTestConstants.PUBLISHER_ROLE},new String[]{null},TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            updateUser(devPortalUser, new String[]{ScenarioTestConstants.PUBLISHER_ROLE}, new String[]{null}, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
         restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
-        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID,false);
+        restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
@@ -181,23 +201,23 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
     //TODO : Investigate test failures and fix
     @Test(description = "2.1.1.3", dataProvider = "ValidRoleDataProvider",
-          dataProviderClass = ScenarioDataProvider.class, enabled = false)
+            dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAlreadyPublishedAPIByValidRoleAssignedUser(String role) throws Exception {
 
         apiName = "API_AlreadyPublished_" + count;
-        apiContext = "/verifyAlreadyPublished"+ count;
-        devPortalUser = devPortalUser+count;
+        apiContext = "/verifyAlreadyPublished" + count;
+        devPortalUser = devPortalUser + count;
         count++;
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, API_CREATOR_PUBLISHER_USERNAME, new URL(backendEndPoint));
@@ -210,12 +230,12 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            createUser(devPortalUser, "password123$",  new String[]{role},
-                       ADMIN_USERNAME, ADMIN_PW);
+            createUser(devPortalUser, "password123$", new String[]{role},
+                    ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            createUser(devPortalUser, "password123$",  new String[]{role},
-                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            createUser(devPortalUser, "password123$", new String[]{role},
+                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
@@ -223,27 +243,37 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         restAPIPublisherNew.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
+
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
     //TODO : Investigate test failures and fix
     @Test(description = "2.1.1.4", dataProvider = "ValidPermissionDataProvider",
-          dataProviderClass = ScenarioDataProvider.class, enabled = false)
+            dataProviderClass = ScenarioDataProvider.class)
     public void testPublishAlreadyPublishedAPIByValidPermissionAssignedUser(String[] permissionList) throws Exception {
 
         apiName = "Published_Permission_" + count;
-        apiContext = "/verifyPublishedPermission_"+ count;
-        devPortalUser = devPortalUser+count;
+        apiContext = "/verifyPublishedPermission_" + count;
+        devPortalUser = devPortalUser + count;
         userRole = "Newuserrole_" + count;
         count++;
 
@@ -254,17 +284,17 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         apiID = apiDto.getId();
         assertNotNull(apiDto.getId(), "API creation failed");
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiID,false);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiID, false);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             createRole(ADMIN_USERNAME, ADMIN_PW, userRole, permissionList);
-            createUser(devPortalUser, "password123$",new String[] {ScenarioTestConstants.PUBLISHER_ROLE},
-                       ADMIN_USERNAME, ADMIN_PW);
+            createUser(devPortalUser, "password123$", new String[]{ScenarioTestConstants.PUBLISHER_ROLE},
+                    ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             createRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, permissionList);
-            createUser(devPortalUser, "password123$", new String[] {ScenarioTestConstants.PUBLISHER_ROLE},
-                       TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            createUser(devPortalUser, "password123$", new String[]{ScenarioTestConstants.PUBLISHER_ROLE},
+                    TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
@@ -272,17 +302,27 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
 
         restAPIPublisherNew.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store. API name: " + apiName + "api_id: " + apiID);
+
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseGetAPI = restAPIStore.getAPI(apiDto.getId());
         assertTrue(apiResponseGetAPI.getName().contains(apiName), apiName + " is not visible in dev-Portal");
 
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -290,13 +330,13 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 
@@ -307,11 +347,10 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         // 1) Super tenant API creator
         // 2) Tenant API creator
         return new Object[][]{
-            new Object[]{TestUserMode.SUPER_TENANT_USER},
-            new Object[]{TestUserMode.TENANT_USER},
-            };
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER},
+        };
     }
-
 
 
 }

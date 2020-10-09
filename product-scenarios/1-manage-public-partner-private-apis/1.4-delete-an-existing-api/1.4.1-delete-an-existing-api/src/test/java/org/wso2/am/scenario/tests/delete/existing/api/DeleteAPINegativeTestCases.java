@@ -94,8 +94,9 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     public void testDeleteAPIWithSubscription(APILifeCycleState state) throws Exception {
         String name = API_NAME_PREFIX + "subAppNeg_" + state.toString();
         apiID = createApi(name);
-        String applicationID = createApplication(name);
+        String applicationID = createApplication(name + state.toString());
         changeApiStateTo(apiID, state);
+        Thread.sleep(10000);
 
         if (state.equals(APILifeCycleState.PUBLISHED)) {
             createSubscription(apiID, applicationID);
@@ -128,7 +129,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     @Test(description = "1.4.1.5")
     public void testDeleteAPIByUnauthorizedUser() throws Exception {
         String name = API_NAME_PREFIX + "subAppNeg_" + APILifeCycleState.PUBLISHED.toString();
-        apiID = createApi(name);
+        apiID = createApi(name + "negative" + APILifeCycleState.PUBLISHED.toString());
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUserList().get(1).getPassword(),
@@ -251,13 +252,13 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

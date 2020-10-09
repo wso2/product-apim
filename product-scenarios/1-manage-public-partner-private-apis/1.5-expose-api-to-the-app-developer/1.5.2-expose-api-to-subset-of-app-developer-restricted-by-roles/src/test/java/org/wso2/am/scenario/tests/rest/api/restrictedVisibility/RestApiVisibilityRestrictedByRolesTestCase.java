@@ -152,11 +152,11 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         } finally {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
-                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
@@ -220,12 +220,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
                 deleteRole(creatorRole, ADMIN_USERNAME, ADMIN_PW);
-                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 deleteRole(creatorRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
@@ -273,7 +273,15 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         getAPI(apiId);
         publishAPI(apiId);
         // Wait until the tags are indexed in store
-        Thread.sleep(15000);
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiId, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiId, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiId);
 
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -329,8 +337,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         getAPI(apiIdPublic);
         publishAPI(apiIdPublic);
-        // Wait until the tags are indexed in store
-        Thread.sleep(15000);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdPublic, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdPublic, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiIdPublic);
 
 
         try {
@@ -404,8 +420,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         getAPI(apiIdSub);
         publishAPI(apiIdSub);
-        // Wait until the tags are indexed in store
-        Thread.sleep(100000);
+
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdSub, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiIdSub, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiIdSub);
 
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -470,13 +494,13 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

@@ -102,6 +102,16 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         unAuthenticatedApiClient.setBasePath(existingAPIClient.getBasePath());
         restAPIStore.apIsApi.setApiClient(unAuthenticatedApiClient);
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiID);
+
         // Check visibility in store for unAuthenticated user.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiDto.getId());
@@ -137,6 +147,16 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
         unAuthenticatedApiClient.setBasePath(existingAPIClient.getBasePath());
         restAPIStore.apIsApi.setApiClient(unAuthenticatedApiClient);
 
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiID);
+
         // Check visibility in store for unAuthenticated user.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiDto.getId());
@@ -156,13 +176,13 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

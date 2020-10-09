@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
@@ -59,6 +61,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
 import java.io.IOException;
 import java.net.URL;
@@ -73,6 +76,9 @@ import javax.xml.xpath.XPathExpressionException;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+
+    private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
+
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
@@ -1759,5 +1765,34 @@ public class RestAPIStoreImpl {
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
+    }
+
+    /**
+     * Check whether the specific api sis available in store.
+     *
+     * @param apiId apiID
+     * @param tenantDomain tenant domain.
+     * @return
+     */
+    public boolean isAvailableInDevPortal(String apiId, String tenantDomain) {
+        boolean isAvailable = false;
+        long maxWait = 0;
+        APIDTO response = null;
+        while (!isAvailable) {
+            try {
+                response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+            } catch (ApiException e) {
+                log.info("Waiting for api " + apiId + " to be available in store.");
+            }
+            if (response != null && response.getId().equals(apiId)) {
+                return true;
+            }
+            maxWait = maxWait + 3000;
+            if (maxWait > 60000) {
+                log.info("API not available in store api id: " + apiId);
+                break;
+            }
+        }
+        return false;
     }
 }

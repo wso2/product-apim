@@ -434,7 +434,15 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         apidto.setAuthorizationHeader(customAuth);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
-        Thread.sleep(3000);
+        // Waiting until the api is available in store.
+        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "carbon.super");
+        }
+        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "wso2.com");
+        }
+
+        log.info("API available in store" + "api_id: " + apiId);
         return restAPIStore.getAPI(apiId);
     }
 
@@ -444,13 +452,13 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationId2);
         restAPIPublisher.deleteAPI(apiId);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 
