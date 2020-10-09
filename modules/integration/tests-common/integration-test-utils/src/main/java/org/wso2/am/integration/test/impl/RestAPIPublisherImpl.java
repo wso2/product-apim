@@ -119,7 +119,6 @@ public class RestAPIPublisherImpl {
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
 
         log.info("Logging java class path " + System.getProperty("java.classpath"));
-        log.info("Logging java ApIsApi object" + apIsApi.getClass().getName());
 
         apIsApi = new ApIsApi();
         apiProductsApi = new ApiProductsApi();
@@ -136,6 +135,8 @@ public class RestAPIPublisherImpl {
         apiAuditApi = new ApiAuditApi();
         unifiedSearchApi = new UnifiedSearchApi();
         apiPublisherClient = new ApiClient();
+
+        log.info("Logging java ApIsApi object in publisher " + apIsApi.getClass().getName());
 
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";

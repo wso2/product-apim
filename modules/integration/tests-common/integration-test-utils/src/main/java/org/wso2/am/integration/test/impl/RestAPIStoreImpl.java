@@ -106,8 +106,6 @@ public class RestAPIStoreImpl {
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
 
-        log.info("Logging java class path " + System.getProperty("java.classpath"));
-        log.info("Logging java ApIsApi object" + apIsApi.getClass().getName());
 
         apIsApi = new ApIsApi();
         applicationsApi = new ApplicationsApi();
@@ -121,6 +119,10 @@ public class RestAPIStoreImpl {
         unifiedSearchApi = new UnifiedSearchApi();
         keyManagersCollectionApi = new KeyManagersCollectionApi();
         apiStoreClient = new ApiClient();
+
+        log.info("Logging java ApIsApi object in store " + apIsApi.getClass().getName());
+
+
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
