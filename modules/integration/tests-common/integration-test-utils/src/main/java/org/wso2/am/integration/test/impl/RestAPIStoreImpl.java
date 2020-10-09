@@ -77,18 +77,18 @@ public class RestAPIStoreImpl {
 
     private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
 
-    public ApIsApi apIsApi;
-    public ApplicationsApi applicationsApi;
-    public SubscriptionsApi subscriptionIndividualApi;
-    public ApplicationKeysApi applicationKeysApi;
-    public CommentsApi commentsApi;
-    public RatingsApi ratingsApi;
-    public TagsApi tagsApi;
-    public SdKsApi sdKsApi;
-    public ApiKeysApi apiKeysApi;
-    public UnifiedSearchApi unifiedSearchApi;
-    public KeyManagersCollectionApi keyManagersCollectionApi;
-    public ApiClient apiStoreClient;
+    private ApIsApi apIsApi;
+    private ApplicationsApi applicationsApi;
+    private SubscriptionsApi subscriptionIndividualApi;
+    private ApplicationKeysApi applicationKeysApi;
+    private CommentsApi commentsApi;
+    private RatingsApi ratingsApi;
+    private TagsApi tagsApi;
+    private SdKsApi sdKsApi;
+    private ApiKeysApi apiKeysApi;
+    private UnifiedSearchApi unifiedSearchApi;
+    private KeyManagersCollectionApi keyManagersCollectionApi;
+    private ApiClient apiStoreClient;
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -120,7 +120,7 @@ public class RestAPIStoreImpl {
         apiKeysApi = new ApiKeysApi();
         unifiedSearchApi = new UnifiedSearchApi();
         keyManagersCollectionApi = new KeyManagersCollectionApi();
-
+        apiStoreClient = new ApiClient();
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";

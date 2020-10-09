@@ -87,21 +87,21 @@ public class RestAPIPublisherImpl {
 
     private static final Log log = LogFactory.getLog(RestAPIPublisherImpl.class);
 
-    public ApIsApi apIsApi;
+    private ApIsApi apIsApi;
     private ApiProductsApi apiProductsApi;
-    public ApiDocumentsApi apiDocumentsApi;
-    public ThrottlingPoliciesApi throttlingPoliciesApi;
-    public ClientCertificatesApi clientCertificatesApi;
-    public EndpointCertificatesApi endpointCertificatesApi;
-    public GraphQlSchemaApi graphQlSchemaApi;
-    public GraphQlSchemaIndividualApi graphQlSchemaIndividualApi;
-    public ApiLifecycleApi apiLifecycleApi;
-    public RolesApi rolesApi;
-    public ValidationApi validationApi;
-    public SubscriptionsApi subscriptionsApi;
-    public ApiAuditApi apiAuditApi;
-    public UnifiedSearchApi unifiedSearchApi;
-    public ApiClient apiPublisherClient;
+    private ApiDocumentsApi apiDocumentsApi;
+    private ThrottlingPoliciesApi throttlingPoliciesApi;
+    private ClientCertificatesApi clientCertificatesApi;
+    private EndpointCertificatesApi endpointCertificatesApi;
+    private GraphQlSchemaApi graphQlSchemaApi;
+    private GraphQlSchemaIndividualApi graphQlSchemaIndividualApi;
+    private ApiLifecycleApi apiLifecycleApi;
+    private RolesApi rolesApi;
+    private ValidationApi validationApi;
+    private SubscriptionsApi subscriptionsApi;
+    private ApiAuditApi apiAuditApi;
+    private UnifiedSearchApi unifiedSearchApi;
+    private ApiClient apiPublisherClient;
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
