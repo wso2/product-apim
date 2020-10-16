@@ -21,7 +21,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.2.0</version>
+    <version>3.2.0.1-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1413,6 +1413,6 @@
         <wso2is.km.version>1.0.16</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.5</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.2</keycloak.keymanager.feature.version>
-    </properties>
+    <project.scm.id>wso2-scm-server</project.scm.id></properties>
 
 </project>
