@@ -206,6 +206,7 @@
   "broker.transport.amqp.maximum_redelivery_attempts" : "10",
   "broker.transport.amqp.allow_shared_topic_subscriptions" : false,
   "broker.transport.amqp.allow_strict_name_validation" : true,
+  "http_access_log.directory": "${carbon.home}/repository/logs",
   "http_access_log.prefix": "http_access_",
   "http_access_log.suffix": ".log",
   "http_access_log.pattern": "%h %l %u %t %r %s %b %{Referer}i %{User-Agent}i %T",
