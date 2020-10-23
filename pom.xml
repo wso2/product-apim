@@ -1416,7 +1416,9 @@
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.0.17</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.5</okta.keymanager.feature.version>
-        <keycloak.keymanager.feature.version>2.0.2</keycloak.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.0.4</keycloak.keymanager.feature.version>
+        <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
+        <pingfederate.keymanager.feature.version>1.0.1</pingfederate.keymanager.feature.version>
     </properties>
 
 </project>

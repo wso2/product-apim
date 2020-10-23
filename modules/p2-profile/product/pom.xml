@@ -641,7 +641,14 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.keycloak:keycloak.key.manager.feature:${keycloak.keymanager.feature.version}
                                 </featureArtifactDef>
-
+                                <!-- Auth0 KeyManager Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.auth0:auth0.key.manager.feature:${auth0.keymanager.feature.version}
+                                </featureArtifactDef>
+                                <!-- PingFederate KeyManager Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.pingfederate:pingfederate.key.manager.feature:${pingfederate.keymanager.feature.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1394,6 +1401,14 @@
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>auth0.key.manager.feature.group</id>
+                                    <version>${auth0.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>pingfederate.key.manager.feature.group</id>
+                                    <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1798,6 +1813,14 @@
                                 <feature>
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>auth0.key.manager.feature.group</id>
+                                    <version>${auth0.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>pingfederate.key.manager.feature.group</id>
+                                    <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2293,6 +2316,14 @@
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>auth0.key.manager.feature.group</id>
+                                    <version>${auth0.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>pingfederate.key.manager.feature.group</id>
+                                    <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2752,6 +2783,14 @@
                                 <feature>
                                     <id>keycloak.key.manager.feature.group</id>
                                     <version>${keycloak.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>auth0.key.manager.feature.group</id>
+                                    <version>${auth0.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>pingfederate.key.manager.feature.group</id>
+                                    <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
