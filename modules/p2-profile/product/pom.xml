@@ -155,6 +155,9 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.jms.listener.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttle.policy.deployer.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.scxml.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
@@ -1281,6 +1284,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 				                <feature>
@@ -3565,6 +3572,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>

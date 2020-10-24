@@ -95,6 +95,14 @@
         </classes>
     </test>
 
+    <test name="apim-jwt-request-count-throttling-tests" preserve-order="true" parallel="false"
+          group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.throttling.JWTRequestCountThrottlingTestSuite"/>
+            <class name="org.wso2.am.integration.tests.throttling.JWTRequestCountThrottlingTestCase"/>
+        </classes>
+    </test>
+
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
