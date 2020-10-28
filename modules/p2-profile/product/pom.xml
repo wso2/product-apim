@@ -188,10 +188,6 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.security.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
 
-                                <!--<featureArtifactDef>
-                                    org.wso2.carbon.identity.framework:org.wso2.carbon.identity.role.mgt.core.server.feature:${carbon.identity.version}
-                                </featureArtifactDef>-->
-
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.deployment:org.wso2.carbon.service.mgt.server.feature:${carbon.deployment.version}
@@ -1421,10 +1417,6 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -1842,10 +1834,6 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -2352,10 +2340,6 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -2828,10 +2812,6 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>-->
                             </features>
                         </configuration>
                     </execution>
@@ -3265,10 +3245,6 @@
                                     <id>wso2is.key.manager.notification.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
-                                <!--<feature>
-                                    <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>-->
                             </features>
                         </configuration>
                     </execution>
