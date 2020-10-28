@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>am-features</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>3.2.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>org.wso2.am.rampart.opensaml.feature</artifactId>
+
+    <name>Rampart and Opensaml Feature</name>
+    <url>http://wso2.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.orbit.org.opensaml</groupId>
+            <artifactId>opensaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rampart.wso2</groupId>
+            <artifactId>rampart-policy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rampart.wso2</groupId>
+            <artifactId>rampart-trust</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rampart.wso2</groupId>
+            <artifactId>rampart-core</artifactId>
+            <version>${rampart.wso2.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>carbon-p2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>4-p2-feature-generation</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>p2-feature-gen</goal>
+                        </goals>
+                        <configuration>
+                            <id>org.wso2.am.rampart.opensaml</id>
+                            <propertiesFile>../etc/feature.properties</propertiesFile>
+                            <adviceFile>
+                                <properties>
+                                    <propertyDef>org.wso2.carbon.p2.category.type:console</propertyDef>
+                                </properties>
+                            </adviceFile>
+                            <bundles>
+                                <bundleDef>org.apache.rampart.wso2:rampart-policy</bundleDef>
+                                <bundleDef>org.apache.rampart.wso2:rampart-core</bundleDef>
+                                <bundleDef>org.apache.rampart.wso2:rampart-trust</bundleDef>
+                                <bundleDef>org.wso2.orbit.org.opensaml:opensaml</bundleDef>
+                            </bundles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
