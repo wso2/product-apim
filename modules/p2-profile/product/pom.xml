@@ -188,6 +188,7 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.security.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
 
+
                                 <featureArtifactDef>
                                     org.wso2.carbon.deployment:org.wso2.carbon.service.mgt.server.feature:${carbon.deployment.version}
                                 </featureArtifactDef>
@@ -312,6 +313,9 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.am:org.wso2.am.rampart.opensaml.feature:${apimserver.version}
                                 </featureArtifactDef>
 
                                 <!-- Registry Features -->
@@ -1025,6 +1029,10 @@
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.am.rampart.opensaml.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -1606,6 +1614,10 @@
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.am.rampart.opensaml.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -2035,6 +2047,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.rampart.opensaml.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -2509,6 +2525,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.rampart.opensaml.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -3012,6 +3032,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.rampart.opensaml.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
