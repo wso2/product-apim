@@ -36,6 +36,7 @@
     <modules>
         <module>org.wso2.am.styles.feature</module>
         <module>org.wso2.am.multitenancy.dashboard.ui.feature</module>
+        <module>org.wso2.am.rampart.opensaml.feature</module>
     </modules>
 
 </project>
