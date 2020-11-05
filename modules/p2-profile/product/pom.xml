@@ -317,7 +317,9 @@
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.rampart.opensaml.feature:${apimserver.version}
                                 </featureArtifactDef>
-
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.cache.invalidation.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                                 <!-- Registry Features -->
 
                                 <featureArtifactDef>
@@ -1277,6 +1279,10 @@
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 				                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1773,6 +1779,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2161,6 +2171,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2628,6 +2642,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -3184,6 +3202,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.cache.invalidation.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 				                <feature>
