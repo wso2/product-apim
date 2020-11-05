@@ -49,6 +49,16 @@
   "message_builder.application_xml": "org.apache.axis2.builder.ApplicationXMLBuilder",
   "message_builder.multipart_form_data": "org.apache.axis2.builder.MultipartFormDataBuilder",
   "message_builder.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishOMBuilder",
+  "multi_tenancy.cloud_services": [
+    {	
+      "name": "WSO2 API Manager",	
+      "default": true,	
+      "key": "AM",	
+      "label": "API Manager",	
+      "link": "https://am.cloud.wso2.com",	
+      "description": "API Manager in the cloud"	
+    }	
+  ],
   "transport.passthru_http.listener.enable": true,
   "transport.passthru_http.listener.parameters.port": "8280",
   "transport.passthru_http.listener.parameters.non-blocking": true,
