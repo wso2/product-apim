@@ -189,5 +189,10 @@
       "oauth.extensions.token_persistence_processor": "org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor",
       "oauth.hash_tokens_and_secrets": true
     }
+  },
+  "apim.cache_invalidation.enabled": {
+    "true": {
+      "server.cache.invalidation_impl": "org.wso2.carbon.apimgt.cache.invalidation.APIMgtCacheInvalidationRequestSender"
+    }
   }
 }
