@@ -67,3 +67,8 @@ period = "1m"
 
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+
+[apim.throttling]
+enable_header_based_throttling = true
+enable_jwt_claim_based_throttling = true
+enable_query_param_based_throttling = true
