@@ -136,7 +136,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
             ApiResponse<org.wso2.am.integration.clients.store.api.v1.dto.APIDTO> apiResponse =
                     anonymousRestAPIStore.apIsApi.apisApiIdGetWithHttpInfo(apidto.getId(), user.getUserDomain(), null);
         } catch (ApiException e) {
-            Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
         }
     }
 
@@ -157,7 +157,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         try {
             ApiResponse<?> apiResponse = apiStore.apIsApi.apisApiIdGetWithHttpInfo(apiID, user.getUserDomain(), null);
         } catch (ApiException e) {
-            Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
         }
     }
 
