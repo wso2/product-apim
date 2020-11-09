@@ -308,6 +308,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.JWTRequestCountThrottlingTestCase"/>
         </classes>
     </test>
 
