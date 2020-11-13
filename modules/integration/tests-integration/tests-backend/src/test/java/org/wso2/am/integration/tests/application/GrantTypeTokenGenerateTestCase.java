@@ -71,6 +71,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
     private final String TAGS = "grantType,implicitly,code";
     private final String APPLICATION_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private final String LOCATION_HEADER = "Location";
+    private final String SET_COOKIE_HEADER = "Set-Cookie";
     private final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
     private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.UNLIMITED;
     private String endpointUrl;
@@ -173,12 +174,15 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         String locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionNonceCookie = res.getHeaders().get(SET_COOKIE_HEADER);
+        Assert.assertNotNull(sessionNonceCookie, "Couldn't find the sessionNonceCookie Header");
         String sessionDataKey = getURLParameter(locationHeader, "sessionDataKey");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKey from the Location Header");
 
         //Login to the Identity with user/pass
         headers.clear();
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        headers.put("Cookie", sessionNonceCookie);
         urlParameters.add(new BasicNameValuePair("username", user.getUserName()));
         urlParameters.add(new BasicNameValuePair("password", user.getPassword()));
         urlParameters.add(new BasicNameValuePair("tocommonauth", "true"));
@@ -195,6 +199,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         headers.clear();
         urlParameters.clear();
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        headers.put("Cookie", sessionNonceCookie);
         urlParameters.add(new BasicNameValuePair("consent", "approve"));
         urlParameters.add(new BasicNameValuePair("hasApprovedAlways", "false"));
         urlParameters.add(new BasicNameValuePair("sessionDataKeyConsent", sessionDataKeyConsent));
@@ -243,12 +248,15 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         String locationHeader = res.getHeaders().get(LOCATION_HEADER);
         Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionNonceCookie = res.getHeaders().get(SET_COOKIE_HEADER);
+        Assert.assertNotNull(sessionNonceCookie, "Couldn't find the sessionNonceCookie Header");
         String sessionDataKey = getURLParameter(locationHeader, "sessionDataKey");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKey from the Location Header");
 
         //Login to the Identity with user/pass
         headers.clear();
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        headers.put("Cookie", sessionNonceCookie);
         urlParameters.add(new BasicNameValuePair("username", user.getUserName()));
         urlParameters.add(new BasicNameValuePair("password", user.getPassword()));
         urlParameters.add(new BasicNameValuePair("tocommonauth", "true"));
@@ -265,6 +273,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         headers.clear();
         urlParameters.clear();
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        headers.put("Cookie", sessionNonceCookie);
         urlParameters.add(new BasicNameValuePair("consent", "approve"));
         urlParameters.add(new BasicNameValuePair("hasApprovedAlways", "false"));
         urlParameters.add(new BasicNameValuePair("sessionDataKeyConsent", sessionDataKeyConsent));
