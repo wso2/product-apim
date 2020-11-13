@@ -30,26 +30,16 @@
 <%@ page import="javax.ws.rs.core.Response" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isSelfSignUpEPAvailable" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isRecoveryEPAvailable" %>
-<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameEnabled" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.apache.commons.codec.binary.Base64" %>
+<%@ page import="org.apache.commons.text.StringEscapeUtils" %>
 <%@ page import="java.nio.charset.Charset" %>
 <%@ page import="org.wso2.carbon.base.ServerConfiguration" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.EndpointConfigManager" %>
+<%@ page import="org.wso2.carbon.identity.core.URLBuilderException" %>
+<%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
-
-<%
-    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
-    Boolean isEmailUsernameEnabled = false;
-
-    if (StringUtils.isNotBlank(emailUsernameEnable)) {
-        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
-    } else {
-        isEmailUsernameEnabled = isEmailUsernameEnabled();
-    }
-%>
-
 <script>
     function goBack() {
         window.history.back();
@@ -66,39 +56,26 @@
                     console.warn("Prevented a possible double submit event");
                 } else {
                     e.preventDefault();
-                    var isEmailUsernameEnabled = JSON.parse("<%= isEmailUsernameEnabled %>");
-                    var tenantName = getParameterByName("tenantDomain");
+
                     var userName = document.getElementById("username");
                     var usernameUserInput = document.getElementById("usernameUserInput");
+
                     if (usernameUserInput) {
-                        var usernameUserInputValue = usernameUserInput.value.trim();
-
-                        if (getParameterByName("isSaaSApp") === "false") {
-
-                            if ((!isEmailUsernameEnabled) && (usernameUserInputValue.split("@").length > 1)) {
-                                userName.value = usernameUserInputValue;
-                            }
-                            else {
-                                userName.value = usernameUserInputValue + "@" + tenantName;
-                            }
-                        }
-                        else {
-                            userName.value = usernameUserInputValue;
-                        }
+                        userName.value = usernameUserInput.value.trim();
                     }
 
                     if (userName.value) {
                         $.ajax({
                             type: "GET",
-                            url: "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") +
-                                                            "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + tenantName,
+                            url: "<%=loginContextRequestUrl%>",
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
                                     window.location.href = data.redirectUrl;
-                                } else {
-                                    // Mark it so that the next submit can be ignored.
+                                } else if ($form.data('submitted') !== true) {
                                     $form.data('submitted', true);
                                     document.getElementById("loginForm").submit();
+                                } else {
+                                    console.warn("Prevented a possible double submit event.");
                                 }
                             },
                             cache: false
@@ -106,6 +83,7 @@
                     }
                 }
             });
+
             return this;
         };
         $('#loginForm').preventDoubleSubmission();
@@ -117,6 +95,9 @@
     private static final String JAVAX_SERVLET_FORWARD_QUERY_STRING = "javax.servlet.forward.query_string";
     private static final String UTF_8 = "UTF-8";
     private static final String TENANT_DOMAIN = "tenant-domain";
+    private static final String ACCOUNT_RECOVERY_ENDPOINT = "/accountrecoveryendpoint";
+    private static final String ACCOUNT_RECOVERY_ENDPOINT_RECOVER = "/recoveraccountrouter.do";
+    private static final String ACCOUNT_RECOVERY_ENDPOINT_REGISTER = "/register.do";
 %>
 <%
     String resendUsername = request.getParameter("resend_username");
@@ -179,11 +160,15 @@
     %>
 
     <% if (Boolean.parseBoolean(loginFailed)) { %>
-    <div class="ui visible negative message" id="error-msg"><%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %></div>
-    <% } else if((Boolean.TRUE.toString()).equals(request.getParameter("authz_failure"))){%>
-    <div class="ui visible negative message" id="error-msg">
+    <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
+        <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
+    </div>
+    <% } else if ((Boolean.TRUE.toString()).equals(request.getParameter("authz_failure"))){%>
+    <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "unauthorized.to.login")%>
     </div>
+    <% } else { %>
+        <div class="ui visible negative message" style="display: none;" id="error-msg" data-testid="login-page-error-message"></div>
     <% } %>
 
     <% if (!isIdentifierFirstLogin(inputType)) { %>
@@ -196,13 +181,14 @@
                     name="usernameUserInput"
                     tabindex="1"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "username")%>"
+                    data-testid="login-page-username-input"
                     required>
                 <i aria-hidden="true" class="user icon"></i>
                 <input id="username" name="username" type="hidden" value="<%=username%>">
             </div>
         </div>
     <% } else { %>
-        <input id="username" name="username" type="hidden" value="<%=username%>">
+        <input id="username" name="username" type="hidden" data-testid="login-page-username-input" value="<%=username%>">
     <% } %>
         <div class="field">
             <div class="ui fluid left icon input">
@@ -213,7 +199,9 @@
                     value=""
                     autocomplete="off"
                     tabindex="2"
-                    placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "password")%>">
+                    placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "password")%>"
+                    data-testid="login-page-password-input"
+                >
                 <i aria-hidden="true" class="lock icon"></i>
             </div>
         </div>
@@ -222,7 +210,9 @@
     %>
         <div class="field">
             <div class="g-recaptcha"
-                 data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>">
+                data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>"
+                data-testid="login-page-g-recaptcha"
+            >
             </div>
         </div>
     <%
@@ -256,10 +246,19 @@
             String urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
             urlEncodedURL = URLEncoder.encode(urlWithoutEncoding, UTF_8);
             urlParameters = prmstr;
-            identityMgtEndpointContext =
-                    application.getInitParameter("IdentityManagementEndpointContextURL");
+
+            identityMgtEndpointContext = application.getInitParameter("IdentityManagementEndpointContextURL");
             if (StringUtils.isBlank(identityMgtEndpointContext)) {
-                identityMgtEndpointContext = getServerURL("/accountrecoveryendpoint", true, true);
+                try {
+                    identityMgtEndpointContext = ServiceURLBuilder.create().addPath(ACCOUNT_RECOVERY_ENDPOINT).build()
+                            .getAbsolutePublicURL();
+                } catch (URLBuilderException e) {
+                    request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, CONFIGURATION_ERROR));
+                    request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil
+                            .i18n(resourceBundle, ERROR_WHILE_BUILDING_THE_ACCOUNT_RECOVERY_ENDPOINT_URL));
+                    request.getRequestDispatcher("error.do").forward(request, response);
+                    return;
+                }
             }
         }
     %>
@@ -268,7 +267,12 @@
         <% if (isRecoveryEPAvailable) { %>
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
-            <a id="passwordRecoverLink" tabindex="6" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false, urlParameters)%>">
+            <a
+                id="passwordRecoverLink"
+                tabindex="6"
+                href="<%=StringEscapeUtils.escapeHtml4(getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, false, urlParameters))%>"
+                data-testid="login-page-password-recovery-button"
+            >
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.password")%>
             </a>
             ?
@@ -277,7 +281,7 @@
 
         <% if (isIdentifierFirstLogin(inputType)) { %>
         <div class="field">
-            <a id="backLink" tabindex="7" onclick="goBack()">
+            <a id="backLink" tabindex="7" onclick="goBack()" data-testid="login-page-back-button">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.different.account")%>
             </a>
         </div>
@@ -288,7 +292,13 @@
 
     <div class="field">
         <div class="ui checkbox">
-            <input tabindex="3" type="checkbox" id="chkRemember" name="chkRemember">
+            <input
+                tabindex="3"
+                type="checkbox"
+                id="chkRemember"
+                name="chkRemember"
+                data-testid="login-page-remember-me-checkbox"
+            >
             <label><%=AuthenticationEndpointUtil.i18n(resourceBundle, "remember.me")%></label>
         </div>
     </div>
@@ -344,23 +354,26 @@
             if ( (sp != null && !sp.endsWith("apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType)) { %>
             <button
                 type="button"
-                onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL, urlParameters)%>';"
+                onclick="window.location.href='<%=StringEscapeUtils.escapeHtml4(getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL, urlParameters))%>';"
                 class="ui large button link-button"
                 id="registerLink"
                 tabindex="8"
-                role="button">
-                    <%=AuthenticationEndpointUtil.i18n(resourceBundle, "create.account")%>
+                role="button"
+                data-testid="login-page-create-account-button"
+            >
+                <%=StringEscapeUtils.escapeHtml4(AuthenticationEndpointUtil.i18n(resourceBundle, "create.account"))%>
             </button>
             <% } %>
         </div>
         <div class="column mobile center aligned tablet right aligned computer right aligned buttons tablet no-margin-right-last-child computer no-margin-right-last-child">
             <button
                 type="submit"
-                onclick="submitCredentials(event)"
                 class="ui primary large button"
                 tabindex="4"
-                role="button">
-                    <%=AuthenticationEndpointUtil.i18n(resourceBundle, "continue")%>
+                role="button"
+                data-testid="login-page-continue-login-button"
+            >
+                <%=StringEscapeUtils.escapeHtml4(AuthenticationEndpointUtil.i18n(resourceBundle, "continue"))%>
             </button>
         </div>
     </div>
@@ -371,30 +384,29 @@
         <div class="form-actions">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "no.confirmation.mail")%>
             <a id="registerLink"
-                href="login.do?resend_username=<%=Encode.forHtml(request.getParameter("failedUsername"))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>">
-                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "resend.mail")%>
+                href="login.do?resend_username=<%=Encode.forHtml(request.getParameter("failedUsername"))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>"
+                data-testid="login-page-resend-confirmation-email-link"
+            >
+                <%=StringEscapeUtils.escapeHtml4(AuthenticationEndpointUtil.i18n(resourceBundle, "resend.mail"))%>
             </a>
         </div>
     </div>
     <% } %>
-   <%!
-           private String getRecoverAccountUrl (
-               String identityMgtEndpointContext,
-               String urlEncodedURL,
-               boolean isUsernameRecovery,
-               String urlParameters) {
+    <%!
+        private String getRecoverAccountUrl(String identityMgtEndpointContext, String urlEncodedURL,
+                boolean isUsernameRecovery, String urlParameters) {
 
-               return identityMgtEndpointContext + "/recoveraccountrouter.do?" + urlParameters +
-                   "&isUsernameRecovery=" + isUsernameRecovery + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
-           }
+            return identityMgtEndpointContext + ACCOUNT_RECOVERY_ENDPOINT_RECOVER + "?" + urlParameters
+                    + "&isUsernameRecovery=" + isUsernameRecovery + "&callback=" + Encode
+                    .forHtmlAttribute(urlEncodedURL);
+        }
 
-           private String getRegistrationUrl (
-               String identityMgtEndpointContext,
-               String urlEncodedURL,
-               String urlParameters) {
+        private String getRegistrationUrl(String identityMgtEndpointContext, String urlEncodedURL,
+                String urlParameters) {
 
-               return identityMgtEndpointContext + "/register.do?" + urlParameters +
-                   "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
-           }
-       %>
+            return identityMgtEndpointContext + ACCOUNT_RECOVERY_ENDPOINT_REGISTER + "?"
+                    + urlParameters + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+        }
+
+    %>
 </form>
