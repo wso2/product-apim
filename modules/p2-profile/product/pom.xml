@@ -653,6 +653,9 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.pingfederate:pingfederate.key.manager.feature:${pingfederate.keymanager.feature.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.persistence.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1416,6 +1419,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2340,6 +2347,10 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2812,6 +2823,10 @@
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3244,6 +3259,10 @@
                                 <feature>
                                     <id>wso2is.key.manager.notification.feature.group</id>
                                     <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
