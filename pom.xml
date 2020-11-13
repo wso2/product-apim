@@ -1251,13 +1251,13 @@
         <carbon.governance.version>4.8.19</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.1-beta</carbon.kernel.version>
+        <carbon.kernel.version>4.6.1</carbon.kernel.version>
         <apimserver.version>3.2.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
 	    <cipher.tool.version>1.1.15</cipher.tool.version>
 
-        <carbon.commons.version>4.7.32</carbon.commons.version>
+        <carbon.commons.version>4.7.34</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -1287,7 +1287,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.10.4</carbon.deployment.version>
+        <carbon.deployment.version>4.11.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.4.5</carbon.analytics.version>
@@ -1296,7 +1296,7 @@
         <org.jaggery.version>0.14.13</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.3</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.6</carbon.multitenancy.version>
 
         <siddhi.version>3.2.6</siddhi.version>
 
