@@ -20,21 +20,22 @@
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
-<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.User" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
+<%@ page import="org.wso2.carbon.identity.core.util.IdentityTenantUtil" %>
 <%@ page import="java.io.File" %>
 <%@ page import="java.util.*" %>
 <jsp:directive.include file="includes/localize.jsp"/>
+<jsp:directive.include file="tenant-resolve.jsp"/>
 
 <%
     boolean error = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("error"));
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));
     String username = request.getParameter("username");
-    String tenantDomain = null;
     if (StringUtils.isNotEmpty(username)) {
         User user = IdentityManagementServiceUtil.getInstance().getUser(username);
         tenantDomain = user.getTenantDomain();
@@ -88,7 +89,7 @@
         }
     %>
 </head>
-<body>
+<body class="login-portal layout recovery-layout">
     <main class="center-segment">
         <div class="ui container medium center aligned middle aligned">
             <!-- product-title -->
@@ -128,9 +129,18 @@
                         %>
 
                         <div class="field">
-                            <input id="username" name="username" type="text" tabindex="0"
-                                   placeholder=
-                                       <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Username")%> required>
+                            <label for="username">
+                                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.your.username.here")%>
+                            </label>
+                            <input id="usernameUserInput" name="usernameUserInput" type="text" tabindex="0" required>
+                            <input id="username" name="username" type="hidden">
+                            <%
+                                if (!IdentityTenantUtil.isTenantQualifiedUrlsEnabled()) {
+                            %>
+                            <input id="tenantDomain" name="tenantDomain" value="<%= tenantDomain %>" type="hidden">
+                            <%
+                                }
+                            %>
                         </div>
 
                         <%
