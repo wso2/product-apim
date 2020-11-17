@@ -170,6 +170,12 @@
     <% } else { %>
         <div class="ui visible negative message" style="display: none;" id="error-msg" data-testid="login-page-error-message"></div>
     <% } %>
+    <% if(Boolean.parseBoolean(request.getParameter("passwordReset"))) {
+        %>
+            <div class="ui visible positive message" data-testid="password-reset-success-message">
+                <%=AuthenticationEndpointUtil.i18n(resourceBundle, "Updated.the.password.successfully")%>
+            </div>
+    <% } %>
 
     <% if (!isIdentifierFirstLogin(inputType)) { %>
         <div class="field">
