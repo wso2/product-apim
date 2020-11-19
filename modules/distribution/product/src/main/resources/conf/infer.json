@@ -28,19 +28,7 @@
       "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
       "system.parameter.profile": "api-key-manager",
       "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": false,
-      "oauth.grant_type.authorization_code.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedAuthorizationCodeGrantHandler",
-      "oauth.grant_type.password.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedPasswordGrantHandler",
-      "oauth.grant_type.refresh_token.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler",
-      "oauth.grant_type.client_credentials.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedClientCredentialsGrantHandler",
-      "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedSAML2BearerGrantHandler",
-      "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
-      "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
-      "oauth.extensions.callback_handlers": [
-        {
-          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
-        }
-      ]
+      "apim.key_manager.enable_retriever": false
     },
     "api-publisher": {
       "apim.throttling.enable_policy_deploy": true,
@@ -51,19 +39,7 @@
       "transport.wss.sender.enable": false,
       "system.parameter.profile": "api-publisher",
       "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": true,
-      "oauth.grant_type.authorization_code.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedAuthorizationCodeGrantHandler",
-      "oauth.grant_type.password.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedPasswordGrantHandler",
-      "oauth.grant_type.refresh_token.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler",
-      "oauth.grant_type.client_credentials.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedClientCredentialsGrantHandler",
-      "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedSAML2BearerGrantHandler",
-      "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
-      "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
-      "oauth.extensions.callback_handlers": [
-        {
-          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
-        }
-      ]
+      "apim.key_manager.enable_retriever": true
     },
     "api-devportal": {
       "apim.throttling.enable_policy_deploy": false,
@@ -74,19 +50,7 @@
       "transport.wss.sender.enable": false,
       "system.parameter.profile": "api-devportal",
       "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": true,
-      "oauth.grant_type.authorization_code.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedAuthorizationCodeGrantHandler",
-      "oauth.grant_type.password.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedPasswordGrantHandler",
-      "oauth.grant_type.refresh_token.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler",
-      "oauth.grant_type.client_credentials.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedClientCredentialsGrantHandler",
-      "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedSAML2BearerGrantHandler",
-      "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
-      "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
-      "oauth.extensions.callback_handlers": [
-        {
-          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
-        }
-      ]
+      "apim.key_manager.enable_retriever": true
     },
     "traffic-manager": {
       "system.parameter.profile": "traffic-manager",
@@ -106,19 +70,7 @@
       "synapse_handlers.external_call_logger.name": "externalCallLogger",
       "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
       "synapse_handlers.open_tracing.name": "open_tracing",
-      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler",
-      "oauth.grant_type.authorization_code.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedAuthorizationCodeGrantHandler",
-      "oauth.grant_type.password.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedPasswordGrantHandler",
-      "oauth.grant_type.refresh_token.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler",
-      "oauth.grant_type.client_credentials.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedClientCredentialsGrantHandler",
-      "oauth.grant_type.saml_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.handlers.ExtendedSAML2BearerGrantHandler",
-      "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
-      "oauth.grant_type.jwt_bearer.grant_handler": "org.wso2.is.key.manager.core.tokenmgt.token.ExtendedJWTBearerGrantHandler",
-      "oauth.extensions.callback_handlers": [
-        {
-          "class": "org.wso2.is.key.manager.core.tokenmgt.util.APIManagerOAuthCallbackHandler"
-        }
-      ]
+      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"
     }
   },
   "apim.jwt.encoding": {
