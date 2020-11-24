@@ -263,6 +263,10 @@ for t in "$CARBON_HOME"/lib/*.jar
 do
     CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
 done
+for t in "$CARBON_HOME"/lib/endorsed/*.jar
+do
+    CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
+done
 
 
 
@@ -348,6 +352,7 @@ do
     -DworkerNode=false \
     -DenableCorrelationLogs=false \
     -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
+    -Djavax.xml.xpath.XPathFactory:http://java.sun.com/jaxp/xpath/dom=net.sf.saxon.xpath.XPathFactoryImpl \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done
