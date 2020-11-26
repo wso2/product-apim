@@ -18,7 +18,6 @@
 
 package org.wso2.am.integration.tests.jwt;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -43,7 +42,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.andes.util.Strings;
@@ -64,9 +62,7 @@ import org.wso2.carbon.user.core.UserStoreException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -172,6 +168,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
             Header[] responseHeaders = response.getAllHeaders();
             Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+            for (Header header : responseHeaders) {
+                log.info("Response Header Name: " + header.getName() + ", Response Header Value: "
+                        + header.getValue());
+            }
             Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
             //check the jwt header
@@ -234,6 +234,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
             Header[] responseHeaders = response.getAllHeaders();
             Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+            for (Header header : responseHeaders) {
+                log.info("Response Header Name: " + header.getName() + ", Response Header Value: "
+                        + header.getValue());
+            }
             Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
             //check the jwt header
@@ -291,9 +295,13 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
+        log.info("Response for testEnableJWTAndClaimsForAPIKeyApp: " + response);
 
         //check JWT headers
         Header[] responseHeaders = response.getAllHeaders();
+        for (Header header : responseHeaders) {
+            log.info("Response Header Name: " + header.getName() + ", Response Header Value: " + header.getValue());
+        }
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
