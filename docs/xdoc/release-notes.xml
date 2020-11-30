@@ -79,7 +79,7 @@
 
     <h2>Bug Fixes And Improvements in 4.0.0-M1</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aissue+is%3Aclosed+closed%3A2020-03-20..2020-08-20">product-apim</a>)
+        <li>GitHub (<a href="https://github.com/wso2/product-apim/issues?q=is%3Aclosed+is%3Aissue+label%3A%22API-M+4.0.0%22+milestone%3A%22API+Manager+4.0.0+-+M1%22+">product-apim</a>)
         </li>
     </ul>
 
