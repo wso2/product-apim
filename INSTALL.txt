@@ -69,7 +69,8 @@ secure them with default mode.
     On Windows: ./ciphertool.bat -Dconfigure
 
 For more details see
-    https://apim.docs.wso2.com/en/3.2.0/install-and-setup/setup/security/logins-and-passwords/working-with-encrypted-passwords/
+    https://apim.docs.wso2.com/en/next/install-and-setup/setup/security/logins-and-passwords/working-with-encrypted
+    -passwords/
 
 System Requirements
 =======================
@@ -86,6 +87,6 @@ System Requirements
    JDK 1.8 version and Maven 3.0.4 or later
 
 For more details see
-   https://apim.docs.wso2.com/en/3.2.0/install-and-setup/install/installation-prerequisites/
+   https://apim.docs.wso2.com/en/next/install-and-setup/install/installation-prerequisites/
 
 
