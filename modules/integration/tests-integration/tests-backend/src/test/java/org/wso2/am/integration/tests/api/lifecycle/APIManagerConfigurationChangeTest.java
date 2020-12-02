@@ -150,6 +150,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
                             + File.separator + "dummy-api-multiResourceSameVerb.xml", gatewayContextMgt,
                     gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy-api-resourceWithSpecialCharacters.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
                     + "synapseconfigs" + File.separator + "rest" + File.separator
                     + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
