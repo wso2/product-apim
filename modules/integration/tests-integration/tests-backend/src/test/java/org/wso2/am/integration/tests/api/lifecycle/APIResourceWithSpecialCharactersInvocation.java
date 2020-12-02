@@ -47,7 +47,8 @@ import static org.testng.Assert.assertTrue;
  * add this test case was that GraphQL API operations are connected using a comma delimiter and when getting the
  * selected resource, it split the GraphQL operation with this delimiter(comma). But if a normal API resource name has
  * this delimiter, it should not the split the selected resource with delimiter and should use the resource name as it
- * is. This test verifies that behaviour.
+ * is. This test verifies that behaviour. Furthermore this also test for other non-reserved special special characters
+ * (https://tools.ietf.org/html/rfc3986#section-2.2) like - . _ ~ as well.
  */
 public class APIResourceWithSpecialCharactersInvocation extends APIManagerLifecycleBaseTest {
 
@@ -56,8 +57,8 @@ public class APIResourceWithSpecialCharactersInvocation extends APIManagerLifecy
     private static final String API_END_POINT_POSTFIX_URL = "specialCRN/";
     private static final String API_DESCRIPTION = "This is a test API created by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String RESPONSE_GET = "<response><value>Received GET /special,resource</value></response>";
-    private static final String API_ENDPOINT_RESOURCE = "/special,resource";
+    private static final String RESPONSE_GET = "<response><value>Received GET /special,-._~resource</value></response>";
+    private static final String API_ENDPOINT_RESOURCE = "/special,-._~resource";
     private String apiEndPointUrl;
     private String providerName;
     private String apiId;
@@ -92,7 +93,7 @@ public class APIResourceWithSpecialCharactersInvocation extends APIManagerLifecy
 
         APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
         apiOperationsDTO1.setVerb("GET");
-        apiOperationsDTO1.setTarget("/special,resource");
+        apiOperationsDTO1.setTarget("/special,-._~resource");
         apiOperationsDTO1.setAuthType("Application & Application User");
         apiOperationsDTO1.setThrottlingPolicy("Unlimited");
 

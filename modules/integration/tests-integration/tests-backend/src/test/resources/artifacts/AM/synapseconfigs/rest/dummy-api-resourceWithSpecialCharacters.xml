@@ -5,13 +5,13 @@
          context="/specialCRN"
          version="1.0.0"
          version-type="context">
-        <resource methods="GET" uri-template="/special,resource" faultSequence="fault">
+        <resource methods="GET" uri-template="/special,-._~resource" faultSequence="fault">
             <inSequence>
                 <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
                 <payloadFactory>
                     <format>
                         <response xmlns="">
-                            <value>Received GET /special,resource</value>
+                            <value>Received GET /special,-._~resource</value>
                         </response>
                     </format>
                 </payloadFactory>
