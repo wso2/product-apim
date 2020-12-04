@@ -224,33 +224,51 @@
     <% } %>
 
     <script type="text/javascript">
-        $(document).ready(function () {
-            $("#recoverDetailsForm").submit(function (e) {
-                var errorMessage = $("#error-msg");
-                errorMessage.hide();
-                var firstName = $("#username").val();
-                if (firstName == '') {
-                    errorMessage.text("Please fill the first name.");
-                    errorMessage.show();
-                    $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
-                    return false;
-                }
-                <%
-                if (reCaptchaEnabled) {
-                %>
-                var reCaptchaResponse = $("[name='g-recaptcha-response']")[0].value;
-                if (reCaptchaResponse.trim() == '') {
-                    errorMessage.text("Please select reCaptcha.");
-                    errorMessage.show();
-                    $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
-                    return false;
-                }
-                <%
-                }
-                %>
-                return true;
+            function goBack() {
+                window.history.back();
+            }
+
+            $(document).ready(function () {
+
+                $("#recoverDetailsForm").submit(function (e) {
+                    var errorMessage = $("#error-msg");
+                    errorMessage.hide();
+
+                    var userName = document.getElementById("username");
+                    var usernameUserInput = document.getElementById("usernameUserInput");
+                    if (usernameUserInput) {
+                        userName.value = usernameUserInput.value.trim();
+                    }
+                    // Validate User Name
+                    var firstName = $("#username").val();
+
+                    if (firstName == '') {
+                        errorMessage.text("Please fill the first name.");
+                        errorMessage.show();
+                        $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
+
+                        return false;
+                    }
+
+                    // Validate reCaptcha
+                    <% if (reCaptchaEnabled) { %>
+
+                    var reCaptchaResponse = $("[name='g-recaptcha-response']")[0].value;
+
+                    if (reCaptchaResponse.trim() == '') {
+                        errorMessage.text("Please select reCaptcha.");
+                        errorMessage.show();
+                        $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
+
+                        return false;
+                    }
+
+                    <% } %>
+
+                    return true;
+                });
             });
-        });
-    </script>
+
+        </script>
 </body>
 </html>
