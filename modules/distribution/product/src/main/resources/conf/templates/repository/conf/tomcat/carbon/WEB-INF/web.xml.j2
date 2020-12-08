@@ -77,17 +77,15 @@
 
     <!-- Tomcat http header security filter -->
     <filter>
- <filter-name>HttpHeaderSecurityFilter</filter-name>
- <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
- <init-param>
- <param-name>hstsEnabled</param-name>
- <param-value>false</param-value>
- </init-param>
- <init-param>
- <param-name>antiClickJackingEnabled</param-name>
- <param-value>false</param-value>
- </init-param>
- </filter>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        {% for init_param in tomcat.header_security_filters %}
+        <init-param>
+            <param-name>{{init_param.name}}</param-name>
+            <param-value>{{init_param.value}}</param-value>
+        </init-param>
+        {% endfor %}
+    </filter>
 
  <filter>
  <filter-name>HttpHeaderSecurityFilter_EnableAntiClickJacking</filter-name>

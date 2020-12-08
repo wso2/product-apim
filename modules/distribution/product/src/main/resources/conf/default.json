@@ -357,5 +357,19 @@
       "usedby": "soapservice,restservice,wsdl,endpoint"
     }
   ],
-  "apim.analytics.handler_impl": "org.wso2.carbon.apimgt.gateway.handlers.analytics.AnalyticsMetricsHandler"
+  "synapse_handlers.external_call_logger.name": "externalCallLogger",
+  "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
+  "synapse_handlers.open_tracing.name": "open_tracing",
+  "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler",
+  "apim.analytics.handler_impl": "org.wso2.carbon.apimgt.gateway.handlers.analytics.AnalyticsMetricsHandler",
+  "tomcat.header_security_filters" : [
+    {
+      "name": "hstsEnabled",
+      "value": false
+    },
+    {
+      "name": "antiClickJackingEnabled",
+      "value": false
+    }
+  ]
 }
