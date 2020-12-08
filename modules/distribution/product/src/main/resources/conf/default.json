@@ -217,6 +217,16 @@
   "http_access_log.prefix": "http_access_",
   "http_access_log.suffix": ".log",
   "http_access_log.pattern": "%h %l %u %t %r %s %b %{Referer}i %{User-Agent}i %T",
+  "tomcat.header_security_filters" : [
+    {
+      "name": "hstsEnabled",
+      "value": false
+    },
+    {
+      "name": "antiClickJackingEnabled",
+      "value": false
+    }
+  ],
   "server.hide_menu_items": [
     "claim_mgt_menu",
     "identity_mgt_emailtemplate_menu",
