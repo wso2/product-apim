@@ -2,4 +2,22 @@
 {% for handler_key in enabled_global_handlers %}
     <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
 {% endfor %}
+{% if apim.transport_headers is defined %}
+{% if apim.transport_headers.enable %}
+    <handler name="TransportHeaderHandler" class="org.wso2.carbon.apimgt.gateway.handlers.common.TransportHeaderHandler">
+    {% if apim.transport_headers.removeRequestHeaders is defined %}
+        <parameter name="removeRequestHeaders" value="{{apim.transport_headers.removeRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.preserveRequestHeaders is defined %}
+        <parameter name="preserveRequestHeaders" value="{{apim.transport_headers.preserveRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.excludeRequestHeaders is defined %}
+        <parameter name="excludeRequestHeaders" value="{{apim.transport_headers.excludeRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.excludeResponseHeaders is defined %}
+        <parameter name="excludeResponseHeaders" value="{{apim.transport_headers.excludeResponseHeaders}}"/>
+    {% endif %}
+    </handler>
+{% endif %}
+{% endif %}
 </handlers>
