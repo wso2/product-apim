@@ -40,6 +40,7 @@ import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyRevokeRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -376,6 +377,14 @@ public class RestAPIStoreImpl {
 
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
+    }
+
+    public void revokeAPIKey(String applicationId, String apiKey) throws ApiException {
+        APIKeyRevokeRequestDTO revokeRequestDTO = new APIKeyRevokeRequestDTO();
+        revokeRequestDTO.setApikey(apiKey);
+        ApiResponse response = apiKeysApi.applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo
+                (applicationId, "PRODUCTION", revokeRequestDTO, null);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
     /**
