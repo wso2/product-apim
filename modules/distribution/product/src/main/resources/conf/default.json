@@ -343,5 +343,7 @@
       "depends": "soapservice,restservice,wsdl",
       "usedby": "soapservice,restservice,wsdl,endpoint"
     }
-  ]
+  ],
+  "account_recovery.endpoint.auth.name":"dashboard",
+  "account_recovery.endpoint.auth.hash":"66cd9688a2ae068244ea01e70f0e230f5623b7fa4cdecb65070a09ec06452262"
 }
