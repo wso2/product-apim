@@ -1,7 +1,9 @@
 
+
 # APIDefaultVersionURLsDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **http** | **String** | HTTP environment default URL |  [optional]

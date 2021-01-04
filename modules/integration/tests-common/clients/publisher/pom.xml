@@ -28,9 +28,23 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-codegen-maven-plugin</artifactId>
-                <version>2.4.5</version>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/gen/java</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>4.3.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -50,6 +64,9 @@
                                 <hideGenerationTimestamp>true</hideGenerationTimestamp>
                             </configOptions>
                             <output>.</output>
+                            <templateDirectory>
+                                ${project.basedir}/src/main/resources/server-templates
+                            </templateDirectory>
                             <skipOverwrite>false</skipOverwrite>
                             <modelNameSuffix>DTO</modelNameSuffix>
                         </configuration>
@@ -94,14 +111,19 @@
             <version>1.5.22</version>
         </dependency>
         <dependency>
-            <groupId>com.squareup.okhttp</groupId>
+            <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>
-            <version>2.7.5</version>
+            <version>3.12.1</version>
         </dependency>
         <dependency>
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
             <version>1.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.oltu.oauth2</groupId>
+            <artifactId>org.apache.oltu.oauth2.client</artifactId>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>

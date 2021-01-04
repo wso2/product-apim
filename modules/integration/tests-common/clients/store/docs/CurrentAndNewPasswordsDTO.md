@@ -1,7 +1,9 @@
 
+
 # CurrentAndNewPasswordsDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **currentPassword** | **String** |  |  [optional]

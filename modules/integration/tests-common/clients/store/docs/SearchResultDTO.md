@@ -1,7 +1,9 @@
 
+
 # SearchResultDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  |  [optional]
@@ -10,8 +12,9 @@ Name | Type | Description | Notes
 **transportType** | **String** | Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL |  [optional]
 
 
-<a name="TypeEnum"></a>
+
 ## Enum: TypeEnum
+
 Name | Value
 ---- | -----
 DOC | &quot;DOC&quot;

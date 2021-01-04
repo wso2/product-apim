@@ -151,7 +151,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         List<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
-        applicationDTO.setApplicationId(applicationId);
         applicationDTO.setName(newApplicationName);
 
         ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();

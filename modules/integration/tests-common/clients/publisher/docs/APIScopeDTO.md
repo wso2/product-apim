@@ -1,7 +1,9 @@
 
+
 # APIScopeDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **scope** | [**ScopeDTO**](ScopeDTO.md) |  | 

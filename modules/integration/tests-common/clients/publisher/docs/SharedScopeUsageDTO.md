@@ -1,7 +1,9 @@
 
+
 # SharedScopeUsageDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | UUID of the Scope. Valid only for shared scopes.  | 

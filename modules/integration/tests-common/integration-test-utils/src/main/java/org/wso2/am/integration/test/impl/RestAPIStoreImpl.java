@@ -360,8 +360,8 @@ public class RestAPIStoreImpl {
         keyGenerateRequestDTO.setAdditionalProperties(additionalProperties);
 
         ApiResponse<APIKeyDTO> response = apiKeysApi
-                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType,
-                        keyGenerateRequestDTO, null);
+                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType, null,
+                        keyGenerateRequestDTO);
 
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
@@ -1216,12 +1216,13 @@ public class RestAPIStoreImpl {
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
-    public HttpResponse getComment(String commentId, String apiId, String tenantDomain) throws ApiException {
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo)
+            throws ApiException {
         CommentDTO commentDTO;
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null);
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -1710,7 +1711,8 @@ public class RestAPIStoreImpl {
 
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
         ApiResponse<String> response =
-                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox", null, tenantDomain);
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox",
+                        null, null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
