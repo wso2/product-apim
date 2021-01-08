@@ -23,106 +23,106 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIKeyGenerateRequestDTO
- */
+* APIKeyGenerateRequestDTO
+*/
 
 public class APIKeyGenerateRequestDTO {
-  public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
-  @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
-  private Integer validityPeriod;
+        public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
+        @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
+            private Integer validityPeriod;
 
-  public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-  @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-  private Object additionalProperties;
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private Object additionalProperties;
 
 
-  public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
+        public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
+        
+        this.validityPeriod = validityPeriod;
+        return this;
+        }
+
+    /**
+        * Token validity period
+    * @return validityPeriod
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3600", value = "Token validity period")
     
-    this.validityPeriod = validityPeriod;
-    return this;
-  }
-
-   /**
-   * Token validity period
-   * @return validityPeriod
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3600", value = "Token validity period")
-
-  public Integer getValidityPeriod() {
-    return validityPeriod;
-  }
+    public Integer getValidityPeriod() {
+        return validityPeriod;
+    }
 
 
-  public void setValidityPeriod(Integer validityPeriod) {
-    this.validityPeriod = validityPeriod;
-  }
+    public void setValidityPeriod(Integer validityPeriod) {
+        this.validityPeriod = validityPeriod;
+    }
 
 
-  public APIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
+        public APIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Additional parameters if Authorization server needs any
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
     
-    this.additionalProperties = additionalProperties;
-    return this;
-  }
-
-   /**
-   * Additional parameters if Authorization server needs any
-   * @return additionalProperties
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
-
-  public Object getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-
-  public void setAdditionalProperties(Object additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Object getAdditionalProperties() {
+        return additionalProperties;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setAdditionalProperties(Object additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
-    APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
-    return Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
-        Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(validityPeriod, additionalProperties);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIKeyGenerateRequestDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
+            return Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
+            Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(validityPeriod, additionalProperties);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIKeyGenerateRequestDTO {\n");
     sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

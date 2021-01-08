@@ -25,164 +25,164 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDefaultVersionURLsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIURLsDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIEndpointURLsDTO
- */
+* APIEndpointURLsDTO
+*/
 
 public class APIEndpointURLsDTO {
-  public static final String SERIALIZED_NAME_ENVIRONMENT_NAME = "environmentName";
-  @SerializedName(SERIALIZED_NAME_ENVIRONMENT_NAME)
-  private String environmentName;
+        public static final String SERIALIZED_NAME_ENVIRONMENT_NAME = "environmentName";
+        @SerializedName(SERIALIZED_NAME_ENVIRONMENT_NAME)
+            private String environmentName;
 
-  public static final String SERIALIZED_NAME_ENVIRONMENT_TYPE = "environmentType";
-  @SerializedName(SERIALIZED_NAME_ENVIRONMENT_TYPE)
-  private String environmentType;
+        public static final String SERIALIZED_NAME_ENVIRONMENT_TYPE = "environmentType";
+        @SerializedName(SERIALIZED_NAME_ENVIRONMENT_TYPE)
+            private String environmentType;
 
-  public static final String SERIALIZED_NAME_UR_LS = "URLs";
-  @SerializedName(SERIALIZED_NAME_UR_LS)
-  private APIURLsDTO urLs;
+        public static final String SERIALIZED_NAME_UR_LS = "URLs";
+        @SerializedName(SERIALIZED_NAME_UR_LS)
+            private APIURLsDTO urLs;
 
-  public static final String SERIALIZED_NAME_DEFAULT_VERSION_U_R_LS = "defaultVersionURLs";
-  @SerializedName(SERIALIZED_NAME_DEFAULT_VERSION_U_R_LS)
-  private APIDefaultVersionURLsDTO defaultVersionURLs;
+        public static final String SERIALIZED_NAME_DEFAULT_VERSION_U_R_LS = "defaultVersionURLs";
+        @SerializedName(SERIALIZED_NAME_DEFAULT_VERSION_U_R_LS)
+            private APIDefaultVersionURLsDTO defaultVersionURLs;
 
 
-  public APIEndpointURLsDTO environmentName(String environmentName) {
+        public APIEndpointURLsDTO environmentName(String environmentName) {
+        
+        this.environmentName = environmentName;
+        return this;
+        }
+
+    /**
+        * Get environmentName
+    * @return environmentName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Production and Sandbox", value = "")
     
-    this.environmentName = environmentName;
-    return this;
-  }
-
-   /**
-   * Get environmentName
-   * @return environmentName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Production and Sandbox", value = "")
-
-  public String getEnvironmentName() {
-    return environmentName;
-  }
-
-
-  public void setEnvironmentName(String environmentName) {
-    this.environmentName = environmentName;
-  }
-
-
-  public APIEndpointURLsDTO environmentType(String environmentType) {
-    
-    this.environmentType = environmentType;
-    return this;
-  }
-
-   /**
-   * Get environmentType
-   * @return environmentType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "hybrid", value = "")
-
-  public String getEnvironmentType() {
-    return environmentType;
-  }
-
-
-  public void setEnvironmentType(String environmentType) {
-    this.environmentType = environmentType;
-  }
-
-
-  public APIEndpointURLsDTO urLs(APIURLsDTO urLs) {
-    
-    this.urLs = urLs;
-    return this;
-  }
-
-   /**
-   * Get urLs
-   * @return urLs
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIURLsDTO getUrLs() {
-    return urLs;
-  }
-
-
-  public void setUrLs(APIURLsDTO urLs) {
-    this.urLs = urLs;
-  }
-
-
-  public APIEndpointURLsDTO defaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
-    
-    this.defaultVersionURLs = defaultVersionURLs;
-    return this;
-  }
-
-   /**
-   * Get defaultVersionURLs
-   * @return defaultVersionURLs
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIDefaultVersionURLsDTO getDefaultVersionURLs() {
-    return defaultVersionURLs;
-  }
-
-
-  public void setDefaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
-    this.defaultVersionURLs = defaultVersionURLs;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getEnvironmentName() {
+        return environmentName;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setEnvironmentName(String environmentName) {
+        this.environmentName = environmentName;
     }
-    APIEndpointURLsDTO apIEndpointURLs = (APIEndpointURLsDTO) o;
-    return Objects.equals(this.environmentName, apIEndpointURLs.environmentName) &&
-        Objects.equals(this.environmentType, apIEndpointURLs.environmentType) &&
-        Objects.equals(this.urLs, apIEndpointURLs.urLs) &&
-        Objects.equals(this.defaultVersionURLs, apIEndpointURLs.defaultVersionURLs);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(environmentName, environmentType, urLs, defaultVersionURLs);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIEndpointURLsDTO {\n");
+        public APIEndpointURLsDTO environmentType(String environmentType) {
+        
+        this.environmentType = environmentType;
+        return this;
+        }
+
+    /**
+        * Get environmentType
+    * @return environmentType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "hybrid", value = "")
+    
+    public String getEnvironmentType() {
+        return environmentType;
+    }
+
+
+    public void setEnvironmentType(String environmentType) {
+        this.environmentType = environmentType;
+    }
+
+
+        public APIEndpointURLsDTO urLs(APIURLsDTO urLs) {
+        
+        this.urLs = urLs;
+        return this;
+        }
+
+    /**
+        * Get urLs
+    * @return urLs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIURLsDTO getUrLs() {
+        return urLs;
+    }
+
+
+    public void setUrLs(APIURLsDTO urLs) {
+        this.urLs = urLs;
+    }
+
+
+        public APIEndpointURLsDTO defaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
+        
+        this.defaultVersionURLs = defaultVersionURLs;
+        return this;
+        }
+
+    /**
+        * Get defaultVersionURLs
+    * @return defaultVersionURLs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIDefaultVersionURLsDTO getDefaultVersionURLs() {
+        return defaultVersionURLs;
+    }
+
+
+    public void setDefaultVersionURLs(APIDefaultVersionURLsDTO defaultVersionURLs) {
+        this.defaultVersionURLs = defaultVersionURLs;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIEndpointURLsDTO apIEndpointURLs = (APIEndpointURLsDTO) o;
+            return Objects.equals(this.environmentName, apIEndpointURLs.environmentName) &&
+            Objects.equals(this.environmentType, apIEndpointURLs.environmentType) &&
+            Objects.equals(this.urLs, apIEndpointURLs.urLs) &&
+            Objects.equals(this.defaultVersionURLs, apIEndpointURLs.defaultVersionURLs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(environmentName, environmentType, urLs, defaultVersionURLs);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIEndpointURLsDTO {\n");
     sb.append("    environmentName: ").append(toIndentedString(environmentName)).append("\n");
     sb.append("    environmentType: ").append(toIndentedString(environmentType)).append("\n");
     sb.append("    urLs: ").append(toIndentedString(urLs)).append("\n");
     sb.append("    defaultVersionURLs: ").append(toIndentedString(defaultVersionURLs)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,106 +23,106 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * TagDTO
- */
+* TagDTO
+*/
 
 public class TagDTO {
-  public static final String SERIALIZED_NAME_VALUE = "value";
-  @SerializedName(SERIALIZED_NAME_VALUE)
-  private String value;
+        public static final String SERIALIZED_NAME_VALUE = "value";
+        @SerializedName(SERIALIZED_NAME_VALUE)
+            private String value;
 
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
 
-  public TagDTO value(String value) {
+        public TagDTO value(String value) {
+        
+        this.value = value;
+        return this;
+        }
+
+    /**
+        * Get value
+    * @return value
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "tag1", value = "")
     
-    this.value = value;
-    return this;
-  }
-
-   /**
-   * Get value
-   * @return value
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "tag1", value = "")
-
-  public String getValue() {
-    return value;
-  }
+    public String getValue() {
+        return value;
+    }
 
 
-  public void setValue(String value) {
-    this.value = value;
-  }
+    public void setValue(String value) {
+        this.value = value;
+    }
 
 
-  public TagDTO count(Integer count) {
+        public TagDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Get count
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "5", value = "")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Get count
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "5", value = "")
-
-  public Integer getCount() {
-    return count;
-  }
-
-
-  public void setCount(Integer count) {
-    this.count = count;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Integer getCount() {
+        return count;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
-    TagDTO tag = (TagDTO) o;
-    return Objects.equals(this.value, tag.value) &&
-        Objects.equals(this.count, tag.count);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(value, count);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class TagDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            TagDTO tag = (TagDTO) o;
+            return Objects.equals(this.value, tag.value) &&
+            Objects.equals(this.count, tag.count);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, count);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class TagDTO {\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

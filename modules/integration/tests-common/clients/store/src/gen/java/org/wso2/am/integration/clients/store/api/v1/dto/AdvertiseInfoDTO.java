@@ -23,135 +23,135 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AdvertiseInfoDTO
- */
+* AdvertiseInfoDTO
+*/
 
 public class AdvertiseInfoDTO {
-  public static final String SERIALIZED_NAME_ADVERTISED = "advertised";
-  @SerializedName(SERIALIZED_NAME_ADVERTISED)
-  private Boolean advertised;
+        public static final String SERIALIZED_NAME_ADVERTISED = "advertised";
+        @SerializedName(SERIALIZED_NAME_ADVERTISED)
+            private Boolean advertised;
 
-  public static final String SERIALIZED_NAME_ORIGINAL_STORE_URL = "originalStoreUrl";
-  @SerializedName(SERIALIZED_NAME_ORIGINAL_STORE_URL)
-  private String originalStoreUrl;
+        public static final String SERIALIZED_NAME_ORIGINAL_STORE_URL = "originalStoreUrl";
+        @SerializedName(SERIALIZED_NAME_ORIGINAL_STORE_URL)
+            private String originalStoreUrl;
 
-  public static final String SERIALIZED_NAME_API_OWNER = "apiOwner";
-  @SerializedName(SERIALIZED_NAME_API_OWNER)
-  private String apiOwner;
+        public static final String SERIALIZED_NAME_API_OWNER = "apiOwner";
+        @SerializedName(SERIALIZED_NAME_API_OWNER)
+            private String apiOwner;
 
 
-  public AdvertiseInfoDTO advertised(Boolean advertised) {
+        public AdvertiseInfoDTO advertised(Boolean advertised) {
+        
+        this.advertised = advertised;
+        return this;
+        }
+
+    /**
+        * Get advertised
+    * @return advertised
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "true", value = "")
     
-    this.advertised = advertised;
-    return this;
-  }
-
-   /**
-   * Get advertised
-   * @return advertised
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "true", value = "")
-
-  public Boolean getAdvertised() {
-    return advertised;
-  }
-
-
-  public void setAdvertised(Boolean advertised) {
-    this.advertised = advertised;
-  }
-
-
-  public AdvertiseInfoDTO originalStoreUrl(String originalStoreUrl) {
-    
-    this.originalStoreUrl = originalStoreUrl;
-    return this;
-  }
-
-   /**
-   * Get originalStoreUrl
-   * @return originalStoreUrl
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "https://localhost:9443/store", value = "")
-
-  public String getOriginalStoreUrl() {
-    return originalStoreUrl;
-  }
-
-
-  public void setOriginalStoreUrl(String originalStoreUrl) {
-    this.originalStoreUrl = originalStoreUrl;
-  }
-
-
-  public AdvertiseInfoDTO apiOwner(String apiOwner) {
-    
-    this.apiOwner = apiOwner;
-    return this;
-  }
-
-   /**
-   * Get apiOwner
-   * @return apiOwner
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "")
-
-  public String getApiOwner() {
-    return apiOwner;
-  }
-
-
-  public void setApiOwner(String apiOwner) {
-    this.apiOwner = apiOwner;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Boolean isAdvertised() {
+        return advertised;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setAdvertised(Boolean advertised) {
+        this.advertised = advertised;
     }
-    AdvertiseInfoDTO advertiseInfo = (AdvertiseInfoDTO) o;
-    return Objects.equals(this.advertised, advertiseInfo.advertised) &&
-        Objects.equals(this.originalStoreUrl, advertiseInfo.originalStoreUrl) &&
-        Objects.equals(this.apiOwner, advertiseInfo.apiOwner);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(advertised, originalStoreUrl, apiOwner);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AdvertiseInfoDTO {\n");
+        public AdvertiseInfoDTO originalStoreUrl(String originalStoreUrl) {
+        
+        this.originalStoreUrl = originalStoreUrl;
+        return this;
+        }
+
+    /**
+        * Get originalStoreUrl
+    * @return originalStoreUrl
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9443/store", value = "")
+    
+    public String getOriginalStoreUrl() {
+        return originalStoreUrl;
+    }
+
+
+    public void setOriginalStoreUrl(String originalStoreUrl) {
+        this.originalStoreUrl = originalStoreUrl;
+    }
+
+
+        public AdvertiseInfoDTO apiOwner(String apiOwner) {
+        
+        this.apiOwner = apiOwner;
+        return this;
+        }
+
+    /**
+        * Get apiOwner
+    * @return apiOwner
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "")
+    
+    public String getApiOwner() {
+        return apiOwner;
+    }
+
+
+    public void setApiOwner(String apiOwner) {
+        this.apiOwner = apiOwner;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AdvertiseInfoDTO advertiseInfo = (AdvertiseInfoDTO) o;
+            return Objects.equals(this.advertised, advertiseInfo.advertised) &&
+            Objects.equals(this.originalStoreUrl, advertiseInfo.originalStoreUrl) &&
+            Objects.equals(this.apiOwner, advertiseInfo.apiOwner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(advertised, originalStoreUrl, apiOwner);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AdvertiseInfoDTO {\n");
     sb.append("    advertised: ").append(toIndentedString(advertised)).append("\n");
     sb.append("    originalStoreUrl: ").append(toIndentedString(originalStoreUrl)).append("\n");
     sb.append("    apiOwner: ").append(toIndentedString(apiOwner)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

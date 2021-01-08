@@ -26,114 +26,106 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.APICategoryDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APICategoryListDTO
- */
+* APICategoryListDTO
+*/
 
 public class APICategoryListDTO {
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<APICategoryDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<APICategoryDTO> list = null;
 
 
-  public APICategoryListDTO count(Integer count) {
+        public APICategoryListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Number of API categories returned. 
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "Number of API categories returned. ")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Number of API categories returned. 
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "Number of API categories returned. ")
-
-  public Integer getCount() {
-    return count;
-  }
+    public Integer getCount() {
+        return count;
+    }
 
 
-  public void setCount(Integer count) {
-    this.count = count;
-  }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
-  public APICategoryListDTO list(List<APICategoryDTO> list) {
+        public APICategoryListDTO list(List<APICategoryDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public APICategoryListDTO addListItem(APICategoryDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public List<APICategoryDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<APICategoryDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<APICategoryDTO> list) {
-    this.list = list;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setList(List<APICategoryDTO> list) {
+        this.list = list;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APICategoryListDTO apICategoryList = (APICategoryListDTO) o;
+            return Objects.equals(this.count, apICategoryList.count) &&
+            Objects.equals(this.list, apICategoryList.list);
     }
-    APICategoryListDTO apICategoryList = (APICategoryListDTO) o;
-    return Objects.equals(this.count, apICategoryList.count) &&
-        Objects.equals(this.list, apICategoryList.list);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(count, list);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(count, list);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APICategoryListDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APICategoryListDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

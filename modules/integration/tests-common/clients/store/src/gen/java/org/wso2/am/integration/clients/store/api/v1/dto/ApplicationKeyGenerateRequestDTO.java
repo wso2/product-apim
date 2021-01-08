@@ -25,326 +25,331 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationKeyGenerateRequestDTO
- */
+* ApplicationKeyGenerateRequestDTO
+*/
 
 public class ApplicationKeyGenerateRequestDTO {
-  /**
-   * Gets or Sets keyType
-   */
-  @JsonAdapter(KeyTypeEnum.Adapter.class)
-  public enum KeyTypeEnum {
-    PRODUCTION("PRODUCTION"),
-    
-    SANDBOX("SANDBOX");
+            /**
+* Gets or Sets keyType
+*/
+    @JsonAdapter(KeyTypeEnum.Adapter.class)
+public enum KeyTypeEnum {
+        PRODUCTION("PRODUCTION"),
+        
+        SANDBOX("SANDBOX");
 
-    private String value;
+private String value;
 
-    KeyTypeEnum(String value) {
-      this.value = value;
+KeyTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static KeyTypeEnum fromValue(String value) {
+    for (KeyTypeEnum b : KeyTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<KeyTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final KeyTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public KeyTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return KeyTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static KeyTypeEnum fromValue(String value) {
-      for (KeyTypeEnum b : KeyTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
+        @SerializedName(SERIALIZED_NAME_KEY_TYPE)
+            private KeyTypeEnum keyType;
+
+        public static final String SERIALIZED_NAME_KEY_MANAGER = "keyManager";
+        @SerializedName(SERIALIZED_NAME_KEY_MANAGER)
+            private String keyManager;
+
+        public static final String SERIALIZED_NAME_GRANT_TYPES_TO_BE_SUPPORTED = "grantTypesToBeSupported";
+        @SerializedName(SERIALIZED_NAME_GRANT_TYPES_TO_BE_SUPPORTED)
+            private List<String> grantTypesToBeSupported = new ArrayList<String>();
+
+        public static final String SERIALIZED_NAME_CALLBACK_URL = "callbackUrl";
+        @SerializedName(SERIALIZED_NAME_CALLBACK_URL)
+            private String callbackUrl;
+
+        public static final String SERIALIZED_NAME_SCOPES = "scopes";
+        @SerializedName(SERIALIZED_NAME_SCOPES)
+            private List<String> scopes = null;
+
+        public static final String SERIALIZED_NAME_VALIDITY_TIME = "validityTime";
+        @SerializedName(SERIALIZED_NAME_VALIDITY_TIME)
+            private String validityTime;
+
+        public static final String SERIALIZED_NAME_CLIENT_ID = "clientId";
+        @SerializedName(SERIALIZED_NAME_CLIENT_ID)
+            private String clientId;
+
+        public static final String SERIALIZED_NAME_CLIENT_SECRET = "clientSecret";
+        @SerializedName(SERIALIZED_NAME_CLIENT_SECRET)
+            private String clientSecret;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private Object additionalProperties;
+
+
+        public ApplicationKeyGenerateRequestDTO keyType(KeyTypeEnum keyType) {
+        
+        this.keyType = keyType;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * Get keyType
+    * @return keyType
+    **/
+      @ApiModelProperty(required = true, value = "")
+    
+    public KeyTypeEnum getKeyType() {
+        return keyType;
     }
 
-    public static class Adapter extends TypeAdapter<KeyTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final KeyTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public KeyTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return KeyTypeEnum.fromValue(value);
-      }
+    public void setKeyType(KeyTypeEnum keyType) {
+        this.keyType = keyType;
     }
-  }
-
-  public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
-  @SerializedName(SERIALIZED_NAME_KEY_TYPE)
-  private KeyTypeEnum keyType;
-
-  public static final String SERIALIZED_NAME_KEY_MANAGER = "keyManager";
-  @SerializedName(SERIALIZED_NAME_KEY_MANAGER)
-  private String keyManager;
-
-  public static final String SERIALIZED_NAME_GRANT_TYPES_TO_BE_SUPPORTED = "grantTypesToBeSupported";
-  @SerializedName(SERIALIZED_NAME_GRANT_TYPES_TO_BE_SUPPORTED)
-  private List<String> grantTypesToBeSupported = new ArrayList<>();
-
-  public static final String SERIALIZED_NAME_CALLBACK_URL = "callbackUrl";
-  @SerializedName(SERIALIZED_NAME_CALLBACK_URL)
-  private String callbackUrl;
-
-  public static final String SERIALIZED_NAME_SCOPES = "scopes";
-  @SerializedName(SERIALIZED_NAME_SCOPES)
-  private List<String> scopes = null;
-
-  public static final String SERIALIZED_NAME_VALIDITY_TIME = "validityTime";
-  @SerializedName(SERIALIZED_NAME_VALIDITY_TIME)
-  private String validityTime;
-
-  public static final String SERIALIZED_NAME_CLIENT_ID = "clientId";
-  @SerializedName(SERIALIZED_NAME_CLIENT_ID)
-  private String clientId;
-
-  public static final String SERIALIZED_NAME_CLIENT_SECRET = "clientSecret";
-  @SerializedName(SERIALIZED_NAME_CLIENT_SECRET)
-  private String clientSecret;
-
-  public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-  @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-  private Object additionalProperties;
 
 
-  public ApplicationKeyGenerateRequestDTO keyType(KeyTypeEnum keyType) {
+        public ApplicationKeyGenerateRequestDTO keyManager(String keyManager) {
+        
+        this.keyManager = keyManager;
+        return this;
+        }
+
+    /**
+        * key Manager to Generate Keys
+    * @return keyManager
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Resident Key Manager", value = "key Manager to Generate Keys")
     
-    this.keyType = keyType;
-    return this;
-  }
-
-   /**
-   * Get keyType
-   * @return keyType
-  **/
-  @ApiModelProperty(required = true, value = "")
-
-  public KeyTypeEnum getKeyType() {
-    return keyType;
-  }
-
-
-  public void setKeyType(KeyTypeEnum keyType) {
-    this.keyType = keyType;
-  }
-
-
-  public ApplicationKeyGenerateRequestDTO keyManager(String keyManager) {
-    
-    this.keyManager = keyManager;
-    return this;
-  }
-
-   /**
-   * key Manager to Generate Keys
-   * @return keyManager
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Resident Key Manager", value = "key Manager to Generate Keys")
-
-  public String getKeyManager() {
-    return keyManager;
-  }
-
-
-  public void setKeyManager(String keyManager) {
-    this.keyManager = keyManager;
-  }
-
-
-  public ApplicationKeyGenerateRequestDTO grantTypesToBeSupported(List<String> grantTypesToBeSupported) {
-    
-    this.grantTypesToBeSupported = grantTypesToBeSupported;
-    return this;
-  }
-
-  public ApplicationKeyGenerateRequestDTO addGrantTypesToBeSupportedItem(String grantTypesToBeSupportedItem) {
-    this.grantTypesToBeSupported.add(grantTypesToBeSupportedItem);
-    return this;
-  }
-
-   /**
-   * Grant types that should be supported by the application
-   * @return grantTypesToBeSupported
-  **/
-  @ApiModelProperty(example = "[\"password\",\"client_credentials\"]", required = true, value = "Grant types that should be supported by the application")
-
-  public List<String> getGrantTypesToBeSupported() {
-    return grantTypesToBeSupported;
-  }
-
-
-  public void setGrantTypesToBeSupported(List<String> grantTypesToBeSupported) {
-    this.grantTypesToBeSupported = grantTypesToBeSupported;
-  }
-
-
-  public ApplicationKeyGenerateRequestDTO callbackUrl(String callbackUrl) {
-    
-    this.callbackUrl = callbackUrl;
-    return this;
-  }
-
-   /**
-   * Callback URL
-   * @return callbackUrl
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "http://sample.com/callback/url", value = "Callback URL")
-
-  public String getCallbackUrl() {
-    return callbackUrl;
-  }
-
-
-  public void setCallbackUrl(String callbackUrl) {
-    this.callbackUrl = callbackUrl;
-  }
-
-
-  public ApplicationKeyGenerateRequestDTO scopes(List<String> scopes) {
-    
-    this.scopes = scopes;
-    return this;
-  }
-
-  public ApplicationKeyGenerateRequestDTO addScopesItem(String scopesItem) {
-    if (this.scopes == null) {
-      this.scopes = new ArrayList<>();
+    public String getKeyManager() {
+        return keyManager;
     }
-    this.scopes.add(scopesItem);
-    return this;
-  }
-
-   /**
-   * Allowed scopes for the access token
-   * @return scopes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"am_application_scope\",\"default\"]", value = "Allowed scopes for the access token")
-
-  public List<String> getScopes() {
-    return scopes;
-  }
 
 
-  public void setScopes(List<String> scopes) {
-    this.scopes = scopes;
-  }
-
-
-  public ApplicationKeyGenerateRequestDTO validityTime(String validityTime) {
-    
-    this.validityTime = validityTime;
-    return this;
-  }
-
-   /**
-   * Get validityTime
-   * @return validityTime
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3600", value = "")
-
-  public String getValidityTime() {
-    return validityTime;
-  }
-
-
-  public void setValidityTime(String validityTime) {
-    this.validityTime = validityTime;
-  }
-
-
-   /**
-   * Client ID for generating access token.
-   * @return clientId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "sZzoeSCI_vL2cjSXZQmsmV8JEyga", value = "Client ID for generating access token.")
-
-  public String getClientId() {
-    return clientId;
-  }
-
-
-
-
-   /**
-   * Client secret for generating access token. This is given together with the client Id.
-   * @return clientSecret
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "nrs3YAP4htxnz_DqpvGhf9Um04oa", value = "Client secret for generating access token. This is given together with the client Id.")
-
-  public String getClientSecret() {
-    return clientSecret;
-  }
-
-
-
-
-  public ApplicationKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
-    
-    this.additionalProperties = additionalProperties;
-    return this;
-  }
-
-   /**
-   * Additional properties needed.
-   * @return additionalProperties
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{}", value = "Additional properties needed.")
-
-  public Object getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-
-  public void setAdditionalProperties(Object additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setKeyManager(String keyManager) {
+        this.keyManager = keyManager;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+        public ApplicationKeyGenerateRequestDTO grantTypesToBeSupported(List<String> grantTypesToBeSupported) {
+        
+        this.grantTypesToBeSupported = grantTypesToBeSupported;
+        return this;
+        }
+
+    /**
+        * Grant types that should be supported by the application
+    * @return grantTypesToBeSupported
+    **/
+      @ApiModelProperty(example = "[\"password\",\"client_credentials\"]", required = true, value = "Grant types that should be supported by the application")
+    
+    public List<String> getGrantTypesToBeSupported() {
+        return grantTypesToBeSupported;
     }
-    ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = (ApplicationKeyGenerateRequestDTO) o;
-    return Objects.equals(this.keyType, applicationKeyGenerateRequest.keyType) &&
-        Objects.equals(this.keyManager, applicationKeyGenerateRequest.keyManager) &&
-        Objects.equals(this.grantTypesToBeSupported, applicationKeyGenerateRequest.grantTypesToBeSupported) &&
-        Objects.equals(this.callbackUrl, applicationKeyGenerateRequest.callbackUrl) &&
-        Objects.equals(this.scopes, applicationKeyGenerateRequest.scopes) &&
-        Objects.equals(this.validityTime, applicationKeyGenerateRequest.validityTime) &&
-        Objects.equals(this.clientId, applicationKeyGenerateRequest.clientId) &&
-        Objects.equals(this.clientSecret, applicationKeyGenerateRequest.clientSecret) &&
-        Objects.equals(this.additionalProperties, applicationKeyGenerateRequest.additionalProperties);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(keyType, keyManager, grantTypesToBeSupported, callbackUrl, scopes, validityTime, clientId, clientSecret, additionalProperties);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationKeyGenerateRequestDTO {\n");
+    public void setGrantTypesToBeSupported(List<String> grantTypesToBeSupported) {
+        this.grantTypesToBeSupported = grantTypesToBeSupported;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO callbackUrl(String callbackUrl) {
+        
+        this.callbackUrl = callbackUrl;
+        return this;
+        }
+
+    /**
+        * Callback URL
+    * @return callbackUrl
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "http://sample.com/callback/url", value = "Callback URL")
+    
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO scopes(List<String> scopes) {
+        
+        this.scopes = scopes;
+        return this;
+        }
+
+    /**
+        * Allowed scopes for the access token
+    * @return scopes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"am_application_scope\",\"default\"]", value = "Allowed scopes for the access token")
+    
+    public List<String> getScopes() {
+        return scopes;
+    }
+
+
+    public void setScopes(List<String> scopes) {
+        this.scopes = scopes;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO validityTime(String validityTime) {
+        
+        this.validityTime = validityTime;
+        return this;
+        }
+
+    /**
+        * Get validityTime
+    * @return validityTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3600", value = "")
+    
+    public String getValidityTime() {
+        return validityTime;
+    }
+
+
+    public void setValidityTime(String validityTime) {
+        this.validityTime = validityTime;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO clientId(String clientId) {
+        
+        this.clientId = clientId;
+        return this;
+        }
+
+    /**
+        * Client ID for generating access token.
+    * @return clientId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "sZzoeSCI_vL2cjSXZQmsmV8JEyga", value = "Client ID for generating access token.")
+    
+    public String getClientId() {
+        return clientId;
+    }
+
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO clientSecret(String clientSecret) {
+        
+        this.clientSecret = clientSecret;
+        return this;
+        }
+
+    /**
+        * Client secret for generating access token. This is given together with the client Id.
+    * @return clientSecret
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "nrs3YAP4htxnz_DqpvGhf9Um04oa", value = "Client secret for generating access token. This is given together with the client Id.")
+    
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+
+        public ApplicationKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Additional properties needed.
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{}", value = "Additional properties needed.")
+    
+    public Object getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(Object additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = (ApplicationKeyGenerateRequestDTO) o;
+            return Objects.equals(this.keyType, applicationKeyGenerateRequest.keyType) &&
+            Objects.equals(this.keyManager, applicationKeyGenerateRequest.keyManager) &&
+            Objects.equals(this.grantTypesToBeSupported, applicationKeyGenerateRequest.grantTypesToBeSupported) &&
+            Objects.equals(this.callbackUrl, applicationKeyGenerateRequest.callbackUrl) &&
+            Objects.equals(this.scopes, applicationKeyGenerateRequest.scopes) &&
+            Objects.equals(this.validityTime, applicationKeyGenerateRequest.validityTime) &&
+            Objects.equals(this.clientId, applicationKeyGenerateRequest.clientId) &&
+            Objects.equals(this.clientSecret, applicationKeyGenerateRequest.clientSecret) &&
+            Objects.equals(this.additionalProperties, applicationKeyGenerateRequest.additionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(keyType, keyManager, grantTypesToBeSupported, callbackUrl, scopes, validityTime, clientId, clientSecret, additionalProperties);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationKeyGenerateRequestDTO {\n");
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
     sb.append("    keyManager: ").append(toIndentedString(keyManager)).append("\n");
     sb.append("    grantTypesToBeSupported: ").append(toIndentedString(grantTypesToBeSupported)).append("\n");
@@ -354,20 +359,20 @@ public class ApplicationKeyGenerateRequestDTO {
     sb.append("    clientId: ").append(toIndentedString(clientId)).append("\n");
     sb.append("    clientSecret: ").append(toIndentedString(clientSecret)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -26,85 +26,77 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLCustomComplexityInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * GraphQLQueryComplexityInfoDTO
- */
+* GraphQLQueryComplexityInfoDTO
+*/
 
 public class GraphQLQueryComplexityInfoDTO {
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<GraphQLCustomComplexityInfoDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<GraphQLCustomComplexityInfoDTO> list = null;
 
 
-  public GraphQLQueryComplexityInfoDTO list(List<GraphQLCustomComplexityInfoDTO> list) {
+        public GraphQLQueryComplexityInfoDTO list(List<GraphQLCustomComplexityInfoDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public GraphQLQueryComplexityInfoDTO addListItem(GraphQLCustomComplexityInfoDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public List<GraphQLCustomComplexityInfoDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<GraphQLCustomComplexityInfoDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<GraphQLCustomComplexityInfoDTO> list) {
-    this.list = list;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setList(List<GraphQLCustomComplexityInfoDTO> list) {
+        this.list = list;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfo = (GraphQLQueryComplexityInfoDTO) o;
+            return Objects.equals(this.list, graphQLQueryComplexityInfo.list);
     }
-    GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfo = (GraphQLQueryComplexityInfoDTO) o;
-    return Objects.equals(this.list, graphQLQueryComplexityInfo.list);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(list);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(list);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLQueryComplexityInfoDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class GraphQLQueryComplexityInfoDTO {\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

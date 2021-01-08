@@ -27,143 +27,135 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ThrottlingPolicyDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ThrottlingPolicyListDTO
- */
+* ThrottlingPolicyListDTO
+*/
 
 public class ThrottlingPolicyListDTO {
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<ThrottlingPolicyDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<ThrottlingPolicyDTO> list = null;
 
-  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-  @SerializedName(SERIALIZED_NAME_PAGINATION)
-  private PaginationDTO pagination;
+        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+        @SerializedName(SERIALIZED_NAME_PAGINATION)
+            private PaginationDTO pagination;
 
 
-  public ThrottlingPolicyListDTO count(Integer count) {
+        public ThrottlingPolicyListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Number of Throttling Policies returned. 
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "Number of Throttling Policies returned. ")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Number of Throttling Policies returned. 
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "Number of Throttling Policies returned. ")
-
-  public Integer getCount() {
-    return count;
-  }
+    public Integer getCount() {
+        return count;
+    }
 
 
-  public void setCount(Integer count) {
-    this.count = count;
-  }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
-  public ThrottlingPolicyListDTO list(List<ThrottlingPolicyDTO> list) {
+        public ThrottlingPolicyListDTO list(List<ThrottlingPolicyDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public ThrottlingPolicyListDTO addListItem(ThrottlingPolicyDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public List<ThrottlingPolicyDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<ThrottlingPolicyDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<ThrottlingPolicyDTO> list) {
-    this.list = list;
-  }
+    public void setList(List<ThrottlingPolicyDTO> list) {
+        this.list = list;
+    }
 
 
-  public ThrottlingPolicyListDTO pagination(PaginationDTO pagination) {
+        public ThrottlingPolicyListDTO pagination(PaginationDTO pagination) {
+        
+        this.pagination = pagination;
+        return this;
+        }
+
+    /**
+        * Get pagination
+    * @return pagination
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.pagination = pagination;
-    return this;
-  }
-
-   /**
-   * Get pagination
-   * @return pagination
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public PaginationDTO getPagination() {
-    return pagination;
-  }
-
-
-  public void setPagination(PaginationDTO pagination) {
-    this.pagination = pagination;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public PaginationDTO getPagination() {
+        return pagination;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
     }
-    ThrottlingPolicyListDTO throttlingPolicyList = (ThrottlingPolicyListDTO) o;
-    return Objects.equals(this.count, throttlingPolicyList.count) &&
-        Objects.equals(this.list, throttlingPolicyList.list) &&
-        Objects.equals(this.pagination, throttlingPolicyList.pagination);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(count, list, pagination);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ThrottlingPolicyListDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ThrottlingPolicyListDTO throttlingPolicyList = (ThrottlingPolicyListDTO) o;
+            return Objects.equals(this.count, throttlingPolicyList.count) &&
+            Objects.equals(this.list, throttlingPolicyList.list) &&
+            Objects.equals(this.pagination, throttlingPolicyList.pagination);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(count, list, pagination);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ThrottlingPolicyListDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

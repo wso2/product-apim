@@ -26,122 +26,106 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.AlertDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AlertsInfoDTO
- */
+* AlertsInfoDTO
+*/
 
 public class AlertsInfoDTO {
-  public static final String SERIALIZED_NAME_ALERTS = "alerts";
-  @SerializedName(SERIALIZED_NAME_ALERTS)
-  private List<AlertDTO> alerts = null;
+        public static final String SERIALIZED_NAME_ALERTS = "alerts";
+        @SerializedName(SERIALIZED_NAME_ALERTS)
+            private List<AlertDTO> alerts = null;
 
-  public static final String SERIALIZED_NAME_EMAIL_LIST = "emailList";
-  @SerializedName(SERIALIZED_NAME_EMAIL_LIST)
-  private List<String> emailList = null;
+        public static final String SERIALIZED_NAME_EMAIL_LIST = "emailList";
+        @SerializedName(SERIALIZED_NAME_EMAIL_LIST)
+            private List<String> emailList = null;
 
 
-  public AlertsInfoDTO alerts(List<AlertDTO> alerts) {
+        public AlertsInfoDTO alerts(List<AlertDTO> alerts) {
+        
+        this.alerts = alerts;
+        return this;
+        }
+
+    /**
+        * Get alerts
+    * @return alerts
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.alerts = alerts;
-    return this;
-  }
-
-  public AlertsInfoDTO addAlertsItem(AlertDTO alertsItem) {
-    if (this.alerts == null) {
-      this.alerts = new ArrayList<>();
+    public List<AlertDTO> getAlerts() {
+        return alerts;
     }
-    this.alerts.add(alertsItem);
-    return this;
-  }
-
-   /**
-   * Get alerts
-   * @return alerts
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<AlertDTO> getAlerts() {
-    return alerts;
-  }
 
 
-  public void setAlerts(List<AlertDTO> alerts) {
-    this.alerts = alerts;
-  }
+    public void setAlerts(List<AlertDTO> alerts) {
+        this.alerts = alerts;
+    }
 
 
-  public AlertsInfoDTO emailList(List<String> emailList) {
+        public AlertsInfoDTO emailList(List<String> emailList) {
+        
+        this.emailList = emailList;
+        return this;
+        }
+
+    /**
+        * Get emailList
+    * @return emailList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"abc@gmail.com\"]", value = "")
     
-    this.emailList = emailList;
-    return this;
-  }
-
-  public AlertsInfoDTO addEmailListItem(String emailListItem) {
-    if (this.emailList == null) {
-      this.emailList = new ArrayList<>();
+    public List<String> getEmailList() {
+        return emailList;
     }
-    this.emailList.add(emailListItem);
-    return this;
-  }
-
-   /**
-   * Get emailList
-   * @return emailList
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"abc@gmail.com\"]", value = "")
-
-  public List<String> getEmailList() {
-    return emailList;
-  }
 
 
-  public void setEmailList(List<String> emailList) {
-    this.emailList = emailList;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setEmailList(List<String> emailList) {
+        this.emailList = emailList;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AlertsInfoDTO alertsInfo = (AlertsInfoDTO) o;
+            return Objects.equals(this.alerts, alertsInfo.alerts) &&
+            Objects.equals(this.emailList, alertsInfo.emailList);
     }
-    AlertsInfoDTO alertsInfo = (AlertsInfoDTO) o;
-    return Objects.equals(this.alerts, alertsInfo.alerts) &&
-        Objects.equals(this.emailList, alertsInfo.emailList);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(alerts, emailList);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(alerts, emailList);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AlertsInfoDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AlertsInfoDTO {\n");
     sb.append("    alerts: ").append(toIndentedString(alerts)).append("\n");
     sb.append("    emailList: ").append(toIndentedString(emailList)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

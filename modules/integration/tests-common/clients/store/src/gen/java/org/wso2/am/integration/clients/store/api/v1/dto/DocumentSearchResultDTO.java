@@ -25,472 +25,472 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.DocumentSearchResultAllOfDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * DocumentSearchResultDTO
- */
+* DocumentSearchResultDTO
+*/
 
 public class DocumentSearchResultDTO extends SearchResultDTO {
-  /**
-   * Gets or Sets docType
-   */
-  @JsonAdapter(DocTypeEnum.Adapter.class)
-  public enum DocTypeEnum {
-    HOWTO("HOWTO"),
-    
-    SAMPLES("SAMPLES"),
-    
-    PUBLIC_FORUM("PUBLIC_FORUM"),
-    
-    SUPPORT_FORUM("SUPPORT_FORUM"),
-    
-    API_MESSAGE_FORMAT("API_MESSAGE_FORMAT"),
-    
-    SWAGGER_DOC("SWAGGER_DOC"),
-    
-    OTHER("OTHER");
+            /**
+* Gets or Sets docType
+*/
+    @JsonAdapter(DocTypeEnum.Adapter.class)
+public enum DocTypeEnum {
+        HOWTO("HOWTO"),
+        
+        SAMPLES("SAMPLES"),
+        
+        PUBLIC_FORUM("PUBLIC_FORUM"),
+        
+        SUPPORT_FORUM("SUPPORT_FORUM"),
+        
+        API_MESSAGE_FORMAT("API_MESSAGE_FORMAT"),
+        
+        SWAGGER_DOC("SWAGGER_DOC"),
+        
+        OTHER("OTHER");
 
-    private String value;
+private String value;
 
-    DocTypeEnum(String value) {
-      this.value = value;
+DocTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static DocTypeEnum fromValue(String value) {
+    for (DocTypeEnum b : DocTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
-
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    public static DocTypeEnum fromValue(String value) {
-      for (DocTypeEnum b : DocTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
     public static class Adapter extends TypeAdapter<DocTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final DocTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public DocTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return DocTypeEnum.fromValue(value);
-      }
-    }
-  }
-
-  public static final String SERIALIZED_NAME_DOC_TYPE = "docType";
-  @SerializedName(SERIALIZED_NAME_DOC_TYPE)
-  private DocTypeEnum docType;
-
-  public static final String SERIALIZED_NAME_SUMMARY = "summary";
-  @SerializedName(SERIALIZED_NAME_SUMMARY)
-  private String summary;
-
-  /**
-   * Gets or Sets sourceType
-   */
-  @JsonAdapter(SourceTypeEnum.Adapter.class)
-  public enum SourceTypeEnum {
-    INLINE("INLINE"),
-    
-    URL("URL"),
-    
-    FILE("FILE"),
-    
-    MARKDOWN("MARKDOWN");
-
-    private String value;
-
-    SourceTypeEnum(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
+    @Override
+    public void write(final JsonWriter jsonWriter, final DocTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public DocTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return DocTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static SourceTypeEnum fromValue(String value) {
-      for (SourceTypeEnum b : SourceTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+        public static final String SERIALIZED_NAME_DOC_TYPE = "docType";
+        @SerializedName(SERIALIZED_NAME_DOC_TYPE)
+            private DocTypeEnum docType;
+
+        public static final String SERIALIZED_NAME_SUMMARY = "summary";
+        @SerializedName(SERIALIZED_NAME_SUMMARY)
+            private String summary;
+
+            /**
+* Gets or Sets sourceType
+*/
+    @JsonAdapter(SourceTypeEnum.Adapter.class)
+public enum SourceTypeEnum {
+        INLINE("INLINE"),
+        
+        URL("URL"),
+        
+        FILE("FILE"),
+        
+        MARKDOWN("MARKDOWN");
+
+private String value;
+
+SourceTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static SourceTypeEnum fromValue(String value) {
+    for (SourceTypeEnum b : SourceTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
     public static class Adapter extends TypeAdapter<SourceTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final SourceTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public SourceTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return SourceTypeEnum.fromValue(value);
-      }
-    }
-  }
-
-  public static final String SERIALIZED_NAME_SOURCE_TYPE = "sourceType";
-  @SerializedName(SERIALIZED_NAME_SOURCE_TYPE)
-  private SourceTypeEnum sourceType;
-
-  public static final String SERIALIZED_NAME_SOURCE_URL = "sourceUrl";
-  @SerializedName(SERIALIZED_NAME_SOURCE_URL)
-  private String sourceUrl;
-
-  public static final String SERIALIZED_NAME_OTHER_TYPE_NAME = "otherTypeName";
-  @SerializedName(SERIALIZED_NAME_OTHER_TYPE_NAME)
-  private String otherTypeName;
-
-  /**
-   * Gets or Sets visibility
-   */
-  @JsonAdapter(VisibilityEnum.Adapter.class)
-  public enum VisibilityEnum {
-    OWNER_ONLY("OWNER_ONLY"),
-    
-    PRIVATE("PRIVATE"),
-    
-    API_LEVEL("API_LEVEL");
-
-    private String value;
-
-    VisibilityEnum(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
+    @Override
+    public void write(final JsonWriter jsonWriter, final SourceTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public SourceTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return SourceTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static VisibilityEnum fromValue(String value) {
-      for (VisibilityEnum b : VisibilityEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+        public static final String SERIALIZED_NAME_SOURCE_TYPE = "sourceType";
+        @SerializedName(SERIALIZED_NAME_SOURCE_TYPE)
+            private SourceTypeEnum sourceType;
+
+        public static final String SERIALIZED_NAME_SOURCE_URL = "sourceUrl";
+        @SerializedName(SERIALIZED_NAME_SOURCE_URL)
+            private String sourceUrl;
+
+        public static final String SERIALIZED_NAME_OTHER_TYPE_NAME = "otherTypeName";
+        @SerializedName(SERIALIZED_NAME_OTHER_TYPE_NAME)
+            private String otherTypeName;
+
+            /**
+* Gets or Sets visibility
+*/
+    @JsonAdapter(VisibilityEnum.Adapter.class)
+public enum VisibilityEnum {
+        OWNER_ONLY("OWNER_ONLY"),
+        
+        PRIVATE("PRIVATE"),
+        
+        API_LEVEL("API_LEVEL");
+
+private String value;
+
+VisibilityEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static VisibilityEnum fromValue(String value) {
+    for (VisibilityEnum b : VisibilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
     public static class Adapter extends TypeAdapter<VisibilityEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final VisibilityEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public VisibilityEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return VisibilityEnum.fromValue(value);
-      }
+    @Override
+    public void write(final JsonWriter jsonWriter, final VisibilityEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
-  }
 
-  public static final String SERIALIZED_NAME_VISIBILITY = "visibility";
-  @SerializedName(SERIALIZED_NAME_VISIBILITY)
-  private VisibilityEnum visibility;
-
-  public static final String SERIALIZED_NAME_API_NAME = "apiName";
-  @SerializedName(SERIALIZED_NAME_API_NAME)
-  private String apiName;
-
-  public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
-  @SerializedName(SERIALIZED_NAME_API_VERSION)
-  private String apiVersion;
-
-  public static final String SERIALIZED_NAME_API_PROVIDER = "apiProvider";
-  @SerializedName(SERIALIZED_NAME_API_PROVIDER)
-  private String apiProvider;
-
-  public static final String SERIALIZED_NAME_API_U_U_I_D = "apiUUID";
-  @SerializedName(SERIALIZED_NAME_API_U_U_I_D)
-  private String apiUUID;
-
-
-  public DocumentSearchResultDTO docType(DocTypeEnum docType) {
-    
-    this.docType = docType;
-    return this;
-  }
-
-   /**
-   * Get docType
-   * @return docType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "HOWTO", value = "")
-
-  public DocTypeEnum getDocType() {
-    return docType;
-  }
-
-
-  public void setDocType(DocTypeEnum docType) {
-    this.docType = docType;
-  }
-
-
-  public DocumentSearchResultDTO summary(String summary) {
-    
-    this.summary = summary;
-    return this;
-  }
-
-   /**
-   * Get summary
-   * @return summary
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Summary of Calculator Documentation", value = "")
-
-  public String getSummary() {
-    return summary;
-  }
-
-
-  public void setSummary(String summary) {
-    this.summary = summary;
-  }
-
-
-  public DocumentSearchResultDTO sourceType(SourceTypeEnum sourceType) {
-    
-    this.sourceType = sourceType;
-    return this;
-  }
-
-   /**
-   * Get sourceType
-   * @return sourceType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "INLINE", value = "")
-
-  public SourceTypeEnum getSourceType() {
-    return sourceType;
-  }
-
-
-  public void setSourceType(SourceTypeEnum sourceType) {
-    this.sourceType = sourceType;
-  }
-
-
-  public DocumentSearchResultDTO sourceUrl(String sourceUrl) {
-    
-    this.sourceUrl = sourceUrl;
-    return this;
-  }
-
-   /**
-   * Get sourceUrl
-   * @return sourceUrl
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getSourceUrl() {
-    return sourceUrl;
-  }
-
-
-  public void setSourceUrl(String sourceUrl) {
-    this.sourceUrl = sourceUrl;
-  }
-
-
-  public DocumentSearchResultDTO otherTypeName(String otherTypeName) {
-    
-    this.otherTypeName = otherTypeName;
-    return this;
-  }
-
-   /**
-   * Get otherTypeName
-   * @return otherTypeName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getOtherTypeName() {
-    return otherTypeName;
-  }
-
-
-  public void setOtherTypeName(String otherTypeName) {
-    this.otherTypeName = otherTypeName;
-  }
-
-
-  public DocumentSearchResultDTO visibility(VisibilityEnum visibility) {
-    
-    this.visibility = visibility;
-    return this;
-  }
-
-   /**
-   * Get visibility
-   * @return visibility
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "API_LEVEL", value = "")
-
-  public VisibilityEnum getVisibility() {
-    return visibility;
-  }
-
-
-  public void setVisibility(VisibilityEnum visibility) {
-    this.visibility = visibility;
-  }
-
-
-  public DocumentSearchResultDTO apiName(String apiName) {
-    
-    this.apiName = apiName;
-    return this;
-  }
-
-   /**
-   * The name of the associated API
-   * @return apiName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "TestAPI", value = "The name of the associated API")
-
-  public String getApiName() {
-    return apiName;
-  }
-
-
-  public void setApiName(String apiName) {
-    this.apiName = apiName;
-  }
-
-
-  public DocumentSearchResultDTO apiVersion(String apiVersion) {
-    
-    this.apiVersion = apiVersion;
-    return this;
-  }
-
-   /**
-   * The version of the associated API
-   * @return apiVersion
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1.0.0", value = "The version of the associated API")
-
-  public String getApiVersion() {
-    return apiVersion;
-  }
-
-
-  public void setApiVersion(String apiVersion) {
-    this.apiVersion = apiVersion;
-  }
-
-
-  public DocumentSearchResultDTO apiProvider(String apiProvider) {
-    
-    this.apiProvider = apiProvider;
-    return this;
-  }
-
-   /**
-   * Get apiProvider
-   * @return apiProvider
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "")
-
-  public String getApiProvider() {
-    return apiProvider;
-  }
-
-
-  public void setApiProvider(String apiProvider) {
-    this.apiProvider = apiProvider;
-  }
-
-
-  public DocumentSearchResultDTO apiUUID(String apiUUID) {
-    
-    this.apiUUID = apiUUID;
-    return this;
-  }
-
-   /**
-   * Get apiUUID
-   * @return apiUUID
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getApiUUID() {
-    return apiUUID;
-  }
-
-
-  public void setApiUUID(String apiUUID) {
-    this.apiUUID = apiUUID;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    @Override
+    public VisibilityEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return VisibilityEnum.fromValue(value);
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
     }
-    DocumentSearchResultDTO documentSearchResult = (DocumentSearchResultDTO) o;
-    return Objects.equals(this.docType, documentSearchResult.docType) &&
-        Objects.equals(this.summary, documentSearchResult.summary) &&
-        Objects.equals(this.sourceType, documentSearchResult.sourceType) &&
-        Objects.equals(this.sourceUrl, documentSearchResult.sourceUrl) &&
-        Objects.equals(this.otherTypeName, documentSearchResult.otherTypeName) &&
-        Objects.equals(this.visibility, documentSearchResult.visibility) &&
-        Objects.equals(this.apiName, documentSearchResult.apiName) &&
-        Objects.equals(this.apiVersion, documentSearchResult.apiVersion) &&
-        Objects.equals(this.apiProvider, documentSearchResult.apiProvider) &&
-        Objects.equals(this.apiUUID, documentSearchResult.apiUUID) &&
-        super.equals(o);
-  }
+}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(docType, summary, sourceType, sourceUrl, otherTypeName, visibility, apiName, apiVersion, apiProvider, apiUUID, super.hashCode());
-  }
+        public static final String SERIALIZED_NAME_VISIBILITY = "visibility";
+        @SerializedName(SERIALIZED_NAME_VISIBILITY)
+            private VisibilityEnum visibility;
+
+        public static final String SERIALIZED_NAME_API_NAME = "apiName";
+        @SerializedName(SERIALIZED_NAME_API_NAME)
+            private String apiName;
+
+        public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
+        @SerializedName(SERIALIZED_NAME_API_VERSION)
+            private String apiVersion;
+
+        public static final String SERIALIZED_NAME_API_PROVIDER = "apiProvider";
+        @SerializedName(SERIALIZED_NAME_API_PROVIDER)
+            private String apiProvider;
+
+        public static final String SERIALIZED_NAME_API_U_U_I_D = "apiUUID";
+        @SerializedName(SERIALIZED_NAME_API_U_U_I_D)
+            private String apiUUID;
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class DocumentSearchResultDTO {\n");
+        public DocumentSearchResultDTO docType(DocTypeEnum docType) {
+        
+        this.docType = docType;
+        return this;
+        }
+
+    /**
+        * Get docType
+    * @return docType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "HOWTO", value = "")
+    
+    public DocTypeEnum getDocType() {
+        return docType;
+    }
+
+
+    public void setDocType(DocTypeEnum docType) {
+        this.docType = docType;
+    }
+
+
+        public DocumentSearchResultDTO summary(String summary) {
+        
+        this.summary = summary;
+        return this;
+        }
+
+    /**
+        * Get summary
+    * @return summary
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Summary of Calculator Documentation", value = "")
+    
+    public String getSummary() {
+        return summary;
+    }
+
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+
+        public DocumentSearchResultDTO sourceType(SourceTypeEnum sourceType) {
+        
+        this.sourceType = sourceType;
+        return this;
+        }
+
+    /**
+        * Get sourceType
+    * @return sourceType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "INLINE", value = "")
+    
+    public SourceTypeEnum getSourceType() {
+        return sourceType;
+    }
+
+
+    public void setSourceType(SourceTypeEnum sourceType) {
+        this.sourceType = sourceType;
+    }
+
+
+        public DocumentSearchResultDTO sourceUrl(String sourceUrl) {
+        
+        this.sourceUrl = sourceUrl;
+        return this;
+        }
+
+    /**
+        * Get sourceUrl
+    * @return sourceUrl
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
+    }
+
+
+        public DocumentSearchResultDTO otherTypeName(String otherTypeName) {
+        
+        this.otherTypeName = otherTypeName;
+        return this;
+        }
+
+    /**
+        * Get otherTypeName
+    * @return otherTypeName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getOtherTypeName() {
+        return otherTypeName;
+    }
+
+
+    public void setOtherTypeName(String otherTypeName) {
+        this.otherTypeName = otherTypeName;
+    }
+
+
+        public DocumentSearchResultDTO visibility(VisibilityEnum visibility) {
+        
+        this.visibility = visibility;
+        return this;
+        }
+
+    /**
+        * Get visibility
+    * @return visibility
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "API_LEVEL", value = "")
+    
+    public VisibilityEnum getVisibility() {
+        return visibility;
+    }
+
+
+    public void setVisibility(VisibilityEnum visibility) {
+        this.visibility = visibility;
+    }
+
+
+        public DocumentSearchResultDTO apiName(String apiName) {
+        
+        this.apiName = apiName;
+        return this;
+        }
+
+    /**
+        * The name of the associated API
+    * @return apiName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "TestAPI", value = "The name of the associated API")
+    
+    public String getApiName() {
+        return apiName;
+    }
+
+
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
+    }
+
+
+        public DocumentSearchResultDTO apiVersion(String apiVersion) {
+        
+        this.apiVersion = apiVersion;
+        return this;
+        }
+
+    /**
+        * The version of the associated API
+    * @return apiVersion
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "The version of the associated API")
+    
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
+
+
+        public DocumentSearchResultDTO apiProvider(String apiProvider) {
+        
+        this.apiProvider = apiProvider;
+        return this;
+        }
+
+    /**
+        * Get apiProvider
+    * @return apiProvider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "")
+    
+    public String getApiProvider() {
+        return apiProvider;
+    }
+
+
+    public void setApiProvider(String apiProvider) {
+        this.apiProvider = apiProvider;
+    }
+
+
+        public DocumentSearchResultDTO apiUUID(String apiUUID) {
+        
+        this.apiUUID = apiUUID;
+        return this;
+        }
+
+    /**
+        * Get apiUUID
+    * @return apiUUID
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getApiUUID() {
+        return apiUUID;
+    }
+
+
+    public void setApiUUID(String apiUUID) {
+        this.apiUUID = apiUUID;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            DocumentSearchResultDTO documentSearchResult = (DocumentSearchResultDTO) o;
+            return Objects.equals(this.docType, documentSearchResult.docType) &&
+            Objects.equals(this.summary, documentSearchResult.summary) &&
+            Objects.equals(this.sourceType, documentSearchResult.sourceType) &&
+            Objects.equals(this.sourceUrl, documentSearchResult.sourceUrl) &&
+            Objects.equals(this.otherTypeName, documentSearchResult.otherTypeName) &&
+            Objects.equals(this.visibility, documentSearchResult.visibility) &&
+            Objects.equals(this.apiName, documentSearchResult.apiName) &&
+            Objects.equals(this.apiVersion, documentSearchResult.apiVersion) &&
+            Objects.equals(this.apiProvider, documentSearchResult.apiProvider) &&
+            Objects.equals(this.apiUUID, documentSearchResult.apiUUID) &&
+            super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(docType, summary, sourceType, sourceUrl, otherTypeName, visibility, apiName, apiVersion, apiProvider, apiUUID, super.hashCode());
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class DocumentSearchResultDTO {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    docType: ").append(toIndentedString(docType)).append("\n");
     sb.append("    summary: ").append(toIndentedString(summary)).append("\n");
@@ -502,20 +502,20 @@ public class DocumentSearchResultDTO extends SearchResultDTO {
     sb.append("    apiVersion: ").append(toIndentedString(apiVersion)).append("\n");
     sb.append("    apiProvider: ").append(toIndentedString(apiProvider)).append("\n");
     sb.append("    apiUUID: ").append(toIndentedString(apiUUID)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

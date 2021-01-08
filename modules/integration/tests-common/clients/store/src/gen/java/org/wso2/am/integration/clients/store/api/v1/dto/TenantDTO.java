@@ -23,106 +23,106 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * TenantDTO
- */
+* TenantDTO
+*/
 
 public class TenantDTO {
-  public static final String SERIALIZED_NAME_DOMAIN = "domain";
-  @SerializedName(SERIALIZED_NAME_DOMAIN)
-  private String domain;
+        public static final String SERIALIZED_NAME_DOMAIN = "domain";
+        @SerializedName(SERIALIZED_NAME_DOMAIN)
+            private String domain;
 
-  public static final String SERIALIZED_NAME_STATUS = "status";
-  @SerializedName(SERIALIZED_NAME_STATUS)
-  private String status;
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private String status;
 
 
-  public TenantDTO domain(String domain) {
+        public TenantDTO domain(String domain) {
+        
+        this.domain = domain;
+        return this;
+        }
+
+    /**
+        * tenant domain
+    * @return domain
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2.com", value = "tenant domain")
     
-    this.domain = domain;
-    return this;
-  }
-
-   /**
-   * tenant domain
-   * @return domain
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "wso2.com", value = "tenant domain")
-
-  public String getDomain() {
-    return domain;
-  }
+    public String getDomain() {
+        return domain;
+    }
 
 
-  public void setDomain(String domain) {
-    this.domain = domain;
-  }
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
 
 
-  public TenantDTO status(String status) {
+        public TenantDTO status(String status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * current status of the tenant active/inactive
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "active", value = "current status of the tenant active/inactive")
     
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * current status of the tenant active/inactive
-   * @return status
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "active", value = "current status of the tenant active/inactive")
-
-  public String getStatus() {
-    return status;
-  }
-
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getStatus() {
+        return status;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setStatus(String status) {
+        this.status = status;
     }
-    TenantDTO tenant = (TenantDTO) o;
-    return Objects.equals(this.domain, tenant.domain) &&
-        Objects.equals(this.status, tenant.status);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(domain, status);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class TenantDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            TenantDTO tenant = (TenantDTO) o;
+            return Objects.equals(this.domain, tenant.domain) &&
+            Objects.equals(this.status, tenant.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(domain, status);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class TenantDTO {\n");
     sb.append("    domain: ").append(toIndentedString(domain)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

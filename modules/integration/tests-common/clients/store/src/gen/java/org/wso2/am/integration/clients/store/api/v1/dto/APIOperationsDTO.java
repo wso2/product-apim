@@ -23,135 +23,135 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIOperationsDTO
- */
+* APIOperationsDTO
+*/
 
 public class APIOperationsDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_TARGET = "target";
-  @SerializedName(SERIALIZED_NAME_TARGET)
-  private String target;
+        public static final String SERIALIZED_NAME_TARGET = "target";
+        @SerializedName(SERIALIZED_NAME_TARGET)
+            private String target;
 
-  public static final String SERIALIZED_NAME_VERB = "verb";
-  @SerializedName(SERIALIZED_NAME_VERB)
-  private String verb;
+        public static final String SERIALIZED_NAME_VERB = "verb";
+        @SerializedName(SERIALIZED_NAME_VERB)
+            private String verb;
 
 
-  public APIOperationsDTO id(String id) {
+        public APIOperationsDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "apioperation", value = "")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "apioperation", value = "")
-
-  public String getId() {
-    return id;
-  }
-
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-
-  public APIOperationsDTO target(String target) {
-    
-    this.target = target;
-    return this;
-  }
-
-   /**
-   * Get target
-   * @return target
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getTarget() {
-    return target;
-  }
-
-
-  public void setTarget(String target) {
-    this.target = target;
-  }
-
-
-  public APIOperationsDTO verb(String verb) {
-    
-    this.verb = verb;
-    return this;
-  }
-
-   /**
-   * Get verb
-   * @return verb
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getVerb() {
-    return verb;
-  }
-
-
-  public void setVerb(String verb) {
-    this.verb = verb;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getId() {
+        return id;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setId(String id) {
+        this.id = id;
     }
-    APIOperationsDTO apIOperations = (APIOperationsDTO) o;
-    return Objects.equals(this.id, apIOperations.id) &&
-        Objects.equals(this.target, apIOperations.target) &&
-        Objects.equals(this.verb, apIOperations.verb);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, target, verb);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIOperationsDTO {\n");
+        public APIOperationsDTO target(String target) {
+        
+        this.target = target;
+        return this;
+        }
+
+    /**
+        * Get target
+    * @return target
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getTarget() {
+        return target;
+    }
+
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+
+        public APIOperationsDTO verb(String verb) {
+        
+        this.verb = verb;
+        return this;
+        }
+
+    /**
+        * Get verb
+    * @return verb
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getVerb() {
+        return verb;
+    }
+
+
+    public void setVerb(String verb) {
+        this.verb = verb;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIOperationsDTO apIOperations = (APIOperationsDTO) o;
+            return Objects.equals(this.id, apIOperations.id) &&
+            Objects.equals(this.target, apIOperations.target) &&
+            Objects.equals(this.verb, apIOperations.verb);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, target, verb);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIOperationsDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    target: ").append(toIndentedString(target)).append("\n");
     sb.append("    verb: ").append(toIndentedString(verb)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

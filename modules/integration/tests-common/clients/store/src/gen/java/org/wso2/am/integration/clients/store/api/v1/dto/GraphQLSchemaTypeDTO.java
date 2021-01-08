@@ -25,114 +25,106 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * GraphQLSchemaTypeDTO
- */
+* GraphQLSchemaTypeDTO
+*/
 
 public class GraphQLSchemaTypeDTO {
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private String type;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type;
 
-  public static final String SERIALIZED_NAME_FIELD_LIST = "fieldList";
-  @SerializedName(SERIALIZED_NAME_FIELD_LIST)
-  private List<String> fieldList = null;
+        public static final String SERIALIZED_NAME_FIELD_LIST = "fieldList";
+        @SerializedName(SERIALIZED_NAME_FIELD_LIST)
+            private List<String> fieldList = null;
 
 
-  public GraphQLSchemaTypeDTO type(String type) {
+        public GraphQLSchemaTypeDTO type(String type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * Type found within the GraphQL Schema 
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Country", value = "Type found within the GraphQL Schema ")
     
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Type found within the GraphQL Schema 
-   * @return type
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Country", value = "Type found within the GraphQL Schema ")
-
-  public String getType() {
-    return type;
-  }
+    public String getType() {
+        return type;
+    }
 
 
-  public void setType(String type) {
-    this.type = type;
-  }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
-  public GraphQLSchemaTypeDTO fieldList(List<String> fieldList) {
+        public GraphQLSchemaTypeDTO fieldList(List<String> fieldList) {
+        
+        this.fieldList = fieldList;
+        return this;
+        }
+
+    /**
+        * Array of fields under current type 
+    * @return fieldList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"code\",\"name\"]", value = "Array of fields under current type ")
     
-    this.fieldList = fieldList;
-    return this;
-  }
-
-  public GraphQLSchemaTypeDTO addFieldListItem(String fieldListItem) {
-    if (this.fieldList == null) {
-      this.fieldList = new ArrayList<>();
+    public List<String> getFieldList() {
+        return fieldList;
     }
-    this.fieldList.add(fieldListItem);
-    return this;
-  }
-
-   /**
-   * Array of fields under current type 
-   * @return fieldList
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"code\",\"name\"]", value = "Array of fields under current type ")
-
-  public List<String> getFieldList() {
-    return fieldList;
-  }
 
 
-  public void setFieldList(List<String> fieldList) {
-    this.fieldList = fieldList;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setFieldList(List<String> fieldList) {
+        this.fieldList = fieldList;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            GraphQLSchemaTypeDTO graphQLSchemaType = (GraphQLSchemaTypeDTO) o;
+            return Objects.equals(this.type, graphQLSchemaType.type) &&
+            Objects.equals(this.fieldList, graphQLSchemaType.fieldList);
     }
-    GraphQLSchemaTypeDTO graphQLSchemaType = (GraphQLSchemaTypeDTO) o;
-    return Objects.equals(this.type, graphQLSchemaType.type) &&
-        Objects.equals(this.fieldList, graphQLSchemaType.fieldList);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, fieldList);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, fieldList);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLSchemaTypeDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class GraphQLSchemaTypeDTO {\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    fieldList: ").append(toIndentedString(fieldList)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,164 +23,164 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIBusinessInformationDTO
- */
+* APIBusinessInformationDTO
+*/
 
 public class APIBusinessInformationDTO {
-  public static final String SERIALIZED_NAME_BUSINESS_OWNER = "businessOwner";
-  @SerializedName(SERIALIZED_NAME_BUSINESS_OWNER)
-  private String businessOwner;
+        public static final String SERIALIZED_NAME_BUSINESS_OWNER = "businessOwner";
+        @SerializedName(SERIALIZED_NAME_BUSINESS_OWNER)
+            private String businessOwner;
 
-  public static final String SERIALIZED_NAME_BUSINESS_OWNER_EMAIL = "businessOwnerEmail";
-  @SerializedName(SERIALIZED_NAME_BUSINESS_OWNER_EMAIL)
-  private String businessOwnerEmail;
+        public static final String SERIALIZED_NAME_BUSINESS_OWNER_EMAIL = "businessOwnerEmail";
+        @SerializedName(SERIALIZED_NAME_BUSINESS_OWNER_EMAIL)
+            private String businessOwnerEmail;
 
-  public static final String SERIALIZED_NAME_TECHNICAL_OWNER = "technicalOwner";
-  @SerializedName(SERIALIZED_NAME_TECHNICAL_OWNER)
-  private String technicalOwner;
+        public static final String SERIALIZED_NAME_TECHNICAL_OWNER = "technicalOwner";
+        @SerializedName(SERIALIZED_NAME_TECHNICAL_OWNER)
+            private String technicalOwner;
 
-  public static final String SERIALIZED_NAME_TECHNICAL_OWNER_EMAIL = "technicalOwnerEmail";
-  @SerializedName(SERIALIZED_NAME_TECHNICAL_OWNER_EMAIL)
-  private String technicalOwnerEmail;
+        public static final String SERIALIZED_NAME_TECHNICAL_OWNER_EMAIL = "technicalOwnerEmail";
+        @SerializedName(SERIALIZED_NAME_TECHNICAL_OWNER_EMAIL)
+            private String technicalOwnerEmail;
 
 
-  public APIBusinessInformationDTO businessOwner(String businessOwner) {
+        public APIBusinessInformationDTO businessOwner(String businessOwner) {
+        
+        this.businessOwner = businessOwner;
+        return this;
+        }
+
+    /**
+        * Get businessOwner
+    * @return businessOwner
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "businessowner", value = "")
     
-    this.businessOwner = businessOwner;
-    return this;
-  }
-
-   /**
-   * Get businessOwner
-   * @return businessOwner
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "businessowner", value = "")
-
-  public String getBusinessOwner() {
-    return businessOwner;
-  }
-
-
-  public void setBusinessOwner(String businessOwner) {
-    this.businessOwner = businessOwner;
-  }
-
-
-  public APIBusinessInformationDTO businessOwnerEmail(String businessOwnerEmail) {
-    
-    this.businessOwnerEmail = businessOwnerEmail;
-    return this;
-  }
-
-   /**
-   * Get businessOwnerEmail
-   * @return businessOwnerEmail
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "businessowner@wso2.com", value = "")
-
-  public String getBusinessOwnerEmail() {
-    return businessOwnerEmail;
-  }
-
-
-  public void setBusinessOwnerEmail(String businessOwnerEmail) {
-    this.businessOwnerEmail = businessOwnerEmail;
-  }
-
-
-  public APIBusinessInformationDTO technicalOwner(String technicalOwner) {
-    
-    this.technicalOwner = technicalOwner;
-    return this;
-  }
-
-   /**
-   * Get technicalOwner
-   * @return technicalOwner
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "technicalowner", value = "")
-
-  public String getTechnicalOwner() {
-    return technicalOwner;
-  }
-
-
-  public void setTechnicalOwner(String technicalOwner) {
-    this.technicalOwner = technicalOwner;
-  }
-
-
-  public APIBusinessInformationDTO technicalOwnerEmail(String technicalOwnerEmail) {
-    
-    this.technicalOwnerEmail = technicalOwnerEmail;
-    return this;
-  }
-
-   /**
-   * Get technicalOwnerEmail
-   * @return technicalOwnerEmail
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "technicalowner@wso2.com", value = "")
-
-  public String getTechnicalOwnerEmail() {
-    return technicalOwnerEmail;
-  }
-
-
-  public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
-    this.technicalOwnerEmail = technicalOwnerEmail;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getBusinessOwner() {
+        return businessOwner;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setBusinessOwner(String businessOwner) {
+        this.businessOwner = businessOwner;
     }
-    APIBusinessInformationDTO apIBusinessInformation = (APIBusinessInformationDTO) o;
-    return Objects.equals(this.businessOwner, apIBusinessInformation.businessOwner) &&
-        Objects.equals(this.businessOwnerEmail, apIBusinessInformation.businessOwnerEmail) &&
-        Objects.equals(this.technicalOwner, apIBusinessInformation.technicalOwner) &&
-        Objects.equals(this.technicalOwnerEmail, apIBusinessInformation.technicalOwnerEmail);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(businessOwner, businessOwnerEmail, technicalOwner, technicalOwnerEmail);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIBusinessInformationDTO {\n");
+        public APIBusinessInformationDTO businessOwnerEmail(String businessOwnerEmail) {
+        
+        this.businessOwnerEmail = businessOwnerEmail;
+        return this;
+        }
+
+    /**
+        * Get businessOwnerEmail
+    * @return businessOwnerEmail
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "businessowner@wso2.com", value = "")
+    
+    public String getBusinessOwnerEmail() {
+        return businessOwnerEmail;
+    }
+
+
+    public void setBusinessOwnerEmail(String businessOwnerEmail) {
+        this.businessOwnerEmail = businessOwnerEmail;
+    }
+
+
+        public APIBusinessInformationDTO technicalOwner(String technicalOwner) {
+        
+        this.technicalOwner = technicalOwner;
+        return this;
+        }
+
+    /**
+        * Get technicalOwner
+    * @return technicalOwner
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "technicalowner", value = "")
+    
+    public String getTechnicalOwner() {
+        return technicalOwner;
+    }
+
+
+    public void setTechnicalOwner(String technicalOwner) {
+        this.technicalOwner = technicalOwner;
+    }
+
+
+        public APIBusinessInformationDTO technicalOwnerEmail(String technicalOwnerEmail) {
+        
+        this.technicalOwnerEmail = technicalOwnerEmail;
+        return this;
+        }
+
+    /**
+        * Get technicalOwnerEmail
+    * @return technicalOwnerEmail
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "technicalowner@wso2.com", value = "")
+    
+    public String getTechnicalOwnerEmail() {
+        return technicalOwnerEmail;
+    }
+
+
+    public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
+        this.technicalOwnerEmail = technicalOwnerEmail;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIBusinessInformationDTO apIBusinessInformation = (APIBusinessInformationDTO) o;
+            return Objects.equals(this.businessOwner, apIBusinessInformation.businessOwner) &&
+            Objects.equals(this.businessOwnerEmail, apIBusinessInformation.businessOwnerEmail) &&
+            Objects.equals(this.technicalOwner, apIBusinessInformation.technicalOwner) &&
+            Objects.equals(this.technicalOwnerEmail, apIBusinessInformation.technicalOwnerEmail);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(businessOwner, businessOwnerEmail, technicalOwner, technicalOwnerEmail);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIBusinessInformationDTO {\n");
     sb.append("    businessOwner: ").append(toIndentedString(businessOwner)).append("\n");
     sb.append("    businessOwnerEmail: ").append(toIndentedString(businessOwnerEmail)).append("\n");
     sb.append("    technicalOwner: ").append(toIndentedString(technicalOwner)).append("\n");
     sb.append("    technicalOwnerEmail: ").append(toIndentedString(technicalOwnerEmail)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

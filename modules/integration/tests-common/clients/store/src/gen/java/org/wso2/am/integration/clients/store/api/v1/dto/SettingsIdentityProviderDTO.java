@@ -23,77 +23,77 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * SettingsIdentityProviderDTO
- */
+* SettingsIdentityProviderDTO
+*/
 
 public class SettingsIdentityProviderDTO {
-  public static final String SERIALIZED_NAME_EXTERNAL = "external";
-  @SerializedName(SERIALIZED_NAME_EXTERNAL)
-  private Boolean external = false;
+        public static final String SERIALIZED_NAME_EXTERNAL = "external";
+        @SerializedName(SERIALIZED_NAME_EXTERNAL)
+            private Boolean external = false;
 
 
-  public SettingsIdentityProviderDTO external(Boolean external) {
+        public SettingsIdentityProviderDTO external(Boolean external) {
+        
+        this.external = external;
+        return this;
+        }
+
+    /**
+        * Get external
+    * @return external
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.external = external;
-    return this;
-  }
-
-   /**
-   * Get external
-   * @return external
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public Boolean getExternal() {
-    return external;
-  }
-
-
-  public void setExternal(Boolean external) {
-    this.external = external;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Boolean isExternal() {
+        return external;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setExternal(Boolean external) {
+        this.external = external;
     }
-    SettingsIdentityProviderDTO settingsIdentityProvider = (SettingsIdentityProviderDTO) o;
-    return Objects.equals(this.external, settingsIdentityProvider.external);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(external);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class SettingsIdentityProviderDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            SettingsIdentityProviderDTO settingsIdentityProvider = (SettingsIdentityProviderDTO) o;
+            return Objects.equals(this.external, settingsIdentityProvider.external);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(external);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class SettingsIdentityProviderDTO {\n");
     sb.append("    external: ").append(toIndentedString(external)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

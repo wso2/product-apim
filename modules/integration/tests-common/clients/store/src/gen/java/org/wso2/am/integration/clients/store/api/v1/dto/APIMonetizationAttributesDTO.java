@@ -23,164 +23,164 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIMonetizationAttributesDTO
- */
+* APIMonetizationAttributesDTO
+*/
 
 public class APIMonetizationAttributesDTO {
-  public static final String SERIALIZED_NAME_FIXED_PRICE = "fixedPrice";
-  @SerializedName(SERIALIZED_NAME_FIXED_PRICE)
-  private String fixedPrice;
+        public static final String SERIALIZED_NAME_FIXED_PRICE = "fixedPrice";
+        @SerializedName(SERIALIZED_NAME_FIXED_PRICE)
+            private String fixedPrice;
 
-  public static final String SERIALIZED_NAME_PRICE_PER_REQUEST = "pricePerRequest";
-  @SerializedName(SERIALIZED_NAME_PRICE_PER_REQUEST)
-  private String pricePerRequest;
+        public static final String SERIALIZED_NAME_PRICE_PER_REQUEST = "pricePerRequest";
+        @SerializedName(SERIALIZED_NAME_PRICE_PER_REQUEST)
+            private String pricePerRequest;
 
-  public static final String SERIALIZED_NAME_CURRENCY_TYPE = "currencyType";
-  @SerializedName(SERIALIZED_NAME_CURRENCY_TYPE)
-  private String currencyType;
+        public static final String SERIALIZED_NAME_CURRENCY_TYPE = "currencyType";
+        @SerializedName(SERIALIZED_NAME_CURRENCY_TYPE)
+            private String currencyType;
 
-  public static final String SERIALIZED_NAME_BILLING_CYCLE = "billingCycle";
-  @SerializedName(SERIALIZED_NAME_BILLING_CYCLE)
-  private String billingCycle;
+        public static final String SERIALIZED_NAME_BILLING_CYCLE = "billingCycle";
+        @SerializedName(SERIALIZED_NAME_BILLING_CYCLE)
+            private String billingCycle;
 
 
-  public APIMonetizationAttributesDTO fixedPrice(String fixedPrice) {
+        public APIMonetizationAttributesDTO fixedPrice(String fixedPrice) {
+        
+        this.fixedPrice = fixedPrice;
+        return this;
+        }
+
+    /**
+        * Get fixedPrice
+    * @return fixedPrice
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "10", value = "")
     
-    this.fixedPrice = fixedPrice;
-    return this;
-  }
-
-   /**
-   * Get fixedPrice
-   * @return fixedPrice
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "10", value = "")
-
-  public String getFixedPrice() {
-    return fixedPrice;
-  }
-
-
-  public void setFixedPrice(String fixedPrice) {
-    this.fixedPrice = fixedPrice;
-  }
-
-
-  public APIMonetizationAttributesDTO pricePerRequest(String pricePerRequest) {
-    
-    this.pricePerRequest = pricePerRequest;
-    return this;
-  }
-
-   /**
-   * Get pricePerRequest
-   * @return pricePerRequest
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "")
-
-  public String getPricePerRequest() {
-    return pricePerRequest;
-  }
-
-
-  public void setPricePerRequest(String pricePerRequest) {
-    this.pricePerRequest = pricePerRequest;
-  }
-
-
-  public APIMonetizationAttributesDTO currencyType(String currencyType) {
-    
-    this.currencyType = currencyType;
-    return this;
-  }
-
-   /**
-   * Get currencyType
-   * @return currencyType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "USD", value = "")
-
-  public String getCurrencyType() {
-    return currencyType;
-  }
-
-
-  public void setCurrencyType(String currencyType) {
-    this.currencyType = currencyType;
-  }
-
-
-  public APIMonetizationAttributesDTO billingCycle(String billingCycle) {
-    
-    this.billingCycle = billingCycle;
-    return this;
-  }
-
-   /**
-   * Get billingCycle
-   * @return billingCycle
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "month", value = "")
-
-  public String getBillingCycle() {
-    return billingCycle;
-  }
-
-
-  public void setBillingCycle(String billingCycle) {
-    this.billingCycle = billingCycle;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getFixedPrice() {
+        return fixedPrice;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setFixedPrice(String fixedPrice) {
+        this.fixedPrice = fixedPrice;
     }
-    APIMonetizationAttributesDTO apIMonetizationAttributes = (APIMonetizationAttributesDTO) o;
-    return Objects.equals(this.fixedPrice, apIMonetizationAttributes.fixedPrice) &&
-        Objects.equals(this.pricePerRequest, apIMonetizationAttributes.pricePerRequest) &&
-        Objects.equals(this.currencyType, apIMonetizationAttributes.currencyType) &&
-        Objects.equals(this.billingCycle, apIMonetizationAttributes.billingCycle);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(fixedPrice, pricePerRequest, currencyType, billingCycle);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIMonetizationAttributesDTO {\n");
+        public APIMonetizationAttributesDTO pricePerRequest(String pricePerRequest) {
+        
+        this.pricePerRequest = pricePerRequest;
+        return this;
+        }
+
+    /**
+        * Get pricePerRequest
+    * @return pricePerRequest
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "")
+    
+    public String getPricePerRequest() {
+        return pricePerRequest;
+    }
+
+
+    public void setPricePerRequest(String pricePerRequest) {
+        this.pricePerRequest = pricePerRequest;
+    }
+
+
+        public APIMonetizationAttributesDTO currencyType(String currencyType) {
+        
+        this.currencyType = currencyType;
+        return this;
+        }
+
+    /**
+        * Get currencyType
+    * @return currencyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "USD", value = "")
+    
+    public String getCurrencyType() {
+        return currencyType;
+    }
+
+
+    public void setCurrencyType(String currencyType) {
+        this.currencyType = currencyType;
+    }
+
+
+        public APIMonetizationAttributesDTO billingCycle(String billingCycle) {
+        
+        this.billingCycle = billingCycle;
+        return this;
+        }
+
+    /**
+        * Get billingCycle
+    * @return billingCycle
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "month", value = "")
+    
+    public String getBillingCycle() {
+        return billingCycle;
+    }
+
+
+    public void setBillingCycle(String billingCycle) {
+        this.billingCycle = billingCycle;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIMonetizationAttributesDTO apIMonetizationAttributes = (APIMonetizationAttributesDTO) o;
+            return Objects.equals(this.fixedPrice, apIMonetizationAttributes.fixedPrice) &&
+            Objects.equals(this.pricePerRequest, apIMonetizationAttributes.pricePerRequest) &&
+            Objects.equals(this.currencyType, apIMonetizationAttributes.currencyType) &&
+            Objects.equals(this.billingCycle, apIMonetizationAttributes.billingCycle);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fixedPrice, pricePerRequest, currencyType, billingCycle);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIMonetizationAttributesDTO {\n");
     sb.append("    fixedPrice: ").append(toIndentedString(fixedPrice)).append("\n");
     sb.append("    pricePerRequest: ").append(toIndentedString(pricePerRequest)).append("\n");
     sb.append("    currencyType: ").append(toIndentedString(currencyType)).append("\n");
     sb.append("    billingCycle: ").append(toIndentedString(billingCycle)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

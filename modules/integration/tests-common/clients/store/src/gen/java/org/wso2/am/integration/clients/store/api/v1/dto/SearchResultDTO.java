@@ -23,214 +23,214 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * SearchResultDTO
- */
+* SearchResultDTO
+*/
 
 
 public class SearchResultDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  protected String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            protected String name;
 
-  /**
-   * Gets or Sets type
-   */
-  @JsonAdapter(TypeEnum.Adapter.class)
-  public enum TypeEnum {
-    DOC("DOC"),
-    
-    API("API");
+            /**
+* Gets or Sets type
+*/
+    @JsonAdapter(TypeEnum.Adapter.class)
+public enum TypeEnum {
+        DOC("DOC"),
+        
+        API("API");
 
-    private String value;
+private String value;
 
-    TypeEnum(String value) {
-      this.value = value;
+TypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TypeEnum fromValue(String value) {
+    for (TypeEnum b : TypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<TypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public TypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private TypeEnum type;
+
+        public static final String SERIALIZED_NAME_TRANSPORT_TYPE = "transportType";
+        @SerializedName(SERIALIZED_NAME_TRANSPORT_TYPE)
+            private String transportType;
+
+            public SearchResultDTO() {
+            this.name = this.getClass().getSimpleName();
+            }
+
+        public SearchResultDTO id(String id) {
+        
+        this.id = id;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
+    
+    public String getId() {
+        return id;
     }
 
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public TypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return TypeEnum.fromValue(value);
-      }
+    public void setId(String id) {
+        this.id = id;
     }
-  }
 
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private TypeEnum type;
 
-  public static final String SERIALIZED_NAME_TRANSPORT_TYPE = "transportType";
-  @SerializedName(SERIALIZED_NAME_TRANSPORT_TYPE)
-  private String transportType;
+        public SearchResultDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
 
-  public SearchResultDTO() {
-    this.name = this.getClass().getSimpleName();
-  }
-
-  public SearchResultDTO id(String id) {
+    /**
+        * Get name
+    * @return name
+    **/
+      @ApiModelProperty(example = "TestAPI", required = true, value = "")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
-
-  public String getId() {
-    return id;
-  }
-
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-
-  public SearchResultDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @ApiModelProperty(example = "TestAPI", required = true, value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public SearchResultDTO type(TypeEnum type) {
-    
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Get type
-   * @return type
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "API", value = "")
-
-  public TypeEnum getType() {
-    return type;
-  }
-
-
-  public void setType(TypeEnum type) {
-    this.type = type;
-  }
-
-
-  public SearchResultDTO transportType(String transportType) {
-    
-    this.transportType = transportType;
-    return this;
-  }
-
-   /**
-   * Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
-   * @return transportType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL")
-
-  public String getTransportType() {
-    return transportType;
-  }
-
-
-  public void setTransportType(String transportType) {
-    this.transportType = transportType;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getName() {
+        return name;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setName(String name) {
+        this.name = name;
     }
-    SearchResultDTO searchResult = (SearchResultDTO) o;
-    return Objects.equals(this.id, searchResult.id) &&
-        Objects.equals(this.name, searchResult.name) &&
-        Objects.equals(this.type, searchResult.type) &&
-        Objects.equals(this.transportType, searchResult.transportType);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, type, transportType);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class SearchResultDTO {\n");
+        public SearchResultDTO type(TypeEnum type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * Get type
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "API", value = "")
+    
+    public TypeEnum getType() {
+        return type;
+    }
+
+
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
+
+
+        public SearchResultDTO transportType(String transportType) {
+        
+        this.transportType = transportType;
+        return this;
+        }
+
+    /**
+        * Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
+    * @return transportType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL")
+    
+    public String getTransportType() {
+        return transportType;
+    }
+
+
+    public void setTransportType(String transportType) {
+        this.transportType = transportType;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            SearchResultDTO searchResult = (SearchResultDTO) o;
+            return Objects.equals(this.id, searchResult.id) &&
+            Objects.equals(this.name, searchResult.name) &&
+            Objects.equals(this.type, searchResult.type) &&
+            Objects.equals(this.transportType, searchResult.transportType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, type, transportType);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class SearchResultDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    transportType: ").append(toIndentedString(transportType)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -26,114 +26,106 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AlertConfigDTO
- */
+* AlertConfigDTO
+*/
 
 public class AlertConfigDTO {
-  public static final String SERIALIZED_NAME_CONFIGURATION_ID = "configurationId";
-  @SerializedName(SERIALIZED_NAME_CONFIGURATION_ID)
-  private String configurationId;
+        public static final String SERIALIZED_NAME_CONFIGURATION_ID = "configurationId";
+        @SerializedName(SERIALIZED_NAME_CONFIGURATION_ID)
+            private String configurationId;
 
-  public static final String SERIALIZED_NAME_CONFIGURATION = "configuration";
-  @SerializedName(SERIALIZED_NAME_CONFIGURATION)
-  private Map<String, String> _configuration = null;
+        public static final String SERIALIZED_NAME_CONFIGURATION = "configuration";
+        @SerializedName(SERIALIZED_NAME_CONFIGURATION)
+            private Map<String, String> _configuration = null;
 
 
-  public AlertConfigDTO configurationId(String configurationId) {
+        public AlertConfigDTO configurationId(String configurationId) {
+        
+        this.configurationId = configurationId;
+        return this;
+        }
+
+    /**
+        * The alert config subscription id.
+    * @return configurationId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K", value = "The alert config subscription id.")
     
-    this.configurationId = configurationId;
-    return this;
-  }
-
-   /**
-   * The alert config subscription id.
-   * @return configurationId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K", value = "The alert config subscription id.")
-
-  public String getConfigurationId() {
-    return configurationId;
-  }
+    public String getConfigurationId() {
+        return configurationId;
+    }
 
 
-  public void setConfigurationId(String configurationId) {
-    this.configurationId = configurationId;
-  }
+    public void setConfigurationId(String configurationId) {
+        this.configurationId = configurationId;
+    }
 
 
-  public AlertConfigDTO _configuration(Map<String, String> _configuration) {
+        public AlertConfigDTO _configuration(Map<String, String> _configuration) {
+        
+        this._configuration = _configuration;
+        return this;
+        }
+
+    /**
+        * The config parameters.
+    * @return _configuration
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{\"apiName\":\"PizzaShackAPI\",\"apiVersion\":\"1.0.0\",\"applicationName\":\"DefaultApplication\",\"requestCount\":\"12\"}", value = "The config parameters.")
     
-    this._configuration = _configuration;
-    return this;
-  }
-
-  public AlertConfigDTO putConfigurationItem(String key, String _configurationItem) {
-    if (this._configuration == null) {
-      this._configuration = new HashMap<>();
+    public Map<String, String> getConfiguration() {
+        return _configuration;
     }
-    this._configuration.put(key, _configurationItem);
-    return this;
-  }
-
-   /**
-   * The config parameters.
-   * @return _configuration
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{\"apiName\":\"PizzaShackAPI\",\"apiVersion\":\"1.0.0\",\"applicationName\":\"DefaultApplication\",\"requestCount\":\"12\"}", value = "The config parameters.")
-
-  public Map<String, String> getConfiguration() {
-    return _configuration;
-  }
 
 
-  public void setConfiguration(Map<String, String> _configuration) {
-    this._configuration = _configuration;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setConfiguration(Map<String, String> _configuration) {
+        this._configuration = _configuration;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AlertConfigDTO alertConfig = (AlertConfigDTO) o;
+            return Objects.equals(this.configurationId, alertConfig.configurationId) &&
+            Objects.equals(this._configuration, alertConfig._configuration);
     }
-    AlertConfigDTO alertConfig = (AlertConfigDTO) o;
-    return Objects.equals(this.configurationId, alertConfig.configurationId) &&
-        Objects.equals(this._configuration, alertConfig._configuration);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(configurationId, _configuration);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(configurationId, _configuration);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AlertConfigDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AlertConfigDTO {\n");
     sb.append("    configurationId: ").append(toIndentedString(configurationId)).append("\n");
     sb.append("    _configuration: ").append(toIndentedString(_configuration)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

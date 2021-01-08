@@ -23,135 +23,135 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * CommenterInfoDTO
- */
+* CommenterInfoDTO
+*/
 
 public class CommenterInfoDTO {
-  public static final String SERIALIZED_NAME_FIRST_NAME = "firstName";
-  @SerializedName(SERIALIZED_NAME_FIRST_NAME)
-  private String firstName;
+        public static final String SERIALIZED_NAME_FIRST_NAME = "firstName";
+        @SerializedName(SERIALIZED_NAME_FIRST_NAME)
+            private String firstName;
 
-  public static final String SERIALIZED_NAME_LAST_NAME = "lastName";
-  @SerializedName(SERIALIZED_NAME_LAST_NAME)
-  private String lastName;
+        public static final String SERIALIZED_NAME_LAST_NAME = "lastName";
+        @SerializedName(SERIALIZED_NAME_LAST_NAME)
+            private String lastName;
 
-  public static final String SERIALIZED_NAME_FULL_NAME = "fullName";
-  @SerializedName(SERIALIZED_NAME_FULL_NAME)
-  private String fullName;
+        public static final String SERIALIZED_NAME_FULL_NAME = "fullName";
+        @SerializedName(SERIALIZED_NAME_FULL_NAME)
+            private String fullName;
 
 
-  public CommenterInfoDTO firstName(String firstName) {
+        public CommenterInfoDTO firstName(String firstName) {
+        
+        this.firstName = firstName;
+        return this;
+        }
+
+    /**
+        * Get firstName
+    * @return firstName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "John", value = "")
     
-    this.firstName = firstName;
-    return this;
-  }
-
-   /**
-   * Get firstName
-   * @return firstName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "John", value = "")
-
-  public String getFirstName() {
-    return firstName;
-  }
-
-
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
-
-
-  public CommenterInfoDTO lastName(String lastName) {
-    
-    this.lastName = lastName;
-    return this;
-  }
-
-   /**
-   * Get lastName
-   * @return lastName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "David", value = "")
-
-  public String getLastName() {
-    return lastName;
-  }
-
-
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
-
-
-  public CommenterInfoDTO fullName(String fullName) {
-    
-    this.fullName = fullName;
-    return this;
-  }
-
-   /**
-   * Get fullName
-   * @return fullName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "John David", value = "")
-
-  public String getFullName() {
-    return fullName;
-  }
-
-
-  public void setFullName(String fullName) {
-    this.fullName = fullName;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getFirstName() {
+        return firstName;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
-    CommenterInfoDTO commenterInfo = (CommenterInfoDTO) o;
-    return Objects.equals(this.firstName, commenterInfo.firstName) &&
-        Objects.equals(this.lastName, commenterInfo.lastName) &&
-        Objects.equals(this.fullName, commenterInfo.fullName);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(firstName, lastName, fullName);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CommenterInfoDTO {\n");
+        public CommenterInfoDTO lastName(String lastName) {
+        
+        this.lastName = lastName;
+        return this;
+        }
+
+    /**
+        * Get lastName
+    * @return lastName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "David", value = "")
+    
+    public String getLastName() {
+        return lastName;
+    }
+
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+
+        public CommenterInfoDTO fullName(String fullName) {
+        
+        this.fullName = fullName;
+        return this;
+        }
+
+    /**
+        * Get fullName
+    * @return fullName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "John David", value = "")
+    
+    public String getFullName() {
+        return fullName;
+    }
+
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            CommenterInfoDTO commenterInfo = (CommenterInfoDTO) o;
+            return Objects.equals(this.firstName, commenterInfo.firstName) &&
+            Objects.equals(this.lastName, commenterInfo.lastName) &&
+            Objects.equals(this.fullName, commenterInfo.fullName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, fullName);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class CommenterInfoDTO {\n");
     sb.append("    firstName: ").append(toIndentedString(firstName)).append("\n");
     sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
     sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

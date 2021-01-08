@@ -23,222 +23,222 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationAttributeDTO
- */
+* ApplicationAttributeDTO
+*/
 
 public class ApplicationAttributeDTO {
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private String type;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type;
 
-  public static final String SERIALIZED_NAME_TOOLTIP = "tooltip";
-  @SerializedName(SERIALIZED_NAME_TOOLTIP)
-  private String tooltip;
+        public static final String SERIALIZED_NAME_TOOLTIP = "tooltip";
+        @SerializedName(SERIALIZED_NAME_TOOLTIP)
+            private String tooltip;
 
-  public static final String SERIALIZED_NAME_REQUIRED = "required";
-  @SerializedName(SERIALIZED_NAME_REQUIRED)
-  private String required;
+        public static final String SERIALIZED_NAME_REQUIRED = "required";
+        @SerializedName(SERIALIZED_NAME_REQUIRED)
+            private String required;
 
-  public static final String SERIALIZED_NAME_ATTRIBUTE = "attribute";
-  @SerializedName(SERIALIZED_NAME_ATTRIBUTE)
-  private String attribute;
+        public static final String SERIALIZED_NAME_ATTRIBUTE = "attribute";
+        @SerializedName(SERIALIZED_NAME_ATTRIBUTE)
+            private String attribute;
 
-  public static final String SERIALIZED_NAME_HIDDEN = "hidden";
-  @SerializedName(SERIALIZED_NAME_HIDDEN)
-  private String hidden;
+        public static final String SERIALIZED_NAME_HIDDEN = "hidden";
+        @SerializedName(SERIALIZED_NAME_HIDDEN)
+            private String hidden;
 
 
-  public ApplicationAttributeDTO description(String description) {
+        public ApplicationAttributeDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * description of the application attribute
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Sample description of the attribute", value = "description of the application attribute")
     
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * description of the application attribute
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Sample description of the attribute", value = "description of the application attribute")
-
-  public String getDescription() {
-    return description;
-  }
-
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  public ApplicationAttributeDTO type(String type) {
-    
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * type of the input element to display
-   * @return type
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "text", value = "type of the input element to display")
-
-  public String getType() {
-    return type;
-  }
-
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-
-  public ApplicationAttributeDTO tooltip(String tooltip) {
-    
-    this.tooltip = tooltip;
-    return this;
-  }
-
-   /**
-   * tooltop to display for the input element
-   * @return tooltip
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Sample tooltip", value = "tooltop to display for the input element")
-
-  public String getTooltip() {
-    return tooltip;
-  }
-
-
-  public void setTooltip(String tooltip) {
-    this.tooltip = tooltip;
-  }
-
-
-  public ApplicationAttributeDTO required(String required) {
-    
-    this.required = required;
-    return this;
-  }
-
-   /**
-   * whether this is a required attribute
-   * @return required
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "false", value = "whether this is a required attribute")
-
-  public String getRequired() {
-    return required;
-  }
-
-
-  public void setRequired(String required) {
-    this.required = required;
-  }
-
-
-  public ApplicationAttributeDTO attribute(String attribute) {
-    
-    this.attribute = attribute;
-    return this;
-  }
-
-   /**
-   * the name of the attribute
-   * @return attribute
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "External Reference Id", value = "the name of the attribute")
-
-  public String getAttribute() {
-    return attribute;
-  }
-
-
-  public void setAttribute(String attribute) {
-    this.attribute = attribute;
-  }
-
-
-  public ApplicationAttributeDTO hidden(String hidden) {
-    
-    this.hidden = hidden;
-    return this;
-  }
-
-   /**
-   * whether this is a hidden attribute
-   * @return hidden
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "false", value = "whether this is a hidden attribute")
-
-  public String getHidden() {
-    return hidden;
-  }
-
-
-  public void setHidden(String hidden) {
-    this.hidden = hidden;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getDescription() {
+        return description;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setDescription(String description) {
+        this.description = description;
     }
-    ApplicationAttributeDTO applicationAttribute = (ApplicationAttributeDTO) o;
-    return Objects.equals(this.description, applicationAttribute.description) &&
-        Objects.equals(this.type, applicationAttribute.type) &&
-        Objects.equals(this.tooltip, applicationAttribute.tooltip) &&
-        Objects.equals(this.required, applicationAttribute.required) &&
-        Objects.equals(this.attribute, applicationAttribute.attribute) &&
-        Objects.equals(this.hidden, applicationAttribute.hidden);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(description, type, tooltip, required, attribute, hidden);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationAttributeDTO {\n");
+        public ApplicationAttributeDTO type(String type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * type of the input element to display
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "text", value = "type of the input element to display")
+    
+    public String getType() {
+        return type;
+    }
+
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
+        public ApplicationAttributeDTO tooltip(String tooltip) {
+        
+        this.tooltip = tooltip;
+        return this;
+        }
+
+    /**
+        * tooltop to display for the input element
+    * @return tooltip
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Sample tooltip", value = "tooltop to display for the input element")
+    
+    public String getTooltip() {
+        return tooltip;
+    }
+
+
+    public void setTooltip(String tooltip) {
+        this.tooltip = tooltip;
+    }
+
+
+        public ApplicationAttributeDTO required(String required) {
+        
+        this.required = required;
+        return this;
+        }
+
+    /**
+        * whether this is a required attribute
+    * @return required
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "whether this is a required attribute")
+    
+    public String getRequired() {
+        return required;
+    }
+
+
+    public void setRequired(String required) {
+        this.required = required;
+    }
+
+
+        public ApplicationAttributeDTO attribute(String attribute) {
+        
+        this.attribute = attribute;
+        return this;
+        }
+
+    /**
+        * the name of the attribute
+    * @return attribute
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "External Reference Id", value = "the name of the attribute")
+    
+    public String getAttribute() {
+        return attribute;
+    }
+
+
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
+
+
+        public ApplicationAttributeDTO hidden(String hidden) {
+        
+        this.hidden = hidden;
+        return this;
+        }
+
+    /**
+        * whether this is a hidden attribute
+    * @return hidden
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "whether this is a hidden attribute")
+    
+    public String getHidden() {
+        return hidden;
+    }
+
+
+    public void setHidden(String hidden) {
+        this.hidden = hidden;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationAttributeDTO applicationAttribute = (ApplicationAttributeDTO) o;
+            return Objects.equals(this.description, applicationAttribute.description) &&
+            Objects.equals(this.type, applicationAttribute.type) &&
+            Objects.equals(this.tooltip, applicationAttribute.tooltip) &&
+            Objects.equals(this.required, applicationAttribute.required) &&
+            Objects.equals(this.attribute, applicationAttribute.attribute) &&
+            Objects.equals(this.hidden, applicationAttribute.hidden);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, type, tooltip, required, attribute, hidden);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationAttributeDTO {\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    tooltip: ").append(toIndentedString(tooltip)).append("\n");
     sb.append("    required: ").append(toIndentedString(required)).append("\n");
     sb.append("    attribute: ").append(toIndentedString(attribute)).append("\n");
     sb.append("    hidden: ").append(toIndentedString(hidden)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

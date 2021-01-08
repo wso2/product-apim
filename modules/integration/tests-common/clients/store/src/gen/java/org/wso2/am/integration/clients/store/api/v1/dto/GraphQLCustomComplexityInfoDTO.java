@@ -23,132 +23,132 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * GraphQLCustomComplexityInfoDTO
- */
+* GraphQLCustomComplexityInfoDTO
+*/
 
 public class GraphQLCustomComplexityInfoDTO {
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private String type;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type;
 
-  public static final String SERIALIZED_NAME_FIELD = "field";
-  @SerializedName(SERIALIZED_NAME_FIELD)
-  private String field;
+        public static final String SERIALIZED_NAME_FIELD = "field";
+        @SerializedName(SERIALIZED_NAME_FIELD)
+            private String field;
 
-  public static final String SERIALIZED_NAME_COMPLEXITY_VALUE = "complexityValue";
-  @SerializedName(SERIALIZED_NAME_COMPLEXITY_VALUE)
-  private Integer complexityValue;
+        public static final String SERIALIZED_NAME_COMPLEXITY_VALUE = "complexityValue";
+        @SerializedName(SERIALIZED_NAME_COMPLEXITY_VALUE)
+            private Integer complexityValue;
 
 
-  public GraphQLCustomComplexityInfoDTO type(String type) {
+        public GraphQLCustomComplexityInfoDTO type(String type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * The type found within the schema of the API 
+    * @return type
+    **/
+      @ApiModelProperty(example = "Country", required = true, value = "The type found within the schema of the API ")
     
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * The type found within the schema of the API 
-   * @return type
-  **/
-  @ApiModelProperty(example = "Country", required = true, value = "The type found within the schema of the API ")
-
-  public String getType() {
-    return type;
-  }
-
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-
-  public GraphQLCustomComplexityInfoDTO field(String field) {
-    
-    this.field = field;
-    return this;
-  }
-
-   /**
-   * The field which is found under the type within the schema of the API 
-   * @return field
-  **/
-  @ApiModelProperty(example = "name", required = true, value = "The field which is found under the type within the schema of the API ")
-
-  public String getField() {
-    return field;
-  }
-
-
-  public void setField(String field) {
-    this.field = field;
-  }
-
-
-  public GraphQLCustomComplexityInfoDTO complexityValue(Integer complexityValue) {
-    
-    this.complexityValue = complexityValue;
-    return this;
-  }
-
-   /**
-   * The complexity value allocated for the associated field under the specified type 
-   * @return complexityValue
-  **/
-  @ApiModelProperty(example = "1", required = true, value = "The complexity value allocated for the associated field under the specified type ")
-
-  public Integer getComplexityValue() {
-    return complexityValue;
-  }
-
-
-  public void setComplexityValue(Integer complexityValue) {
-    this.complexityValue = complexityValue;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getType() {
+        return type;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setType(String type) {
+        this.type = type;
     }
-    GraphQLCustomComplexityInfoDTO graphQLCustomComplexityInfo = (GraphQLCustomComplexityInfoDTO) o;
-    return Objects.equals(this.type, graphQLCustomComplexityInfo.type) &&
-        Objects.equals(this.field, graphQLCustomComplexityInfo.field) &&
-        Objects.equals(this.complexityValue, graphQLCustomComplexityInfo.complexityValue);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, field, complexityValue);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLCustomComplexityInfoDTO {\n");
+        public GraphQLCustomComplexityInfoDTO field(String field) {
+        
+        this.field = field;
+        return this;
+        }
+
+    /**
+        * The field which is found under the type within the schema of the API 
+    * @return field
+    **/
+      @ApiModelProperty(example = "name", required = true, value = "The field which is found under the type within the schema of the API ")
+    
+    public String getField() {
+        return field;
+    }
+
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+
+        public GraphQLCustomComplexityInfoDTO complexityValue(Integer complexityValue) {
+        
+        this.complexityValue = complexityValue;
+        return this;
+        }
+
+    /**
+        * The complexity value allocated for the associated field under the specified type 
+    * @return complexityValue
+    **/
+      @ApiModelProperty(example = "1", required = true, value = "The complexity value allocated for the associated field under the specified type ")
+    
+    public Integer getComplexityValue() {
+        return complexityValue;
+    }
+
+
+    public void setComplexityValue(Integer complexityValue) {
+        this.complexityValue = complexityValue;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            GraphQLCustomComplexityInfoDTO graphQLCustomComplexityInfo = (GraphQLCustomComplexityInfoDTO) o;
+            return Objects.equals(this.type, graphQLCustomComplexityInfo.type) &&
+            Objects.equals(this.field, graphQLCustomComplexityInfo.field) &&
+            Objects.equals(this.complexityValue, graphQLCustomComplexityInfo.complexityValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, field, complexityValue);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class GraphQLCustomComplexityInfoDTO {\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    field: ").append(toIndentedString(field)).append("\n");
     sb.append("    complexityValue: ").append(toIndentedString(complexityValue)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

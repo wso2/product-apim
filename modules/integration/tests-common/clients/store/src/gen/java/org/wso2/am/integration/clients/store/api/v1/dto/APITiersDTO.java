@@ -24,135 +24,135 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIMonetizationAttributesDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APITiersDTO
- */
+* APITiersDTO
+*/
 
 public class APITiersDTO {
-  public static final String SERIALIZED_NAME_TIER_NAME = "tierName";
-  @SerializedName(SERIALIZED_NAME_TIER_NAME)
-  private String tierName;
+        public static final String SERIALIZED_NAME_TIER_NAME = "tierName";
+        @SerializedName(SERIALIZED_NAME_TIER_NAME)
+            private String tierName;
 
-  public static final String SERIALIZED_NAME_TIER_PLAN = "tierPlan";
-  @SerializedName(SERIALIZED_NAME_TIER_PLAN)
-  private String tierPlan;
+        public static final String SERIALIZED_NAME_TIER_PLAN = "tierPlan";
+        @SerializedName(SERIALIZED_NAME_TIER_PLAN)
+            private String tierPlan;
 
-  public static final String SERIALIZED_NAME_MONETIZATION_ATTRIBUTES = "monetizationAttributes";
-  @SerializedName(SERIALIZED_NAME_MONETIZATION_ATTRIBUTES)
-  private APIMonetizationAttributesDTO monetizationAttributes;
+        public static final String SERIALIZED_NAME_MONETIZATION_ATTRIBUTES = "monetizationAttributes";
+        @SerializedName(SERIALIZED_NAME_MONETIZATION_ATTRIBUTES)
+            private APIMonetizationAttributesDTO monetizationAttributes;
 
 
-  public APITiersDTO tierName(String tierName) {
+        public APITiersDTO tierName(String tierName) {
+        
+        this.tierName = tierName;
+        return this;
+        }
+
+    /**
+        * Get tierName
+    * @return tierName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Gold", value = "")
     
-    this.tierName = tierName;
-    return this;
-  }
-
-   /**
-   * Get tierName
-   * @return tierName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Gold", value = "")
-
-  public String getTierName() {
-    return tierName;
-  }
-
-
-  public void setTierName(String tierName) {
-    this.tierName = tierName;
-  }
-
-
-  public APITiersDTO tierPlan(String tierPlan) {
-    
-    this.tierPlan = tierPlan;
-    return this;
-  }
-
-   /**
-   * Get tierPlan
-   * @return tierPlan
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "COMMERCIAL", value = "")
-
-  public String getTierPlan() {
-    return tierPlan;
-  }
-
-
-  public void setTierPlan(String tierPlan) {
-    this.tierPlan = tierPlan;
-  }
-
-
-  public APITiersDTO monetizationAttributes(APIMonetizationAttributesDTO monetizationAttributes) {
-    
-    this.monetizationAttributes = monetizationAttributes;
-    return this;
-  }
-
-   /**
-   * Get monetizationAttributes
-   * @return monetizationAttributes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIMonetizationAttributesDTO getMonetizationAttributes() {
-    return monetizationAttributes;
-  }
-
-
-  public void setMonetizationAttributes(APIMonetizationAttributesDTO monetizationAttributes) {
-    this.monetizationAttributes = monetizationAttributes;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getTierName() {
+        return tierName;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setTierName(String tierName) {
+        this.tierName = tierName;
     }
-    APITiersDTO apITiers = (APITiersDTO) o;
-    return Objects.equals(this.tierName, apITiers.tierName) &&
-        Objects.equals(this.tierPlan, apITiers.tierPlan) &&
-        Objects.equals(this.monetizationAttributes, apITiers.monetizationAttributes);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(tierName, tierPlan, monetizationAttributes);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APITiersDTO {\n");
+        public APITiersDTO tierPlan(String tierPlan) {
+        
+        this.tierPlan = tierPlan;
+        return this;
+        }
+
+    /**
+        * Get tierPlan
+    * @return tierPlan
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "COMMERCIAL", value = "")
+    
+    public String getTierPlan() {
+        return tierPlan;
+    }
+
+
+    public void setTierPlan(String tierPlan) {
+        this.tierPlan = tierPlan;
+    }
+
+
+        public APITiersDTO monetizationAttributes(APIMonetizationAttributesDTO monetizationAttributes) {
+        
+        this.monetizationAttributes = monetizationAttributes;
+        return this;
+        }
+
+    /**
+        * Get monetizationAttributes
+    * @return monetizationAttributes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIMonetizationAttributesDTO getMonetizationAttributes() {
+        return monetizationAttributes;
+    }
+
+
+    public void setMonetizationAttributes(APIMonetizationAttributesDTO monetizationAttributes) {
+        this.monetizationAttributes = monetizationAttributes;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APITiersDTO apITiers = (APITiersDTO) o;
+            return Objects.equals(this.tierName, apITiers.tierName) &&
+            Objects.equals(this.tierPlan, apITiers.tierPlan) &&
+            Objects.equals(this.monetizationAttributes, apITiers.monetizationAttributes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tierName, tierPlan, monetizationAttributes);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APITiersDTO {\n");
     sb.append("    tierName: ").append(toIndentedString(tierName)).append("\n");
     sb.append("    tierPlan: ").append(toIndentedString(tierPlan)).append("\n");
     sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,76 +23,76 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIMonetizationInfoDTO
- */
+* APIMonetizationInfoDTO
+*/
 
 public class APIMonetizationInfoDTO {
-  public static final String SERIALIZED_NAME_ENABLED = "enabled";
-  @SerializedName(SERIALIZED_NAME_ENABLED)
-  private Boolean enabled;
+        public static final String SERIALIZED_NAME_ENABLED = "enabled";
+        @SerializedName(SERIALIZED_NAME_ENABLED)
+            private Boolean enabled;
 
 
-  public APIMonetizationInfoDTO enabled(Boolean enabled) {
+        public APIMonetizationInfoDTO enabled(Boolean enabled) {
+        
+        this.enabled = enabled;
+        return this;
+        }
+
+    /**
+        * Flag to indicate the monetization status
+    * @return enabled
+    **/
+      @ApiModelProperty(example = "true", required = true, value = "Flag to indicate the monetization status")
     
-    this.enabled = enabled;
-    return this;
-  }
-
-   /**
-   * Flag to indicate the monetization status
-   * @return enabled
-  **/
-  @ApiModelProperty(example = "true", required = true, value = "Flag to indicate the monetization status")
-
-  public Boolean getEnabled() {
-    return enabled;
-  }
-
-
-  public void setEnabled(Boolean enabled) {
-    this.enabled = enabled;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Boolean isEnabled() {
+        return enabled;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
-    APIMonetizationInfoDTO apIMonetizationInfo = (APIMonetizationInfoDTO) o;
-    return Objects.equals(this.enabled, apIMonetizationInfo.enabled);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(enabled);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIMonetizationInfoDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIMonetizationInfoDTO apIMonetizationInfo = (APIMonetizationInfoDTO) o;
+            return Objects.equals(this.enabled, apIMonetizationInfo.enabled);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(enabled);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIMonetizationInfoDTO {\n");
     sb.append("    enabled: ").append(toIndentedString(enabled)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

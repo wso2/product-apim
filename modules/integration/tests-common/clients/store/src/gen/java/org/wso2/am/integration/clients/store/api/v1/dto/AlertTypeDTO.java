@@ -23,135 +23,135 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AlertTypeDTO
- */
+* AlertTypeDTO
+*/
 
 public class AlertTypeDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private Integer id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private Integer id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_REQUIRE_CONFIGURATION = "requireConfiguration";
-  @SerializedName(SERIALIZED_NAME_REQUIRE_CONFIGURATION)
-  private Boolean requireConfiguration;
+        public static final String SERIALIZED_NAME_REQUIRE_CONFIGURATION = "requireConfiguration";
+        @SerializedName(SERIALIZED_NAME_REQUIRE_CONFIGURATION)
+            private Boolean requireConfiguration;
 
 
-  public AlertTypeDTO id(Integer id) {
+        public AlertTypeDTO id(Integer id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * The alert Id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3", value = "The alert Id")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * The alert Id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3", value = "The alert Id")
-
-  public Integer getId() {
-    return id;
-  }
-
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-
-  public AlertTypeDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * The name of the alert.
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "AbnormalRequestsPerMin", value = "The name of the alert.")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public AlertTypeDTO requireConfiguration(Boolean requireConfiguration) {
-    
-    this.requireConfiguration = requireConfiguration;
-    return this;
-  }
-
-   /**
-   * Whether the alert type require additional configurations.
-   * @return requireConfiguration
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "true", value = "Whether the alert type require additional configurations.")
-
-  public Boolean getRequireConfiguration() {
-    return requireConfiguration;
-  }
-
-
-  public void setRequireConfiguration(Boolean requireConfiguration) {
-    this.requireConfiguration = requireConfiguration;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Integer getId() {
+        return id;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setId(Integer id) {
+        this.id = id;
     }
-    AlertTypeDTO alertType = (AlertTypeDTO) o;
-    return Objects.equals(this.id, alertType.id) &&
-        Objects.equals(this.name, alertType.name) &&
-        Objects.equals(this.requireConfiguration, alertType.requireConfiguration);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, requireConfiguration);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AlertTypeDTO {\n");
+        public AlertTypeDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * The name of the alert.
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "AbnormalRequestsPerMin", value = "The name of the alert.")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public AlertTypeDTO requireConfiguration(Boolean requireConfiguration) {
+        
+        this.requireConfiguration = requireConfiguration;
+        return this;
+        }
+
+    /**
+        * Whether the alert type require additional configurations.
+    * @return requireConfiguration
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "true", value = "Whether the alert type require additional configurations.")
+    
+    public Boolean isRequireConfiguration() {
+        return requireConfiguration;
+    }
+
+
+    public void setRequireConfiguration(Boolean requireConfiguration) {
+        this.requireConfiguration = requireConfiguration;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AlertTypeDTO alertType = (AlertTypeDTO) o;
+            return Objects.equals(this.id, alertType.id) &&
+            Objects.equals(this.name, alertType.name) &&
+            Objects.equals(this.requireConfiguration, alertType.requireConfiguration);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, requireConfiguration);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AlertTypeDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    requireConfiguration: ").append(toIndentedString(requireConfiguration)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

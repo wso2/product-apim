@@ -23,167 +23,193 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommenterInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * CommentDTO
- */
+* CommentDTO
+*/
 
 public class CommentDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_CONTENT = "content";
-  @SerializedName(SERIALIZED_NAME_CONTENT)
-  private String content;
+        public static final String SERIALIZED_NAME_CONTENT = "content";
+        @SerializedName(SERIALIZED_NAME_CONTENT)
+            private String content;
 
-  public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
-  @SerializedName(SERIALIZED_NAME_CREATED_TIME)
-  private OffsetDateTime createdTime;
+        public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
+        @SerializedName(SERIALIZED_NAME_CREATED_TIME)
+            private String createdTime;
 
-  public static final String SERIALIZED_NAME_CREATED_BY = "createdBy";
-  @SerializedName(SERIALIZED_NAME_CREATED_BY)
-  private String createdBy;
+        public static final String SERIALIZED_NAME_CREATED_BY = "createdBy";
+        @SerializedName(SERIALIZED_NAME_CREATED_BY)
+            private String createdBy;
 
-  public static final String SERIALIZED_NAME_COMMENTER_INFO = "commenterInfo";
-  @SerializedName(SERIALIZED_NAME_COMMENTER_INFO)
-  private CommenterInfoDTO commenterInfo;
-
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "943d3002-000c-42d3-a1b9-d6559f8a4d49", value = "")
-
-  public String getId() {
-    return id;
-  }
+        public static final String SERIALIZED_NAME_COMMENTER_INFO = "commenterInfo";
+        @SerializedName(SERIALIZED_NAME_COMMENTER_INFO)
+            private CommenterInfoDTO commenterInfo;
 
 
+        public CommentDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
 
-
-  public CommentDTO content(String content) {
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "943d3002-000c-42d3-a1b9-d6559f8a4d49", value = "")
     
-    this.content = content;
-    return this;
-  }
-
-   /**
-   * Get content
-   * @return content
-  **/
-  @ApiModelProperty(example = "This is a comment", required = true, value = "")
-
-  public String getContent() {
-    return content;
-  }
+    public String getId() {
+        return id;
+    }
 
 
-  public void setContent(String content) {
-    this.content = content;
-  }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
-   /**
-   * Get createdTime
-   * @return createdTime
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+        public CommentDTO content(String content) {
+        
+        this.content = content;
+        return this;
+        }
 
-  public OffsetDateTime getCreatedTime() {
-    return createdTime;
-  }
-
-
-
-
-   /**
-   * Get createdBy
-   * @return createdBy
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "")
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-
-
-
-  public CommentDTO commenterInfo(CommenterInfoDTO commenterInfo) {
+    /**
+        * Get content
+    * @return content
+    **/
+      @ApiModelProperty(example = "This is a comment", required = true, value = "")
     
-    this.commenterInfo = commenterInfo;
-    return this;
-  }
-
-   /**
-   * Get commenterInfo
-   * @return commenterInfo
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public CommenterInfoDTO getCommenterInfo() {
-    return commenterInfo;
-  }
-
-
-  public void setCommenterInfo(CommenterInfoDTO commenterInfo) {
-    this.commenterInfo = commenterInfo;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getContent() {
+        return content;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setContent(String content) {
+        this.content = content;
     }
-    CommentDTO comment = (CommentDTO) o;
-    return Objects.equals(this.id, comment.id) &&
-        Objects.equals(this.content, comment.content) &&
-        Objects.equals(this.createdTime, comment.createdTime) &&
-        Objects.equals(this.createdBy, comment.createdBy) &&
-        Objects.equals(this.commenterInfo, comment.commenterInfo);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, content, createdTime, createdBy, commenterInfo);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CommentDTO {\n");
+        public CommentDTO createdTime(String createdTime) {
+        
+        this.createdTime = createdTime;
+        return this;
+        }
+
+    /**
+        * Get createdTime
+    * @return createdTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getCreatedTime() {
+        return createdTime;
+    }
+
+
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
+
+
+        public CommentDTO createdBy(String createdBy) {
+        
+        this.createdBy = createdBy;
+        return this;
+        }
+
+    /**
+        * Get createdBy
+    * @return createdBy
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "")
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+
+        public CommentDTO commenterInfo(CommenterInfoDTO commenterInfo) {
+        
+        this.commenterInfo = commenterInfo;
+        return this;
+        }
+
+    /**
+        * Get commenterInfo
+    * @return commenterInfo
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public CommenterInfoDTO getCommenterInfo() {
+        return commenterInfo;
+    }
+
+
+    public void setCommenterInfo(CommenterInfoDTO commenterInfo) {
+        this.commenterInfo = commenterInfo;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            CommentDTO comment = (CommentDTO) o;
+            return Objects.equals(this.id, comment.id) &&
+            Objects.equals(this.content, comment.content) &&
+            Objects.equals(this.createdTime, comment.createdTime) &&
+            Objects.equals(this.createdBy, comment.createdBy) &&
+            Objects.equals(this.commenterInfo, comment.commenterInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, content, createdTime, createdBy, commenterInfo);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class CommentDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    content: ").append(toIndentedString(content)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
     sb.append("    commenterInfo: ").append(toIndentedString(commenterInfo)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

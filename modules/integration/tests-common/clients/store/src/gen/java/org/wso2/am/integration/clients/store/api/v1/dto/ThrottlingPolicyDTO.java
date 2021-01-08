@@ -28,411 +28,403 @@ import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.MonetizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ThrottlingPolicyPermissionInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ThrottlingPolicyDTO
- */
+* ThrottlingPolicyDTO
+*/
 
 public class ThrottlingPolicyDTO {
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  /**
-   * Gets or Sets policyLevel
-   */
-  @JsonAdapter(PolicyLevelEnum.Adapter.class)
-  public enum PolicyLevelEnum {
-    APPLICATION("application"),
-    
-    SUBSCRIPTION("subscription");
+            /**
+* Gets or Sets policyLevel
+*/
+    @JsonAdapter(PolicyLevelEnum.Adapter.class)
+public enum PolicyLevelEnum {
+        APPLICATION("application"),
+        
+        SUBSCRIPTION("subscription");
 
-    private String value;
+private String value;
 
-    PolicyLevelEnum(String value) {
-      this.value = value;
+PolicyLevelEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static PolicyLevelEnum fromValue(String value) {
+    for (PolicyLevelEnum b : PolicyLevelEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
-
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    public static PolicyLevelEnum fromValue(String value) {
-      for (PolicyLevelEnum b : PolicyLevelEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
     public static class Adapter extends TypeAdapter<PolicyLevelEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final PolicyLevelEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public PolicyLevelEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return PolicyLevelEnum.fromValue(value);
-      }
-    }
-  }
-
-  public static final String SERIALIZED_NAME_POLICY_LEVEL = "policyLevel";
-  @SerializedName(SERIALIZED_NAME_POLICY_LEVEL)
-  private PolicyLevelEnum policyLevel;
-
-  public static final String SERIALIZED_NAME_ATTRIBUTES = "attributes";
-  @SerializedName(SERIALIZED_NAME_ATTRIBUTES)
-  private Map<String, String> attributes = null;
-
-  public static final String SERIALIZED_NAME_REQUEST_COUNT = "requestCount";
-  @SerializedName(SERIALIZED_NAME_REQUEST_COUNT)
-  private Long requestCount;
-
-  public static final String SERIALIZED_NAME_UNIT_TIME = "unitTime";
-  @SerializedName(SERIALIZED_NAME_UNIT_TIME)
-  private Long unitTime;
-
-  /**
-   * This attribute declares whether this tier is available under commercial or free 
-   */
-  @JsonAdapter(TierPlanEnum.Adapter.class)
-  public enum TierPlanEnum {
-    FREE("FREE"),
-    
-    COMMERCIAL("COMMERCIAL");
-
-    private String value;
-
-    TierPlanEnum(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
+    @Override
+    public void write(final JsonWriter jsonWriter, final PolicyLevelEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public PolicyLevelEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return PolicyLevelEnum.fromValue(value);
     }
+    }
+}
 
-    public static TierPlanEnum fromValue(String value) {
-      for (TierPlanEnum b : TierPlanEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+        public static final String SERIALIZED_NAME_POLICY_LEVEL = "policyLevel";
+        @SerializedName(SERIALIZED_NAME_POLICY_LEVEL)
+            private PolicyLevelEnum policyLevel;
+
+        public static final String SERIALIZED_NAME_ATTRIBUTES = "attributes";
+        @SerializedName(SERIALIZED_NAME_ATTRIBUTES)
+            private Map<String, String> attributes = null;
+
+        public static final String SERIALIZED_NAME_REQUEST_COUNT = "requestCount";
+        @SerializedName(SERIALIZED_NAME_REQUEST_COUNT)
+            private Long requestCount;
+
+        public static final String SERIALIZED_NAME_UNIT_TIME = "unitTime";
+        @SerializedName(SERIALIZED_NAME_UNIT_TIME)
+            private Long unitTime;
+
+            /**
+* This attribute declares whether this tier is available under commercial or free 
+*/
+    @JsonAdapter(TierPlanEnum.Adapter.class)
+public enum TierPlanEnum {
+        FREE("FREE"),
+        
+        COMMERCIAL("COMMERCIAL");
+
+private String value;
+
+TierPlanEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TierPlanEnum fromValue(String value) {
+    for (TierPlanEnum b : TierPlanEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
     public static class Adapter extends TypeAdapter<TierPlanEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TierPlanEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TierPlanEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return TierPlanEnum.fromValue(value);
-      }
+    @Override
+    public void write(final JsonWriter jsonWriter, final TierPlanEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
-  }
 
-  public static final String SERIALIZED_NAME_TIER_PLAN = "tierPlan";
-  @SerializedName(SERIALIZED_NAME_TIER_PLAN)
-  private TierPlanEnum tierPlan;
-
-  public static final String SERIALIZED_NAME_STOP_ON_QUOTA_REACH = "stopOnQuotaReach";
-  @SerializedName(SERIALIZED_NAME_STOP_ON_QUOTA_REACH)
-  private Boolean stopOnQuotaReach;
-
-  public static final String SERIALIZED_NAME_MONETIZATION_ATTRIBUTES = "monetizationAttributes";
-  @SerializedName(SERIALIZED_NAME_MONETIZATION_ATTRIBUTES)
-  private MonetizationInfoDTO monetizationAttributes;
-
-  public static final String SERIALIZED_NAME_THROTTLING_POLICY_PERMISSIONS = "throttlingPolicyPermissions";
-  @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY_PERMISSIONS)
-  private ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions;
-
-
-  public ThrottlingPolicyDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @ApiModelProperty(example = "Platinum", required = true, value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public ThrottlingPolicyDTO description(String description) {
-    
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * Get description
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Allows 50 request(s) per minute.", value = "")
-
-  public String getDescription() {
-    return description;
-  }
-
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  public ThrottlingPolicyDTO policyLevel(PolicyLevelEnum policyLevel) {
-    
-    this.policyLevel = policyLevel;
-    return this;
-  }
-
-   /**
-   * Get policyLevel
-   * @return policyLevel
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "subscription", value = "")
-
-  public PolicyLevelEnum getPolicyLevel() {
-    return policyLevel;
-  }
-
-
-  public void setPolicyLevel(PolicyLevelEnum policyLevel) {
-    this.policyLevel = policyLevel;
-  }
-
-
-  public ThrottlingPolicyDTO attributes(Map<String, String> attributes) {
-    
-    this.attributes = attributes;
-    return this;
-  }
-
-  public ThrottlingPolicyDTO putAttributesItem(String key, String attributesItem) {
-    if (this.attributes == null) {
-      this.attributes = new HashMap<>();
+    @Override
+    public TierPlanEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TierPlanEnum.fromValue(value);
     }
-    this.attributes.put(key, attributesItem);
-    return this;
-  }
-
-   /**
-   * Custom attributes added to the throttling policy 
-   * @return attributes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{}", value = "Custom attributes added to the throttling policy ")
-
-  public Map<String, String> getAttributes() {
-    return attributes;
-  }
-
-
-  public void setAttributes(Map<String, String> attributes) {
-    this.attributes = attributes;
-  }
-
-
-  public ThrottlingPolicyDTO requestCount(Long requestCount) {
-    
-    this.requestCount = requestCount;
-    return this;
-  }
-
-   /**
-   * Maximum number of requests which can be sent within a provided unit time 
-   * @return requestCount
-  **/
-  @ApiModelProperty(example = "50", required = true, value = "Maximum number of requests which can be sent within a provided unit time ")
-
-  public Long getRequestCount() {
-    return requestCount;
-  }
-
-
-  public void setRequestCount(Long requestCount) {
-    this.requestCount = requestCount;
-  }
-
-
-  public ThrottlingPolicyDTO unitTime(Long unitTime) {
-    
-    this.unitTime = unitTime;
-    return this;
-  }
-
-   /**
-   * Get unitTime
-   * @return unitTime
-  **/
-  @ApiModelProperty(example = "60000", required = true, value = "")
-
-  public Long getUnitTime() {
-    return unitTime;
-  }
-
-
-  public void setUnitTime(Long unitTime) {
-    this.unitTime = unitTime;
-  }
-
-
-  public ThrottlingPolicyDTO tierPlan(TierPlanEnum tierPlan) {
-    
-    this.tierPlan = tierPlan;
-    return this;
-  }
-
-   /**
-   * This attribute declares whether this tier is available under commercial or free 
-   * @return tierPlan
-  **/
-  @ApiModelProperty(example = "FREE", required = true, value = "This attribute declares whether this tier is available under commercial or free ")
-
-  public TierPlanEnum getTierPlan() {
-    return tierPlan;
-  }
-
-
-  public void setTierPlan(TierPlanEnum tierPlan) {
-    this.tierPlan = tierPlan;
-  }
-
-
-  public ThrottlingPolicyDTO stopOnQuotaReach(Boolean stopOnQuotaReach) {
-    
-    this.stopOnQuotaReach = stopOnQuotaReach;
-    return this;
-  }
-
-   /**
-   * If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time 
-   * @return stopOnQuotaReach
-  **/
-  @ApiModelProperty(example = "true", required = true, value = "If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
-
-  public Boolean getStopOnQuotaReach() {
-    return stopOnQuotaReach;
-  }
-
-
-  public void setStopOnQuotaReach(Boolean stopOnQuotaReach) {
-    this.stopOnQuotaReach = stopOnQuotaReach;
-  }
-
-
-  public ThrottlingPolicyDTO monetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
-    
-    this.monetizationAttributes = monetizationAttributes;
-    return this;
-  }
-
-   /**
-   * Get monetizationAttributes
-   * @return monetizationAttributes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public MonetizationInfoDTO getMonetizationAttributes() {
-    return monetizationAttributes;
-  }
-
-
-  public void setMonetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
-    this.monetizationAttributes = monetizationAttributes;
-  }
-
-
-  public ThrottlingPolicyDTO throttlingPolicyPermissions(ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions) {
-    
-    this.throttlingPolicyPermissions = throttlingPolicyPermissions;
-    return this;
-  }
-
-   /**
-   * Get throttlingPolicyPermissions
-   * @return throttlingPolicyPermissions
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public ThrottlingPolicyPermissionInfoDTO getThrottlingPolicyPermissions() {
-    return throttlingPolicyPermissions;
-  }
-
-
-  public void setThrottlingPolicyPermissions(ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions) {
-    this.throttlingPolicyPermissions = throttlingPolicyPermissions;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+}
+
+        public static final String SERIALIZED_NAME_TIER_PLAN = "tierPlan";
+        @SerializedName(SERIALIZED_NAME_TIER_PLAN)
+            private TierPlanEnum tierPlan;
+
+        public static final String SERIALIZED_NAME_STOP_ON_QUOTA_REACH = "stopOnQuotaReach";
+        @SerializedName(SERIALIZED_NAME_STOP_ON_QUOTA_REACH)
+            private Boolean stopOnQuotaReach;
+
+        public static final String SERIALIZED_NAME_MONETIZATION_ATTRIBUTES = "monetizationAttributes";
+        @SerializedName(SERIALIZED_NAME_MONETIZATION_ATTRIBUTES)
+            private MonetizationInfoDTO monetizationAttributes;
+
+        public static final String SERIALIZED_NAME_THROTTLING_POLICY_PERMISSIONS = "throttlingPolicyPermissions";
+        @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY_PERMISSIONS)
+            private ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions;
+
+
+        public ThrottlingPolicyDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+      @ApiModelProperty(example = "Platinum", required = true, value = "")
+    
+    public String getName() {
+        return name;
     }
-    ThrottlingPolicyDTO throttlingPolicy = (ThrottlingPolicyDTO) o;
-    return Objects.equals(this.name, throttlingPolicy.name) &&
-        Objects.equals(this.description, throttlingPolicy.description) &&
-        Objects.equals(this.policyLevel, throttlingPolicy.policyLevel) &&
-        Objects.equals(this.attributes, throttlingPolicy.attributes) &&
-        Objects.equals(this.requestCount, throttlingPolicy.requestCount) &&
-        Objects.equals(this.unitTime, throttlingPolicy.unitTime) &&
-        Objects.equals(this.tierPlan, throttlingPolicy.tierPlan) &&
-        Objects.equals(this.stopOnQuotaReach, throttlingPolicy.stopOnQuotaReach) &&
-        Objects.equals(this.monetizationAttributes, throttlingPolicy.monetizationAttributes) &&
-        Objects.equals(this.throttlingPolicyPermissions, throttlingPolicy.throttlingPolicyPermissions);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, description, policyLevel, attributes, requestCount, unitTime, tierPlan, stopOnQuotaReach, monetizationAttributes, throttlingPolicyPermissions);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ThrottlingPolicyDTO {\n");
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public ThrottlingPolicyDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * Get description
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Allows 50 request(s) per minute.", value = "")
+    
+    public String getDescription() {
+        return description;
+    }
+
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
+        public ThrottlingPolicyDTO policyLevel(PolicyLevelEnum policyLevel) {
+        
+        this.policyLevel = policyLevel;
+        return this;
+        }
+
+    /**
+        * Get policyLevel
+    * @return policyLevel
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "subscription", value = "")
+    
+    public PolicyLevelEnum getPolicyLevel() {
+        return policyLevel;
+    }
+
+
+    public void setPolicyLevel(PolicyLevelEnum policyLevel) {
+        this.policyLevel = policyLevel;
+    }
+
+
+        public ThrottlingPolicyDTO attributes(Map<String, String> attributes) {
+        
+        this.attributes = attributes;
+        return this;
+        }
+
+    /**
+        * Custom attributes added to the throttling policy 
+    * @return attributes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{}", value = "Custom attributes added to the throttling policy ")
+    
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+
+        public ThrottlingPolicyDTO requestCount(Long requestCount) {
+        
+        this.requestCount = requestCount;
+        return this;
+        }
+
+    /**
+        * Maximum number of requests which can be sent within a provided unit time 
+    * @return requestCount
+    **/
+      @ApiModelProperty(example = "50", required = true, value = "Maximum number of requests which can be sent within a provided unit time ")
+    
+    public Long getRequestCount() {
+        return requestCount;
+    }
+
+
+    public void setRequestCount(Long requestCount) {
+        this.requestCount = requestCount;
+    }
+
+
+        public ThrottlingPolicyDTO unitTime(Long unitTime) {
+        
+        this.unitTime = unitTime;
+        return this;
+        }
+
+    /**
+        * Get unitTime
+    * @return unitTime
+    **/
+      @ApiModelProperty(example = "60000", required = true, value = "")
+    
+    public Long getUnitTime() {
+        return unitTime;
+    }
+
+
+    public void setUnitTime(Long unitTime) {
+        this.unitTime = unitTime;
+    }
+
+
+        public ThrottlingPolicyDTO tierPlan(TierPlanEnum tierPlan) {
+        
+        this.tierPlan = tierPlan;
+        return this;
+        }
+
+    /**
+        * This attribute declares whether this tier is available under commercial or free 
+    * @return tierPlan
+    **/
+      @ApiModelProperty(example = "FREE", required = true, value = "This attribute declares whether this tier is available under commercial or free ")
+    
+    public TierPlanEnum getTierPlan() {
+        return tierPlan;
+    }
+
+
+    public void setTierPlan(TierPlanEnum tierPlan) {
+        this.tierPlan = tierPlan;
+    }
+
+
+        public ThrottlingPolicyDTO stopOnQuotaReach(Boolean stopOnQuotaReach) {
+        
+        this.stopOnQuotaReach = stopOnQuotaReach;
+        return this;
+        }
+
+    /**
+        * If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time 
+    * @return stopOnQuotaReach
+    **/
+      @ApiModelProperty(example = "true", required = true, value = "If this attribute is set to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
+    
+    public Boolean isStopOnQuotaReach() {
+        return stopOnQuotaReach;
+    }
+
+
+    public void setStopOnQuotaReach(Boolean stopOnQuotaReach) {
+        this.stopOnQuotaReach = stopOnQuotaReach;
+    }
+
+
+        public ThrottlingPolicyDTO monetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
+        
+        this.monetizationAttributes = monetizationAttributes;
+        return this;
+        }
+
+    /**
+        * Get monetizationAttributes
+    * @return monetizationAttributes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public MonetizationInfoDTO getMonetizationAttributes() {
+        return monetizationAttributes;
+    }
+
+
+    public void setMonetizationAttributes(MonetizationInfoDTO monetizationAttributes) {
+        this.monetizationAttributes = monetizationAttributes;
+    }
+
+
+        public ThrottlingPolicyDTO throttlingPolicyPermissions(ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions) {
+        
+        this.throttlingPolicyPermissions = throttlingPolicyPermissions;
+        return this;
+        }
+
+    /**
+        * Get throttlingPolicyPermissions
+    * @return throttlingPolicyPermissions
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public ThrottlingPolicyPermissionInfoDTO getThrottlingPolicyPermissions() {
+        return throttlingPolicyPermissions;
+    }
+
+
+    public void setThrottlingPolicyPermissions(ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissions) {
+        this.throttlingPolicyPermissions = throttlingPolicyPermissions;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ThrottlingPolicyDTO throttlingPolicy = (ThrottlingPolicyDTO) o;
+            return Objects.equals(this.name, throttlingPolicy.name) &&
+            Objects.equals(this.description, throttlingPolicy.description) &&
+            Objects.equals(this.policyLevel, throttlingPolicy.policyLevel) &&
+            Objects.equals(this.attributes, throttlingPolicy.attributes) &&
+            Objects.equals(this.requestCount, throttlingPolicy.requestCount) &&
+            Objects.equals(this.unitTime, throttlingPolicy.unitTime) &&
+            Objects.equals(this.tierPlan, throttlingPolicy.tierPlan) &&
+            Objects.equals(this.stopOnQuotaReach, throttlingPolicy.stopOnQuotaReach) &&
+            Objects.equals(this.monetizationAttributes, throttlingPolicy.monetizationAttributes) &&
+            Objects.equals(this.throttlingPolicyPermissions, throttlingPolicy.throttlingPolicyPermissions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, policyLevel, attributes, requestCount, unitTime, tierPlan, stopOnQuotaReach, monetizationAttributes, throttlingPolicyPermissions);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ThrottlingPolicyDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    policyLevel: ").append(toIndentedString(policyLevel)).append("\n");
@@ -443,20 +435,20 @@ public class ThrottlingPolicyDTO {
     sb.append("    stopOnQuotaReach: ").append(toIndentedString(stopOnQuotaReach)).append("\n");
     sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
     sb.append("    throttlingPolicyPermissions: ").append(toIndentedString(throttlingPolicyPermissions)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

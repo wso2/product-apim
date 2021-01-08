@@ -26,85 +26,77 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * GraphQLSchemaTypeListDTO
- */
+* GraphQLSchemaTypeListDTO
+*/
 
 public class GraphQLSchemaTypeListDTO {
-  public static final String SERIALIZED_NAME_TYPE_LIST = "typeList";
-  @SerializedName(SERIALIZED_NAME_TYPE_LIST)
-  private List<GraphQLSchemaTypeDTO> typeList = null;
+        public static final String SERIALIZED_NAME_TYPE_LIST = "typeList";
+        @SerializedName(SERIALIZED_NAME_TYPE_LIST)
+            private List<GraphQLSchemaTypeDTO> typeList = null;
 
 
-  public GraphQLSchemaTypeListDTO typeList(List<GraphQLSchemaTypeDTO> typeList) {
+        public GraphQLSchemaTypeListDTO typeList(List<GraphQLSchemaTypeDTO> typeList) {
+        
+        this.typeList = typeList;
+        return this;
+        }
+
+    /**
+        * Get typeList
+    * @return typeList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.typeList = typeList;
-    return this;
-  }
-
-  public GraphQLSchemaTypeListDTO addTypeListItem(GraphQLSchemaTypeDTO typeListItem) {
-    if (this.typeList == null) {
-      this.typeList = new ArrayList<>();
+    public List<GraphQLSchemaTypeDTO> getTypeList() {
+        return typeList;
     }
-    this.typeList.add(typeListItem);
-    return this;
-  }
-
-   /**
-   * Get typeList
-   * @return typeList
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<GraphQLSchemaTypeDTO> getTypeList() {
-    return typeList;
-  }
 
 
-  public void setTypeList(List<GraphQLSchemaTypeDTO> typeList) {
-    this.typeList = typeList;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setTypeList(List<GraphQLSchemaTypeDTO> typeList) {
+        this.typeList = typeList;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            GraphQLSchemaTypeListDTO graphQLSchemaTypeList = (GraphQLSchemaTypeListDTO) o;
+            return Objects.equals(this.typeList, graphQLSchemaTypeList.typeList);
     }
-    GraphQLSchemaTypeListDTO graphQLSchemaTypeList = (GraphQLSchemaTypeListDTO) o;
-    return Objects.equals(this.typeList, graphQLSchemaTypeList.typeList);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(typeList);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(typeList);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class GraphQLSchemaTypeListDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class GraphQLSchemaTypeListDTO {\n");
     sb.append("    typeList: ").append(toIndentedString(typeList)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

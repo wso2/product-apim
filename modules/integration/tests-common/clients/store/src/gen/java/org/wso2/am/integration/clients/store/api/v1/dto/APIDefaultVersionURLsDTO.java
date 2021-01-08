@@ -23,164 +23,164 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIDefaultVersionURLsDTO
- */
+* APIDefaultVersionURLsDTO
+*/
 
 public class APIDefaultVersionURLsDTO {
-  public static final String SERIALIZED_NAME_HTTP = "http";
-  @SerializedName(SERIALIZED_NAME_HTTP)
-  private String http;
+        public static final String SERIALIZED_NAME_HTTP = "http";
+        @SerializedName(SERIALIZED_NAME_HTTP)
+            private String http;
 
-  public static final String SERIALIZED_NAME_HTTPS = "https";
-  @SerializedName(SERIALIZED_NAME_HTTPS)
-  private String https;
+        public static final String SERIALIZED_NAME_HTTPS = "https";
+        @SerializedName(SERIALIZED_NAME_HTTPS)
+            private String https;
 
-  public static final String SERIALIZED_NAME_WS = "ws";
-  @SerializedName(SERIALIZED_NAME_WS)
-  private String ws;
+        public static final String SERIALIZED_NAME_WS = "ws";
+        @SerializedName(SERIALIZED_NAME_WS)
+            private String ws;
 
-  public static final String SERIALIZED_NAME_WSS = "wss";
-  @SerializedName(SERIALIZED_NAME_WSS)
-  private String wss;
+        public static final String SERIALIZED_NAME_WSS = "wss";
+        @SerializedName(SERIALIZED_NAME_WSS)
+            private String wss;
 
 
-  public APIDefaultVersionURLsDTO http(String http) {
+        public APIDefaultVersionURLsDTO http(String http) {
+        
+        this.http = http;
+        return this;
+        }
+
+    /**
+        * HTTP environment default URL
+    * @return http
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "http://localhost:8280/phoneverify/", value = "HTTP environment default URL")
     
-    this.http = http;
-    return this;
-  }
-
-   /**
-   * HTTP environment default URL
-   * @return http
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "http://localhost:8280/phoneverify/", value = "HTTP environment default URL")
-
-  public String getHttp() {
-    return http;
-  }
-
-
-  public void setHttp(String http) {
-    this.http = http;
-  }
-
-
-  public APIDefaultVersionURLsDTO https(String https) {
-    
-    this.https = https;
-    return this;
-  }
-
-   /**
-   * HTTPS environment default URL
-   * @return https
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "https://localhost:8243/phoneverify/", value = "HTTPS environment default URL")
-
-  public String getHttps() {
-    return https;
-  }
-
-
-  public void setHttps(String https) {
-    this.https = https;
-  }
-
-
-  public APIDefaultVersionURLsDTO ws(String ws) {
-    
-    this.ws = ws;
-    return this;
-  }
-
-   /**
-   * WS environment default URL
-   * @return ws
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "ws://localhost:9099/phoneverify/", value = "WS environment default URL")
-
-  public String getWs() {
-    return ws;
-  }
-
-
-  public void setWs(String ws) {
-    this.ws = ws;
-  }
-
-
-  public APIDefaultVersionURLsDTO wss(String wss) {
-    
-    this.wss = wss;
-    return this;
-  }
-
-   /**
-   * WSS environment default URL
-   * @return wss
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "ws://localhost:9099/phoneverify/", value = "WSS environment default URL")
-
-  public String getWss() {
-    return wss;
-  }
-
-
-  public void setWss(String wss) {
-    this.wss = wss;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getHttp() {
+        return http;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setHttp(String http) {
+        this.http = http;
     }
-    APIDefaultVersionURLsDTO apIDefaultVersionURLs = (APIDefaultVersionURLsDTO) o;
-    return Objects.equals(this.http, apIDefaultVersionURLs.http) &&
-        Objects.equals(this.https, apIDefaultVersionURLs.https) &&
-        Objects.equals(this.ws, apIDefaultVersionURLs.ws) &&
-        Objects.equals(this.wss, apIDefaultVersionURLs.wss);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(http, https, ws, wss);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIDefaultVersionURLsDTO {\n");
+        public APIDefaultVersionURLsDTO https(String https) {
+        
+        this.https = https;
+        return this;
+        }
+
+    /**
+        * HTTPS environment default URL
+    * @return https
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:8243/phoneverify/", value = "HTTPS environment default URL")
+    
+    public String getHttps() {
+        return https;
+    }
+
+
+    public void setHttps(String https) {
+        this.https = https;
+    }
+
+
+        public APIDefaultVersionURLsDTO ws(String ws) {
+        
+        this.ws = ws;
+        return this;
+        }
+
+    /**
+        * WS environment default URL
+    * @return ws
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "ws://localhost:9099/phoneverify/", value = "WS environment default URL")
+    
+    public String getWs() {
+        return ws;
+    }
+
+
+    public void setWs(String ws) {
+        this.ws = ws;
+    }
+
+
+        public APIDefaultVersionURLsDTO wss(String wss) {
+        
+        this.wss = wss;
+        return this;
+        }
+
+    /**
+        * WSS environment default URL
+    * @return wss
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "ws://localhost:9099/phoneverify/", value = "WSS environment default URL")
+    
+    public String getWss() {
+        return wss;
+    }
+
+
+    public void setWss(String wss) {
+        this.wss = wss;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIDefaultVersionURLsDTO apIDefaultVersionURLs = (APIDefaultVersionURLsDTO) o;
+            return Objects.equals(this.http, apIDefaultVersionURLs.http) &&
+            Objects.equals(this.https, apIDefaultVersionURLs.https) &&
+            Objects.equals(this.ws, apIDefaultVersionURLs.ws) &&
+            Objects.equals(this.wss, apIDefaultVersionURLs.wss);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(http, https, ws, wss);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIDefaultVersionURLsDTO {\n");
     sb.append("    http: ").append(toIndentedString(http)).append("\n");
     sb.append("    https: ").append(toIndentedString(https)).append("\n");
     sb.append("    ws: ").append(toIndentedString(ws)).append("\n");
     sb.append("    wss: ").append(toIndentedString(wss)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

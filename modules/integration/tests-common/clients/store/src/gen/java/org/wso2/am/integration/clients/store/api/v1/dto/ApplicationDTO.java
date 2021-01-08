@@ -29,430 +29,443 @@ import java.util.List;
 import java.util.Map;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationDTO
- */
+* ApplicationDTO
+*/
 
 public class ApplicationDTO {
-  public static final String SERIALIZED_NAME_APPLICATION_ID = "applicationId";
-  @SerializedName(SERIALIZED_NAME_APPLICATION_ID)
-  private String applicationId;
+        public static final String SERIALIZED_NAME_APPLICATION_ID = "applicationId";
+        @SerializedName(SERIALIZED_NAME_APPLICATION_ID)
+            private String applicationId;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_THROTTLING_POLICY = "throttlingPolicy";
-  @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY)
-  private String throttlingPolicy;
+        public static final String SERIALIZED_NAME_THROTTLING_POLICY = "throttlingPolicy";
+        @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY)
+            private String throttlingPolicy;
 
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  /**
-   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. 
-   */
-  @JsonAdapter(TokenTypeEnum.Adapter.class)
-  public enum TokenTypeEnum {
-    OAUTH("OAUTH"),
-    
-    JWT("JWT");
+            /**
+* Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. 
+*/
+    @JsonAdapter(TokenTypeEnum.Adapter.class)
+public enum TokenTypeEnum {
+        OAUTH("OAUTH"),
+        
+        JWT("JWT");
 
-    private String value;
+private String value;
 
-    TokenTypeEnum(String value) {
-      this.value = value;
+TokenTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TokenTypeEnum fromValue(String value) {
+    for (TokenTypeEnum b : TokenTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<TokenTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final TokenTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public TokenTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TokenTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static TokenTypeEnum fromValue(String value) {
-      for (TokenTypeEnum b : TokenTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_TOKEN_TYPE = "tokenType";
+        @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
+            private TokenTypeEnum tokenType = TokenTypeEnum.JWT;
+
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private String status = "";
+
+        public static final String SERIALIZED_NAME_GROUPS = "groups";
+        @SerializedName(SERIALIZED_NAME_GROUPS)
+            private List<String> groups = null;
+
+        public static final String SERIALIZED_NAME_SUBSCRIPTION_COUNT = "subscriptionCount";
+        @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_COUNT)
+            private Integer subscriptionCount;
+
+        public static final String SERIALIZED_NAME_KEYS = "keys";
+        @SerializedName(SERIALIZED_NAME_KEYS)
+            private List<ApplicationKeyDTO> keys = null;
+
+        public static final String SERIALIZED_NAME_ATTRIBUTES = "attributes";
+        @SerializedName(SERIALIZED_NAME_ATTRIBUTES)
+            private Map<String, String> attributes = null;
+
+        public static final String SERIALIZED_NAME_SUBSCRIPTION_SCOPES = "subscriptionScopes";
+        @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_SCOPES)
+            private List<ScopeInfoDTO> subscriptionScopes = null;
+
+        public static final String SERIALIZED_NAME_OWNER = "owner";
+        @SerializedName(SERIALIZED_NAME_OWNER)
+            private String owner;
+
+        public static final String SERIALIZED_NAME_HASH_ENABLED = "hashEnabled";
+        @SerializedName(SERIALIZED_NAME_HASH_ENABLED)
+            private Boolean hashEnabled;
+
+
+        public ApplicationDTO applicationId(String applicationId) {
+        
+        this.applicationId = applicationId;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * Get applicationId
+    * @return applicationId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
+    
+    public String getApplicationId() {
+        return applicationId;
     }
 
-    public static class Adapter extends TypeAdapter<TokenTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TokenTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public TokenTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return TokenTypeEnum.fromValue(value);
-      }
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
     }
-  }
-
-  public static final String SERIALIZED_NAME_TOKEN_TYPE = "tokenType";
-  @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
-  private TokenTypeEnum tokenType = TokenTypeEnum.JWT;
-
-  public static final String SERIALIZED_NAME_STATUS = "status";
-  @SerializedName(SERIALIZED_NAME_STATUS)
-  private String status = "";
-
-  public static final String SERIALIZED_NAME_GROUPS = "groups";
-  @SerializedName(SERIALIZED_NAME_GROUPS)
-  private List<String> groups = null;
-
-  public static final String SERIALIZED_NAME_SUBSCRIPTION_COUNT = "subscriptionCount";
-  @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_COUNT)
-  private Integer subscriptionCount;
-
-  public static final String SERIALIZED_NAME_KEYS = "keys";
-  @SerializedName(SERIALIZED_NAME_KEYS)
-  private List<ApplicationKeyDTO> keys = null;
-
-  public static final String SERIALIZED_NAME_ATTRIBUTES = "attributes";
-  @SerializedName(SERIALIZED_NAME_ATTRIBUTES)
-  private Map<String, String> attributes = null;
-
-  public static final String SERIALIZED_NAME_SUBSCRIPTION_SCOPES = "subscriptionScopes";
-  @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_SCOPES)
-  private List<ScopeInfoDTO> subscriptionScopes = null;
-
-  public static final String SERIALIZED_NAME_OWNER = "owner";
-  @SerializedName(SERIALIZED_NAME_OWNER)
-  private String owner;
-
-  public static final String SERIALIZED_NAME_HASH_ENABLED = "hashEnabled";
-  @SerializedName(SERIALIZED_NAME_HASH_ENABLED)
-  private Boolean hashEnabled;
 
 
-   /**
-   * Get applicationId
-   * @return applicationId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
+        public ApplicationDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
 
-  public String getApplicationId() {
-    return applicationId;
-  }
-
-
-
-
-  public ApplicationDTO name(String name) {
+    /**
+        * Get name
+    * @return name
+    **/
+      @ApiModelProperty(example = "CalculatorApp", required = true, value = "")
     
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @ApiModelProperty(example = "CalculatorApp", required = true, value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public ApplicationDTO throttlingPolicy(String throttlingPolicy) {
-    
-    this.throttlingPolicy = throttlingPolicy;
-    return this;
-  }
-
-   /**
-   * Get throttlingPolicy
-   * @return throttlingPolicy
-  **/
-  @ApiModelProperty(example = "Unlimited", required = true, value = "")
-
-  public String getThrottlingPolicy() {
-    return throttlingPolicy;
-  }
-
-
-  public void setThrottlingPolicy(String throttlingPolicy) {
-    this.throttlingPolicy = throttlingPolicy;
-  }
-
-
-  public ApplicationDTO description(String description) {
-    
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * Get description
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Sample calculator application", value = "")
-
-  public String getDescription() {
-    return description;
-  }
-
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  public ApplicationDTO tokenType(TokenTypeEnum tokenType) {
-    
-    this.tokenType = tokenType;
-    return this;
-  }
-
-   /**
-   * Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. 
-   * @return tokenType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "JWT", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. ")
-
-  public TokenTypeEnum getTokenType() {
-    return tokenType;
-  }
-
-
-  public void setTokenType(TokenTypeEnum tokenType) {
-    this.tokenType = tokenType;
-  }
-
-
-   /**
-   * Get status
-   * @return status
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "APPROVED", value = "")
-
-  public String getStatus() {
-    return status;
-  }
-
-
-
-
-  public ApplicationDTO groups(List<String> groups) {
-    
-    this.groups = groups;
-    return this;
-  }
-
-  public ApplicationDTO addGroupsItem(String groupsItem) {
-    if (this.groups == null) {
-      this.groups = new ArrayList<>();
+    public String getName() {
+        return name;
     }
-    this.groups.add(groupsItem);
-    return this;
-  }
-
-   /**
-   * Get groups
-   * @return groups
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[]", value = "")
-
-  public List<String> getGroups() {
-    return groups;
-  }
 
 
-  public void setGroups(List<String> groups) {
-    this.groups = groups;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
-   /**
-   * Get subscriptionCount
-   * @return subscriptionCount
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+        public ApplicationDTO throttlingPolicy(String throttlingPolicy) {
+        
+        this.throttlingPolicy = throttlingPolicy;
+        return this;
+        }
 
-  public Integer getSubscriptionCount() {
-    return subscriptionCount;
-  }
-
-
-
-
-  public ApplicationDTO keys(List<ApplicationKeyDTO> keys) {
+    /**
+        * Get throttlingPolicy
+    * @return throttlingPolicy
+    **/
+      @ApiModelProperty(example = "Unlimited", required = true, value = "")
     
-    this.keys = keys;
-    return this;
-  }
-
-  public ApplicationDTO addKeysItem(ApplicationKeyDTO keysItem) {
-    if (this.keys == null) {
-      this.keys = new ArrayList<>();
+    public String getThrottlingPolicy() {
+        return throttlingPolicy;
     }
-    this.keys.add(keysItem);
-    return this;
-  }
-
-   /**
-   * Get keys
-   * @return keys
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[]", value = "")
-
-  public List<ApplicationKeyDTO> getKeys() {
-    return keys;
-  }
 
 
-  public void setKeys(List<ApplicationKeyDTO> keys) {
-    this.keys = keys;
-  }
+    public void setThrottlingPolicy(String throttlingPolicy) {
+        this.throttlingPolicy = throttlingPolicy;
+    }
 
 
-  public ApplicationDTO attributes(Map<String, String> attributes) {
+        public ApplicationDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * Get description
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Sample calculator application", value = "")
     
-    this.attributes = attributes;
-    return this;
-  }
-
-  public ApplicationDTO putAttributesItem(String key, String attributesItem) {
-    if (this.attributes == null) {
-      this.attributes = new HashMap<>();
+    public String getDescription() {
+        return description;
     }
-    this.attributes.put(key, attributesItem);
-    return this;
-  }
-
-   /**
-   * Get attributes
-   * @return attributes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{}", value = "")
-
-  public Map<String, String> getAttributes() {
-    return attributes;
-  }
 
 
-  public void setAttributes(Map<String, String> attributes) {
-    this.attributes = attributes;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
-  public ApplicationDTO subscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
+        public ApplicationDTO tokenType(TokenTypeEnum tokenType) {
+        
+        this.tokenType = tokenType;
+        return this;
+        }
+
+    /**
+        * Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. 
+    * @return tokenType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "JWT", value = "Type of the access token generated for this application.  **OAUTH:** A UUID based access token **JWT:** A self-contained, signed JWT based access token which is issued by default. ")
     
-    this.subscriptionScopes = subscriptionScopes;
-    return this;
-  }
-
-  public ApplicationDTO addSubscriptionScopesItem(ScopeInfoDTO subscriptionScopesItem) {
-    if (this.subscriptionScopes == null) {
-      this.subscriptionScopes = new ArrayList<>();
+    public TokenTypeEnum getTokenType() {
+        return tokenType;
     }
-    this.subscriptionScopes.add(subscriptionScopesItem);
-    return this;
-  }
-
-   /**
-   * Get subscriptionScopes
-   * @return subscriptionScopes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[]", value = "")
-
-  public List<ScopeInfoDTO> getSubscriptionScopes() {
-    return subscriptionScopes;
-  }
 
 
-  public void setSubscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
-    this.subscriptionScopes = subscriptionScopes;
-  }
-
-
-   /**
-   * Application created user 
-   * @return owner
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "Application created user ")
-
-  public String getOwner() {
-    return owner;
-  }
-
-
-
-
-   /**
-   * Get hashEnabled
-   * @return hashEnabled
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "false", value = "")
-
-  public Boolean getHashEnabled() {
-    return hashEnabled;
-  }
-
-
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setTokenType(TokenTypeEnum tokenType) {
+        this.tokenType = tokenType;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+        public ApplicationDTO status(String status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * Get status
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "APPROVED", value = "")
+    
+    public String getStatus() {
+        return status;
     }
-    ApplicationDTO application = (ApplicationDTO) o;
-    return Objects.equals(this.applicationId, application.applicationId) &&
-        Objects.equals(this.name, application.name) &&
-        Objects.equals(this.throttlingPolicy, application.throttlingPolicy) &&
-        Objects.equals(this.description, application.description) &&
-        Objects.equals(this.tokenType, application.tokenType) &&
-        Objects.equals(this.status, application.status) &&
-        Objects.equals(this.groups, application.groups) &&
-        Objects.equals(this.subscriptionCount, application.subscriptionCount) &&
-        Objects.equals(this.keys, application.keys) &&
-        Objects.equals(this.attributes, application.attributes) &&
-        Objects.equals(this.subscriptionScopes, application.subscriptionScopes) &&
-        Objects.equals(this.owner, application.owner) &&
-        Objects.equals(this.hashEnabled, application.hashEnabled);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(applicationId, name, throttlingPolicy, description, tokenType, status, groups, subscriptionCount, keys, attributes, subscriptionScopes, owner, hashEnabled);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationDTO {\n");
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
+        public ApplicationDTO groups(List<String> groups) {
+        
+        this.groups = groups;
+        return this;
+        }
+
+    /**
+        * Get groups
+    * @return groups
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[]", value = "")
+    
+    public List<String> getGroups() {
+        return groups;
+    }
+
+
+    public void setGroups(List<String> groups) {
+        this.groups = groups;
+    }
+
+
+        public ApplicationDTO subscriptionCount(Integer subscriptionCount) {
+        
+        this.subscriptionCount = subscriptionCount;
+        return this;
+        }
+
+    /**
+        * Get subscriptionCount
+    * @return subscriptionCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public Integer getSubscriptionCount() {
+        return subscriptionCount;
+    }
+
+
+    public void setSubscriptionCount(Integer subscriptionCount) {
+        this.subscriptionCount = subscriptionCount;
+    }
+
+
+        public ApplicationDTO keys(List<ApplicationKeyDTO> keys) {
+        
+        this.keys = keys;
+        return this;
+        }
+
+    /**
+        * Get keys
+    * @return keys
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[]", value = "")
+    
+    public List<ApplicationKeyDTO> getKeys() {
+        return keys;
+    }
+
+
+    public void setKeys(List<ApplicationKeyDTO> keys) {
+        this.keys = keys;
+    }
+
+
+        public ApplicationDTO attributes(Map<String, String> attributes) {
+        
+        this.attributes = attributes;
+        return this;
+        }
+
+    /**
+        * Get attributes
+    * @return attributes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{}", value = "")
+    
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+
+        public ApplicationDTO subscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
+        
+        this.subscriptionScopes = subscriptionScopes;
+        return this;
+        }
+
+    /**
+        * Get subscriptionScopes
+    * @return subscriptionScopes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[]", value = "")
+    
+    public List<ScopeInfoDTO> getSubscriptionScopes() {
+        return subscriptionScopes;
+    }
+
+
+    public void setSubscriptionScopes(List<ScopeInfoDTO> subscriptionScopes) {
+        this.subscriptionScopes = subscriptionScopes;
+    }
+
+
+        public ApplicationDTO owner(String owner) {
+        
+        this.owner = owner;
+        return this;
+        }
+
+    /**
+        * Application created user 
+    * @return owner
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "Application created user ")
+    
+    public String getOwner() {
+        return owner;
+    }
+
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+
+        public ApplicationDTO hashEnabled(Boolean hashEnabled) {
+        
+        this.hashEnabled = hashEnabled;
+        return this;
+        }
+
+    /**
+        * Get hashEnabled
+    * @return hashEnabled
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isHashEnabled() {
+        return hashEnabled;
+    }
+
+
+    public void setHashEnabled(Boolean hashEnabled) {
+        this.hashEnabled = hashEnabled;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationDTO application = (ApplicationDTO) o;
+            return Objects.equals(this.applicationId, application.applicationId) &&
+            Objects.equals(this.name, application.name) &&
+            Objects.equals(this.throttlingPolicy, application.throttlingPolicy) &&
+            Objects.equals(this.description, application.description) &&
+            Objects.equals(this.tokenType, application.tokenType) &&
+            Objects.equals(this.status, application.status) &&
+            Objects.equals(this.groups, application.groups) &&
+            Objects.equals(this.subscriptionCount, application.subscriptionCount) &&
+            Objects.equals(this.keys, application.keys) &&
+            Objects.equals(this.attributes, application.attributes) &&
+            Objects.equals(this.subscriptionScopes, application.subscriptionScopes) &&
+            Objects.equals(this.owner, application.owner) &&
+            Objects.equals(this.hashEnabled, application.hashEnabled);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationId, name, throttlingPolicy, description, tokenType, status, groups, subscriptionCount, keys, attributes, subscriptionScopes, owner, hashEnabled);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationDTO {\n");
     sb.append("    applicationId: ").append(toIndentedString(applicationId)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
@@ -466,20 +479,20 @@ public class ApplicationDTO {
     sb.append("    subscriptionScopes: ").append(toIndentedString(subscriptionScopes)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
     sb.append("    hashEnabled: ").append(toIndentedString(hashEnabled)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

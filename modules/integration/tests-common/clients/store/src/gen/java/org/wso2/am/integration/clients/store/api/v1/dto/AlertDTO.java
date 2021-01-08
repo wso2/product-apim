@@ -26,143 +26,135 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.AlertConfigDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AlertDTO
- */
+* AlertDTO
+*/
 
 public class AlertDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private Integer id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private Integer id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_CONFIGURATION = "configuration";
-  @SerializedName(SERIALIZED_NAME_CONFIGURATION)
-  private List<AlertConfigDTO> _configuration = null;
+        public static final String SERIALIZED_NAME_CONFIGURATION = "configuration";
+        @SerializedName(SERIALIZED_NAME_CONFIGURATION)
+            private List<AlertConfigDTO> _configuration = null;
 
 
-  public AlertDTO id(Integer id) {
+        public AlertDTO id(Integer id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * The alert Id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "The alert Id")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * The alert Id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "The alert Id")
-
-  public Integer getId() {
-    return id;
-  }
+    public Integer getId() {
+        return id;
+    }
 
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
 
-  public AlertDTO name(String name) {
+        public AlertDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * The name of the alert.
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "AbnormalRequestsPerMin", value = "The name of the alert.")
     
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * The name of the alert.
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "AbnormalRequestsPerMin", value = "The name of the alert.")
-
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
-  public AlertDTO _configuration(List<AlertConfigDTO> _configuration) {
+        public AlertDTO _configuration(List<AlertConfigDTO> _configuration) {
+        
+        this._configuration = _configuration;
+        return this;
+        }
+
+    /**
+        * Get _configuration
+    * @return _configuration
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this._configuration = _configuration;
-    return this;
-  }
-
-  public AlertDTO addConfigurationItem(AlertConfigDTO _configurationItem) {
-    if (this._configuration == null) {
-      this._configuration = new ArrayList<>();
+    public List<AlertConfigDTO> getConfiguration() {
+        return _configuration;
     }
-    this._configuration.add(_configurationItem);
-    return this;
-  }
-
-   /**
-   * Get _configuration
-   * @return _configuration
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<AlertConfigDTO> getConfiguration() {
-    return _configuration;
-  }
 
 
-  public void setConfiguration(List<AlertConfigDTO> _configuration) {
-    this._configuration = _configuration;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setConfiguration(List<AlertConfigDTO> _configuration) {
+        this._configuration = _configuration;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AlertDTO alert = (AlertDTO) o;
+            return Objects.equals(this.id, alert.id) &&
+            Objects.equals(this.name, alert.name) &&
+            Objects.equals(this._configuration, alert._configuration);
     }
-    AlertDTO alert = (AlertDTO) o;
-    return Objects.equals(this.id, alert.id) &&
-        Objects.equals(this.name, alert.name) &&
-        Objects.equals(this._configuration, alert._configuration);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, _configuration);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, _configuration);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AlertDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AlertDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    _configuration: ").append(toIndentedString(_configuration)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

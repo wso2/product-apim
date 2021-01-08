@@ -25,161 +25,153 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ThrottlingPolicyPermissionInfoDTO
- */
+* ThrottlingPolicyPermissionInfoDTO
+*/
 
 public class ThrottlingPolicyPermissionInfoDTO {
-  /**
-   * Gets or Sets type
-   */
-  @JsonAdapter(TypeEnum.Adapter.class)
-  public enum TypeEnum {
-    ALLOW("allow"),
-    
-    DENY("deny");
+            /**
+* Gets or Sets type
+*/
+    @JsonAdapter(TypeEnum.Adapter.class)
+public enum TypeEnum {
+        ALLOW("allow"),
+        
+        DENY("deny");
 
-    private String value;
+private String value;
 
-    TypeEnum(String value) {
-      this.value = value;
+TypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TypeEnum fromValue(String value) {
+    for (TypeEnum b : TypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<TypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public TypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private TypeEnum type;
+
+        public static final String SERIALIZED_NAME_ROLES = "roles";
+        @SerializedName(SERIALIZED_NAME_ROLES)
+            private List<String> roles = null;
+
+
+        public ThrottlingPolicyPermissionInfoDTO type(TypeEnum type) {
+        
+        this.type = type;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
 
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public TypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return TypeEnum.fromValue(value);
-      }
-    }
-  }
-
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private TypeEnum type;
-
-  public static final String SERIALIZED_NAME_ROLES = "roles";
-  @SerializedName(SERIALIZED_NAME_ROLES)
-  private List<String> roles = null;
-
-
-  public ThrottlingPolicyPermissionInfoDTO type(TypeEnum type) {
+    /**
+        * Get type
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Get type
-   * @return type
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public TypeEnum getType() {
-    return type;
-  }
+    public TypeEnum getType() {
+        return type;
+    }
 
 
-  public void setType(TypeEnum type) {
-    this.type = type;
-  }
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
 
 
-  public ThrottlingPolicyPermissionInfoDTO roles(List<String> roles) {
+        public ThrottlingPolicyPermissionInfoDTO roles(List<String> roles) {
+        
+        this.roles = roles;
+        return this;
+        }
+
+    /**
+        * roles for this permission
+    * @return roles
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"manager\",\"developer\"]", value = "roles for this permission")
     
-    this.roles = roles;
-    return this;
-  }
-
-  public ThrottlingPolicyPermissionInfoDTO addRolesItem(String rolesItem) {
-    if (this.roles == null) {
-      this.roles = new ArrayList<>();
+    public List<String> getRoles() {
+        return roles;
     }
-    this.roles.add(rolesItem);
-    return this;
-  }
-
-   /**
-   * roles for this permission
-   * @return roles
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"manager\",\"developer\"]", value = "roles for this permission")
-
-  public List<String> getRoles() {
-    return roles;
-  }
 
 
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissionInfo = (ThrottlingPolicyPermissionInfoDTO) o;
+            return Objects.equals(this.type, throttlingPolicyPermissionInfo.type) &&
+            Objects.equals(this.roles, throttlingPolicyPermissionInfo.roles);
     }
-    ThrottlingPolicyPermissionInfoDTO throttlingPolicyPermissionInfo = (ThrottlingPolicyPermissionInfoDTO) o;
-    return Objects.equals(this.type, throttlingPolicyPermissionInfo.type) &&
-        Objects.equals(this.roles, throttlingPolicyPermissionInfo.roles);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, roles);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, roles);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ThrottlingPolicyPermissionInfoDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ThrottlingPolicyPermissionInfoDTO {\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    roles: ").append(toIndentedString(roles)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

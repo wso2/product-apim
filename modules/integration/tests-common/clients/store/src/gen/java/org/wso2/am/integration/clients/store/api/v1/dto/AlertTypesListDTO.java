@@ -26,114 +26,106 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.AlertTypeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * AlertTypesListDTO
- */
+* AlertTypesListDTO
+*/
 
 public class AlertTypesListDTO {
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_ALERTS = "alerts";
-  @SerializedName(SERIALIZED_NAME_ALERTS)
-  private List<AlertTypeDTO> alerts = null;
+        public static final String SERIALIZED_NAME_ALERTS = "alerts";
+        @SerializedName(SERIALIZED_NAME_ALERTS)
+            private List<AlertTypeDTO> alerts = null;
 
 
-  public AlertTypesListDTO count(Integer count) {
+        public AlertTypesListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * The number of alerts
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3", value = "The number of alerts")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * The number of alerts
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3", value = "The number of alerts")
-
-  public Integer getCount() {
-    return count;
-  }
+    public Integer getCount() {
+        return count;
+    }
 
 
-  public void setCount(Integer count) {
-    this.count = count;
-  }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
-  public AlertTypesListDTO alerts(List<AlertTypeDTO> alerts) {
+        public AlertTypesListDTO alerts(List<AlertTypeDTO> alerts) {
+        
+        this.alerts = alerts;
+        return this;
+        }
+
+    /**
+        * Get alerts
+    * @return alerts
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.alerts = alerts;
-    return this;
-  }
-
-  public AlertTypesListDTO addAlertsItem(AlertTypeDTO alertsItem) {
-    if (this.alerts == null) {
-      this.alerts = new ArrayList<>();
+    public List<AlertTypeDTO> getAlerts() {
+        return alerts;
     }
-    this.alerts.add(alertsItem);
-    return this;
-  }
-
-   /**
-   * Get alerts
-   * @return alerts
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<AlertTypeDTO> getAlerts() {
-    return alerts;
-  }
 
 
-  public void setAlerts(List<AlertTypeDTO> alerts) {
-    this.alerts = alerts;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setAlerts(List<AlertTypeDTO> alerts) {
+        this.alerts = alerts;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            AlertTypesListDTO alertTypesList = (AlertTypesListDTO) o;
+            return Objects.equals(this.count, alertTypesList.count) &&
+            Objects.equals(this.alerts, alertTypesList.alerts);
     }
-    AlertTypesListDTO alertTypesList = (AlertTypesListDTO) o;
-    return Objects.equals(this.count, alertTypesList.count) &&
-        Objects.equals(this.alerts, alertTypesList.alerts);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(count, alerts);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(count, alerts);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AlertTypesListDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class AlertTypesListDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    alerts: ").append(toIndentedString(alerts)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

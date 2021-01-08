@@ -23,136 +23,163 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * RatingDTO
- */
+* RatingDTO
+*/
 
 public class RatingDTO {
-  public static final String SERIALIZED_NAME_RATING_ID = "ratingId";
-  @SerializedName(SERIALIZED_NAME_RATING_ID)
-  private String ratingId;
+        public static final String SERIALIZED_NAME_RATING_ID = "ratingId";
+        @SerializedName(SERIALIZED_NAME_RATING_ID)
+            private String ratingId;
 
-  public static final String SERIALIZED_NAME_API_ID = "apiId";
-  @SerializedName(SERIALIZED_NAME_API_ID)
-  private String apiId;
+        public static final String SERIALIZED_NAME_API_ID = "apiId";
+        @SerializedName(SERIALIZED_NAME_API_ID)
+            private String apiId;
 
-  public static final String SERIALIZED_NAME_RATED_BY = "ratedBy";
-  @SerializedName(SERIALIZED_NAME_RATED_BY)
-  private String ratedBy;
+        public static final String SERIALIZED_NAME_RATED_BY = "ratedBy";
+        @SerializedName(SERIALIZED_NAME_RATED_BY)
+            private String ratedBy;
 
-  public static final String SERIALIZED_NAME_RATING = "rating";
-  @SerializedName(SERIALIZED_NAME_RATING)
-  private Integer rating;
-
-
-   /**
-   * Get ratingId
-   * @return ratingId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "32acfa7a-77f8-4fe0-bb7f-a902f36546d0", value = "")
-
-  public String getRatingId() {
-    return ratingId;
-  }
+        public static final String SERIALIZED_NAME_RATING = "rating";
+        @SerializedName(SERIALIZED_NAME_RATING)
+            private Integer rating;
 
 
+        public RatingDTO ratingId(String ratingId) {
+        
+        this.ratingId = ratingId;
+        return this;
+        }
 
-
-   /**
-   * Get apiId
-   * @return apiId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "e93fb282-b456-48fc-8981-003fb89086ae", value = "")
-
-  public String getApiId() {
-    return apiId;
-  }
-
-
-
-
-   /**
-   * Get ratedBy
-   * @return ratedBy
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "")
-
-  public String getRatedBy() {
-    return ratedBy;
-  }
-
-
-
-
-  public RatingDTO rating(Integer rating) {
+    /**
+        * Get ratingId
+    * @return ratingId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "32acfa7a-77f8-4fe0-bb7f-a902f36546d0", value = "")
     
-    this.rating = rating;
-    return this;
-  }
-
-   /**
-   * Get rating
-   * @return rating
-  **/
-  @ApiModelProperty(example = "4", required = true, value = "")
-
-  public Integer getRating() {
-    return rating;
-  }
-
-
-  public void setRating(Integer rating) {
-    this.rating = rating;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getRatingId() {
+        return ratingId;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setRatingId(String ratingId) {
+        this.ratingId = ratingId;
     }
-    RatingDTO rating = (RatingDTO) o;
-    return Objects.equals(this.ratingId, rating.ratingId) &&
-        Objects.equals(this.apiId, rating.apiId) &&
-        Objects.equals(this.ratedBy, rating.ratedBy) &&
-        Objects.equals(this.rating, rating.rating);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(ratingId, apiId, ratedBy, rating);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RatingDTO {\n");
+        public RatingDTO apiId(String apiId) {
+        
+        this.apiId = apiId;
+        return this;
+        }
+
+    /**
+        * Get apiId
+    * @return apiId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "e93fb282-b456-48fc-8981-003fb89086ae", value = "")
+    
+    public String getApiId() {
+        return apiId;
+    }
+
+
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+
+        public RatingDTO ratedBy(String ratedBy) {
+        
+        this.ratedBy = ratedBy;
+        return this;
+        }
+
+    /**
+        * Get ratedBy
+    * @return ratedBy
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "")
+    
+    public String getRatedBy() {
+        return ratedBy;
+    }
+
+
+    public void setRatedBy(String ratedBy) {
+        this.ratedBy = ratedBy;
+    }
+
+
+        public RatingDTO rating(Integer rating) {
+        
+        this.rating = rating;
+        return this;
+        }
+
+    /**
+        * Get rating
+    * @return rating
+    **/
+      @ApiModelProperty(example = "4", required = true, value = "")
+    
+    public Integer getRating() {
+        return rating;
+    }
+
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            RatingDTO rating = (RatingDTO) o;
+            return Objects.equals(this.ratingId, rating.ratingId) &&
+            Objects.equals(this.apiId, rating.apiId) &&
+            Objects.equals(this.ratedBy, rating.ratedBy) &&
+            Objects.equals(this.rating, rating.rating);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ratingId, apiId, ratedBy, rating);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class RatingDTO {\n");
     sb.append("    ratingId: ").append(toIndentedString(ratingId)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
     sb.append("    ratedBy: ").append(toIndentedString(ratedBy)).append("\n");
     sb.append("    rating: ").append(toIndentedString(rating)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

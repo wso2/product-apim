@@ -23,77 +23,77 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIKeyRevokeRequestDTO
- */
+* APIKeyRevokeRequestDTO
+*/
 
 public class APIKeyRevokeRequestDTO {
-  public static final String SERIALIZED_NAME_APIKEY = "apikey";
-  @SerializedName(SERIALIZED_NAME_APIKEY)
-  private String apikey;
+        public static final String SERIALIZED_NAME_APIKEY = "apikey";
+        @SerializedName(SERIALIZED_NAME_APIKEY)
+            private String apikey;
 
 
-  public APIKeyRevokeRequestDTO apikey(String apikey) {
+        public APIKeyRevokeRequestDTO apikey(String apikey) {
+        
+        this.apikey = apikey;
+        return this;
+        }
+
+    /**
+        * API Key to revoke
+    * @return apikey
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=", value = "API Key to revoke")
     
-    this.apikey = apikey;
-    return this;
-  }
-
-   /**
-   * API Key to revoke
-   * @return apikey
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=", value = "API Key to revoke")
-
-  public String getApikey() {
-    return apikey;
-  }
-
-
-  public void setApikey(String apikey) {
-    this.apikey = apikey;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getApikey() {
+        return apikey;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setApikey(String apikey) {
+        this.apikey = apikey;
     }
-    APIKeyRevokeRequestDTO apIKeyRevokeRequest = (APIKeyRevokeRequestDTO) o;
-    return Objects.equals(this.apikey, apIKeyRevokeRequest.apikey);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(apikey);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIKeyRevokeRequestDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIKeyRevokeRequestDTO apIKeyRevokeRequest = (APIKeyRevokeRequestDTO) o;
+            return Objects.equals(this.apikey, apIKeyRevokeRequest.apikey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(apikey);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIKeyRevokeRequestDTO {\n");
     sb.append("    apikey: ").append(toIndentedString(apikey)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

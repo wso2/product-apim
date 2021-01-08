@@ -23,133 +23,133 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIDeploymentClusterInfoDTO
- */
+* APIDeploymentClusterInfoDTO
+*/
 
 public class APIDeploymentClusterInfoDTO {
-  public static final String SERIALIZED_NAME_CLUSTER_NAME = "clusterName";
-  @SerializedName(SERIALIZED_NAME_CLUSTER_NAME)
-  private String clusterName;
+        public static final String SERIALIZED_NAME_CLUSTER_NAME = "clusterName";
+        @SerializedName(SERIALIZED_NAME_CLUSTER_NAME)
+            private String clusterName;
 
-  public static final String SERIALIZED_NAME_CLUSTER_DISPLAY_NAME = "clusterDisplayName";
-  @SerializedName(SERIALIZED_NAME_CLUSTER_DISPLAY_NAME)
-  private String clusterDisplayName;
+        public static final String SERIALIZED_NAME_CLUSTER_DISPLAY_NAME = "clusterDisplayName";
+        @SerializedName(SERIALIZED_NAME_CLUSTER_DISPLAY_NAME)
+            private String clusterDisplayName;
 
-  public static final String SERIALIZED_NAME_INGRESS_U_R_L = "ingressURL";
-  @SerializedName(SERIALIZED_NAME_INGRESS_U_R_L)
-  private String ingressURL;
+        public static final String SERIALIZED_NAME_INGRESS_U_R_L = "ingressURL";
+        @SerializedName(SERIALIZED_NAME_INGRESS_U_R_L)
+            private String ingressURL;
 
 
-  public APIDeploymentClusterInfoDTO clusterName(String clusterName) {
+        public APIDeploymentClusterInfoDTO clusterName(String clusterName) {
+        
+        this.clusterName = clusterName;
+        return this;
+        }
+
+    /**
+        * Name of the cluster 
+    * @return clusterName
+    **/
+      @ApiModelProperty(example = "minikube", required = true, value = "Name of the cluster ")
     
-    this.clusterName = clusterName;
-    return this;
-  }
-
-   /**
-   * Name of the cluster 
-   * @return clusterName
-  **/
-  @ApiModelProperty(example = "minikube", required = true, value = "Name of the cluster ")
-
-  public String getClusterName() {
-    return clusterName;
-  }
-
-
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
-  }
-
-
-  public APIDeploymentClusterInfoDTO clusterDisplayName(String clusterDisplayName) {
-    
-    this.clusterDisplayName = clusterDisplayName;
-    return this;
-  }
-
-   /**
-   * Display name of the cluster 
-   * @return clusterDisplayName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Minikube Cluster", value = "Display name of the cluster ")
-
-  public String getClusterDisplayName() {
-    return clusterDisplayName;
-  }
-
-
-  public void setClusterDisplayName(String clusterDisplayName) {
-    this.clusterDisplayName = clusterDisplayName;
-  }
-
-
-  public APIDeploymentClusterInfoDTO ingressURL(String ingressURL) {
-    
-    this.ingressURL = ingressURL;
-    return this;
-  }
-
-   /**
-   * ingress URL
-   * @return ingressURL
-  **/
-  @ApiModelProperty(example = "http://wso2.com:9443", required = true, value = "ingress URL")
-
-  public String getIngressURL() {
-    return ingressURL;
-  }
-
-
-  public void setIngressURL(String ingressURL) {
-    this.ingressURL = ingressURL;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getClusterName() {
+        return clusterName;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
     }
-    APIDeploymentClusterInfoDTO apIDeploymentClusterInfo = (APIDeploymentClusterInfoDTO) o;
-    return Objects.equals(this.clusterName, apIDeploymentClusterInfo.clusterName) &&
-        Objects.equals(this.clusterDisplayName, apIDeploymentClusterInfo.clusterDisplayName) &&
-        Objects.equals(this.ingressURL, apIDeploymentClusterInfo.ingressURL);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(clusterName, clusterDisplayName, ingressURL);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIDeploymentClusterInfoDTO {\n");
+        public APIDeploymentClusterInfoDTO clusterDisplayName(String clusterDisplayName) {
+        
+        this.clusterDisplayName = clusterDisplayName;
+        return this;
+        }
+
+    /**
+        * Display name of the cluster 
+    * @return clusterDisplayName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Minikube Cluster", value = "Display name of the cluster ")
+    
+    public String getClusterDisplayName() {
+        return clusterDisplayName;
+    }
+
+
+    public void setClusterDisplayName(String clusterDisplayName) {
+        this.clusterDisplayName = clusterDisplayName;
+    }
+
+
+        public APIDeploymentClusterInfoDTO ingressURL(String ingressURL) {
+        
+        this.ingressURL = ingressURL;
+        return this;
+        }
+
+    /**
+        * ingress URL
+    * @return ingressURL
+    **/
+      @ApiModelProperty(example = "http://wso2.com:9443", required = true, value = "ingress URL")
+    
+    public String getIngressURL() {
+        return ingressURL;
+    }
+
+
+    public void setIngressURL(String ingressURL) {
+        this.ingressURL = ingressURL;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIDeploymentClusterInfoDTO apIDeploymentClusterInfo = (APIDeploymentClusterInfoDTO) o;
+            return Objects.equals(this.clusterName, apIDeploymentClusterInfo.clusterName) &&
+            Objects.equals(this.clusterDisplayName, apIDeploymentClusterInfo.clusterDisplayName) &&
+            Objects.equals(this.ingressURL, apIDeploymentClusterInfo.ingressURL);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clusterName, clusterDisplayName, ingressURL);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIDeploymentClusterInfoDTO {\n");
     sb.append("    clusterName: ").append(toIndentedString(clusterName)).append("\n");
     sb.append("    clusterDisplayName: ").append(toIndentedString(clusterDisplayName)).append("\n");
     sb.append("    ingressURL: ").append(toIndentedString(ingressURL)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

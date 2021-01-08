@@ -27,143 +27,135 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * TagListDTO
- */
+* TagListDTO
+*/
 
 public class TagListDTO {
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<TagDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<TagDTO> list = null;
 
-  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-  @SerializedName(SERIALIZED_NAME_PAGINATION)
-  private PaginationDTO pagination;
+        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+        @SerializedName(SERIALIZED_NAME_PAGINATION)
+            private PaginationDTO pagination;
 
 
-  public TagListDTO count(Integer count) {
+        public TagListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Number of Tags returned. 
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "Number of Tags returned. ")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Number of Tags returned. 
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "Number of Tags returned. ")
-
-  public Integer getCount() {
-    return count;
-  }
+    public Integer getCount() {
+        return count;
+    }
 
 
-  public void setCount(Integer count) {
-    this.count = count;
-  }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
-  public TagListDTO list(List<TagDTO> list) {
+        public TagListDTO list(List<TagDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public TagListDTO addListItem(TagDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public List<TagDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<TagDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<TagDTO> list) {
-    this.list = list;
-  }
+    public void setList(List<TagDTO> list) {
+        this.list = list;
+    }
 
 
-  public TagListDTO pagination(PaginationDTO pagination) {
+        public TagListDTO pagination(PaginationDTO pagination) {
+        
+        this.pagination = pagination;
+        return this;
+        }
+
+    /**
+        * Get pagination
+    * @return pagination
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.pagination = pagination;
-    return this;
-  }
-
-   /**
-   * Get pagination
-   * @return pagination
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public PaginationDTO getPagination() {
-    return pagination;
-  }
-
-
-  public void setPagination(PaginationDTO pagination) {
-    this.pagination = pagination;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public PaginationDTO getPagination() {
+        return pagination;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
     }
-    TagListDTO tagList = (TagListDTO) o;
-    return Objects.equals(this.count, tagList.count) &&
-        Objects.equals(this.list, tagList.list) &&
-        Objects.equals(this.pagination, tagList.pagination);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(count, list, pagination);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class TagListDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            TagListDTO tagList = (TagListDTO) o;
+            return Objects.equals(this.count, tagList.count) &&
+            Objects.equals(this.list, tagList.list) &&
+            Objects.equals(this.pagination, tagList.pagination);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(count, list, pagination);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class TagListDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

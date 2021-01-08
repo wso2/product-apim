@@ -638,7 +638,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse checkValidEndpoint(String endpointUrl, String apiId) throws APIManagerIntegrationTestException, ApiException {
 
-        ApiEndpointValidationResponseDTO validationResponseDTO = validationApi.validateEndpoint(endpointUrl, endpointUrl);
+        ApiEndpointValidationResponseDTO validationResponseDTO = validationApi.validateEndpoint(endpointUrl, apiId);
         HttpResponse response = null;
         if (validationResponseDTO.getStatusCode() == 200) {
             response = new HttpResponse(validationResponseDTO.getStatusMessage(), 200);
@@ -975,7 +975,7 @@ public class RestAPIPublisherImpl {
     }
 
     public String updateSwagger(String apiId, String definition) throws ApiException {
-        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, definition, null, null, null);
+        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, null, definition, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -1238,7 +1238,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
         HttpResponse response = null;
-        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+        ApiResponse<GraphQLQueryComplexityInfoDTO> complexityResponse = graphQlPoliciesApi
                 .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
         if(complexityResponse.getStatusCode() == 200){
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);

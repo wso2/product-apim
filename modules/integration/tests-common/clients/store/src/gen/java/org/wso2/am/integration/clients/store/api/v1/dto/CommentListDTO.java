@@ -27,143 +27,135 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PaginationDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * CommentListDTO
- */
+* CommentListDTO
+*/
 
 public class CommentListDTO {
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<CommentDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<CommentDTO> list = null;
 
-  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-  @SerializedName(SERIALIZED_NAME_PAGINATION)
-  private PaginationDTO pagination;
+        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+        @SerializedName(SERIALIZED_NAME_PAGINATION)
+            private PaginationDTO pagination;
 
 
-  public CommentListDTO count(Integer count) {
+        public CommentListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Number of Comments returned. 
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "Number of Comments returned. ")
     
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Number of Comments returned. 
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "Number of Comments returned. ")
-
-  public Integer getCount() {
-    return count;
-  }
+    public Integer getCount() {
+        return count;
+    }
 
 
-  public void setCount(Integer count) {
-    this.count = count;
-  }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
-  public CommentListDTO list(List<CommentDTO> list) {
+        public CommentListDTO list(List<CommentDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public CommentListDTO addListItem(CommentDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public List<CommentDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<CommentDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<CommentDTO> list) {
-    this.list = list;
-  }
+    public void setList(List<CommentDTO> list) {
+        this.list = list;
+    }
 
 
-  public CommentListDTO pagination(PaginationDTO pagination) {
+        public CommentListDTO pagination(PaginationDTO pagination) {
+        
+        this.pagination = pagination;
+        return this;
+        }
+
+    /**
+        * Get pagination
+    * @return pagination
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.pagination = pagination;
-    return this;
-  }
-
-   /**
-   * Get pagination
-   * @return pagination
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public PaginationDTO getPagination() {
-    return pagination;
-  }
-
-
-  public void setPagination(PaginationDTO pagination) {
-    this.pagination = pagination;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public PaginationDTO getPagination() {
+        return pagination;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
     }
-    CommentListDTO commentList = (CommentListDTO) o;
-    return Objects.equals(this.count, commentList.count) &&
-        Objects.equals(this.list, commentList.list) &&
-        Objects.equals(this.pagination, commentList.pagination);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(count, list, pagination);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CommentListDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            CommentListDTO commentList = (CommentListDTO) o;
+            return Objects.equals(this.count, commentList.count) &&
+            Objects.equals(this.list, commentList.list) &&
+            Objects.equals(this.pagination, commentList.pagination);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(count, list, pagination);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class CommentListDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,209 +23,209 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationKeyMappingRequestDTO
- */
+* ApplicationKeyMappingRequestDTO
+*/
 
 public class ApplicationKeyMappingRequestDTO {
-  public static final String SERIALIZED_NAME_CONSUMER_KEY = "consumerKey";
-  @SerializedName(SERIALIZED_NAME_CONSUMER_KEY)
-  private String consumerKey;
+        public static final String SERIALIZED_NAME_CONSUMER_KEY = "consumerKey";
+        @SerializedName(SERIALIZED_NAME_CONSUMER_KEY)
+            private String consumerKey;
 
-  public static final String SERIALIZED_NAME_CONSUMER_SECRET = "consumerSecret";
-  @SerializedName(SERIALIZED_NAME_CONSUMER_SECRET)
-  private String consumerSecret;
+        public static final String SERIALIZED_NAME_CONSUMER_SECRET = "consumerSecret";
+        @SerializedName(SERIALIZED_NAME_CONSUMER_SECRET)
+            private String consumerSecret;
 
-  public static final String SERIALIZED_NAME_KEY_MANAGER = "keyManager";
-  @SerializedName(SERIALIZED_NAME_KEY_MANAGER)
-  private String keyManager;
+        public static final String SERIALIZED_NAME_KEY_MANAGER = "keyManager";
+        @SerializedName(SERIALIZED_NAME_KEY_MANAGER)
+            private String keyManager;
 
-  /**
-   * Gets or Sets keyType
-   */
-  @JsonAdapter(KeyTypeEnum.Adapter.class)
-  public enum KeyTypeEnum {
-    PRODUCTION("PRODUCTION"),
-    
-    SANDBOX("SANDBOX");
+            /**
+* Gets or Sets keyType
+*/
+    @JsonAdapter(KeyTypeEnum.Adapter.class)
+public enum KeyTypeEnum {
+        PRODUCTION("PRODUCTION"),
+        
+        SANDBOX("SANDBOX");
 
-    private String value;
+private String value;
 
-    KeyTypeEnum(String value) {
-      this.value = value;
+KeyTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static KeyTypeEnum fromValue(String value) {
+    for (KeyTypeEnum b : KeyTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<KeyTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final KeyTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public KeyTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return KeyTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static KeyTypeEnum fromValue(String value) {
-      for (KeyTypeEnum b : KeyTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
+        @SerializedName(SERIALIZED_NAME_KEY_TYPE)
+            private KeyTypeEnum keyType;
+
+
+        public ApplicationKeyMappingRequestDTO consumerKey(String consumerKey) {
+        
+        this.consumerKey = consumerKey;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * Consumer key of the application
+    * @return consumerKey
+    **/
+      @ApiModelProperty(example = "oYhwZu4P2ThDmiDprBk6c0YfjR8a", required = true, value = "Consumer key of the application")
+    
+    public String getConsumerKey() {
+        return consumerKey;
     }
 
-    public static class Adapter extends TypeAdapter<KeyTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final KeyTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public KeyTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return KeyTypeEnum.fromValue(value);
-      }
+    public void setConsumerKey(String consumerKey) {
+        this.consumerKey = consumerKey;
     }
-  }
-
-  public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
-  @SerializedName(SERIALIZED_NAME_KEY_TYPE)
-  private KeyTypeEnum keyType;
 
 
-  public ApplicationKeyMappingRequestDTO consumerKey(String consumerKey) {
+        public ApplicationKeyMappingRequestDTO consumerSecret(String consumerSecret) {
+        
+        this.consumerSecret = consumerSecret;
+        return this;
+        }
+
+    /**
+        * Consumer secret of the application
+    * @return consumerSecret
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "ondWGtFTCOVM4sfPyOfZ7fel610a", value = "Consumer secret of the application")
     
-    this.consumerKey = consumerKey;
-    return this;
-  }
-
-   /**
-   * Consumer key of the application
-   * @return consumerKey
-  **/
-  @ApiModelProperty(example = "oYhwZu4P2ThDmiDprBk6c0YfjR8a", required = true, value = "Consumer key of the application")
-
-  public String getConsumerKey() {
-    return consumerKey;
-  }
-
-
-  public void setConsumerKey(String consumerKey) {
-    this.consumerKey = consumerKey;
-  }
-
-
-  public ApplicationKeyMappingRequestDTO consumerSecret(String consumerSecret) {
-    
-    this.consumerSecret = consumerSecret;
-    return this;
-  }
-
-   /**
-   * Consumer secret of the application
-   * @return consumerSecret
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "ondWGtFTCOVM4sfPyOfZ7fel610a", value = "Consumer secret of the application")
-
-  public String getConsumerSecret() {
-    return consumerSecret;
-  }
-
-
-  public void setConsumerSecret(String consumerSecret) {
-    this.consumerSecret = consumerSecret;
-  }
-
-
-  public ApplicationKeyMappingRequestDTO keyManager(String keyManager) {
-    
-    this.keyManager = keyManager;
-    return this;
-  }
-
-   /**
-   * Key Manager Name
-   * @return keyManager
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Resident Key Manager", value = "Key Manager Name")
-
-  public String getKeyManager() {
-    return keyManager;
-  }
-
-
-  public void setKeyManager(String keyManager) {
-    this.keyManager = keyManager;
-  }
-
-
-  public ApplicationKeyMappingRequestDTO keyType(KeyTypeEnum keyType) {
-    
-    this.keyType = keyType;
-    return this;
-  }
-
-   /**
-   * Get keyType
-   * @return keyType
-  **/
-  @ApiModelProperty(required = true, value = "")
-
-  public KeyTypeEnum getKeyType() {
-    return keyType;
-  }
-
-
-  public void setKeyType(KeyTypeEnum keyType) {
-    this.keyType = keyType;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getConsumerSecret() {
+        return consumerSecret;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setConsumerSecret(String consumerSecret) {
+        this.consumerSecret = consumerSecret;
     }
-    ApplicationKeyMappingRequestDTO applicationKeyMappingRequest = (ApplicationKeyMappingRequestDTO) o;
-    return Objects.equals(this.consumerKey, applicationKeyMappingRequest.consumerKey) &&
-        Objects.equals(this.consumerSecret, applicationKeyMappingRequest.consumerSecret) &&
-        Objects.equals(this.keyManager, applicationKeyMappingRequest.keyManager) &&
-        Objects.equals(this.keyType, applicationKeyMappingRequest.keyType);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(consumerKey, consumerSecret, keyManager, keyType);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationKeyMappingRequestDTO {\n");
+        public ApplicationKeyMappingRequestDTO keyManager(String keyManager) {
+        
+        this.keyManager = keyManager;
+        return this;
+        }
+
+    /**
+        * Key Manager Name
+    * @return keyManager
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Resident Key Manager", value = "Key Manager Name")
+    
+    public String getKeyManager() {
+        return keyManager;
+    }
+
+
+    public void setKeyManager(String keyManager) {
+        this.keyManager = keyManager;
+    }
+
+
+        public ApplicationKeyMappingRequestDTO keyType(KeyTypeEnum keyType) {
+        
+        this.keyType = keyType;
+        return this;
+        }
+
+    /**
+        * Get keyType
+    * @return keyType
+    **/
+      @ApiModelProperty(required = true, value = "")
+    
+    public KeyTypeEnum getKeyType() {
+        return keyType;
+    }
+
+
+    public void setKeyType(KeyTypeEnum keyType) {
+        this.keyType = keyType;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationKeyMappingRequestDTO applicationKeyMappingRequest = (ApplicationKeyMappingRequestDTO) o;
+            return Objects.equals(this.consumerKey, applicationKeyMappingRequest.consumerKey) &&
+            Objects.equals(this.consumerSecret, applicationKeyMappingRequest.consumerSecret) &&
+            Objects.equals(this.keyManager, applicationKeyMappingRequest.keyManager) &&
+            Objects.equals(this.keyType, applicationKeyMappingRequest.keyType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(consumerKey, consumerSecret, keyManager, keyType);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationKeyMappingRequestDTO {\n");
     sb.append("    consumerKey: ").append(toIndentedString(consumerKey)).append("\n");
     sb.append("    consumerSecret: ").append(toIndentedString(consumerSecret)).append("\n");
     sb.append("    keyManager: ").append(toIndentedString(keyManager)).append("\n");
     sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

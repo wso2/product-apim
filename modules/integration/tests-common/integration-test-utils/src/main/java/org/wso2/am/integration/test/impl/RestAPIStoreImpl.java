@@ -49,6 +49,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingReq
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
@@ -1501,11 +1502,13 @@ public class RestAPIStoreImpl {
         try {
             APIListDTO prototypedAPIs = new APIListDTO();
             APIListDTO apiListDTO = apIsApi.apisGet(null, null, tenant, null, null);
+            List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
             for (APIInfoDTO apidto : apiListDTO.getList()) {
                 if (apidto.getLifeCycleStatus().equals("PROTOTYPED")) {
-                    prototypedAPIs.addListItem(apidto);
+                    apiInfoDTOList.add(apidto);
                 }
             }
+            prototypedAPIs.setList(apiInfoDTOList);
             return prototypedAPIs;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
@@ -1787,7 +1790,7 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
         HttpResponse response = null;
-        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+        ApiResponse<GraphQLQueryComplexityInfoDTO> complexityResponse = graphQlPoliciesApi
                 .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
         if(complexityResponse.getStatusCode() == 200){
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);

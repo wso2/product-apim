@@ -23,240 +23,240 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * MonetizationInfoDTO
- */
+* MonetizationInfoDTO
+*/
 
 public class MonetizationInfoDTO {
-  /**
-   * Gets or Sets billingType
-   */
-  @JsonAdapter(BillingTypeEnum.Adapter.class)
-  public enum BillingTypeEnum {
-    FIXEDPRICE("fixedPrice"),
-    
-    DYNAMICRATE("dynamicRate");
+            /**
+* Gets or Sets billingType
+*/
+    @JsonAdapter(BillingTypeEnum.Adapter.class)
+public enum BillingTypeEnum {
+        FIXEDPRICE("fixedPrice"),
+        
+        DYNAMICRATE("dynamicRate");
 
-    private String value;
+private String value;
 
-    BillingTypeEnum(String value) {
-      this.value = value;
+BillingTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static BillingTypeEnum fromValue(String value) {
+    for (BillingTypeEnum b : BillingTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<BillingTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final BillingTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public BillingTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return BillingTypeEnum.fromValue(value);
     }
+    }
+}
 
-    public static BillingTypeEnum fromValue(String value) {
-      for (BillingTypeEnum b : BillingTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_BILLING_TYPE = "billingType";
+        @SerializedName(SERIALIZED_NAME_BILLING_TYPE)
+            private BillingTypeEnum billingType;
+
+        public static final String SERIALIZED_NAME_BILLING_CYCLE = "billingCycle";
+        @SerializedName(SERIALIZED_NAME_BILLING_CYCLE)
+            private String billingCycle;
+
+        public static final String SERIALIZED_NAME_FIXED_PRICE = "fixedPrice";
+        @SerializedName(SERIALIZED_NAME_FIXED_PRICE)
+            private String fixedPrice;
+
+        public static final String SERIALIZED_NAME_PRICE_PER_REQUEST = "pricePerRequest";
+        @SerializedName(SERIALIZED_NAME_PRICE_PER_REQUEST)
+            private String pricePerRequest;
+
+        public static final String SERIALIZED_NAME_CURRENCY_TYPE = "currencyType";
+        @SerializedName(SERIALIZED_NAME_CURRENCY_TYPE)
+            private String currencyType;
+
+
+        public MonetizationInfoDTO billingType(BillingTypeEnum billingType) {
+        
+        this.billingType = billingType;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * Get billingType
+    * @return billingType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "fixedPrice", value = "")
+    
+    public BillingTypeEnum getBillingType() {
+        return billingType;
     }
 
-    public static class Adapter extends TypeAdapter<BillingTypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final BillingTypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public BillingTypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return BillingTypeEnum.fromValue(value);
-      }
+    public void setBillingType(BillingTypeEnum billingType) {
+        this.billingType = billingType;
     }
-  }
-
-  public static final String SERIALIZED_NAME_BILLING_TYPE = "billingType";
-  @SerializedName(SERIALIZED_NAME_BILLING_TYPE)
-  private BillingTypeEnum billingType;
-
-  public static final String SERIALIZED_NAME_BILLING_CYCLE = "billingCycle";
-  @SerializedName(SERIALIZED_NAME_BILLING_CYCLE)
-  private String billingCycle;
-
-  public static final String SERIALIZED_NAME_FIXED_PRICE = "fixedPrice";
-  @SerializedName(SERIALIZED_NAME_FIXED_PRICE)
-  private String fixedPrice;
-
-  public static final String SERIALIZED_NAME_PRICE_PER_REQUEST = "pricePerRequest";
-  @SerializedName(SERIALIZED_NAME_PRICE_PER_REQUEST)
-  private String pricePerRequest;
-
-  public static final String SERIALIZED_NAME_CURRENCY_TYPE = "currencyType";
-  @SerializedName(SERIALIZED_NAME_CURRENCY_TYPE)
-  private String currencyType;
 
 
-  public MonetizationInfoDTO billingType(BillingTypeEnum billingType) {
+        public MonetizationInfoDTO billingCycle(String billingCycle) {
+        
+        this.billingCycle = billingCycle;
+        return this;
+        }
+
+    /**
+        * Get billingCycle
+    * @return billingCycle
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "month", value = "")
     
-    this.billingType = billingType;
-    return this;
-  }
-
-   /**
-   * Get billingType
-   * @return billingType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "fixedPrice", value = "")
-
-  public BillingTypeEnum getBillingType() {
-    return billingType;
-  }
-
-
-  public void setBillingType(BillingTypeEnum billingType) {
-    this.billingType = billingType;
-  }
-
-
-  public MonetizationInfoDTO billingCycle(String billingCycle) {
-    
-    this.billingCycle = billingCycle;
-    return this;
-  }
-
-   /**
-   * Get billingCycle
-   * @return billingCycle
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "month", value = "")
-
-  public String getBillingCycle() {
-    return billingCycle;
-  }
-
-
-  public void setBillingCycle(String billingCycle) {
-    this.billingCycle = billingCycle;
-  }
-
-
-  public MonetizationInfoDTO fixedPrice(String fixedPrice) {
-    
-    this.fixedPrice = fixedPrice;
-    return this;
-  }
-
-   /**
-   * Get fixedPrice
-   * @return fixedPrice
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "10", value = "")
-
-  public String getFixedPrice() {
-    return fixedPrice;
-  }
-
-
-  public void setFixedPrice(String fixedPrice) {
-    this.fixedPrice = fixedPrice;
-  }
-
-
-  public MonetizationInfoDTO pricePerRequest(String pricePerRequest) {
-    
-    this.pricePerRequest = pricePerRequest;
-    return this;
-  }
-
-   /**
-   * Get pricePerRequest
-   * @return pricePerRequest
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "")
-
-  public String getPricePerRequest() {
-    return pricePerRequest;
-  }
-
-
-  public void setPricePerRequest(String pricePerRequest) {
-    this.pricePerRequest = pricePerRequest;
-  }
-
-
-  public MonetizationInfoDTO currencyType(String currencyType) {
-    
-    this.currencyType = currencyType;
-    return this;
-  }
-
-   /**
-   * Get currencyType
-   * @return currencyType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "USD", value = "")
-
-  public String getCurrencyType() {
-    return currencyType;
-  }
-
-
-  public void setCurrencyType(String currencyType) {
-    this.currencyType = currencyType;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getBillingCycle() {
+        return billingCycle;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setBillingCycle(String billingCycle) {
+        this.billingCycle = billingCycle;
     }
-    MonetizationInfoDTO monetizationInfo = (MonetizationInfoDTO) o;
-    return Objects.equals(this.billingType, monetizationInfo.billingType) &&
-        Objects.equals(this.billingCycle, monetizationInfo.billingCycle) &&
-        Objects.equals(this.fixedPrice, monetizationInfo.fixedPrice) &&
-        Objects.equals(this.pricePerRequest, monetizationInfo.pricePerRequest) &&
-        Objects.equals(this.currencyType, monetizationInfo.currencyType);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(billingType, billingCycle, fixedPrice, pricePerRequest, currencyType);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class MonetizationInfoDTO {\n");
+        public MonetizationInfoDTO fixedPrice(String fixedPrice) {
+        
+        this.fixedPrice = fixedPrice;
+        return this;
+        }
+
+    /**
+        * Get fixedPrice
+    * @return fixedPrice
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "10", value = "")
+    
+    public String getFixedPrice() {
+        return fixedPrice;
+    }
+
+
+    public void setFixedPrice(String fixedPrice) {
+        this.fixedPrice = fixedPrice;
+    }
+
+
+        public MonetizationInfoDTO pricePerRequest(String pricePerRequest) {
+        
+        this.pricePerRequest = pricePerRequest;
+        return this;
+        }
+
+    /**
+        * Get pricePerRequest
+    * @return pricePerRequest
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "")
+    
+    public String getPricePerRequest() {
+        return pricePerRequest;
+    }
+
+
+    public void setPricePerRequest(String pricePerRequest) {
+        this.pricePerRequest = pricePerRequest;
+    }
+
+
+        public MonetizationInfoDTO currencyType(String currencyType) {
+        
+        this.currencyType = currencyType;
+        return this;
+        }
+
+    /**
+        * Get currencyType
+    * @return currencyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "USD", value = "")
+    
+    public String getCurrencyType() {
+        return currencyType;
+    }
+
+
+    public void setCurrencyType(String currencyType) {
+        this.currencyType = currencyType;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            MonetizationInfoDTO monetizationInfo = (MonetizationInfoDTO) o;
+            return Objects.equals(this.billingType, monetizationInfo.billingType) &&
+            Objects.equals(this.billingCycle, monetizationInfo.billingCycle) &&
+            Objects.equals(this.fixedPrice, monetizationInfo.fixedPrice) &&
+            Objects.equals(this.pricePerRequest, monetizationInfo.pricePerRequest) &&
+            Objects.equals(this.currencyType, monetizationInfo.currencyType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(billingType, billingCycle, fixedPrice, pricePerRequest, currencyType);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class MonetizationInfoDTO {\n");
     sb.append("    billingType: ").append(toIndentedString(billingType)).append("\n");
     sb.append("    billingCycle: ").append(toIndentedString(billingCycle)).append("\n");
     sb.append("    fixedPrice: ").append(toIndentedString(fixedPrice)).append("\n");
     sb.append("    pricePerRequest: ").append(toIndentedString(pricePerRequest)).append("\n");
     sb.append("    currencyType: ").append(toIndentedString(currencyType)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

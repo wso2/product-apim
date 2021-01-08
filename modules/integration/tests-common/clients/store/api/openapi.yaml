@@ -5980,10 +5980,22 @@ paths:
         style: simple
       responses:
         "200":
-          content: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphQLQueryComplexityInfo'
           description: |
             OK.
             Requested complexity details returned.
+          headers:
+            Content-Type:
+              description: |
+                The content of the body.
+              explode: false
+              schema:
+                default: application/json
+                type: string
+              style: simple
         "404":
           content: {}
           description: |
@@ -7046,6 +7058,7 @@ components:
           example: []
           items:
             $ref: '#/components/schemas/ApplicationKey'
+          readOnly: true
           type: array
         attributes:
           additionalProperties:
@@ -7682,7 +7695,7 @@ components:
           lastName: David
           fullName: John David
         createdBy: admin
-        createdTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
         id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
         content: This is a comment
       properties:
@@ -7695,7 +7708,6 @@ components:
           maxLength: 512
           type: string
         createdTime:
-          format: date-time
           readOnly: true
           type: string
         createdBy:
@@ -7723,7 +7735,7 @@ components:
             lastName: David
             fullName: John David
           createdBy: admin
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
           content: This is a comment
         - commenterInfo:
@@ -7731,7 +7743,7 @@ components:
             lastName: David
             fullName: John David
           createdBy: admin
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
           content: This is a comment
       properties:
@@ -9157,6 +9169,14 @@ components:
       title: Key Manager List
       type: object
     GraphQLQueryComplexityInfo:
+      example:
+        list:
+        - complexityValue: 1
+          field: name
+          type: Country
+        - complexityValue: 1
+          field: name
+          type: Country
       properties:
         list:
           items:
@@ -9165,6 +9185,10 @@ components:
       title: GraphQL Query Complexity Info
       type: object
     GraphQLCustomComplexityInfo:
+      example:
+        complexityValue: 1
+        field: name
+        type: Country
       properties:
         type:
           description: |

@@ -23,135 +23,135 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * RecommendedAPIDTO
- */
+* RecommendedAPIDTO
+*/
 
 public class RecommendedAPIDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
-  @SerializedName(SERIALIZED_NAME_AVG_RATING)
-  private String avgRating;
+        public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
+        @SerializedName(SERIALIZED_NAME_AVG_RATING)
+            private String avgRating;
 
 
-  public RecommendedAPIDTO id(String id) {
+        public RecommendedAPIDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
-
-  public String getId() {
-    return id;
-  }
-
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-
-  public RecommendedAPIDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "CalculatorAPI", value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public RecommendedAPIDTO avgRating(String avgRating) {
-    
-    this.avgRating = avgRating;
-    return this;
-  }
-
-   /**
-   * Average rating of the API
-   * @return avgRating
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "4.5", value = "Average rating of the API")
-
-  public String getAvgRating() {
-    return avgRating;
-  }
-
-
-  public void setAvgRating(String avgRating) {
-    this.avgRating = avgRating;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getId() {
+        return id;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setId(String id) {
+        this.id = id;
     }
-    RecommendedAPIDTO recommendedAPI = (RecommendedAPIDTO) o;
-    return Objects.equals(this.id, recommendedAPI.id) &&
-        Objects.equals(this.name, recommendedAPI.name) &&
-        Objects.equals(this.avgRating, recommendedAPI.avgRating);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, avgRating);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RecommendedAPIDTO {\n");
+        public RecommendedAPIDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CalculatorAPI", value = "")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public RecommendedAPIDTO avgRating(String avgRating) {
+        
+        this.avgRating = avgRating;
+        return this;
+        }
+
+    /**
+        * Average rating of the API
+    * @return avgRating
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "4.5", value = "Average rating of the API")
+    
+    public String getAvgRating() {
+        return avgRating;
+    }
+
+
+    public void setAvgRating(String avgRating) {
+        this.avgRating = avgRating;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            RecommendedAPIDTO recommendedAPI = (RecommendedAPIDTO) o;
+            return Objects.equals(this.id, recommendedAPI.id) &&
+            Objects.equals(this.name, recommendedAPI.name) &&
+            Objects.equals(this.avgRating, recommendedAPI.avgRating);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, avgRating);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class RecommendedAPIDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

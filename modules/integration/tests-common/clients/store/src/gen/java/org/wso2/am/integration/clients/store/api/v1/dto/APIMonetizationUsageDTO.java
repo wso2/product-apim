@@ -26,85 +26,77 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIMonetizationUsageDTO
- */
+* APIMonetizationUsageDTO
+*/
 
 public class APIMonetizationUsageDTO {
-  public static final String SERIALIZED_NAME_PROPERTIES = "properties";
-  @SerializedName(SERIALIZED_NAME_PROPERTIES)
-  private Map<String, String> properties = null;
+        public static final String SERIALIZED_NAME_PROPERTIES = "properties";
+        @SerializedName(SERIALIZED_NAME_PROPERTIES)
+            private Map<String, String> properties = null;
 
 
-  public APIMonetizationUsageDTO properties(Map<String, String> properties) {
+        public APIMonetizationUsageDTO properties(Map<String, String> properties) {
+        
+        this.properties = properties;
+        return this;
+        }
+
+    /**
+        * Map of custom properties related to monetization usage
+    * @return properties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Map of custom properties related to monetization usage")
     
-    this.properties = properties;
-    return this;
-  }
-
-  public APIMonetizationUsageDTO putPropertiesItem(String key, String propertiesItem) {
-    if (this.properties == null) {
-      this.properties = new HashMap<>();
+    public Map<String, String> getProperties() {
+        return properties;
     }
-    this.properties.put(key, propertiesItem);
-    return this;
-  }
-
-   /**
-   * Map of custom properties related to monetization usage
-   * @return properties
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Map of custom properties related to monetization usage")
-
-  public Map<String, String> getProperties() {
-    return properties;
-  }
 
 
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIMonetizationUsageDTO apIMonetizationUsage = (APIMonetizationUsageDTO) o;
+            return Objects.equals(this.properties, apIMonetizationUsage.properties);
     }
-    APIMonetizationUsageDTO apIMonetizationUsage = (APIMonetizationUsageDTO) o;
-    return Objects.equals(this.properties, apIMonetizationUsage.properties);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(properties);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(properties);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIMonetizationUsageDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIMonetizationUsageDTO {\n");
     sb.append("    properties: ").append(toIndentedString(properties)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

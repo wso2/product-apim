@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **status** | **String** |  |  [optional] [readonly]
 **groups** | **List&lt;String&gt;** |  |  [optional]
 **subscriptionCount** | **Integer** |  |  [optional] [readonly]
-**keys** | [**List&lt;ApplicationKeyDTO&gt;**](ApplicationKeyDTO.md) |  |  [optional]
+**keys** | [**List&lt;ApplicationKeyDTO&gt;**](ApplicationKeyDTO.md) |  |  [optional] [readonly]
 **attributes** | **Map&lt;String, String&gt;** |  |  [optional]
 **subscriptionScopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **owner** | **String** | Application created user  |  [optional] [readonly]

@@ -25,142 +25,134 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * LabelDTO
- */
+* LabelDTO
+*/
 
 public class LabelDTO {
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  public static final String SERIALIZED_NAME_ACCESS_URLS = "accessUrls";
-  @SerializedName(SERIALIZED_NAME_ACCESS_URLS)
-  private List<String> accessUrls = null;
+        public static final String SERIALIZED_NAME_ACCESS_URLS = "accessUrls";
+        @SerializedName(SERIALIZED_NAME_ACCESS_URLS)
+            private List<String> accessUrls = null;
 
 
-  public LabelDTO name(String name) {
+        public LabelDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+      @ApiModelProperty(example = "Public", required = true, value = "")
     
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @ApiModelProperty(example = "Public", required = true, value = "")
-
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
-  public LabelDTO description(String description) {
+        public LabelDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * Get description
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * Get description
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public String getDescription() {
-    return description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
-  public LabelDTO accessUrls(List<String> accessUrls) {
+        public LabelDTO accessUrls(List<String> accessUrls) {
+        
+        this.accessUrls = accessUrls;
+        return this;
+        }
+
+    /**
+        * Get accessUrls
+    * @return accessUrls
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.accessUrls = accessUrls;
-    return this;
-  }
-
-  public LabelDTO addAccessUrlsItem(String accessUrlsItem) {
-    if (this.accessUrls == null) {
-      this.accessUrls = new ArrayList<>();
+    public List<String> getAccessUrls() {
+        return accessUrls;
     }
-    this.accessUrls.add(accessUrlsItem);
-    return this;
-  }
-
-   /**
-   * Get accessUrls
-   * @return accessUrls
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<String> getAccessUrls() {
-    return accessUrls;
-  }
 
 
-  public void setAccessUrls(List<String> accessUrls) {
-    this.accessUrls = accessUrls;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setAccessUrls(List<String> accessUrls) {
+        this.accessUrls = accessUrls;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            LabelDTO label = (LabelDTO) o;
+            return Objects.equals(this.name, label.name) &&
+            Objects.equals(this.description, label.description) &&
+            Objects.equals(this.accessUrls, label.accessUrls);
     }
-    LabelDTO label = (LabelDTO) o;
-    return Objects.equals(this.name, label.name) &&
-        Objects.equals(this.description, label.description) &&
-        Objects.equals(this.accessUrls, label.accessUrls);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, description, accessUrls);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, accessUrls);
+    }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class LabelDTO {\n");
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class LabelDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    accessUrls: ").append(toIndentedString(accessUrls)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

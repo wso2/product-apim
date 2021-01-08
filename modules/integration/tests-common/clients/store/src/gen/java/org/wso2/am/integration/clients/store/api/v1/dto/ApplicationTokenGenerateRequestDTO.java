@@ -25,201 +25,193 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationTokenGenerateRequestDTO
- */
+* ApplicationTokenGenerateRequestDTO
+*/
 
 public class ApplicationTokenGenerateRequestDTO {
-  public static final String SERIALIZED_NAME_CONSUMER_SECRET = "consumerSecret";
-  @SerializedName(SERIALIZED_NAME_CONSUMER_SECRET)
-  private String consumerSecret;
+        public static final String SERIALIZED_NAME_CONSUMER_SECRET = "consumerSecret";
+        @SerializedName(SERIALIZED_NAME_CONSUMER_SECRET)
+            private String consumerSecret;
 
-  public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
-  @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
-  private Long validityPeriod;
+        public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
+        @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
+            private Long validityPeriod;
 
-  public static final String SERIALIZED_NAME_SCOPES = "scopes";
-  @SerializedName(SERIALIZED_NAME_SCOPES)
-  private List<String> scopes = null;
+        public static final String SERIALIZED_NAME_SCOPES = "scopes";
+        @SerializedName(SERIALIZED_NAME_SCOPES)
+            private List<String> scopes = null;
 
-  public static final String SERIALIZED_NAME_REVOKE_TOKEN = "revokeToken";
-  @SerializedName(SERIALIZED_NAME_REVOKE_TOKEN)
-  private String revokeToken;
+        public static final String SERIALIZED_NAME_REVOKE_TOKEN = "revokeToken";
+        @SerializedName(SERIALIZED_NAME_REVOKE_TOKEN)
+            private String revokeToken;
 
-  public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-  @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-  private Object additionalProperties;
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private Object additionalProperties;
 
 
-  public ApplicationTokenGenerateRequestDTO consumerSecret(String consumerSecret) {
+        public ApplicationTokenGenerateRequestDTO consumerSecret(String consumerSecret) {
+        
+        this.consumerSecret = consumerSecret;
+        return this;
+        }
+
+    /**
+        * Consumer secret of the application
+    * @return consumerSecret
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "cV5pvyisxug5b5QZInq9cGZrMOMa", value = "Consumer secret of the application")
     
-    this.consumerSecret = consumerSecret;
-    return this;
-  }
-
-   /**
-   * Consumer secret of the application
-   * @return consumerSecret
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "cV5pvyisxug5b5QZInq9cGZrMOMa", value = "Consumer secret of the application")
-
-  public String getConsumerSecret() {
-    return consumerSecret;
-  }
-
-
-  public void setConsumerSecret(String consumerSecret) {
-    this.consumerSecret = consumerSecret;
-  }
-
-
-  public ApplicationTokenGenerateRequestDTO validityPeriod(Long validityPeriod) {
-    
-    this.validityPeriod = validityPeriod;
-    return this;
-  }
-
-   /**
-   * Token validity period
-   * @return validityPeriod
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3600", value = "Token validity period")
-
-  public Long getValidityPeriod() {
-    return validityPeriod;
-  }
-
-
-  public void setValidityPeriod(Long validityPeriod) {
-    this.validityPeriod = validityPeriod;
-  }
-
-
-  public ApplicationTokenGenerateRequestDTO scopes(List<String> scopes) {
-    
-    this.scopes = scopes;
-    return this;
-  }
-
-  public ApplicationTokenGenerateRequestDTO addScopesItem(String scopesItem) {
-    if (this.scopes == null) {
-      this.scopes = new ArrayList<>();
+    public String getConsumerSecret() {
+        return consumerSecret;
     }
-    this.scopes.add(scopesItem);
-    return this;
-  }
-
-   /**
-   * Allowed scopes (space seperated) for the access token
-   * @return scopes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"apim:subscribe\"]", value = "Allowed scopes (space seperated) for the access token")
-
-  public List<String> getScopes() {
-    return scopes;
-  }
 
 
-  public void setScopes(List<String> scopes) {
-    this.scopes = scopes;
-  }
-
-
-  public ApplicationTokenGenerateRequestDTO revokeToken(String revokeToken) {
-    
-    this.revokeToken = revokeToken;
-    return this;
-  }
-
-   /**
-   * Token to be revoked, if any
-   * @return revokeToken
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Token to be revoked, if any")
-
-  public String getRevokeToken() {
-    return revokeToken;
-  }
-
-
-  public void setRevokeToken(String revokeToken) {
-    this.revokeToken = revokeToken;
-  }
-
-
-  public ApplicationTokenGenerateRequestDTO additionalProperties(Object additionalProperties) {
-    
-    this.additionalProperties = additionalProperties;
-    return this;
-  }
-
-   /**
-   * Additional parameters if Authorization server needs any
-   * @return additionalProperties
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
-
-  public Object getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-
-  public void setAdditionalProperties(Object additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public void setConsumerSecret(String consumerSecret) {
+        this.consumerSecret = consumerSecret;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+        public ApplicationTokenGenerateRequestDTO validityPeriod(Long validityPeriod) {
+        
+        this.validityPeriod = validityPeriod;
+        return this;
+        }
+
+    /**
+        * Token validity period
+    * @return validityPeriod
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3600", value = "Token validity period")
+    
+    public Long getValidityPeriod() {
+        return validityPeriod;
     }
-    ApplicationTokenGenerateRequestDTO applicationTokenGenerateRequest = (ApplicationTokenGenerateRequestDTO) o;
-    return Objects.equals(this.consumerSecret, applicationTokenGenerateRequest.consumerSecret) &&
-        Objects.equals(this.validityPeriod, applicationTokenGenerateRequest.validityPeriod) &&
-        Objects.equals(this.scopes, applicationTokenGenerateRequest.scopes) &&
-        Objects.equals(this.revokeToken, applicationTokenGenerateRequest.revokeToken) &&
-        Objects.equals(this.additionalProperties, applicationTokenGenerateRequest.additionalProperties);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(consumerSecret, validityPeriod, scopes, revokeToken, additionalProperties);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationTokenGenerateRequestDTO {\n");
+    public void setValidityPeriod(Long validityPeriod) {
+        this.validityPeriod = validityPeriod;
+    }
+
+
+        public ApplicationTokenGenerateRequestDTO scopes(List<String> scopes) {
+        
+        this.scopes = scopes;
+        return this;
+        }
+
+    /**
+        * Allowed scopes (space seperated) for the access token
+    * @return scopes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"apim:subscribe\"]", value = "Allowed scopes (space seperated) for the access token")
+    
+    public List<String> getScopes() {
+        return scopes;
+    }
+
+
+    public void setScopes(List<String> scopes) {
+        this.scopes = scopes;
+    }
+
+
+        public ApplicationTokenGenerateRequestDTO revokeToken(String revokeToken) {
+        
+        this.revokeToken = revokeToken;
+        return this;
+        }
+
+    /**
+        * Token to be revoked, if any
+    * @return revokeToken
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Token to be revoked, if any")
+    
+    public String getRevokeToken() {
+        return revokeToken;
+    }
+
+
+    public void setRevokeToken(String revokeToken) {
+        this.revokeToken = revokeToken;
+    }
+
+
+        public ApplicationTokenGenerateRequestDTO additionalProperties(Object additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Additional parameters if Authorization server needs any
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
+    
+    public Object getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(Object additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationTokenGenerateRequestDTO applicationTokenGenerateRequest = (ApplicationTokenGenerateRequestDTO) o;
+            return Objects.equals(this.consumerSecret, applicationTokenGenerateRequest.consumerSecret) &&
+            Objects.equals(this.validityPeriod, applicationTokenGenerateRequest.validityPeriod) &&
+            Objects.equals(this.scopes, applicationTokenGenerateRequest.scopes) &&
+            Objects.equals(this.revokeToken, applicationTokenGenerateRequest.revokeToken) &&
+            Objects.equals(this.additionalProperties, applicationTokenGenerateRequest.additionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(consumerSecret, validityPeriod, scopes, revokeToken, additionalProperties);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationTokenGenerateRequestDTO {\n");
     sb.append("    consumerSecret: ").append(toIndentedString(consumerSecret)).append("\n");
     sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    revokeToken: ").append(toIndentedString(revokeToken)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

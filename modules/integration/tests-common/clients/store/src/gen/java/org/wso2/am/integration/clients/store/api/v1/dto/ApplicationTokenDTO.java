@@ -25,143 +25,135 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ApplicationTokenDTO
- */
+* ApplicationTokenDTO
+*/
 
 public class ApplicationTokenDTO {
-  public static final String SERIALIZED_NAME_ACCESS_TOKEN = "accessToken";
-  @SerializedName(SERIALIZED_NAME_ACCESS_TOKEN)
-  private String accessToken;
+        public static final String SERIALIZED_NAME_ACCESS_TOKEN = "accessToken";
+        @SerializedName(SERIALIZED_NAME_ACCESS_TOKEN)
+            private String accessToken;
 
-  public static final String SERIALIZED_NAME_TOKEN_SCOPES = "tokenScopes";
-  @SerializedName(SERIALIZED_NAME_TOKEN_SCOPES)
-  private List<String> tokenScopes = null;
+        public static final String SERIALIZED_NAME_TOKEN_SCOPES = "tokenScopes";
+        @SerializedName(SERIALIZED_NAME_TOKEN_SCOPES)
+            private List<String> tokenScopes = null;
 
-  public static final String SERIALIZED_NAME_VALIDITY_TIME = "validityTime";
-  @SerializedName(SERIALIZED_NAME_VALIDITY_TIME)
-  private Long validityTime;
+        public static final String SERIALIZED_NAME_VALIDITY_TIME = "validityTime";
+        @SerializedName(SERIALIZED_NAME_VALIDITY_TIME)
+            private Long validityTime;
 
 
-  public ApplicationTokenDTO accessToken(String accessToken) {
+        public ApplicationTokenDTO accessToken(String accessToken) {
+        
+        this.accessToken = accessToken;
+        return this;
+        }
+
+    /**
+        * Access token
+    * @return accessToken
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.2345678901234568E+30", value = "Access token")
     
-    this.accessToken = accessToken;
-    return this;
-  }
-
-   /**
-   * Access token
-   * @return accessToken
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1.2345678901234568E+30", value = "Access token")
-
-  public String getAccessToken() {
-    return accessToken;
-  }
+    public String getAccessToken() {
+        return accessToken;
+    }
 
 
-  public void setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
-  }
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 
 
-  public ApplicationTokenDTO tokenScopes(List<String> tokenScopes) {
+        public ApplicationTokenDTO tokenScopes(List<String> tokenScopes) {
+        
+        this.tokenScopes = tokenScopes;
+        return this;
+        }
+
+    /**
+        * Valid comma seperated scopes for the access token
+    * @return tokenScopes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"default\",\"read_api\",\"write_api\"]", value = "Valid comma seperated scopes for the access token")
     
-    this.tokenScopes = tokenScopes;
-    return this;
-  }
-
-  public ApplicationTokenDTO addTokenScopesItem(String tokenScopesItem) {
-    if (this.tokenScopes == null) {
-      this.tokenScopes = new ArrayList<>();
+    public List<String> getTokenScopes() {
+        return tokenScopes;
     }
-    this.tokenScopes.add(tokenScopesItem);
-    return this;
-  }
-
-   /**
-   * Valid comma seperated scopes for the access token
-   * @return tokenScopes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"default\",\"read_api\",\"write_api\"]", value = "Valid comma seperated scopes for the access token")
-
-  public List<String> getTokenScopes() {
-    return tokenScopes;
-  }
 
 
-  public void setTokenScopes(List<String> tokenScopes) {
-    this.tokenScopes = tokenScopes;
-  }
+    public void setTokenScopes(List<String> tokenScopes) {
+        this.tokenScopes = tokenScopes;
+    }
 
 
-  public ApplicationTokenDTO validityTime(Long validityTime) {
+        public ApplicationTokenDTO validityTime(Long validityTime) {
+        
+        this.validityTime = validityTime;
+        return this;
+        }
+
+    /**
+        * Maximum validity time for the access token
+    * @return validityTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "3600", value = "Maximum validity time for the access token")
     
-    this.validityTime = validityTime;
-    return this;
-  }
-
-   /**
-   * Maximum validity time for the access token
-   * @return validityTime
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "3600", value = "Maximum validity time for the access token")
-
-  public Long getValidityTime() {
-    return validityTime;
-  }
-
-
-  public void setValidityTime(Long validityTime) {
-    this.validityTime = validityTime;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Long getValidityTime() {
+        return validityTime;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setValidityTime(Long validityTime) {
+        this.validityTime = validityTime;
     }
-    ApplicationTokenDTO applicationToken = (ApplicationTokenDTO) o;
-    return Objects.equals(this.accessToken, applicationToken.accessToken) &&
-        Objects.equals(this.tokenScopes, applicationToken.tokenScopes) &&
-        Objects.equals(this.validityTime, applicationToken.validityTime);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(accessToken, tokenScopes, validityTime);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ApplicationTokenDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ApplicationTokenDTO applicationToken = (ApplicationTokenDTO) o;
+            return Objects.equals(this.accessToken, applicationToken.accessToken) &&
+            Objects.equals(this.tokenScopes, applicationToken.tokenScopes) &&
+            Objects.equals(this.validityTime, applicationToken.validityTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accessToken, tokenScopes, validityTime);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ApplicationTokenDTO {\n");
     sb.append("    accessToken: ").append(toIndentedString(accessToken)).append("\n");
     sb.append("    tokenScopes: ").append(toIndentedString(tokenScopes)).append("\n");
     sb.append("    validityTime: ").append(toIndentedString(validityTime)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,106 +23,106 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * CurrentAndNewPasswordsDTO
- */
+* CurrentAndNewPasswordsDTO
+*/
 
 public class CurrentAndNewPasswordsDTO {
-  public static final String SERIALIZED_NAME_CURRENT_PASSWORD = "currentPassword";
-  @SerializedName(SERIALIZED_NAME_CURRENT_PASSWORD)
-  private String currentPassword;
+        public static final String SERIALIZED_NAME_CURRENT_PASSWORD = "currentPassword";
+        @SerializedName(SERIALIZED_NAME_CURRENT_PASSWORD)
+            private String currentPassword;
 
-  public static final String SERIALIZED_NAME_NEW_PASSWORD = "newPassword";
-  @SerializedName(SERIALIZED_NAME_NEW_PASSWORD)
-  private String newPassword;
+        public static final String SERIALIZED_NAME_NEW_PASSWORD = "newPassword";
+        @SerializedName(SERIALIZED_NAME_NEW_PASSWORD)
+            private String newPassword;
 
 
-  public CurrentAndNewPasswordsDTO currentPassword(String currentPassword) {
+        public CurrentAndNewPasswordsDTO currentPassword(String currentPassword) {
+        
+        this.currentPassword = currentPassword;
+        return this;
+        }
+
+    /**
+        * Get currentPassword
+    * @return currentPassword
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "password123", value = "")
     
-    this.currentPassword = currentPassword;
-    return this;
-  }
-
-   /**
-   * Get currentPassword
-   * @return currentPassword
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "password123", value = "")
-
-  public String getCurrentPassword() {
-    return currentPassword;
-  }
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
 
 
-  public void setCurrentPassword(String currentPassword) {
-    this.currentPassword = currentPassword;
-  }
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
+    }
 
 
-  public CurrentAndNewPasswordsDTO newPassword(String newPassword) {
+        public CurrentAndNewPasswordsDTO newPassword(String newPassword) {
+        
+        this.newPassword = newPassword;
+        return this;
+        }
+
+    /**
+        * Get newPassword
+    * @return newPassword
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "newpassword1234", value = "")
     
-    this.newPassword = newPassword;
-    return this;
-  }
-
-   /**
-   * Get newPassword
-   * @return newPassword
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "newpassword1234", value = "")
-
-  public String getNewPassword() {
-    return newPassword;
-  }
-
-
-  public void setNewPassword(String newPassword) {
-    this.newPassword = newPassword;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getNewPassword() {
+        return newPassword;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
-    CurrentAndNewPasswordsDTO currentAndNewPasswords = (CurrentAndNewPasswordsDTO) o;
-    return Objects.equals(this.currentPassword, currentAndNewPasswords.currentPassword) &&
-        Objects.equals(this.newPassword, currentAndNewPasswords.newPassword);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(currentPassword, newPassword);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CurrentAndNewPasswordsDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            CurrentAndNewPasswordsDTO currentAndNewPasswords = (CurrentAndNewPasswordsDTO) o;
+            return Objects.equals(this.currentPassword, currentAndNewPasswords.currentPassword) &&
+            Objects.equals(this.newPassword, currentAndNewPasswords.newPassword);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentPassword, newPassword);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class CurrentAndNewPasswordsDTO {\n");
     sb.append("    currentPassword: ").append(toIndentedString(currentPassword)).append("\n");
     sb.append("    newPassword: ").append(toIndentedString(newPassword)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

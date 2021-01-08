@@ -36,1049 +36,953 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.AdvertiseInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.LabelDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIDTO
- */
+* APIDTO
+*/
 
 public class APIDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  public static final String SERIALIZED_NAME_CONTEXT = "context";
-  @SerializedName(SERIALIZED_NAME_CONTEXT)
-  private String context;
+        public static final String SERIALIZED_NAME_CONTEXT = "context";
+        @SerializedName(SERIALIZED_NAME_CONTEXT)
+            private String context;
 
-  public static final String SERIALIZED_NAME_VERSION = "version";
-  @SerializedName(SERIALIZED_NAME_VERSION)
-  private String version;
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
-  public static final String SERIALIZED_NAME_PROVIDER = "provider";
-  @SerializedName(SERIALIZED_NAME_PROVIDER)
-  private String provider;
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
 
-  public static final String SERIALIZED_NAME_API_DEFINITION = "apiDefinition";
-  @SerializedName(SERIALIZED_NAME_API_DEFINITION)
-  private String apiDefinition;
+        public static final String SERIALIZED_NAME_API_DEFINITION = "apiDefinition";
+        @SerializedName(SERIALIZED_NAME_API_DEFINITION)
+            private String apiDefinition;
 
-  public static final String SERIALIZED_NAME_WSDL_URI = "wsdlUri";
-  @SerializedName(SERIALIZED_NAME_WSDL_URI)
-  private String wsdlUri;
+        public static final String SERIALIZED_NAME_WSDL_URI = "wsdlUri";
+        @SerializedName(SERIALIZED_NAME_WSDL_URI)
+            private String wsdlUri;
 
-  public static final String SERIALIZED_NAME_LIFE_CYCLE_STATUS = "lifeCycleStatus";
-  @SerializedName(SERIALIZED_NAME_LIFE_CYCLE_STATUS)
-  private String lifeCycleStatus;
+        public static final String SERIALIZED_NAME_LIFE_CYCLE_STATUS = "lifeCycleStatus";
+        @SerializedName(SERIALIZED_NAME_LIFE_CYCLE_STATUS)
+            private String lifeCycleStatus;
 
-  public static final String SERIALIZED_NAME_IS_DEFAULT_VERSION = "isDefaultVersion";
-  @SerializedName(SERIALIZED_NAME_IS_DEFAULT_VERSION)
-  private Boolean isDefaultVersion;
+        public static final String SERIALIZED_NAME_IS_DEFAULT_VERSION = "isDefaultVersion";
+        @SerializedName(SERIALIZED_NAME_IS_DEFAULT_VERSION)
+            private Boolean isDefaultVersion;
 
-  public static final String SERIALIZED_NAME_TYPE = "type";
-  @SerializedName(SERIALIZED_NAME_TYPE)
-  private String type;
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type;
 
-  public static final String SERIALIZED_NAME_TRANSPORT = "transport";
-  @SerializedName(SERIALIZED_NAME_TRANSPORT)
-  private List<String> transport = null;
+        public static final String SERIALIZED_NAME_TRANSPORT = "transport";
+        @SerializedName(SERIALIZED_NAME_TRANSPORT)
+            private List<String> transport = null;
 
-  public static final String SERIALIZED_NAME_OPERATIONS = "operations";
-  @SerializedName(SERIALIZED_NAME_OPERATIONS)
-  private List<APIOperationsDTO> operations = null;
+        public static final String SERIALIZED_NAME_OPERATIONS = "operations";
+        @SerializedName(SERIALIZED_NAME_OPERATIONS)
+            private List<APIOperationsDTO> operations = null;
 
-  public static final String SERIALIZED_NAME_AUTHORIZATION_HEADER = "authorizationHeader";
-  @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
-  private String authorizationHeader;
+        public static final String SERIALIZED_NAME_AUTHORIZATION_HEADER = "authorizationHeader";
+        @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
+            private String authorizationHeader;
 
-  public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
-  @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
-  private List<String> securityScheme = null;
+        public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
+        @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
+            private List<String> securityScheme = null;
 
-  public static final String SERIALIZED_NAME_TAGS = "tags";
-  @SerializedName(SERIALIZED_NAME_TAGS)
-  private List<String> tags = null;
+        public static final String SERIALIZED_NAME_TAGS = "tags";
+        @SerializedName(SERIALIZED_NAME_TAGS)
+            private List<String> tags = null;
 
-  public static final String SERIALIZED_NAME_TIERS = "tiers";
-  @SerializedName(SERIALIZED_NAME_TIERS)
-  private List<APITiersDTO> tiers = null;
+        public static final String SERIALIZED_NAME_TIERS = "tiers";
+        @SerializedName(SERIALIZED_NAME_TIERS)
+            private List<APITiersDTO> tiers = null;
 
-  public static final String SERIALIZED_NAME_HAS_THUMBNAIL = "hasThumbnail";
-  @SerializedName(SERIALIZED_NAME_HAS_THUMBNAIL)
-  private Boolean hasThumbnail = false;
+        public static final String SERIALIZED_NAME_HAS_THUMBNAIL = "hasThumbnail";
+        @SerializedName(SERIALIZED_NAME_HAS_THUMBNAIL)
+            private Boolean hasThumbnail = false;
 
-  public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-  @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-  private Map<String, String> additionalProperties = null;
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private Map<String, String> additionalProperties = null;
 
-  public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
-  @SerializedName(SERIALIZED_NAME_MONETIZATION)
-  private APIMonetizationInfoDTO monetization;
+        public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
+        @SerializedName(SERIALIZED_NAME_MONETIZATION)
+            private APIMonetizationInfoDTO monetization;
 
-  public static final String SERIALIZED_NAME_INGRESS_U_R_LS = "ingressURLs";
-  @SerializedName(SERIALIZED_NAME_INGRESS_U_R_LS)
-  private List<APIIngressURLsDTO> ingressURLs = null;
+        public static final String SERIALIZED_NAME_INGRESS_U_R_LS = "ingressURLs";
+        @SerializedName(SERIALIZED_NAME_INGRESS_U_R_LS)
+            private List<APIIngressURLsDTO> ingressURLs = null;
 
-  public static final String SERIALIZED_NAME_ENDPOINT_U_R_LS = "endpointURLs";
-  @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_LS)
-  private List<APIEndpointURLsDTO> endpointURLs = null;
+        public static final String SERIALIZED_NAME_ENDPOINT_U_R_LS = "endpointURLs";
+        @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_LS)
+            private List<APIEndpointURLsDTO> endpointURLs = null;
 
-  public static final String SERIALIZED_NAME_BUSINESS_INFORMATION = "businessInformation";
-  @SerializedName(SERIALIZED_NAME_BUSINESS_INFORMATION)
-  private APIBusinessInformationDTO businessInformation;
+        public static final String SERIALIZED_NAME_BUSINESS_INFORMATION = "businessInformation";
+        @SerializedName(SERIALIZED_NAME_BUSINESS_INFORMATION)
+            private APIBusinessInformationDTO businessInformation;
 
-  public static final String SERIALIZED_NAME_LABELS = "labels";
-  @SerializedName(SERIALIZED_NAME_LABELS)
-  private List<LabelDTO> labels = null;
+        public static final String SERIALIZED_NAME_LABELS = "labels";
+        @SerializedName(SERIALIZED_NAME_LABELS)
+            private List<LabelDTO> labels = null;
 
-  public static final String SERIALIZED_NAME_ENVIRONMENT_LIST = "environmentList";
-  @SerializedName(SERIALIZED_NAME_ENVIRONMENT_LIST)
-  private List<String> environmentList = null;
+        public static final String SERIALIZED_NAME_ENVIRONMENT_LIST = "environmentList";
+        @SerializedName(SERIALIZED_NAME_ENVIRONMENT_LIST)
+            private List<String> environmentList = null;
 
-  public static final String SERIALIZED_NAME_SCOPES = "scopes";
-  @SerializedName(SERIALIZED_NAME_SCOPES)
-  private List<ScopeInfoDTO> scopes = null;
+        public static final String SERIALIZED_NAME_SCOPES = "scopes";
+        @SerializedName(SERIALIZED_NAME_SCOPES)
+            private List<ScopeInfoDTO> scopes = null;
 
-  public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
-  @SerializedName(SERIALIZED_NAME_AVG_RATING)
-  private String avgRating;
+        public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
+        @SerializedName(SERIALIZED_NAME_AVG_RATING)
+            private String avgRating;
 
-  public static final String SERIALIZED_NAME_ADVERTISE_INFO = "advertiseInfo";
-  @SerializedName(SERIALIZED_NAME_ADVERTISE_INFO)
-  private AdvertiseInfoDTO advertiseInfo;
+        public static final String SERIALIZED_NAME_ADVERTISE_INFO = "advertiseInfo";
+        @SerializedName(SERIALIZED_NAME_ADVERTISE_INFO)
+            private AdvertiseInfoDTO advertiseInfo;
 
-  public static final String SERIALIZED_NAME_IS_SUBSCRIPTION_AVAILABLE = "isSubscriptionAvailable";
-  @SerializedName(SERIALIZED_NAME_IS_SUBSCRIPTION_AVAILABLE)
-  private Boolean isSubscriptionAvailable;
+        public static final String SERIALIZED_NAME_IS_SUBSCRIPTION_AVAILABLE = "isSubscriptionAvailable";
+        @SerializedName(SERIALIZED_NAME_IS_SUBSCRIPTION_AVAILABLE)
+            private Boolean isSubscriptionAvailable;
 
-  public static final String SERIALIZED_NAME_CATEGORIES = "categories";
-  @SerializedName(SERIALIZED_NAME_CATEGORIES)
-  private List<String> categories = null;
+        public static final String SERIALIZED_NAME_CATEGORIES = "categories";
+        @SerializedName(SERIALIZED_NAME_CATEGORIES)
+            private List<String> categories = null;
 
-  public static final String SERIALIZED_NAME_KEY_MANAGERS = "keyManagers";
-  @SerializedName(SERIALIZED_NAME_KEY_MANAGERS)
-  private Object keyManagers;
+        public static final String SERIALIZED_NAME_KEY_MANAGERS = "keyManagers";
+        @SerializedName(SERIALIZED_NAME_KEY_MANAGERS)
+            private Object keyManagers;
 
-  public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
-  @SerializedName(SERIALIZED_NAME_CREATED_TIME)
-  private String createdTime;
+        public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
+        @SerializedName(SERIALIZED_NAME_CREATED_TIME)
+            private String createdTime;
 
-  public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
-  @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
-  private String lastUpdatedTime;
+        public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
+        @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
+            private String lastUpdatedTime;
 
 
-  public APIDTO id(String id) {
+        public APIDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * UUID of the api 
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api ")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * UUID of the api 
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api ")
-
-  public String getId() {
-    return id;
-  }
-
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-
-  public APIDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Name of the API
-   * @return name
-  **/
-  @ApiModelProperty(example = "CalculatorAPI", required = true, value = "Name of the API")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public APIDTO description(String description) {
-    
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * A brief description about the API
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "A calculator API that supports basic operations", value = "A brief description about the API")
-
-  public String getDescription() {
-    return description;
-  }
-
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  public APIDTO context(String context) {
-    
-    this.context = context;
-    return this;
-  }
-
-   /**
-   * A string that represents thecontext of the user&#39;s request
-   * @return context
-  **/
-  @ApiModelProperty(example = "CalculatorAPI", required = true, value = "A string that represents thecontext of the user's request")
-
-  public String getContext() {
-    return context;
-  }
-
-
-  public void setContext(String context) {
-    this.context = context;
-  }
-
-
-  public APIDTO version(String version) {
-    
-    this.version = version;
-    return this;
-  }
-
-   /**
-   * The version of the API
-   * @return version
-  **/
-  @ApiModelProperty(example = "1.0.0", required = true, value = "The version of the API")
-
-  public String getVersion() {
-    return version;
-  }
-
-
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-
-  public APIDTO provider(String provider) {
-    
-    this.provider = provider;
-    return this;
-  }
-
-   /**
-   * If the provider value is not given user invoking the api will be used as the provider. 
-   * @return provider
-  **/
-  @ApiModelProperty(example = "admin", required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
-
-  public String getProvider() {
-    return provider;
-  }
-
-
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
-
-
-  public APIDTO apiDefinition(String apiDefinition) {
-    
-    this.apiDefinition = apiDefinition;
-    return this;
-  }
-
-   /**
-   * Swagger definition of the API which contains details about URI templates and scopes 
-   * @return apiDefinition
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{\"paths\":{\"/substract\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}},\"/add\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"CalculatorAPI\",\"version\":\"1.0.0\"}}", value = "Swagger definition of the API which contains details about URI templates and scopes ")
-
-  public String getApiDefinition() {
-    return apiDefinition;
-  }
-
-
-  public void setApiDefinition(String apiDefinition) {
-    this.apiDefinition = apiDefinition;
-  }
-
-
-  public APIDTO wsdlUri(String wsdlUri) {
-    
-    this.wsdlUri = wsdlUri;
-    return this;
-  }
-
-   /**
-   * WSDL URL if the API is based on a WSDL endpoint 
-   * @return wsdlUri
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "http://www.webservicex.com/globalweather.asmx?wsdl", value = "WSDL URL if the API is based on a WSDL endpoint ")
-
-  public String getWsdlUri() {
-    return wsdlUri;
-  }
-
-
-  public void setWsdlUri(String wsdlUri) {
-    this.wsdlUri = wsdlUri;
-  }
-
-
-  public APIDTO lifeCycleStatus(String lifeCycleStatus) {
-    
-    this.lifeCycleStatus = lifeCycleStatus;
-    return this;
-  }
-
-   /**
-   * This describes in which status of the lifecycle the API is.
-   * @return lifeCycleStatus
-  **/
-  @ApiModelProperty(example = "PUBLISHED", required = true, value = "This describes in which status of the lifecycle the API is.")
-
-  public String getLifeCycleStatus() {
-    return lifeCycleStatus;
-  }
-
-
-  public void setLifeCycleStatus(String lifeCycleStatus) {
-    this.lifeCycleStatus = lifeCycleStatus;
-  }
-
-
-  public APIDTO isDefaultVersion(Boolean isDefaultVersion) {
-    
-    this.isDefaultVersion = isDefaultVersion;
-    return this;
-  }
-
-   /**
-   * Get isDefaultVersion
-   * @return isDefaultVersion
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "false", value = "")
-
-  public Boolean getIsDefaultVersion() {
-    return isDefaultVersion;
-  }
-
-
-  public void setIsDefaultVersion(Boolean isDefaultVersion) {
-    this.isDefaultVersion = isDefaultVersion;
-  }
-
-
-  public APIDTO type(String type) {
-    
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * This describes the transport type of the API
-   * @return type
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "WS", value = "This describes the transport type of the API")
-
-  public String getType() {
-    return type;
-  }
-
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-
-  public APIDTO transport(List<String> transport) {
-    
-    this.transport = transport;
-    return this;
-  }
-
-  public APIDTO addTransportItem(String transportItem) {
-    if (this.transport == null) {
-      this.transport = new ArrayList<>();
+    public String getId() {
+        return id;
     }
-    this.transport.add(transportItem);
-    return this;
-  }
-
-   /**
-   * Get transport
-   * @return transport
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"http\",\"https\"]", value = "")
-
-  public List<String> getTransport() {
-    return transport;
-  }
 
 
-  public void setTransport(List<String> transport) {
-    this.transport = transport;
-  }
-
-
-  public APIDTO operations(List<APIOperationsDTO> operations) {
-    
-    this.operations = operations;
-    return this;
-  }
-
-  public APIDTO addOperationsItem(APIOperationsDTO operationsItem) {
-    if (this.operations == null) {
-      this.operations = new ArrayList<>();
+    public void setId(String id) {
+        this.id = id;
     }
-    this.operations.add(operationsItem);
-    return this;
-  }
-
-   /**
-   * Get operations
-   * @return operations
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[]", value = "")
-
-  public List<APIOperationsDTO> getOperations() {
-    return operations;
-  }
 
 
-  public void setOperations(List<APIOperationsDTO> operations) {
-    this.operations = operations;
-  }
+        public APIDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
 
-
-  public APIDTO authorizationHeader(String authorizationHeader) {
+    /**
+        * Name of the API
+    * @return name
+    **/
+      @ApiModelProperty(example = "CalculatorAPI", required = true, value = "Name of the API")
     
-    this.authorizationHeader = authorizationHeader;
-    return this;
-  }
-
-   /**
-   * Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used. 
-   * @return authorizationHeader
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Authorization", value = "Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used. ")
-
-  public String getAuthorizationHeader() {
-    return authorizationHeader;
-  }
-
-
-  public void setAuthorizationHeader(String authorizationHeader) {
-    this.authorizationHeader = authorizationHeader;
-  }
-
-
-  public APIDTO securityScheme(List<String> securityScheme) {
-    
-    this.securityScheme = securityScheme;
-    return this;
-  }
-
-  public APIDTO addSecuritySchemeItem(String securitySchemeItem) {
-    if (this.securityScheme == null) {
-      this.securityScheme = new ArrayList<>();
+    public String getName() {
+        return name;
     }
-    this.securityScheme.add(securitySchemeItem);
-    return this;
-  }
-
-   /**
-   * Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. 
-   * @return securityScheme
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"oauth2\",\"oauth_basic_auth_api_key_mandatory\"]", value = "Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. ")
-
-  public List<String> getSecurityScheme() {
-    return securityScheme;
-  }
 
 
-  public void setSecurityScheme(List<String> securityScheme) {
-    this.securityScheme = securityScheme;
-  }
-
-
-  public APIDTO tags(List<String> tags) {
-    
-    this.tags = tags;
-    return this;
-  }
-
-  public APIDTO addTagsItem(String tagsItem) {
-    if (this.tags == null) {
-      this.tags = new ArrayList<>();
+    public void setName(String name) {
+        this.name = name;
     }
-    this.tags.add(tagsItem);
-    return this;
-  }
-
-   /**
-   * Search keywords related to the API
-   * @return tags
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"substract\",\"add\"]", value = "Search keywords related to the API")
-
-  public List<String> getTags() {
-    return tags;
-  }
 
 
-  public void setTags(List<String> tags) {
-    this.tags = tags;
-  }
+        public APIDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
 
-
-  public APIDTO tiers(List<APITiersDTO> tiers) {
+    /**
+        * A brief description about the API
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "A calculator API that supports basic operations", value = "A brief description about the API")
     
-    this.tiers = tiers;
-    return this;
-  }
-
-  public APIDTO addTiersItem(APITiersDTO tiersItem) {
-    if (this.tiers == null) {
-      this.tiers = new ArrayList<>();
+    public String getDescription() {
+        return description;
     }
-    this.tiers.add(tiersItem);
-    return this;
-  }
-
-   /**
-   * The subscription tiers selected for the particular API
-   * @return tiers
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The subscription tiers selected for the particular API")
-
-  public List<APITiersDTO> getTiers() {
-    return tiers;
-  }
 
 
-  public void setTiers(List<APITiersDTO> tiers) {
-    this.tiers = tiers;
-  }
-
-
-  public APIDTO hasThumbnail(Boolean hasThumbnail) {
-    
-    this.hasThumbnail = hasThumbnail;
-    return this;
-  }
-
-   /**
-   * Get hasThumbnail
-   * @return hasThumbnail
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "true", value = "")
-
-  public Boolean getHasThumbnail() {
-    return hasThumbnail;
-  }
-
-
-  public void setHasThumbnail(Boolean hasThumbnail) {
-    this.hasThumbnail = hasThumbnail;
-  }
-
-
-  public APIDTO additionalProperties(Map<String, String> additionalProperties) {
-    
-    this.additionalProperties = additionalProperties;
-    return this;
-  }
-
-  public APIDTO putAdditionalPropertiesItem(String key, String additionalPropertiesItem) {
-    if (this.additionalProperties == null) {
-      this.additionalProperties = new HashMap<>();
+    public void setDescription(String description) {
+        this.description = description;
     }
-    this.additionalProperties.put(key, additionalPropertiesItem);
-    return this;
-  }
-
-   /**
-   * Custom(user defined) properties of API 
-   * @return additionalProperties
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "{}", value = "Custom(user defined) properties of API ")
-
-  public Map<String, String> getAdditionalProperties() {
-    return additionalProperties;
-  }
 
 
-  public void setAdditionalProperties(Map<String, String> additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
+        public APIDTO context(String context) {
+        
+        this.context = context;
+        return this;
+        }
 
-
-  public APIDTO monetization(APIMonetizationInfoDTO monetization) {
+    /**
+        * A string that represents thecontext of the user&#39;s request
+    * @return context
+    **/
+      @ApiModelProperty(example = "CalculatorAPI", required = true, value = "A string that represents thecontext of the user's request")
     
-    this.monetization = monetization;
-    return this;
-  }
-
-   /**
-   * Get monetization
-   * @return monetization
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIMonetizationInfoDTO getMonetization() {
-    return monetization;
-  }
-
-
-  public void setMonetization(APIMonetizationInfoDTO monetization) {
-    this.monetization = monetization;
-  }
-
-
-  public APIDTO ingressURLs(List<APIIngressURLsDTO> ingressURLs) {
-    
-    this.ingressURLs = ingressURLs;
-    return this;
-  }
-
-  public APIDTO addIngressURLsItem(APIIngressURLsDTO ingressURLsItem) {
-    if (this.ingressURLs == null) {
-      this.ingressURLs = new ArrayList<>();
+    public String getContext() {
+        return context;
     }
-    this.ingressURLs.add(ingressURLsItem);
-    return this;
-  }
-
-   /**
-   * Get ingressURLs
-   * @return ingressURLs
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<APIIngressURLsDTO> getIngressURLs() {
-    return ingressURLs;
-  }
 
 
-  public void setIngressURLs(List<APIIngressURLsDTO> ingressURLs) {
-    this.ingressURLs = ingressURLs;
-  }
-
-
-  public APIDTO endpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
-    
-    this.endpointURLs = endpointURLs;
-    return this;
-  }
-
-  public APIDTO addEndpointURLsItem(APIEndpointURLsDTO endpointURLsItem) {
-    if (this.endpointURLs == null) {
-      this.endpointURLs = new ArrayList<>();
+    public void setContext(String context) {
+        this.context = context;
     }
-    this.endpointURLs.add(endpointURLsItem);
-    return this;
-  }
-
-   /**
-   * Get endpointURLs
-   * @return endpointURLs
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<APIEndpointURLsDTO> getEndpointURLs() {
-    return endpointURLs;
-  }
 
 
-  public void setEndpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
-    this.endpointURLs = endpointURLs;
-  }
+        public APIDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
 
-
-  public APIDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+    /**
+        * The version of the API
+    * @return version
+    **/
+      @ApiModelProperty(example = "1.0.0", required = true, value = "The version of the API")
     
-    this.businessInformation = businessInformation;
-    return this;
-  }
-
-   /**
-   * Get businessInformation
-   * @return businessInformation
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIBusinessInformationDTO getBusinessInformation() {
-    return businessInformation;
-  }
-
-
-  public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
-    this.businessInformation = businessInformation;
-  }
-
-
-  public APIDTO labels(List<LabelDTO> labels) {
-    
-    this.labels = labels;
-    return this;
-  }
-
-  public APIDTO addLabelsItem(LabelDTO labelsItem) {
-    if (this.labels == null) {
-      this.labels = new ArrayList<>();
+    public String getVersion() {
+        return version;
     }
-    this.labels.add(labelsItem);
-    return this;
-  }
-
-   /**
-   * Labels of micro-gateway environments attached to the API. 
-   * @return labels
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Labels of micro-gateway environments attached to the API. ")
-
-  public List<LabelDTO> getLabels() {
-    return labels;
-  }
 
 
-  public void setLabels(List<LabelDTO> labels) {
-    this.labels = labels;
-  }
-
-
-  public APIDTO environmentList(List<String> environmentList) {
-    
-    this.environmentList = environmentList;
-    return this;
-  }
-
-  public APIDTO addEnvironmentListItem(String environmentListItem) {
-    if (this.environmentList == null) {
-      this.environmentList = new ArrayList<>();
+    public void setVersion(String version) {
+        this.version = version;
     }
-    this.environmentList.add(environmentListItem);
-    return this;
-  }
-
-   /**
-   * The environment list configured with non empty endpoint URLs for the particular API.
-   * @return environmentList
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "[\"PRODUCTION\",\"SANDBOX\"]", value = "The environment list configured with non empty endpoint URLs for the particular API.")
-
-  public List<String> getEnvironmentList() {
-    return environmentList;
-  }
 
 
-  public void setEnvironmentList(List<String> environmentList) {
-    this.environmentList = environmentList;
-  }
+        public APIDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
 
-
-  public APIDTO scopes(List<ScopeInfoDTO> scopes) {
+    /**
+        * If the provider value is not given user invoking the api will be used as the provider. 
+    * @return provider
+    **/
+      @ApiModelProperty(example = "admin", required = true, value = "If the provider value is not given user invoking the api will be used as the provider. ")
     
-    this.scopes = scopes;
-    return this;
-  }
-
-  public APIDTO addScopesItem(ScopeInfoDTO scopesItem) {
-    if (this.scopes == null) {
-      this.scopes = new ArrayList<>();
+    public String getProvider() {
+        return provider;
     }
-    this.scopes.add(scopesItem);
-    return this;
-  }
-
-   /**
-   * Get scopes
-   * @return scopes
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<ScopeInfoDTO> getScopes() {
-    return scopes;
-  }
 
 
-  public void setScopes(List<ScopeInfoDTO> scopes) {
-    this.scopes = scopes;
-  }
-
-
-  public APIDTO avgRating(String avgRating) {
-    
-    this.avgRating = avgRating;
-    return this;
-  }
-
-   /**
-   * The average rating of the API
-   * @return avgRating
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "4.5", value = "The average rating of the API")
-
-  public String getAvgRating() {
-    return avgRating;
-  }
-
-
-  public void setAvgRating(String avgRating) {
-    this.avgRating = avgRating;
-  }
-
-
-  public APIDTO advertiseInfo(AdvertiseInfoDTO advertiseInfo) {
-    
-    this.advertiseInfo = advertiseInfo;
-    return this;
-  }
-
-   /**
-   * Get advertiseInfo
-   * @return advertiseInfo
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public AdvertiseInfoDTO getAdvertiseInfo() {
-    return advertiseInfo;
-  }
-
-
-  public void setAdvertiseInfo(AdvertiseInfoDTO advertiseInfo) {
-    this.advertiseInfo = advertiseInfo;
-  }
-
-
-  public APIDTO isSubscriptionAvailable(Boolean isSubscriptionAvailable) {
-    
-    this.isSubscriptionAvailable = isSubscriptionAvailable;
-    return this;
-  }
-
-   /**
-   * Get isSubscriptionAvailable
-   * @return isSubscriptionAvailable
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "false", value = "")
-
-  public Boolean getIsSubscriptionAvailable() {
-    return isSubscriptionAvailable;
-  }
-
-
-  public void setIsSubscriptionAvailable(Boolean isSubscriptionAvailable) {
-    this.isSubscriptionAvailable = isSubscriptionAvailable;
-  }
-
-
-  public APIDTO categories(List<String> categories) {
-    
-    this.categories = categories;
-    return this;
-  }
-
-  public APIDTO addCategoriesItem(String categoriesItem) {
-    if (this.categories == null) {
-      this.categories = new ArrayList<>();
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
-    this.categories.add(categoriesItem);
-    return this;
-  }
-
-   /**
-   * API categories 
-   * @return categories
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "API categories ")
-
-  public List<String> getCategories() {
-    return categories;
-  }
 
 
-  public void setCategories(List<String> categories) {
-    this.categories = categories;
-  }
+        public APIDTO apiDefinition(String apiDefinition) {
+        
+        this.apiDefinition = apiDefinition;
+        return this;
+        }
 
-
-  public APIDTO keyManagers(Object keyManagers) {
+    /**
+        * Swagger definition of the API which contains details about URI templates and scopes 
+    * @return apiDefinition
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{\"paths\":{\"/substract\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}},\"/add\":{\"get\":{\"x-auth-type\":\"Application & Application User\",\"x-throttling-tier\":\"Unlimited\",\"parameters\":[{\"name\":\"x\",\"required\":true,\"type\":\"string\",\"in\":\"query\"},{\"name\":\"y\",\"required\":true,\"type\":\"string\",\"in\":\"query\"}],\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"CalculatorAPI\",\"version\":\"1.0.0\"}}", value = "Swagger definition of the API which contains details about URI templates and scopes ")
     
-    this.keyManagers = keyManagers;
-    return this;
-  }
-
-   /**
-   * API Key Managers 
-   * @return keyManagers
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "API Key Managers ")
-
-  public Object getKeyManagers() {
-    return keyManagers;
-  }
-
-
-  public void setKeyManagers(Object keyManagers) {
-    this.keyManagers = keyManagers;
-  }
-
-
-  public APIDTO createdTime(String createdTime) {
-    
-    this.createdTime = createdTime;
-    return this;
-  }
-
-   /**
-   * Get createdTime
-   * @return createdTime
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "2020-10-31T13:57:16.229", value = "")
-
-  public String getCreatedTime() {
-    return createdTime;
-  }
-
-
-  public void setCreatedTime(String createdTime) {
-    this.createdTime = createdTime;
-  }
-
-
-  public APIDTO lastUpdatedTime(String lastUpdatedTime) {
-    
-    this.lastUpdatedTime = lastUpdatedTime;
-    return this;
-  }
-
-   /**
-   * Get lastUpdatedTime
-   * @return lastUpdatedTime
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "2020-10-31T13:57:16.229", value = "")
-
-  public String getLastUpdatedTime() {
-    return lastUpdatedTime;
-  }
-
-
-  public void setLastUpdatedTime(String lastUpdatedTime) {
-    this.lastUpdatedTime = lastUpdatedTime;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getApiDefinition() {
+        return apiDefinition;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setApiDefinition(String apiDefinition) {
+        this.apiDefinition = apiDefinition;
     }
-    APIDTO API = (APIDTO) o;
-    return Objects.equals(this.id, API.id) &&
-        Objects.equals(this.name, API.name) &&
-        Objects.equals(this.description, API.description) &&
-        Objects.equals(this.context, API.context) &&
-        Objects.equals(this.version, API.version) &&
-        Objects.equals(this.provider, API.provider) &&
-        Objects.equals(this.apiDefinition, API.apiDefinition) &&
-        Objects.equals(this.wsdlUri, API.wsdlUri) &&
-        Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
-        Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
-        Objects.equals(this.type, API.type) &&
-        Objects.equals(this.transport, API.transport) &&
-        Objects.equals(this.operations, API.operations) &&
-        Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
-        Objects.equals(this.securityScheme, API.securityScheme) &&
-        Objects.equals(this.tags, API.tags) &&
-        Objects.equals(this.tiers, API.tiers) &&
-        Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
-        Objects.equals(this.additionalProperties, API.additionalProperties) &&
-        Objects.equals(this.monetization, API.monetization) &&
-        Objects.equals(this.ingressURLs, API.ingressURLs) &&
-        Objects.equals(this.endpointURLs, API.endpointURLs) &&
-        Objects.equals(this.businessInformation, API.businessInformation) &&
-        Objects.equals(this.labels, API.labels) &&
-        Objects.equals(this.environmentList, API.environmentList) &&
-        Objects.equals(this.scopes, API.scopes) &&
-        Objects.equals(this.avgRating, API.avgRating) &&
-        Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
-        Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable) &&
-        Objects.equals(this.categories, API.categories) &&
-        Objects.equals(this.keyManagers, API.keyManagers) &&
-        Objects.equals(this.createdTime, API.createdTime) &&
-        Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIDTO {\n");
+        public APIDTO wsdlUri(String wsdlUri) {
+        
+        this.wsdlUri = wsdlUri;
+        return this;
+        }
+
+    /**
+        * WSDL URL if the API is based on a WSDL endpoint 
+    * @return wsdlUri
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "http://www.webservicex.com/globalweather.asmx?wsdl", value = "WSDL URL if the API is based on a WSDL endpoint ")
+    
+    public String getWsdlUri() {
+        return wsdlUri;
+    }
+
+
+    public void setWsdlUri(String wsdlUri) {
+        this.wsdlUri = wsdlUri;
+    }
+
+
+        public APIDTO lifeCycleStatus(String lifeCycleStatus) {
+        
+        this.lifeCycleStatus = lifeCycleStatus;
+        return this;
+        }
+
+    /**
+        * This describes in which status of the lifecycle the API is.
+    * @return lifeCycleStatus
+    **/
+      @ApiModelProperty(example = "PUBLISHED", required = true, value = "This describes in which status of the lifecycle the API is.")
+    
+    public String getLifeCycleStatus() {
+        return lifeCycleStatus;
+    }
+
+
+    public void setLifeCycleStatus(String lifeCycleStatus) {
+        this.lifeCycleStatus = lifeCycleStatus;
+    }
+
+
+        public APIDTO isDefaultVersion(Boolean isDefaultVersion) {
+        
+        this.isDefaultVersion = isDefaultVersion;
+        return this;
+        }
+
+    /**
+        * Get isDefaultVersion
+    * @return isDefaultVersion
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsDefaultVersion() {
+        return isDefaultVersion;
+    }
+
+
+    public void setIsDefaultVersion(Boolean isDefaultVersion) {
+        this.isDefaultVersion = isDefaultVersion;
+    }
+
+
+        public APIDTO type(String type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * This describes the transport type of the API
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "WS", value = "This describes the transport type of the API")
+    
+    public String getType() {
+        return type;
+    }
+
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
+        public APIDTO transport(List<String> transport) {
+        
+        this.transport = transport;
+        return this;
+        }
+
+    /**
+        * Get transport
+    * @return transport
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"http\",\"https\"]", value = "")
+    
+    public List<String> getTransport() {
+        return transport;
+    }
+
+
+    public void setTransport(List<String> transport) {
+        this.transport = transport;
+    }
+
+
+        public APIDTO operations(List<APIOperationsDTO> operations) {
+        
+        this.operations = operations;
+        return this;
+        }
+
+    /**
+        * Get operations
+    * @return operations
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[]", value = "")
+    
+    public List<APIOperationsDTO> getOperations() {
+        return operations;
+    }
+
+
+    public void setOperations(List<APIOperationsDTO> operations) {
+        this.operations = operations;
+    }
+
+
+        public APIDTO authorizationHeader(String authorizationHeader) {
+        
+        this.authorizationHeader = authorizationHeader;
+        return this;
+        }
+
+    /**
+        * Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used. 
+    * @return authorizationHeader
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Authorization", value = "Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used. ")
+    
+    public String getAuthorizationHeader() {
+        return authorizationHeader;
+    }
+
+
+    public void setAuthorizationHeader(String authorizationHeader) {
+        this.authorizationHeader = authorizationHeader;
+    }
+
+
+        public APIDTO securityScheme(List<String> securityScheme) {
+        
+        this.securityScheme = securityScheme;
+        return this;
+        }
+
+    /**
+        * Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. 
+    * @return securityScheme
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"oauth2\",\"oauth_basic_auth_api_key_mandatory\"]", value = "Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. ")
+    
+    public List<String> getSecurityScheme() {
+        return securityScheme;
+    }
+
+
+    public void setSecurityScheme(List<String> securityScheme) {
+        this.securityScheme = securityScheme;
+    }
+
+
+        public APIDTO tags(List<String> tags) {
+        
+        this.tags = tags;
+        return this;
+        }
+
+    /**
+        * Search keywords related to the API
+    * @return tags
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"substract\",\"add\"]", value = "Search keywords related to the API")
+    
+    public List<String> getTags() {
+        return tags;
+    }
+
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+
+        public APIDTO tiers(List<APITiersDTO> tiers) {
+        
+        this.tiers = tiers;
+        return this;
+        }
+
+    /**
+        * The subscription tiers selected for the particular API
+    * @return tiers
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The subscription tiers selected for the particular API")
+    
+    public List<APITiersDTO> getTiers() {
+        return tiers;
+    }
+
+
+    public void setTiers(List<APITiersDTO> tiers) {
+        this.tiers = tiers;
+    }
+
+
+        public APIDTO hasThumbnail(Boolean hasThumbnail) {
+        
+        this.hasThumbnail = hasThumbnail;
+        return this;
+        }
+
+    /**
+        * Get hasThumbnail
+    * @return hasThumbnail
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "true", value = "")
+    
+    public Boolean isHasThumbnail() {
+        return hasThumbnail;
+    }
+
+
+    public void setHasThumbnail(Boolean hasThumbnail) {
+        this.hasThumbnail = hasThumbnail;
+    }
+
+
+        public APIDTO additionalProperties(Map<String, String> additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Custom(user defined) properties of API 
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "{}", value = "Custom(user defined) properties of API ")
+    
+    public Map<String, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
+        public APIDTO monetization(APIMonetizationInfoDTO monetization) {
+        
+        this.monetization = monetization;
+        return this;
+        }
+
+    /**
+        * Get monetization
+    * @return monetization
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIMonetizationInfoDTO getMonetization() {
+        return monetization;
+    }
+
+
+    public void setMonetization(APIMonetizationInfoDTO monetization) {
+        this.monetization = monetization;
+    }
+
+
+        public APIDTO ingressURLs(List<APIIngressURLsDTO> ingressURLs) {
+        
+        this.ingressURLs = ingressURLs;
+        return this;
+        }
+
+    /**
+        * Get ingressURLs
+    * @return ingressURLs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<APIIngressURLsDTO> getIngressURLs() {
+        return ingressURLs;
+    }
+
+
+    public void setIngressURLs(List<APIIngressURLsDTO> ingressURLs) {
+        this.ingressURLs = ingressURLs;
+    }
+
+
+        public APIDTO endpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
+        
+        this.endpointURLs = endpointURLs;
+        return this;
+        }
+
+    /**
+        * Get endpointURLs
+    * @return endpointURLs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<APIEndpointURLsDTO> getEndpointURLs() {
+        return endpointURLs;
+    }
+
+
+    public void setEndpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
+        this.endpointURLs = endpointURLs;
+    }
+
+
+        public APIDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+        
+        this.businessInformation = businessInformation;
+        return this;
+        }
+
+    /**
+        * Get businessInformation
+    * @return businessInformation
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIBusinessInformationDTO getBusinessInformation() {
+        return businessInformation;
+    }
+
+
+    public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
+        this.businessInformation = businessInformation;
+    }
+
+
+        public APIDTO labels(List<LabelDTO> labels) {
+        
+        this.labels = labels;
+        return this;
+        }
+
+    /**
+        * Labels of micro-gateway environments attached to the API. 
+    * @return labels
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Labels of micro-gateway environments attached to the API. ")
+    
+    public List<LabelDTO> getLabels() {
+        return labels;
+    }
+
+
+    public void setLabels(List<LabelDTO> labels) {
+        this.labels = labels;
+    }
+
+
+        public APIDTO environmentList(List<String> environmentList) {
+        
+        this.environmentList = environmentList;
+        return this;
+        }
+
+    /**
+        * The environment list configured with non empty endpoint URLs for the particular API.
+    * @return environmentList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"PRODUCTION\",\"SANDBOX\"]", value = "The environment list configured with non empty endpoint URLs for the particular API.")
+    
+    public List<String> getEnvironmentList() {
+        return environmentList;
+    }
+
+
+    public void setEnvironmentList(List<String> environmentList) {
+        this.environmentList = environmentList;
+    }
+
+
+        public APIDTO scopes(List<ScopeInfoDTO> scopes) {
+        
+        this.scopes = scopes;
+        return this;
+        }
+
+    /**
+        * Get scopes
+    * @return scopes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<ScopeInfoDTO> getScopes() {
+        return scopes;
+    }
+
+
+    public void setScopes(List<ScopeInfoDTO> scopes) {
+        this.scopes = scopes;
+    }
+
+
+        public APIDTO avgRating(String avgRating) {
+        
+        this.avgRating = avgRating;
+        return this;
+        }
+
+    /**
+        * The average rating of the API
+    * @return avgRating
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "4.5", value = "The average rating of the API")
+    
+    public String getAvgRating() {
+        return avgRating;
+    }
+
+
+    public void setAvgRating(String avgRating) {
+        this.avgRating = avgRating;
+    }
+
+
+        public APIDTO advertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+        
+        this.advertiseInfo = advertiseInfo;
+        return this;
+        }
+
+    /**
+        * Get advertiseInfo
+    * @return advertiseInfo
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public AdvertiseInfoDTO getAdvertiseInfo() {
+        return advertiseInfo;
+    }
+
+
+    public void setAdvertiseInfo(AdvertiseInfoDTO advertiseInfo) {
+        this.advertiseInfo = advertiseInfo;
+    }
+
+
+        public APIDTO isSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+        
+        this.isSubscriptionAvailable = isSubscriptionAvailable;
+        return this;
+        }
+
+    /**
+        * Get isSubscriptionAvailable
+    * @return isSubscriptionAvailable
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsSubscriptionAvailable() {
+        return isSubscriptionAvailable;
+    }
+
+
+    public void setIsSubscriptionAvailable(Boolean isSubscriptionAvailable) {
+        this.isSubscriptionAvailable = isSubscriptionAvailable;
+    }
+
+
+        public APIDTO categories(List<String> categories) {
+        
+        this.categories = categories;
+        return this;
+        }
+
+    /**
+        * API categories 
+    * @return categories
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "API categories ")
+    
+    public List<String> getCategories() {
+        return categories;
+    }
+
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
+
+
+        public APIDTO keyManagers(Object keyManagers) {
+        
+        this.keyManagers = keyManagers;
+        return this;
+        }
+
+    /**
+        * API Key Managers 
+    * @return keyManagers
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "API Key Managers ")
+    
+    public Object getKeyManagers() {
+        return keyManagers;
+    }
+
+
+    public void setKeyManagers(Object keyManagers) {
+        this.keyManagers = keyManagers;
+    }
+
+
+        public APIDTO createdTime(String createdTime) {
+        
+        this.createdTime = createdTime;
+        return this;
+        }
+
+    /**
+        * Get createdTime
+    * @return createdTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "2020-10-31T13:57:16.229", value = "")
+    
+    public String getCreatedTime() {
+        return createdTime;
+    }
+
+
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
+
+
+        public APIDTO lastUpdatedTime(String lastUpdatedTime) {
+        
+        this.lastUpdatedTime = lastUpdatedTime;
+        return this;
+        }
+
+    /**
+        * Get lastUpdatedTime
+    * @return lastUpdatedTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "2020-10-31T13:57:16.229", value = "")
+    
+    public String getLastUpdatedTime() {
+        return lastUpdatedTime;
+    }
+
+
+    public void setLastUpdatedTime(String lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIDTO API = (APIDTO) o;
+            return Objects.equals(this.id, API.id) &&
+            Objects.equals(this.name, API.name) &&
+            Objects.equals(this.description, API.description) &&
+            Objects.equals(this.context, API.context) &&
+            Objects.equals(this.version, API.version) &&
+            Objects.equals(this.provider, API.provider) &&
+            Objects.equals(this.apiDefinition, API.apiDefinition) &&
+            Objects.equals(this.wsdlUri, API.wsdlUri) &&
+            Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
+            Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
+            Objects.equals(this.type, API.type) &&
+            Objects.equals(this.transport, API.transport) &&
+            Objects.equals(this.operations, API.operations) &&
+            Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
+            Objects.equals(this.securityScheme, API.securityScheme) &&
+            Objects.equals(this.tags, API.tags) &&
+            Objects.equals(this.tiers, API.tiers) &&
+            Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
+            Objects.equals(this.additionalProperties, API.additionalProperties) &&
+            Objects.equals(this.monetization, API.monetization) &&
+            Objects.equals(this.ingressURLs, API.ingressURLs) &&
+            Objects.equals(this.endpointURLs, API.endpointURLs) &&
+            Objects.equals(this.businessInformation, API.businessInformation) &&
+            Objects.equals(this.labels, API.labels) &&
+            Objects.equals(this.environmentList, API.environmentList) &&
+            Objects.equals(this.scopes, API.scopes) &&
+            Objects.equals(this.avgRating, API.avgRating) &&
+            Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
+            Objects.equals(this.isSubscriptionAvailable, API.isSubscriptionAvailable) &&
+            Objects.equals(this.categories, API.categories) &&
+            Objects.equals(this.keyManagers, API.keyManagers) &&
+            Objects.equals(this.createdTime, API.createdTime) &&
+            Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
@@ -1112,20 +1016,20 @@ public class APIDTO {
     sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

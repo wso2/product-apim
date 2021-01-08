@@ -25,321 +25,339 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * SubscriptionDTO
- */
+* SubscriptionDTO
+*/
 
 public class SubscriptionDTO {
-  public static final String SERIALIZED_NAME_SUBSCRIPTION_ID = "subscriptionId";
-  @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_ID)
-  private String subscriptionId;
+        public static final String SERIALIZED_NAME_SUBSCRIPTION_ID = "subscriptionId";
+        @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_ID)
+            private String subscriptionId;
 
-  public static final String SERIALIZED_NAME_APPLICATION_ID = "applicationId";
-  @SerializedName(SERIALIZED_NAME_APPLICATION_ID)
-  private String applicationId;
+        public static final String SERIALIZED_NAME_APPLICATION_ID = "applicationId";
+        @SerializedName(SERIALIZED_NAME_APPLICATION_ID)
+            private String applicationId;
 
-  public static final String SERIALIZED_NAME_API_ID = "apiId";
-  @SerializedName(SERIALIZED_NAME_API_ID)
-  private String apiId;
+        public static final String SERIALIZED_NAME_API_ID = "apiId";
+        @SerializedName(SERIALIZED_NAME_API_ID)
+            private String apiId;
 
-  public static final String SERIALIZED_NAME_API_INFO = "apiInfo";
-  @SerializedName(SERIALIZED_NAME_API_INFO)
-  private APIInfoDTO apiInfo;
+        public static final String SERIALIZED_NAME_API_INFO = "apiInfo";
+        @SerializedName(SERIALIZED_NAME_API_INFO)
+            private APIInfoDTO apiInfo;
 
-  public static final String SERIALIZED_NAME_APPLICATION_INFO = "applicationInfo";
-  @SerializedName(SERIALIZED_NAME_APPLICATION_INFO)
-  private ApplicationInfoDTO applicationInfo;
+        public static final String SERIALIZED_NAME_APPLICATION_INFO = "applicationInfo";
+        @SerializedName(SERIALIZED_NAME_APPLICATION_INFO)
+            private ApplicationInfoDTO applicationInfo;
 
-  public static final String SERIALIZED_NAME_THROTTLING_POLICY = "throttlingPolicy";
-  @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY)
-  private String throttlingPolicy;
+        public static final String SERIALIZED_NAME_THROTTLING_POLICY = "throttlingPolicy";
+        @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY)
+            private String throttlingPolicy;
 
-  public static final String SERIALIZED_NAME_REQUESTED_THROTTLING_POLICY = "requestedThrottlingPolicy";
-  @SerializedName(SERIALIZED_NAME_REQUESTED_THROTTLING_POLICY)
-  private String requestedThrottlingPolicy;
+        public static final String SERIALIZED_NAME_REQUESTED_THROTTLING_POLICY = "requestedThrottlingPolicy";
+        @SerializedName(SERIALIZED_NAME_REQUESTED_THROTTLING_POLICY)
+            private String requestedThrottlingPolicy;
 
-  /**
-   * Gets or Sets status
-   */
-  @JsonAdapter(StatusEnum.Adapter.class)
-  public enum StatusEnum {
-    BLOCKED("BLOCKED"),
-    
-    PROD_ONLY_BLOCKED("PROD_ONLY_BLOCKED"),
-    
-    UNBLOCKED("UNBLOCKED"),
-    
-    ON_HOLD("ON_HOLD"),
-    
-    REJECTED("REJECTED"),
-    
-    TIER_UPDATE_PENDING("TIER_UPDATE_PENDING");
+            /**
+* Gets or Sets status
+*/
+    @JsonAdapter(StatusEnum.Adapter.class)
+public enum StatusEnum {
+        BLOCKED("BLOCKED"),
+        
+        PROD_ONLY_BLOCKED("PROD_ONLY_BLOCKED"),
+        
+        UNBLOCKED("UNBLOCKED"),
+        
+        ON_HOLD("ON_HOLD"),
+        
+        REJECTED("REJECTED"),
+        
+        TIER_UPDATE_PENDING("TIER_UPDATE_PENDING");
 
-    private String value;
+private String value;
 
-    StatusEnum(String value) {
-      this.value = value;
+StatusEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static StatusEnum fromValue(String value) {
+    for (StatusEnum b : StatusEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<StatusEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final StatusEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public StatusEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return StatusEnum.fromValue(value);
     }
+    }
+}
 
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private StatusEnum status;
+
+        public static final String SERIALIZED_NAME_REDIRECTION_PARAMS = "redirectionParams";
+        @SerializedName(SERIALIZED_NAME_REDIRECTION_PARAMS)
+            private String redirectionParams;
+
+
+        public SubscriptionDTO subscriptionId(String subscriptionId) {
+        
+        this.subscriptionId = subscriptionId;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+
+    /**
+        * The UUID of the subscription
+    * @return subscriptionId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "faae5fcc-cbae-40c4-bf43-89931630d313", value = "The UUID of the subscription")
+    
+    public String getSubscriptionId() {
+        return subscriptionId;
     }
 
-    public static class Adapter extends TypeAdapter<StatusEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final StatusEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public StatusEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return StatusEnum.fromValue(value);
-      }
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
     }
-  }
-
-  public static final String SERIALIZED_NAME_STATUS = "status";
-  @SerializedName(SERIALIZED_NAME_STATUS)
-  private StatusEnum status;
-
-  public static final String SERIALIZED_NAME_REDIRECTION_PARAMS = "redirectionParams";
-  @SerializedName(SERIALIZED_NAME_REDIRECTION_PARAMS)
-  private String redirectionParams;
 
 
-   /**
-   * The UUID of the subscription
-   * @return subscriptionId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "faae5fcc-cbae-40c4-bf43-89931630d313", value = "The UUID of the subscription")
+        public SubscriptionDTO applicationId(String applicationId) {
+        
+        this.applicationId = applicationId;
+        return this;
+        }
 
-  public String getSubscriptionId() {
-    return subscriptionId;
-  }
-
-
-
-
-  public SubscriptionDTO applicationId(String applicationId) {
+    /**
+        * The UUID of the application
+    * @return applicationId
+    **/
+      @ApiModelProperty(example = "b3ade481-30b0-4b38-9a67-498a40873a6d", required = true, value = "The UUID of the application")
     
-    this.applicationId = applicationId;
-    return this;
-  }
-
-   /**
-   * The UUID of the application
-   * @return applicationId
-  **/
-  @ApiModelProperty(example = "b3ade481-30b0-4b38-9a67-498a40873a6d", required = true, value = "The UUID of the application")
-
-  public String getApplicationId() {
-    return applicationId;
-  }
-
-
-  public void setApplicationId(String applicationId) {
-    this.applicationId = applicationId;
-  }
-
-
-  public SubscriptionDTO apiId(String apiId) {
-    
-    this.apiId = apiId;
-    return this;
-  }
-
-   /**
-   * The unique identifier of the API.
-   * @return apiId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "2962f3bb-8330-438e-baee-0ee1d6434ba4", value = "The unique identifier of the API.")
-
-  public String getApiId() {
-    return apiId;
-  }
-
-
-  public void setApiId(String apiId) {
-    this.apiId = apiId;
-  }
-
-
-  public SubscriptionDTO apiInfo(APIInfoDTO apiInfo) {
-    
-    this.apiInfo = apiInfo;
-    return this;
-  }
-
-   /**
-   * Get apiInfo
-   * @return apiInfo
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIInfoDTO getApiInfo() {
-    return apiInfo;
-  }
-
-
-  public void setApiInfo(APIInfoDTO apiInfo) {
-    this.apiInfo = apiInfo;
-  }
-
-
-  public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
-    
-    this.applicationInfo = applicationInfo;
-    return this;
-  }
-
-   /**
-   * Get applicationInfo
-   * @return applicationInfo
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public ApplicationInfoDTO getApplicationInfo() {
-    return applicationInfo;
-  }
-
-
-  public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
-    this.applicationInfo = applicationInfo;
-  }
-
-
-  public SubscriptionDTO throttlingPolicy(String throttlingPolicy) {
-    
-    this.throttlingPolicy = throttlingPolicy;
-    return this;
-  }
-
-   /**
-   * Get throttlingPolicy
-   * @return throttlingPolicy
-  **/
-  @ApiModelProperty(example = "Unlimited", required = true, value = "")
-
-  public String getThrottlingPolicy() {
-    return throttlingPolicy;
-  }
-
-
-  public void setThrottlingPolicy(String throttlingPolicy) {
-    this.throttlingPolicy = throttlingPolicy;
-  }
-
-
-  public SubscriptionDTO requestedThrottlingPolicy(String requestedThrottlingPolicy) {
-    
-    this.requestedThrottlingPolicy = requestedThrottlingPolicy;
-    return this;
-  }
-
-   /**
-   * Get requestedThrottlingPolicy
-   * @return requestedThrottlingPolicy
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "Unlimited", value = "")
-
-  public String getRequestedThrottlingPolicy() {
-    return requestedThrottlingPolicy;
-  }
-
-
-  public void setRequestedThrottlingPolicy(String requestedThrottlingPolicy) {
-    this.requestedThrottlingPolicy = requestedThrottlingPolicy;
-  }
-
-
-  public SubscriptionDTO status(StatusEnum status) {
-    
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * Get status
-   * @return status
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "UNBLOCKED", value = "")
-
-  public StatusEnum getStatus() {
-    return status;
-  }
-
-
-  public void setStatus(StatusEnum status) {
-    this.status = status;
-  }
-
-
-   /**
-   * A url and other parameters the subscriber can be redirected.
-   * @return redirectionParams
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A url and other parameters the subscriber can be redirected.")
-
-  public String getRedirectionParams() {
-    return redirectionParams;
-  }
-
-
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getApplicationId() {
+        return applicationId;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
     }
-    SubscriptionDTO subscription = (SubscriptionDTO) o;
-    return Objects.equals(this.subscriptionId, subscription.subscriptionId) &&
-        Objects.equals(this.applicationId, subscription.applicationId) &&
-        Objects.equals(this.apiId, subscription.apiId) &&
-        Objects.equals(this.apiInfo, subscription.apiInfo) &&
-        Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
-        Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
-        Objects.equals(this.requestedThrottlingPolicy, subscription.requestedThrottlingPolicy) &&
-        Objects.equals(this.status, subscription.status) &&
-        Objects.equals(this.redirectionParams, subscription.redirectionParams);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, requestedThrottlingPolicy, status, redirectionParams);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class SubscriptionDTO {\n");
+        public SubscriptionDTO apiId(String apiId) {
+        
+        this.apiId = apiId;
+        return this;
+        }
+
+    /**
+        * The unique identifier of the API.
+    * @return apiId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "2962f3bb-8330-438e-baee-0ee1d6434ba4", value = "The unique identifier of the API.")
+    
+    public String getApiId() {
+        return apiId;
+    }
+
+
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+
+        public SubscriptionDTO apiInfo(APIInfoDTO apiInfo) {
+        
+        this.apiInfo = apiInfo;
+        return this;
+        }
+
+    /**
+        * Get apiInfo
+    * @return apiInfo
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIInfoDTO getApiInfo() {
+        return apiInfo;
+    }
+
+
+    public void setApiInfo(APIInfoDTO apiInfo) {
+        this.apiInfo = apiInfo;
+    }
+
+
+        public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
+        
+        this.applicationInfo = applicationInfo;
+        return this;
+        }
+
+    /**
+        * Get applicationInfo
+    * @return applicationInfo
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public ApplicationInfoDTO getApplicationInfo() {
+        return applicationInfo;
+    }
+
+
+    public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
+        this.applicationInfo = applicationInfo;
+    }
+
+
+        public SubscriptionDTO throttlingPolicy(String throttlingPolicy) {
+        
+        this.throttlingPolicy = throttlingPolicy;
+        return this;
+        }
+
+    /**
+        * Get throttlingPolicy
+    * @return throttlingPolicy
+    **/
+      @ApiModelProperty(example = "Unlimited", required = true, value = "")
+    
+    public String getThrottlingPolicy() {
+        return throttlingPolicy;
+    }
+
+
+    public void setThrottlingPolicy(String throttlingPolicy) {
+        this.throttlingPolicy = throttlingPolicy;
+    }
+
+
+        public SubscriptionDTO requestedThrottlingPolicy(String requestedThrottlingPolicy) {
+        
+        this.requestedThrottlingPolicy = requestedThrottlingPolicy;
+        return this;
+        }
+
+    /**
+        * Get requestedThrottlingPolicy
+    * @return requestedThrottlingPolicy
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Unlimited", value = "")
+    
+    public String getRequestedThrottlingPolicy() {
+        return requestedThrottlingPolicy;
+    }
+
+
+    public void setRequestedThrottlingPolicy(String requestedThrottlingPolicy) {
+        this.requestedThrottlingPolicy = requestedThrottlingPolicy;
+    }
+
+
+        public SubscriptionDTO status(StatusEnum status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * Get status
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "UNBLOCKED", value = "")
+    
+    public StatusEnum getStatus() {
+        return status;
+    }
+
+
+    public void setStatus(StatusEnum status) {
+        this.status = status;
+    }
+
+
+        public SubscriptionDTO redirectionParams(String redirectionParams) {
+        
+        this.redirectionParams = redirectionParams;
+        return this;
+        }
+
+    /**
+        * A url and other parameters the subscriber can be redirected.
+    * @return redirectionParams
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "A url and other parameters the subscriber can be redirected.")
+    
+    public String getRedirectionParams() {
+        return redirectionParams;
+    }
+
+
+    public void setRedirectionParams(String redirectionParams) {
+        this.redirectionParams = redirectionParams;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            SubscriptionDTO subscription = (SubscriptionDTO) o;
+            return Objects.equals(this.subscriptionId, subscription.subscriptionId) &&
+            Objects.equals(this.applicationId, subscription.applicationId) &&
+            Objects.equals(this.apiId, subscription.apiId) &&
+            Objects.equals(this.apiInfo, subscription.apiInfo) &&
+            Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
+            Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
+            Objects.equals(this.requestedThrottlingPolicy, subscription.requestedThrottlingPolicy) &&
+            Objects.equals(this.status, subscription.status) &&
+            Objects.equals(this.redirectionParams, subscription.redirectionParams);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(subscriptionId, applicationId, apiId, apiInfo, applicationInfo, throttlingPolicy, requestedThrottlingPolicy, status, redirectionParams);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class SubscriptionDTO {\n");
     sb.append("    subscriptionId: ").append(toIndentedString(subscriptionId)).append("\n");
     sb.append("    applicationId: ").append(toIndentedString(applicationId)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
@@ -349,20 +367,20 @@ public class SubscriptionDTO {
     sb.append("    requestedThrottlingPolicy: ").append(toIndentedString(requestedThrottlingPolicy)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    redirectionParams: ").append(toIndentedString(redirectionParams)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

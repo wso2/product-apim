@@ -27,201 +27,193 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * RatingListDTO
- */
+* RatingListDTO
+*/
 
 public class RatingListDTO {
-  public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
-  @SerializedName(SERIALIZED_NAME_AVG_RATING)
-  private String avgRating;
+        public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
+        @SerializedName(SERIALIZED_NAME_AVG_RATING)
+            private String avgRating;
 
-  public static final String SERIALIZED_NAME_USER_RATING = "userRating";
-  @SerializedName(SERIALIZED_NAME_USER_RATING)
-  private Integer userRating;
+        public static final String SERIALIZED_NAME_USER_RATING = "userRating";
+        @SerializedName(SERIALIZED_NAME_USER_RATING)
+            private Integer userRating;
 
-  public static final String SERIALIZED_NAME_COUNT = "count";
-  @SerializedName(SERIALIZED_NAME_COUNT)
-  private Integer count;
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<RatingDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<RatingDTO> list = null;
 
-  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-  @SerializedName(SERIALIZED_NAME_PAGINATION)
-  private PaginationDTO pagination;
+        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+        @SerializedName(SERIALIZED_NAME_PAGINATION)
+            private PaginationDTO pagination;
 
 
-  public RatingListDTO avgRating(String avgRating) {
+        public RatingListDTO avgRating(String avgRating) {
+        
+        this.avgRating = avgRating;
+        return this;
+        }
+
+    /**
+        * Average Rating of the API 
+    * @return avgRating
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "4", value = "Average Rating of the API ")
     
-    this.avgRating = avgRating;
-    return this;
-  }
-
-   /**
-   * Average Rating of the API 
-   * @return avgRating
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "4", value = "Average Rating of the API ")
-
-  public String getAvgRating() {
-    return avgRating;
-  }
-
-
-  public void setAvgRating(String avgRating) {
-    this.avgRating = avgRating;
-  }
-
-
-  public RatingListDTO userRating(Integer userRating) {
-    
-    this.userRating = userRating;
-    return this;
-  }
-
-   /**
-   * Rating given by the user 
-   * @return userRating
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "4", value = "Rating given by the user ")
-
-  public Integer getUserRating() {
-    return userRating;
-  }
-
-
-  public void setUserRating(Integer userRating) {
-    this.userRating = userRating;
-  }
-
-
-  public RatingListDTO count(Integer count) {
-    
-    this.count = count;
-    return this;
-  }
-
-   /**
-   * Number of Subscriber Ratings returned. 
-   * @return count
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1", value = "Number of Subscriber Ratings returned. ")
-
-  public Integer getCount() {
-    return count;
-  }
-
-
-  public void setCount(Integer count) {
-    this.count = count;
-  }
-
-
-  public RatingListDTO list(List<RatingDTO> list) {
-    
-    this.list = list;
-    return this;
-  }
-
-  public RatingListDTO addListItem(RatingDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<>();
+    public String getAvgRating() {
+        return avgRating;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<RatingDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<RatingDTO> list) {
-    this.list = list;
-  }
+    public void setAvgRating(String avgRating) {
+        this.avgRating = avgRating;
+    }
 
 
-  public RatingListDTO pagination(PaginationDTO pagination) {
+        public RatingListDTO userRating(Integer userRating) {
+        
+        this.userRating = userRating;
+        return this;
+        }
+
+    /**
+        * Rating given by the user 
+    * @return userRating
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "4", value = "Rating given by the user ")
     
-    this.pagination = pagination;
-    return this;
-  }
-
-   /**
-   * Get pagination
-   * @return pagination
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public PaginationDTO getPagination() {
-    return pagination;
-  }
-
-
-  public void setPagination(PaginationDTO pagination) {
-    this.pagination = pagination;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public Integer getUserRating() {
+        return userRating;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setUserRating(Integer userRating) {
+        this.userRating = userRating;
     }
-    RatingListDTO ratingList = (RatingListDTO) o;
-    return Objects.equals(this.avgRating, ratingList.avgRating) &&
-        Objects.equals(this.userRating, ratingList.userRating) &&
-        Objects.equals(this.count, ratingList.count) &&
-        Objects.equals(this.list, ratingList.list) &&
-        Objects.equals(this.pagination, ratingList.pagination);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(avgRating, userRating, count, list, pagination);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RatingListDTO {\n");
+        public RatingListDTO count(Integer count) {
+        
+        this.count = count;
+        return this;
+        }
+
+    /**
+        * Number of Subscriber Ratings returned. 
+    * @return count
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "Number of Subscriber Ratings returned. ")
+    
+    public Integer getCount() {
+        return count;
+    }
+
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
+
+        public RatingListDTO list(List<RatingDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<RatingDTO> getList() {
+        return list;
+    }
+
+
+    public void setList(List<RatingDTO> list) {
+        this.list = list;
+    }
+
+
+        public RatingListDTO pagination(PaginationDTO pagination) {
+        
+        this.pagination = pagination;
+        return this;
+        }
+
+    /**
+        * Get pagination
+    * @return pagination
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public PaginationDTO getPagination() {
+        return pagination;
+    }
+
+
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            RatingListDTO ratingList = (RatingListDTO) o;
+            return Objects.equals(this.avgRating, ratingList.avgRating) &&
+            Objects.equals(this.userRating, ratingList.userRating) &&
+            Objects.equals(this.count, ratingList.count) &&
+            Objects.equals(this.list, ratingList.list) &&
+            Objects.equals(this.pagination, ratingList.pagination);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(avgRating, userRating, count, list, pagination);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class RatingListDTO {\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
     sb.append("    userRating: ").append(toIndentedString(userRating)).append("\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

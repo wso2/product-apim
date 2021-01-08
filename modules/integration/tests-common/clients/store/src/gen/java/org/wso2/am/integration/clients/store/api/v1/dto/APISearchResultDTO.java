@@ -26,259 +26,259 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APISearchResultAllOfDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APISearchResultDTO
- */
+* APISearchResultDTO
+*/
 
 public class APISearchResultDTO extends SearchResultDTO {
-  public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-  @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-  private String description;
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
 
-  public static final String SERIALIZED_NAME_CONTEXT = "context";
-  @SerializedName(SERIALIZED_NAME_CONTEXT)
-  private String context;
+        public static final String SERIALIZED_NAME_CONTEXT = "context";
+        @SerializedName(SERIALIZED_NAME_CONTEXT)
+            private String context;
 
-  public static final String SERIALIZED_NAME_VERSION = "version";
-  @SerializedName(SERIALIZED_NAME_VERSION)
-  private String version;
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
-  public static final String SERIALIZED_NAME_PROVIDER = "provider";
-  @SerializedName(SERIALIZED_NAME_PROVIDER)
-  private String provider;
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
 
-  public static final String SERIALIZED_NAME_STATUS = "status";
-  @SerializedName(SERIALIZED_NAME_STATUS)
-  private String status;
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private String status;
 
-  public static final String SERIALIZED_NAME_THUMBNAIL_URI = "thumbnailUri";
-  @SerializedName(SERIALIZED_NAME_THUMBNAIL_URI)
-  private String thumbnailUri;
+        public static final String SERIALIZED_NAME_THUMBNAIL_URI = "thumbnailUri";
+        @SerializedName(SERIALIZED_NAME_THUMBNAIL_URI)
+            private String thumbnailUri;
 
-  public static final String SERIALIZED_NAME_BUSINESS_INFORMATION = "businessInformation";
-  @SerializedName(SERIALIZED_NAME_BUSINESS_INFORMATION)
-  private APIBusinessInformationDTO businessInformation;
+        public static final String SERIALIZED_NAME_BUSINESS_INFORMATION = "businessInformation";
+        @SerializedName(SERIALIZED_NAME_BUSINESS_INFORMATION)
+            private APIBusinessInformationDTO businessInformation;
 
-  public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
-  @SerializedName(SERIALIZED_NAME_AVG_RATING)
-  private String avgRating;
+        public static final String SERIALIZED_NAME_AVG_RATING = "avgRating";
+        @SerializedName(SERIALIZED_NAME_AVG_RATING)
+            private String avgRating;
 
 
-  public APISearchResultDTO description(String description) {
+        public APISearchResultDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * A brief description about the API
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "A calculator API that supports basic operations", value = "A brief description about the API")
     
-    this.description = description;
-    return this;
-  }
-
-   /**
-   * A brief description about the API
-   * @return description
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "A calculator API that supports basic operations", value = "A brief description about the API")
-
-  public String getDescription() {
-    return description;
-  }
-
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  public APISearchResultDTO context(String context) {
-    
-    this.context = context;
-    return this;
-  }
-
-   /**
-   * A string that represents the context of the user&#39;s request
-   * @return context
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "CalculatorAPI", value = "A string that represents the context of the user's request")
-
-  public String getContext() {
-    return context;
-  }
-
-
-  public void setContext(String context) {
-    this.context = context;
-  }
-
-
-  public APISearchResultDTO version(String version) {
-    
-    this.version = version;
-    return this;
-  }
-
-   /**
-   * The version of the API
-   * @return version
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1.0.0", value = "The version of the API")
-
-  public String getVersion() {
-    return version;
-  }
-
-
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-
-  public APISearchResultDTO provider(String provider) {
-    
-    this.provider = provider;
-    return this;
-  }
-
-   /**
-   * If the provider value is notgiven, the user invoking the API will be used as the provider. 
-   * @return provider
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "If the provider value is notgiven, the user invoking the API will be used as the provider. ")
-
-  public String getProvider() {
-    return provider;
-  }
-
-
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
-
-
-  public APISearchResultDTO status(String status) {
-    
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * This describes in which status of the lifecycle the API is
-   * @return status
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "CREATED", value = "This describes in which status of the lifecycle the API is")
-
-  public String getStatus() {
-    return status;
-  }
-
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-
-  public APISearchResultDTO thumbnailUri(String thumbnailUri) {
-    
-    this.thumbnailUri = thumbnailUri;
-    return this;
-  }
-
-   /**
-   * Get thumbnailUri
-   * @return thumbnailUri
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "/apis/01234567-0123-0123-0123-012345678901/thumbnail", value = "")
-
-  public String getThumbnailUri() {
-    return thumbnailUri;
-  }
-
-
-  public void setThumbnailUri(String thumbnailUri) {
-    this.thumbnailUri = thumbnailUri;
-  }
-
-
-  public APISearchResultDTO businessInformation(APIBusinessInformationDTO businessInformation) {
-    
-    this.businessInformation = businessInformation;
-    return this;
-  }
-
-   /**
-   * Get businessInformation
-   * @return businessInformation
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public APIBusinessInformationDTO getBusinessInformation() {
-    return businessInformation;
-  }
-
-
-  public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
-    this.businessInformation = businessInformation;
-  }
-
-
-  public APISearchResultDTO avgRating(String avgRating) {
-    
-    this.avgRating = avgRating;
-    return this;
-  }
-
-   /**
-   * Average rating of the API
-   * @return avgRating
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "4.5", value = "Average rating of the API")
-
-  public String getAvgRating() {
-    return avgRating;
-  }
-
-
-  public void setAvgRating(String avgRating) {
-    this.avgRating = avgRating;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getDescription() {
+        return description;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setDescription(String description) {
+        this.description = description;
     }
-    APISearchResultDTO apISearchResult = (APISearchResultDTO) o;
-    return Objects.equals(this.description, apISearchResult.description) &&
-        Objects.equals(this.context, apISearchResult.context) &&
-        Objects.equals(this.version, apISearchResult.version) &&
-        Objects.equals(this.provider, apISearchResult.provider) &&
-        Objects.equals(this.status, apISearchResult.status) &&
-        Objects.equals(this.thumbnailUri, apISearchResult.thumbnailUri) &&
-        Objects.equals(this.businessInformation, apISearchResult.businessInformation) &&
-        Objects.equals(this.avgRating, apISearchResult.avgRating) &&
-        super.equals(o);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(description, context, version, provider, status, thumbnailUri, businessInformation, avgRating, super.hashCode());
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APISearchResultDTO {\n");
+        public APISearchResultDTO context(String context) {
+        
+        this.context = context;
+        return this;
+        }
+
+    /**
+        * A string that represents the context of the user&#39;s request
+    * @return context
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CalculatorAPI", value = "A string that represents the context of the user's request")
+    
+    public String getContext() {
+        return context;
+    }
+
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+
+        public APISearchResultDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * The version of the API
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "The version of the API")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
+        public APISearchResultDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
+
+    /**
+        * If the provider value is notgiven, the user invoking the API will be used as the provider. 
+    * @return provider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "If the provider value is notgiven, the user invoking the API will be used as the provider. ")
+    
+    public String getProvider() {
+        return provider;
+    }
+
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
+        public APISearchResultDTO status(String status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * This describes in which status of the lifecycle the API is
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CREATED", value = "This describes in which status of the lifecycle the API is")
+    
+    public String getStatus() {
+        return status;
+    }
+
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
+        public APISearchResultDTO thumbnailUri(String thumbnailUri) {
+        
+        this.thumbnailUri = thumbnailUri;
+        return this;
+        }
+
+    /**
+        * Get thumbnailUri
+    * @return thumbnailUri
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "/apis/01234567-0123-0123-0123-012345678901/thumbnail", value = "")
+    
+    public String getThumbnailUri() {
+        return thumbnailUri;
+    }
+
+
+    public void setThumbnailUri(String thumbnailUri) {
+        this.thumbnailUri = thumbnailUri;
+    }
+
+
+        public APISearchResultDTO businessInformation(APIBusinessInformationDTO businessInformation) {
+        
+        this.businessInformation = businessInformation;
+        return this;
+        }
+
+    /**
+        * Get businessInformation
+    * @return businessInformation
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIBusinessInformationDTO getBusinessInformation() {
+        return businessInformation;
+    }
+
+
+    public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
+        this.businessInformation = businessInformation;
+    }
+
+
+        public APISearchResultDTO avgRating(String avgRating) {
+        
+        this.avgRating = avgRating;
+        return this;
+        }
+
+    /**
+        * Average rating of the API
+    * @return avgRating
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "4.5", value = "Average rating of the API")
+    
+    public String getAvgRating() {
+        return avgRating;
+    }
+
+
+    public void setAvgRating(String avgRating) {
+        this.avgRating = avgRating;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APISearchResultDTO apISearchResult = (APISearchResultDTO) o;
+            return Objects.equals(this.description, apISearchResult.description) &&
+            Objects.equals(this.context, apISearchResult.context) &&
+            Objects.equals(this.version, apISearchResult.version) &&
+            Objects.equals(this.provider, apISearchResult.provider) &&
+            Objects.equals(this.status, apISearchResult.status) &&
+            Objects.equals(this.thumbnailUri, apISearchResult.thumbnailUri) &&
+            Objects.equals(this.businessInformation, apISearchResult.businessInformation) &&
+            Objects.equals(this.avgRating, apISearchResult.avgRating) &&
+            super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, context, version, provider, status, thumbnailUri, businessInformation, avgRating, super.hashCode());
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APISearchResultDTO {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
@@ -288,20 +288,20 @@ public class APISearchResultDTO extends SearchResultDTO {
     sb.append("    thumbnailUri: ").append(toIndentedString(thumbnailUri)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

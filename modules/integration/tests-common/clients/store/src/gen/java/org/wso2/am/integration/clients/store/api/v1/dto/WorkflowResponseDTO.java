@@ -23,156 +23,156 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * WorkflowResponseDTO
- */
+* WorkflowResponseDTO
+*/
 
 public class WorkflowResponseDTO {
-  /**
-   * This attribute declares whether this workflow task is approved or rejected. 
-   */
-  @JsonAdapter(WorkflowStatusEnum.Adapter.class)
-  public enum WorkflowStatusEnum {
-    CREATED("CREATED"),
-    
-    APPROVED("APPROVED"),
-    
-    REJECTED("REJECTED"),
-    
-    REGISTERED("REGISTERED");
+            /**
+* This attribute declares whether this workflow task is approved or rejected. 
+*/
+    @JsonAdapter(WorkflowStatusEnum.Adapter.class)
+public enum WorkflowStatusEnum {
+        CREATED("CREATED"),
+        
+        APPROVED("APPROVED"),
+        
+        REJECTED("REJECTED"),
+        
+        REGISTERED("REGISTERED");
 
-    private String value;
+private String value;
 
-    WorkflowStatusEnum(String value) {
-      this.value = value;
+WorkflowStatusEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static WorkflowStatusEnum fromValue(String value) {
+    for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
     }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
 
-    public String getValue() {
-      return value;
+    public static class Adapter extends TypeAdapter<WorkflowStatusEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final WorkflowStatusEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
     }
 
     @Override
-    public String toString() {
-      return String.valueOf(value);
+    public WorkflowStatusEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return WorkflowStatusEnum.fromValue(value);
     }
+    }
+}
 
-    public static WorkflowStatusEnum fromValue(String value) {
-      for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+        public static final String SERIALIZED_NAME_WORKFLOW_STATUS = "workflowStatus";
+        @SerializedName(SERIALIZED_NAME_WORKFLOW_STATUS)
+            private WorkflowStatusEnum workflowStatus;
+
+        public static final String SERIALIZED_NAME_JSON_PAYLOAD = "jsonPayload";
+        @SerializedName(SERIALIZED_NAME_JSON_PAYLOAD)
+            private String jsonPayload;
+
+
+        public WorkflowResponseDTO workflowStatus(WorkflowStatusEnum workflowStatus) {
+        
+        this.workflowStatus = workflowStatus;
+        return this;
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
 
-    public static class Adapter extends TypeAdapter<WorkflowStatusEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final WorkflowStatusEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public WorkflowStatusEnum read(final JsonReader jsonReader) throws IOException {
-        String value =  jsonReader.nextString();
-        return WorkflowStatusEnum.fromValue(value);
-      }
-    }
-  }
-
-  public static final String SERIALIZED_NAME_WORKFLOW_STATUS = "workflowStatus";
-  @SerializedName(SERIALIZED_NAME_WORKFLOW_STATUS)
-  private WorkflowStatusEnum workflowStatus;
-
-  public static final String SERIALIZED_NAME_JSON_PAYLOAD = "jsonPayload";
-  @SerializedName(SERIALIZED_NAME_JSON_PAYLOAD)
-  private String jsonPayload;
-
-
-  public WorkflowResponseDTO workflowStatus(WorkflowStatusEnum workflowStatus) {
+    /**
+        * This attribute declares whether this workflow task is approved or rejected. 
+    * @return workflowStatus
+    **/
+      @ApiModelProperty(example = "APPROVED", required = true, value = "This attribute declares whether this workflow task is approved or rejected. ")
     
-    this.workflowStatus = workflowStatus;
-    return this;
-  }
-
-   /**
-   * This attribute declares whether this workflow task is approved or rejected. 
-   * @return workflowStatus
-  **/
-  @ApiModelProperty(example = "APPROVED", required = true, value = "This attribute declares whether this workflow task is approved or rejected. ")
-
-  public WorkflowStatusEnum getWorkflowStatus() {
-    return workflowStatus;
-  }
+    public WorkflowStatusEnum getWorkflowStatus() {
+        return workflowStatus;
+    }
 
 
-  public void setWorkflowStatus(WorkflowStatusEnum workflowStatus) {
-    this.workflowStatus = workflowStatus;
-  }
+    public void setWorkflowStatus(WorkflowStatusEnum workflowStatus) {
+        this.workflowStatus = workflowStatus;
+    }
 
 
-  public WorkflowResponseDTO jsonPayload(String jsonPayload) {
+        public WorkflowResponseDTO jsonPayload(String jsonPayload) {
+        
+        this.jsonPayload = jsonPayload;
+        return this;
+        }
+
+    /**
+        * Attributes that returned after the workflow execution 
+    * @return jsonPayload
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Attributes that returned after the workflow execution ")
     
-    this.jsonPayload = jsonPayload;
-    return this;
-  }
-
-   /**
-   * Attributes that returned after the workflow execution 
-   * @return jsonPayload
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Attributes that returned after the workflow execution ")
-
-  public String getJsonPayload() {
-    return jsonPayload;
-  }
-
-
-  public void setJsonPayload(String jsonPayload) {
-    this.jsonPayload = jsonPayload;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getJsonPayload() {
+        return jsonPayload;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setJsonPayload(String jsonPayload) {
+        this.jsonPayload = jsonPayload;
     }
-    WorkflowResponseDTO workflowResponse = (WorkflowResponseDTO) o;
-    return Objects.equals(this.workflowStatus, workflowResponse.workflowStatus) &&
-        Objects.equals(this.jsonPayload, workflowResponse.jsonPayload);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(workflowStatus, jsonPayload);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class WorkflowResponseDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            WorkflowResponseDTO workflowResponse = (WorkflowResponseDTO) o;
+            return Objects.equals(this.workflowStatus, workflowResponse.workflowStatus) &&
+            Objects.equals(this.jsonPayload, workflowResponse.jsonPayload);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(workflowStatus, jsonPayload);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class WorkflowResponseDTO {\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    jsonPayload: ").append(toIndentedString(jsonPayload)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 
