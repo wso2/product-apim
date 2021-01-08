@@ -65,7 +65,7 @@ public class GraphQlPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -117,34 +117,37 @@ public class GraphQlPoliciesApi {
      * Get the Complexity Related Details of an API
      * This operation can be used to retrieve complexity related details belonging to an API by providing the API id. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return GraphQLQueryComplexityInfoDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public void apisApiIdGraphqlPoliciesComplexityGet(String apiId) throws ApiException {
-        apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+    public GraphQLQueryComplexityInfoDTO apisApiIdGraphqlPoliciesComplexityGet(String apiId) throws ApiException {
+        ApiResponse<GraphQLQueryComplexityInfoDTO> localVarResp = apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+        return localVarResp.getData();
     }
 
     /**
      * Get the Complexity Related Details of an API
      * This operation can be used to retrieve complexity related details belonging to an API by providing the API id. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;GraphQLQueryComplexityInfoDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(String apiId) throws ApiException {
+    public ApiResponse<GraphQLQueryComplexityInfoDTO> apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(String apiId) throws ApiException {
         okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityGetValidateBeforeCall(apiId, null);
-        return localVarApiClient.execute(localVarCall);
+        Type localVarReturnType = new TypeToken<GraphQLQueryComplexityInfoDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
@@ -157,14 +160,15 @@ public class GraphQlPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Requested complexity details returned.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityGetAsync(String apiId, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityGetAsync(String apiId, final ApiCallback<GraphQLQueryComplexityInfoDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityGetValidateBeforeCall(apiId, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        Type localVarReturnType = new TypeToken<GraphQLQueryComplexityInfoDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**

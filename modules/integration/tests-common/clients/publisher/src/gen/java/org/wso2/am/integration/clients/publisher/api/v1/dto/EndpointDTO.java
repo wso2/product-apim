@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EndpointEndpointConfigDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EndpointEndpointSecurityDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EndpointDTO
 */
@@ -74,9 +74,9 @@ public class EndpointDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public EndpointDTO name(String name) {
@@ -97,9 +97,9 @@ public class EndpointDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public EndpointDTO endpointConfig(EndpointEndpointConfigDTO endpointConfig) {
@@ -120,9 +120,9 @@ public class EndpointDTO {
     }
 
 
-        public void setEndpointConfig(EndpointEndpointConfigDTO endpointConfig) {
-            this.endpointConfig = endpointConfig;
-        }
+    public void setEndpointConfig(EndpointEndpointConfigDTO endpointConfig) {
+        this.endpointConfig = endpointConfig;
+    }
 
 
         public EndpointDTO endpointSecurity(EndpointEndpointSecurityDTO endpointSecurity) {
@@ -143,9 +143,9 @@ public class EndpointDTO {
     }
 
 
-        public void setEndpointSecurity(EndpointEndpointSecurityDTO endpointSecurity) {
-            this.endpointSecurity = endpointSecurity;
-        }
+    public void setEndpointSecurity(EndpointEndpointSecurityDTO endpointSecurity) {
+        this.endpointSecurity = endpointSecurity;
+    }
 
 
         public EndpointDTO maxTps(Long maxTps) {
@@ -166,9 +166,9 @@ public class EndpointDTO {
     }
 
 
-        public void setMaxTps(Long maxTps) {
-            this.maxTps = maxTps;
-        }
+    public void setMaxTps(Long maxTps) {
+        this.maxTps = maxTps;
+    }
 
 
         public EndpointDTO type(String type) {
@@ -189,9 +189,9 @@ public class EndpointDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
     @Override

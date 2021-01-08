@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EndpointConfigAttributesDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EndpointConfigDTO
 */
@@ -63,9 +63,9 @@ public class EndpointConfigDTO {
     }
 
 
-        public void setUrl(String url) {
-            this.url = url;
-        }
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
 
         public EndpointConfigDTO timeout(String timeout) {
@@ -86,9 +86,9 @@ public class EndpointConfigDTO {
     }
 
 
-        public void setTimeout(String timeout) {
-            this.timeout = timeout;
-        }
+    public void setTimeout(String timeout) {
+        this.timeout = timeout;
+    }
 
 
         public EndpointConfigDTO attributes(List<EndpointConfigAttributesDTO> attributes) {
@@ -109,9 +109,9 @@ public class EndpointConfigDTO {
     }
 
 
-        public void setAttributes(List<EndpointConfigAttributesDTO> attributes) {
-            this.attributes = attributes;
-        }
+    public void setAttributes(List<EndpointConfigAttributesDTO> attributes) {
+        this.attributes = attributes;
+    }
 
 
     @Override

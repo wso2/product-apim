@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * KeyManagerInfoDTO
 */
@@ -78,9 +78,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public KeyManagerInfoDTO name(String name) {
@@ -100,9 +100,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public KeyManagerInfoDTO displayName(String displayName) {
@@ -123,9 +123,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public KeyManagerInfoDTO type(String type) {
@@ -145,9 +145,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public KeyManagerInfoDTO description(String description) {
@@ -168,9 +168,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public KeyManagerInfoDTO enabled(Boolean enabled) {
@@ -186,14 +186,14 @@ public class KeyManagerInfoDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isEnabledgetEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
 
-        public void setEnabled(Boolean enabled) {
-            this.enabled = enabled;
-        }
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
 
         public KeyManagerInfoDTO additionalProperties(List<Object> additionalProperties) {
@@ -214,9 +214,9 @@ public class KeyManagerInfoDTO {
     }
 
 
-        public void setAdditionalProperties(List<Object> additionalProperties) {
-            this.additionalProperties = additionalProperties;
-        }
+    public void setAdditionalProperties(List<Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
 
 
     @Override

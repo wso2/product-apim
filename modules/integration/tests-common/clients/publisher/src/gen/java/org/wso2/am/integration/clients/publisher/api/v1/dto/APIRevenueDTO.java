@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIRevenueDTO
 */
@@ -55,9 +55,9 @@ public class APIRevenueDTO {
     }
 
 
-        public void setProperties(Map<String, String> properties) {
-            this.properties = properties;
-        }
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
 
 
     @Override

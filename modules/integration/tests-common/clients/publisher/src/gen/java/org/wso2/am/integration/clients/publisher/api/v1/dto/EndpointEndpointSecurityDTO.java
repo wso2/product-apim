@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EndpointEndpointSecurityDTO
 */
@@ -59,14 +59,14 @@ public class EndpointEndpointSecurityDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isEnabledgetEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
 
-        public void setEnabled(Boolean enabled) {
-            this.enabled = enabled;
-        }
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
 
         public EndpointEndpointSecurityDTO type(String type) {
@@ -87,9 +87,9 @@ public class EndpointEndpointSecurityDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public EndpointEndpointSecurityDTO username(String username) {
@@ -110,9 +110,9 @@ public class EndpointEndpointSecurityDTO {
     }
 
 
-        public void setUsername(String username) {
-            this.username = username;
-        }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
 
         public EndpointEndpointSecurityDTO password(String password) {
@@ -133,9 +133,9 @@ public class EndpointEndpointSecurityDTO {
     }
 
 
-        public void setPassword(String password) {
-            this.password = password;
-        }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
 
     @Override

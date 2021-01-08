@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DeploymentStatusDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DeploymentStatusListDTO
 */
@@ -59,9 +59,9 @@ public class DeploymentStatusListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public DeploymentStatusListDTO list(List<DeploymentStatusDTO> list) {
@@ -82,9 +82,9 @@ public class DeploymentStatusListDTO {
     }
 
 
-        public void setList(List<DeploymentStatusDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<DeploymentStatusDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

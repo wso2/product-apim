@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ApplicationDTO
 */
@@ -72,9 +72,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setApplicationId(String applicationId) {
-            this.applicationId = applicationId;
-        }
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
+    }
 
 
         public ApplicationDTO name(String name) {
@@ -94,9 +94,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ApplicationDTO subscriber(String subscriber) {
@@ -117,9 +117,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setSubscriber(String subscriber) {
-            this.subscriber = subscriber;
-        }
+    public void setSubscriber(String subscriber) {
+        this.subscriber = subscriber;
+    }
 
 
         public ApplicationDTO throttlingTier(String throttlingTier) {
@@ -139,9 +139,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setThrottlingTier(String throttlingTier) {
-            this.throttlingTier = throttlingTier;
-        }
+    public void setThrottlingTier(String throttlingTier) {
+        this.throttlingTier = throttlingTier;
+    }
 
 
         public ApplicationDTO description(String description) {
@@ -162,9 +162,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public ApplicationDTO groupId(String groupId) {
@@ -185,9 +185,9 @@ public class ApplicationDTO {
     }
 
 
-        public void setGroupId(String groupId) {
-            this.groupId = groupId;
-        }
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
 
     @Override

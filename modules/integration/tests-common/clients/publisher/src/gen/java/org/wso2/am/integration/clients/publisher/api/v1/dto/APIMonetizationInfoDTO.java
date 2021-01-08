@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIMonetizationInfoDTO
 */
@@ -53,14 +53,14 @@ public class APIMonetizationInfoDTO {
     **/
       @ApiModelProperty(example = "true", required = true, value = "Flag to indicate the monetization status")
     
-    public Boolean isEnabledgetEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
 
-        public void setEnabled(Boolean enabled) {
-            this.enabled = enabled;
-        }
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
 
         public APIMonetizationInfoDTO properties(Map<String, String> properties) {
@@ -81,9 +81,9 @@ public class APIMonetizationInfoDTO {
     }
 
 
-        public void setProperties(Map<String, String> properties) {
-            this.properties = properties;
-        }
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
 
 
     @Override

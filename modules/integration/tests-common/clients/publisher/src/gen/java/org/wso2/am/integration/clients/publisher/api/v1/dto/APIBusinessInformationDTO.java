@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIBusinessInformationDTO
 */
@@ -64,9 +64,9 @@ public class APIBusinessInformationDTO {
     }
 
 
-        public void setBusinessOwner(String businessOwner) {
-            this.businessOwner = businessOwner;
-        }
+    public void setBusinessOwner(String businessOwner) {
+        this.businessOwner = businessOwner;
+    }
 
 
         public APIBusinessInformationDTO businessOwnerEmail(String businessOwnerEmail) {
@@ -87,9 +87,9 @@ public class APIBusinessInformationDTO {
     }
 
 
-        public void setBusinessOwnerEmail(String businessOwnerEmail) {
-            this.businessOwnerEmail = businessOwnerEmail;
-        }
+    public void setBusinessOwnerEmail(String businessOwnerEmail) {
+        this.businessOwnerEmail = businessOwnerEmail;
+    }
 
 
         public APIBusinessInformationDTO technicalOwner(String technicalOwner) {
@@ -110,9 +110,9 @@ public class APIBusinessInformationDTO {
     }
 
 
-        public void setTechnicalOwner(String technicalOwner) {
-            this.technicalOwner = technicalOwner;
-        }
+    public void setTechnicalOwner(String technicalOwner) {
+        this.technicalOwner = technicalOwner;
+    }
 
 
         public APIBusinessInformationDTO technicalOwnerEmail(String technicalOwnerEmail) {
@@ -133,9 +133,9 @@ public class APIBusinessInformationDTO {
     }
 
 
-        public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
-            this.technicalOwnerEmail = technicalOwnerEmail;
-        }
+    public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
+        this.technicalOwnerEmail = technicalOwnerEmail;
+    }
 
 
     @Override

@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * GraphQLSchemaDTO
 */
@@ -55,9 +55,9 @@ public class GraphQLSchemaDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public GraphQLSchemaDTO schemaDefinition(String schemaDefinition) {
@@ -78,9 +78,9 @@ public class GraphQLSchemaDTO {
     }
 
 
-        public void setSchemaDefinition(String schemaDefinition) {
-            this.schemaDefinition = schemaDefinition;
-        }
+    public void setSchemaDefinition(String schemaDefinition) {
+        this.schemaDefinition = schemaDefinition;
+    }
 
 
     @Override

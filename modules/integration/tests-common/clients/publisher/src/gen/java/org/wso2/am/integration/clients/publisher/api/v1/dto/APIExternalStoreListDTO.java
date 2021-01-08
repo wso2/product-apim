@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIExternalStoreDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIExternalStoreListDTO
 */
@@ -59,9 +59,9 @@ public class APIExternalStoreListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public APIExternalStoreListDTO list(List<APIExternalStoreDTO> list) {
@@ -82,9 +82,9 @@ public class APIExternalStoreListDTO {
     }
 
 
-        public void setList(List<APIExternalStoreDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<APIExternalStoreDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

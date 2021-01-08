@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * Representation of the details of a certificate
 */
@@ -57,9 +57,9 @@ public class CertMetadataDTO {
     }
 
 
-        public void setAlias(String alias) {
-            this.alias = alias;
-        }
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
 
         public CertMetadataDTO endpoint(String endpoint) {
@@ -80,9 +80,9 @@ public class CertMetadataDTO {
     }
 
 
-        public void setEndpoint(String endpoint) {
-            this.endpoint = endpoint;
-        }
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
 
 
     @Override

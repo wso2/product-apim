@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AlertConfigDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AlertDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertsInfoResponseDTO
 */
@@ -64,9 +64,9 @@ public class AlertsInfoResponseDTO {
     }
 
 
-        public void setAlerts(List<AlertDTO> alerts) {
-            this.alerts = alerts;
-        }
+    public void setAlerts(List<AlertDTO> alerts) {
+        this.alerts = alerts;
+    }
 
 
         public AlertsInfoResponseDTO emailList(List<String> emailList) {
@@ -87,9 +87,9 @@ public class AlertsInfoResponseDTO {
     }
 
 
-        public void setEmailList(List<String> emailList) {
-            this.emailList = emailList;
-        }
+    public void setEmailList(List<String> emailList) {
+        this.emailList = emailList;
+    }
 
 
         public AlertsInfoResponseDTO failedConfigurations(List<AlertConfigDTO> failedConfigurations) {
@@ -110,9 +110,9 @@ public class AlertsInfoResponseDTO {
     }
 
 
-        public void setFailedConfigurations(List<AlertConfigDTO> failedConfigurations) {
-            this.failedConfigurations = failedConfigurations;
-        }
+    public void setFailedConfigurations(List<AlertConfigDTO> failedConfigurations) {
+        this.failedConfigurations = failedConfigurations;
+    }
 
 
     @Override

@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ResourcePathDTO
 */
@@ -59,9 +59,9 @@ public class ResourcePathDTO {
     }
 
 
-        public void setId(Integer id) {
-            this.id = id;
-        }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
 
         public ResourcePathDTO resourcePath(String resourcePath) {
@@ -82,9 +82,9 @@ public class ResourcePathDTO {
     }
 
 
-        public void setResourcePath(String resourcePath) {
-            this.resourcePath = resourcePath;
-        }
+    public void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath;
+    }
 
 
         public ResourcePathDTO httpVerb(String httpVerb) {
@@ -105,9 +105,9 @@ public class ResourcePathDTO {
     }
 
 
-        public void setHttpVerb(String httpVerb) {
-            this.httpVerb = httpVerb;
-        }
+    public void setHttpVerb(String httpVerb) {
+        this.httpVerb = httpVerb;
+    }
 
 
     @Override

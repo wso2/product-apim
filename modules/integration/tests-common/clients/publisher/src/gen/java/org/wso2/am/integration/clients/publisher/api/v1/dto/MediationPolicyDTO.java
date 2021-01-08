@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * MediationPolicyDTO
 */
@@ -64,9 +64,9 @@ public class MediationPolicyDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public MediationPolicyDTO name(String name) {
@@ -86,9 +86,9 @@ public class MediationPolicyDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public MediationPolicyDTO type(String type) {
@@ -109,9 +109,9 @@ public class MediationPolicyDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public MediationPolicyDTO shared(Boolean shared) {
@@ -127,14 +127,14 @@ public class MediationPolicyDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isSharedgetShared() {
+    public Boolean isShared() {
         return shared;
     }
 
 
-        public void setShared(Boolean shared) {
-            this.shared = shared;
-        }
+    public void setShared(Boolean shared) {
+        this.shared = shared;
+    }
 
 
     @Override

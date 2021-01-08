@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AuditReportDTO
 */
@@ -64,9 +64,9 @@ public class AuditReportDTO {
     }
 
 
-        public void setReport(String report) {
-            this.report = report;
-        }
+    public void setReport(String report) {
+        this.report = report;
+    }
 
 
         public AuditReportDTO grade(String grade) {
@@ -87,9 +87,9 @@ public class AuditReportDTO {
     }
 
 
-        public void setGrade(String grade) {
-            this.grade = grade;
-        }
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
 
 
         public AuditReportDTO numErrors(Integer numErrors) {
@@ -110,9 +110,9 @@ public class AuditReportDTO {
     }
 
 
-        public void setNumErrors(Integer numErrors) {
-            this.numErrors = numErrors;
-        }
+    public void setNumErrors(Integer numErrors) {
+        this.numErrors = numErrors;
+    }
 
 
         public AuditReportDTO externalApiId(String externalApiId) {
@@ -133,9 +133,9 @@ public class AuditReportDTO {
     }
 
 
-        public void setExternalApiId(String externalApiId) {
-            this.externalApiId = externalApiId;
-        }
+    public void setExternalApiId(String externalApiId) {
+        this.externalApiId = externalApiId;
+    }
 
 
     @Override

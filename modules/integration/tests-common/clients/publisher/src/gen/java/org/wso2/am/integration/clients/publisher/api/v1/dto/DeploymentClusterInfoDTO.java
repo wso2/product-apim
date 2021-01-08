@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DeploymentClusterInfoDTO
 */
@@ -46,7 +46,7 @@ public class DeploymentClusterInfoDTO {
 
         public static final String SERIALIZED_NAME_PROPERTIES = "properties";
         @SerializedName(SERIALIZED_NAME_PROPERTIES)
-            private Map<String, String> properties = new HashMap<>();
+            private Map<String, String> properties = new HashMap<String, String>();
 
 
         public DeploymentClusterInfoDTO clusterName(String clusterName) {
@@ -66,9 +66,9 @@ public class DeploymentClusterInfoDTO {
     }
 
 
-        public void setClusterName(String clusterName) {
-            this.clusterName = clusterName;
-        }
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
 
         public DeploymentClusterInfoDTO accessURL(String accessURL) {
@@ -88,9 +88,9 @@ public class DeploymentClusterInfoDTO {
     }
 
 
-        public void setAccessURL(String accessURL) {
-            this.accessURL = accessURL;
-        }
+    public void setAccessURL(String accessURL) {
+        this.accessURL = accessURL;
+    }
 
 
         public DeploymentClusterInfoDTO displayName(String displayName) {
@@ -110,9 +110,9 @@ public class DeploymentClusterInfoDTO {
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public DeploymentClusterInfoDTO properties(Map<String, String> properties) {
@@ -132,9 +132,9 @@ public class DeploymentClusterInfoDTO {
     }
 
 
-        public void setProperties(Map<String, String> properties) {
-            this.properties = properties;
-        }
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
 
 
     @Override

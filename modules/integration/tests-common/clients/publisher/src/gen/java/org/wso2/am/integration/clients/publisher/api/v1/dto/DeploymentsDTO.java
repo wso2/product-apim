@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DeploymentClusterInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DeploymentsDTO
 */
@@ -38,7 +38,7 @@ public class DeploymentsDTO {
 
         public static final String SERIALIZED_NAME_CLUSTERS = "clusters";
         @SerializedName(SERIALIZED_NAME_CLUSTERS)
-            private List<DeploymentClusterInfoDTO> clusters = new ArrayList<>();
+            private List<DeploymentClusterInfoDTO> clusters = new ArrayList<DeploymentClusterInfoDTO>();
 
 
         public DeploymentsDTO name(String name) {
@@ -58,9 +58,9 @@ public class DeploymentsDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public DeploymentsDTO clusters(List<DeploymentClusterInfoDTO> clusters) {
@@ -80,9 +80,9 @@ public class DeploymentsDTO {
     }
 
 
-        public void setClusters(List<DeploymentClusterInfoDTO> clusters) {
-            this.clusters = clusters;
-        }
+    public void setClusters(List<DeploymentClusterInfoDTO> clusters) {
+        this.clusters = clusters;
+    }
 
 
     @Override

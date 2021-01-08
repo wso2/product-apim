@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorListItemDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * OpenAPIDefinitionValidationResponseDTO
 */
@@ -62,14 +62,14 @@ public class OpenAPIDefinitionValidationResponseDTO {
     **/
       @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether this definition is valid or not. ")
     
-    public Boolean isIsValidgetIsValid() {
+    public Boolean isIsValid() {
         return isValid;
     }
 
 
-        public void setIsValid(Boolean isValid) {
-            this.isValid = isValid;
-        }
+    public void setIsValid(Boolean isValid) {
+        this.isValid = isValid;
+    }
 
 
         public OpenAPIDefinitionValidationResponseDTO content(String content) {
@@ -90,9 +90,9 @@ public class OpenAPIDefinitionValidationResponseDTO {
     }
 
 
-        public void setContent(String content) {
-            this.content = content;
-        }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
 
         public OpenAPIDefinitionValidationResponseDTO info(OpenAPIDefinitionValidationResponseInfoDTO info) {
@@ -113,9 +113,9 @@ public class OpenAPIDefinitionValidationResponseDTO {
     }
 
 
-        public void setInfo(OpenAPIDefinitionValidationResponseInfoDTO info) {
-            this.info = info;
-        }
+    public void setInfo(OpenAPIDefinitionValidationResponseInfoDTO info) {
+        this.info = info;
+    }
 
 
         public OpenAPIDefinitionValidationResponseDTO errors(List<ErrorListItemDTO> errors) {
@@ -136,9 +136,9 @@ public class OpenAPIDefinitionValidationResponseDTO {
     }
 
 
-        public void setErrors(List<ErrorListItemDTO> errors) {
-            this.errors = errors;
-        }
+    public void setErrors(List<ErrorListItemDTO> errors) {
+        this.errors = errors;
+    }
 
 
     @Override

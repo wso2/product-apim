@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIScopeDTO
 */
@@ -56,9 +56,9 @@ public class APIScopeDTO {
     }
 
 
-        public void setScope(ScopeDTO scope) {
-            this.scope = scope;
-        }
+    public void setScope(ScopeDTO scope) {
+        this.scope = scope;
+    }
 
 
         public APIScopeDTO shared(Boolean shared) {
@@ -74,14 +74,14 @@ public class APIScopeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "States whether scope is shared. This will not be honored when updating/adding scopes to APIs or when adding/updating Shared Scopes. ")
     
-    public Boolean isSharedgetShared() {
+    public Boolean isShared() {
         return shared;
     }
 
 
-        public void setShared(Boolean shared) {
-            this.shared = shared;
-        }
+    public void setShared(Boolean shared) {
+        this.shared = shared;
+    }
 
 
     @Override

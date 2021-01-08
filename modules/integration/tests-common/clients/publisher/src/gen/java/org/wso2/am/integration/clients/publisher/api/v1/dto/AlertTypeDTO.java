@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertTypeDTO
 */
@@ -60,9 +60,9 @@ public class AlertTypeDTO {
     }
 
 
-        public void setId(Integer id) {
-            this.id = id;
-        }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
 
         public AlertTypeDTO name(String name) {
@@ -83,9 +83,9 @@ public class AlertTypeDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public AlertTypeDTO requireConfiguration(Boolean requireConfiguration) {
@@ -101,14 +101,14 @@ public class AlertTypeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "Whether the alert type require additional configurations.")
     
-    public Boolean isRequireConfigurationgetRequireConfiguration() {
+    public Boolean isRequireConfiguration() {
         return requireConfiguration;
     }
 
 
-        public void setRequireConfiguration(Boolean requireConfiguration) {
-            this.requireConfiguration = requireConfiguration;
-        }
+    public void setRequireConfiguration(Boolean requireConfiguration) {
+        this.requireConfiguration = requireConfiguration;
+    }
 
 
     @Override

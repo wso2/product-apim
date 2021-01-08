@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * Meta data of certificate
 */
@@ -61,9 +61,9 @@ public class ClientCertMetadataDTO {
     }
 
 
-        public void setAlias(String alias) {
-            this.alias = alias;
-        }
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
 
         public ClientCertMetadataDTO apiId(String apiId) {
@@ -84,9 +84,9 @@ public class ClientCertMetadataDTO {
     }
 
 
-        public void setApiId(String apiId) {
-            this.apiId = apiId;
-        }
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
 
 
         public ClientCertMetadataDTO tier(String tier) {
@@ -107,9 +107,9 @@ public class ClientCertMetadataDTO {
     }
 
 
-        public void setTier(String tier) {
-            this.tier = tier;
-        }
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
 
 
     @Override

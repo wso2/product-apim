@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePathDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ResourcePathListDTO
 */
@@ -64,9 +64,9 @@ public class ResourcePathListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public ResourcePathListDTO list(List<ResourcePathDTO> list) {
@@ -87,9 +87,9 @@ public class ResourcePathListDTO {
     }
 
 
-        public void setList(List<ResourcePathDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<ResourcePathDTO> list) {
+        this.list = list;
+    }
 
 
         public ResourcePathListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class ResourcePathListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

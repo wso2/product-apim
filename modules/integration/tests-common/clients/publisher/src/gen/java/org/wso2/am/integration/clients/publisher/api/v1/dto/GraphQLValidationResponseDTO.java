@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseGraphQLInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * GraphQLValidationResponseDTO
 */
@@ -55,14 +55,14 @@ public class GraphQLValidationResponseDTO {
     **/
       @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether this definition is valid or not. ")
     
-    public Boolean isIsValidgetIsValid() {
+    public Boolean isIsValid() {
         return isValid;
     }
 
 
-        public void setIsValid(Boolean isValid) {
-            this.isValid = isValid;
-        }
+    public void setIsValid(Boolean isValid) {
+        this.isValid = isValid;
+    }
 
 
         public GraphQLValidationResponseDTO errorMessage(String errorMessage) {
@@ -82,9 +82,9 @@ public class GraphQLValidationResponseDTO {
     }
 
 
-        public void setErrorMessage(String errorMessage) {
-            this.errorMessage = errorMessage;
-        }
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
 
         public GraphQLValidationResponseDTO graphQLInfo(GraphQLValidationResponseGraphQLInfoDTO graphQLInfo) {
@@ -105,9 +105,9 @@ public class GraphQLValidationResponseDTO {
     }
 
 
-        public void setGraphQLInfo(GraphQLValidationResponseGraphQLInfoDTO graphQLInfo) {
-            this.graphQLInfo = graphQLInfo;
-        }
+    public void setGraphQLInfo(GraphQLValidationResponseGraphQLInfoDTO graphQLInfo) {
+        this.graphQLInfo = graphQLInfo;
+    }
 
 
     @Override

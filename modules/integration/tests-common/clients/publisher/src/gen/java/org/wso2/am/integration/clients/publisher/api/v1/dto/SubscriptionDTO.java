@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApplicationInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SubscriptionDTO
 */
@@ -75,12 +75,12 @@ return String.valueOf(value);
 }
 
 public static SubscriptionStatusEnum fromValue(String value) {
-for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<SubscriptionStatusEnum> {
@@ -119,9 +119,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSubscriptionId(String subscriptionId) {
-            this.subscriptionId = subscriptionId;
-        }
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
 
 
         public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
@@ -141,9 +141,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
-            this.applicationInfo = applicationInfo;
-        }
+    public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
+        this.applicationInfo = applicationInfo;
+    }
 
 
         public SubscriptionDTO throttlingPolicy(String throttlingPolicy) {
@@ -163,9 +163,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setThrottlingPolicy(String throttlingPolicy) {
-            this.throttlingPolicy = throttlingPolicy;
-        }
+    public void setThrottlingPolicy(String throttlingPolicy) {
+        this.throttlingPolicy = throttlingPolicy;
+    }
 
 
         public SubscriptionDTO subscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
@@ -185,9 +185,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSubscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
-            this.subscriptionStatus = subscriptionStatus;
-        }
+    public void setSubscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
+        this.subscriptionStatus = subscriptionStatus;
+    }
 
 
     @Override

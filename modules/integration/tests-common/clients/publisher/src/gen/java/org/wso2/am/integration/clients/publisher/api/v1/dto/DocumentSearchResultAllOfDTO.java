@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DocumentSearchResultAllOfDTO
 */
@@ -64,12 +64,12 @@ return String.valueOf(value);
 }
 
 public static DocTypeEnum fromValue(String value) {
-for (DocTypeEnum b : DocTypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (DocTypeEnum b : DocTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<DocTypeEnum> {
@@ -121,12 +121,12 @@ return String.valueOf(value);
 }
 
 public static SourceTypeEnum fromValue(String value) {
-for (SourceTypeEnum b : SourceTypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (SourceTypeEnum b : SourceTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<SourceTypeEnum> {
@@ -182,12 +182,12 @@ return String.valueOf(value);
 }
 
 public static VisibilityEnum fromValue(String value) {
-for (VisibilityEnum b : VisibilityEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (VisibilityEnum b : VisibilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<VisibilityEnum> {
@@ -247,9 +247,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setDocType(DocTypeEnum docType) {
-            this.docType = docType;
-        }
+    public void setDocType(DocTypeEnum docType) {
+        this.docType = docType;
+    }
 
 
         public DocumentSearchResultAllOfDTO summary(String summary) {
@@ -270,9 +270,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSummary(String summary) {
-            this.summary = summary;
-        }
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
 
 
         public DocumentSearchResultAllOfDTO sourceType(SourceTypeEnum sourceType) {
@@ -293,9 +293,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSourceType(SourceTypeEnum sourceType) {
-            this.sourceType = sourceType;
-        }
+    public void setSourceType(SourceTypeEnum sourceType) {
+        this.sourceType = sourceType;
+    }
 
 
         public DocumentSearchResultAllOfDTO sourceUrl(String sourceUrl) {
@@ -316,9 +316,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSourceUrl(String sourceUrl) {
-            this.sourceUrl = sourceUrl;
-        }
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
+    }
 
 
         public DocumentSearchResultAllOfDTO otherTypeName(String otherTypeName) {
@@ -339,9 +339,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setOtherTypeName(String otherTypeName) {
-            this.otherTypeName = otherTypeName;
-        }
+    public void setOtherTypeName(String otherTypeName) {
+        this.otherTypeName = otherTypeName;
+    }
 
 
         public DocumentSearchResultAllOfDTO visibility(VisibilityEnum visibility) {
@@ -362,9 +362,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setVisibility(VisibilityEnum visibility) {
-            this.visibility = visibility;
-        }
+    public void setVisibility(VisibilityEnum visibility) {
+        this.visibility = visibility;
+    }
 
 
         public DocumentSearchResultAllOfDTO apiName(String apiName) {
@@ -385,9 +385,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiName(String apiName) {
-            this.apiName = apiName;
-        }
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
+    }
 
 
         public DocumentSearchResultAllOfDTO apiVersion(String apiVersion) {
@@ -408,9 +408,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiVersion(String apiVersion) {
-            this.apiVersion = apiVersion;
-        }
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
 
 
         public DocumentSearchResultAllOfDTO apiProvider(String apiProvider) {
@@ -431,9 +431,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiProvider(String apiProvider) {
-            this.apiProvider = apiProvider;
-        }
+    public void setApiProvider(String apiProvider) {
+        this.apiProvider = apiProvider;
+    }
 
 
         public DocumentSearchResultAllOfDTO apiUUID(String apiUUID) {
@@ -454,9 +454,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiUUID(String apiUUID) {
-            this.apiUUID = apiUUID;
-        }
+    public void setApiUUID(String apiUUID) {
+        this.apiUUID = apiUUID;
+    }
 
 
         public DocumentSearchResultAllOfDTO associatedType(String associatedType) {
@@ -477,9 +477,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAssociatedType(String associatedType) {
-            this.associatedType = associatedType;
-        }
+    public void setAssociatedType(String associatedType) {
+        this.associatedType = associatedType;
+    }
 
 
     @Override

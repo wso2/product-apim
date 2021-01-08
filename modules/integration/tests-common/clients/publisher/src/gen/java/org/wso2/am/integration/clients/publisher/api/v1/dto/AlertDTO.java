@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AlertConfigDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertDTO
 */
@@ -63,9 +63,9 @@ public class AlertDTO {
     }
 
 
-        public void setId(Integer id) {
-            this.id = id;
-        }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
 
         public AlertDTO name(String name) {
@@ -86,9 +86,9 @@ public class AlertDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public AlertDTO _configuration(List<AlertConfigDTO> _configuration) {
@@ -109,9 +109,9 @@ public class AlertDTO {
     }
 
 
-        public void setConfiguration(List<AlertConfigDTO> _configuration) {
-            this._configuration = _configuration;
-        }
+    public void setConfiguration(List<AlertConfigDTO> _configuration) {
+        this._configuration = _configuration;
+    }
 
 
     @Override

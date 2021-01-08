@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIExternalStoreDTO
 */
@@ -56,9 +56,9 @@ public class APIExternalStoreDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public APIExternalStoreDTO lastUpdatedTime(String lastUpdatedTime) {
@@ -79,9 +79,9 @@ public class APIExternalStoreDTO {
     }
 
 
-        public void setLastUpdatedTime(String lastUpdatedTime) {
-            this.lastUpdatedTime = lastUpdatedTime;
-        }
+    public void setLastUpdatedTime(String lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
+    }
 
 
     @Override

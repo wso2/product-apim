@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * Representation of a list of certificates
 */
@@ -65,9 +65,9 @@ public class CertificatesDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public CertificatesDTO certificates(List<CertMetadataDTO> certificates) {
@@ -88,9 +88,9 @@ public class CertificatesDTO {
     }
 
 
-        public void setCertificates(List<CertMetadataDTO> certificates) {
-            this.certificates = certificates;
-        }
+    public void setCertificates(List<CertMetadataDTO> certificates) {
+        this.certificates = certificates;
+    }
 
 
         public CertificatesDTO pagination(PaginationDTO pagination) {
@@ -111,9 +111,9 @@ public class CertificatesDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

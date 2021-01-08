@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APISearchResultAllOfDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APISearchResultDTO
 */
@@ -74,9 +74,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public APISearchResultDTO context(String context) {
@@ -97,9 +97,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public APISearchResultDTO version(String version) {
@@ -120,9 +120,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public APISearchResultDTO provider(String provider) {
@@ -143,9 +143,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public APISearchResultDTO status(String status) {
@@ -166,9 +166,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
         public APISearchResultDTO thumbnailUri(String thumbnailUri) {
@@ -189,9 +189,9 @@ public class APISearchResultDTO extends SearchResultDTO {
     }
 
 
-        public void setThumbnailUri(String thumbnailUri) {
-            this.thumbnailUri = thumbnailUri;
-        }
+    public void setThumbnailUri(String thumbnailUri) {
+        this.thumbnailUri = thumbnailUri;
+    }
 
 
     @Override

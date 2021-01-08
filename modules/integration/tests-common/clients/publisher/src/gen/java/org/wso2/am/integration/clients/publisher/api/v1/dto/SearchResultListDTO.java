@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SearchResultListDTO
 */
@@ -63,9 +63,9 @@ public class SearchResultListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public SearchResultListDTO list(List<Object> list) {
@@ -86,9 +86,9 @@ public class SearchResultListDTO {
     }
 
 
-        public void setList(List<Object> list) {
-            this.list = list;
-        }
+    public void setList(List<Object> list) {
+        this.list = list;
+    }
 
 
         public SearchResultListDTO pagination(PaginationDTO pagination) {
@@ -109,9 +109,9 @@ public class SearchResultListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

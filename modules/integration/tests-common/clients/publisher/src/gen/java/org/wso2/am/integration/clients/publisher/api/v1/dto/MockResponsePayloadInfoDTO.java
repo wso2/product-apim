@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * MockResponsePayloadInfoDTO
 */
@@ -60,9 +60,9 @@ public class MockResponsePayloadInfoDTO {
     }
 
 
-        public void setPath(String path) {
-            this.path = path;
-        }
+    public void setPath(String path) {
+        this.path = path;
+    }
 
 
         public MockResponsePayloadInfoDTO content(String content) {
@@ -83,9 +83,9 @@ public class MockResponsePayloadInfoDTO {
     }
 
 
-        public void setContent(String content) {
-            this.content = content;
-        }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
 
         public MockResponsePayloadInfoDTO verb(String verb) {
@@ -106,9 +106,9 @@ public class MockResponsePayloadInfoDTO {
     }
 
 
-        public void setVerb(String verb) {
-            this.verb = verb;
-        }
+    public void setVerb(String verb) {
+        this.verb = verb;
+    }
 
 
     @Override

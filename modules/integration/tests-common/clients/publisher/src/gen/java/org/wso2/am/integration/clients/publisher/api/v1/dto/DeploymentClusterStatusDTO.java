@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PodStatusDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DeploymentClusterStatusDTO
 */
@@ -42,7 +42,7 @@ public class DeploymentClusterStatusDTO {
 
         public static final String SERIALIZED_NAME_HEALTH_STATUS = "healthStatus";
         @SerializedName(SERIALIZED_NAME_HEALTH_STATUS)
-            private List<PodStatusDTO> healthStatus = new ArrayList<>();
+            private List<PodStatusDTO> healthStatus = new ArrayList<PodStatusDTO>();
 
 
         public DeploymentClusterStatusDTO clusterName(String clusterName) {
@@ -62,9 +62,9 @@ public class DeploymentClusterStatusDTO {
     }
 
 
-        public void setClusterName(String clusterName) {
-            this.clusterName = clusterName;
-        }
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
 
         public DeploymentClusterStatusDTO podsRunning(Integer podsRunning) {
@@ -84,9 +84,9 @@ public class DeploymentClusterStatusDTO {
     }
 
 
-        public void setPodsRunning(Integer podsRunning) {
-            this.podsRunning = podsRunning;
-        }
+    public void setPodsRunning(Integer podsRunning) {
+        this.podsRunning = podsRunning;
+    }
 
 
         public DeploymentClusterStatusDTO healthStatus(List<PodStatusDTO> healthStatus) {
@@ -106,9 +106,9 @@ public class DeploymentClusterStatusDTO {
     }
 
 
-        public void setHealthStatus(List<PodStatusDTO> healthStatus) {
-            this.healthStatus = healthStatus;
-        }
+    public void setHealthStatus(List<PodStatusDTO> healthStatus) {
+        this.healthStatus = healthStatus;
+    }
 
 
     @Override

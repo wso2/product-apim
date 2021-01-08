@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIProductInfoDTO
 */
@@ -80,12 +80,12 @@ return String.valueOf(value);
 }
 
 public static StateEnum fromValue(String value) {
-for (StateEnum b : StateEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (StateEnum b : StateEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<StateEnum> {
@@ -111,6 +111,12 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
             private List<String> securityScheme = null;
 
 
+        public APIProductInfoDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
     /**
         * UUID of the api product 
     * @return id
@@ -123,6 +129,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public APIProductInfoDTO name(String name) {
@@ -143,9 +152,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public APIProductInfoDTO context(String context) {
@@ -166,9 +175,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public APIProductInfoDTO description(String description) {
@@ -189,9 +198,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public APIProductInfoDTO provider(String provider) {
@@ -212,9 +221,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public APIProductInfoDTO hasThumbnail(Boolean hasThumbnail) {
@@ -230,14 +239,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isHasThumbnailgetHasThumbnail() {
+    public Boolean isHasThumbnail() {
         return hasThumbnail;
     }
 
 
-        public void setHasThumbnail(Boolean hasThumbnail) {
-            this.hasThumbnail = hasThumbnail;
-        }
+    public void setHasThumbnail(Boolean hasThumbnail) {
+        this.hasThumbnail = hasThumbnail;
+    }
 
 
         public APIProductInfoDTO state(StateEnum state) {
@@ -258,9 +267,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setState(StateEnum state) {
-            this.state = state;
-        }
+    public void setState(StateEnum state) {
+        this.state = state;
+    }
 
 
         public APIProductInfoDTO securityScheme(List<String> securityScheme) {
@@ -281,9 +290,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSecurityScheme(List<String> securityScheme) {
-            this.securityScheme = securityScheme;
-        }
+    public void setSecurityScheme(List<String> securityScheme) {
+        this.securityScheme = securityScheme;
+    }
 
 
     @Override

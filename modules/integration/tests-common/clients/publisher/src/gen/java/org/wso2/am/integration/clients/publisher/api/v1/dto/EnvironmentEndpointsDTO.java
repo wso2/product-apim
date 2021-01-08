@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EnvironmentEndpointsDTO
 */
@@ -64,9 +64,9 @@ public class EnvironmentEndpointsDTO {
     }
 
 
-        public void setHttp(String http) {
-            this.http = http;
-        }
+    public void setHttp(String http) {
+        this.http = http;
+    }
 
 
         public EnvironmentEndpointsDTO https(String https) {
@@ -87,9 +87,9 @@ public class EnvironmentEndpointsDTO {
     }
 
 
-        public void setHttps(String https) {
-            this.https = https;
-        }
+    public void setHttps(String https) {
+        this.https = https;
+    }
 
 
         public EnvironmentEndpointsDTO ws(String ws) {
@@ -110,9 +110,9 @@ public class EnvironmentEndpointsDTO {
     }
 
 
-        public void setWs(String ws) {
-            this.ws = ws;
-        }
+    public void setWs(String ws) {
+        this.ws = ws;
+    }
 
 
         public EnvironmentEndpointsDTO wss(String wss) {
@@ -133,9 +133,9 @@ public class EnvironmentEndpointsDTO {
     }
 
 
-        public void setWss(String wss) {
-            this.wss = wss;
-        }
+    public void setWss(String wss) {
+        this.wss = wss;
+    }
 
 
     @Override

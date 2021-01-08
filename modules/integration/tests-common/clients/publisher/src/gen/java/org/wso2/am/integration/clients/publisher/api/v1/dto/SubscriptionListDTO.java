@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SubscriptionListDTO
 */
@@ -64,9 +64,9 @@ public class SubscriptionListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public SubscriptionListDTO list(List<SubscriptionDTO> list) {
@@ -87,9 +87,9 @@ public class SubscriptionListDTO {
     }
 
 
-        public void setList(List<SubscriptionDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<SubscriptionDTO> list) {
+        this.list = list;
+    }
 
 
         public SubscriptionListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class SubscriptionListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

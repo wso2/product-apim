@@ -1077,9 +1077,9 @@ public class ApiDocumentsApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response if the document name exists.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response if the api name exist.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call validateDocumentCall(String apiId, String name, String ifMatch, final ApiCallback _callback) throws ApiException {
@@ -1145,17 +1145,19 @@ public class ApiDocumentsApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param name The name of the document which needs to be checked for the existance.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return DocumentDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response if the document name exists.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response if the api name exist.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public void validateDocument(String apiId, String name, String ifMatch) throws ApiException {
-        validateDocumentWithHttpInfo(apiId, name, ifMatch);
+    public DocumentDTO validateDocument(String apiId, String name, String ifMatch) throws ApiException {
+        ApiResponse<DocumentDTO> localVarResp = validateDocumentWithHttpInfo(apiId, name, ifMatch);
+        return localVarResp.getData();
     }
 
     /**
@@ -1164,19 +1166,20 @@ public class ApiDocumentsApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param name The name of the document which needs to be checked for the existance.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;DocumentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response if the document name exists.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response if the api name exist.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> validateDocumentWithHttpInfo(String apiId, String name, String ifMatch) throws ApiException {
+    public ApiResponse<DocumentDTO> validateDocumentWithHttpInfo(String apiId, String name, String ifMatch) throws ApiException {
         okhttp3.Call localVarCall = validateDocumentValidateBeforeCall(apiId, name, ifMatch, null);
-        return localVarApiClient.execute(localVarCall);
+        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
@@ -1191,15 +1194,16 @@ public class ApiDocumentsApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response if the document name exists.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response if the api name exist.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call validateDocumentAsync(String apiId, String name, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call validateDocumentAsync(String apiId, String name, String ifMatch, final ApiCallback<DocumentDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = validateDocumentValidateBeforeCall(apiId, name, ifMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
 }

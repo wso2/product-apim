@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIEndpointSecurityDTO
 */
@@ -54,12 +54,12 @@ return String.valueOf(value);
 }
 
 public static TypeEnum fromValue(String value) {
-for (TypeEnum b : TypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (TypeEnum b : TypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<TypeEnum> {
@@ -107,9 +107,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setType(TypeEnum type) {
-            this.type = type;
-        }
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
 
 
         public APIEndpointSecurityDTO username(String username) {
@@ -130,9 +130,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setUsername(String username) {
-            this.username = username;
-        }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
 
         public APIEndpointSecurityDTO password(String password) {
@@ -153,9 +153,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setPassword(String password) {
-            this.password = password;
-        }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
 
     @Override

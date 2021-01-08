@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ResourcePolicyInfoDTO
 */
@@ -46,6 +46,12 @@ public class ResourcePolicyInfoDTO {
             private String content;
 
 
+        public ResourcePolicyInfoDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
     /**
         * UUID of the resource policy registry artifact 
     * @return id
@@ -58,6 +64,9 @@ public class ResourcePolicyInfoDTO {
     }
 
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public ResourcePolicyInfoDTO httpVerb(String httpVerb) {
@@ -78,9 +87,9 @@ public class ResourcePolicyInfoDTO {
     }
 
 
-        public void setHttpVerb(String httpVerb) {
-            this.httpVerb = httpVerb;
-        }
+    public void setHttpVerb(String httpVerb) {
+        this.httpVerb = httpVerb;
+    }
 
 
         public ResourcePolicyInfoDTO resourcePath(String resourcePath) {
@@ -101,9 +110,9 @@ public class ResourcePolicyInfoDTO {
     }
 
 
-        public void setResourcePath(String resourcePath) {
-            this.resourcePath = resourcePath;
-        }
+    public void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath;
+    }
 
 
         public ResourcePolicyInfoDTO content(String content) {
@@ -124,9 +133,9 @@ public class ResourcePolicyInfoDTO {
     }
 
 
-        public void setContent(String content) {
-            this.content = content;
-        }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
 
     @Override

@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * MediationListDTO
 */
@@ -64,9 +64,9 @@ public class MediationListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public MediationListDTO list(List<MediationInfoDTO> list) {
@@ -87,9 +87,9 @@ public class MediationListDTO {
     }
 
 
-        public void setList(List<MediationInfoDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<MediationInfoDTO> list) {
+        this.list = list;
+    }
 
 
         public MediationListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class MediationListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

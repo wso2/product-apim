@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIInfoDTO
 */
@@ -94,9 +94,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public APIInfoDTO name(String name) {
@@ -117,9 +117,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public APIInfoDTO description(String description) {
@@ -140,9 +140,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public APIInfoDTO context(String context) {
@@ -163,9 +163,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public APIInfoDTO version(String version) {
@@ -186,9 +186,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public APIInfoDTO provider(String provider) {
@@ -209,9 +209,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public APIInfoDTO type(String type) {
@@ -232,9 +232,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public APIInfoDTO lifeCycleStatus(String lifeCycleStatus) {
@@ -255,9 +255,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setLifeCycleStatus(String lifeCycleStatus) {
-            this.lifeCycleStatus = lifeCycleStatus;
-        }
+    public void setLifeCycleStatus(String lifeCycleStatus) {
+        this.lifeCycleStatus = lifeCycleStatus;
+    }
 
 
         public APIInfoDTO workflowStatus(String workflowStatus) {
@@ -278,9 +278,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setWorkflowStatus(String workflowStatus) {
-            this.workflowStatus = workflowStatus;
-        }
+    public void setWorkflowStatus(String workflowStatus) {
+        this.workflowStatus = workflowStatus;
+    }
 
 
         public APIInfoDTO hasThumbnail(Boolean hasThumbnail) {
@@ -296,14 +296,14 @@ public class APIInfoDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isHasThumbnailgetHasThumbnail() {
+    public Boolean isHasThumbnail() {
         return hasThumbnail;
     }
 
 
-        public void setHasThumbnail(Boolean hasThumbnail) {
-            this.hasThumbnail = hasThumbnail;
-        }
+    public void setHasThumbnail(Boolean hasThumbnail) {
+        this.hasThumbnail = hasThumbnail;
+    }
 
 
         public APIInfoDTO securityScheme(List<String> securityScheme) {
@@ -324,9 +324,9 @@ public class APIInfoDTO {
     }
 
 
-        public void setSecurityScheme(List<String> securityScheme) {
-            this.securityScheme = securityScheme;
-        }
+    public void setSecurityScheme(List<String> securityScheme) {
+        this.securityScheme = securityScheme;
+    }
 
 
     @Override

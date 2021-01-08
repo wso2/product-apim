@@ -307,14 +307,14 @@ null (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: multipart/form-data
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Created. API Imported Successfully.  |  -  |
-**403** |  |  -  |
-**404** |  |  -  |
-**409** |  |  -  |
-**500** |  |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
+**500** | Internal Server Error. |  -  |
 

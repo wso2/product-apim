@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LifecycleStateAvailableTransitionsDTO
 */
@@ -56,9 +56,9 @@ public class LifecycleStateAvailableTransitionsDTO {
     }
 
 
-        public void setEvent(String event) {
-            this.event = event;
-        }
+    public void setEvent(String event) {
+        this.event = event;
+    }
 
 
         public LifecycleStateAvailableTransitionsDTO targetState(String targetState) {
@@ -79,9 +79,9 @@ public class LifecycleStateAvailableTransitionsDTO {
     }
 
 
-        public void setTargetState(String targetState) {
-            this.targetState = targetState;
-        }
+    public void setTargetState(String targetState) {
+        this.targetState = targetState;
+    }
 
 
     @Override

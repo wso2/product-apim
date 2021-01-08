@@ -540,7 +540,7 @@ Name | Type | Description  | Notes
 
 <a name="validateDocument"></a>
 # **validateDocument**
-> validateDocument(apiId, name, ifMatch)
+> DocumentDTO validateDocument(apiId, name, ifMatch)
 
 Check Whether a Document with the Provided Name Exist
 
@@ -570,7 +570,8 @@ public class Example {
     String name = "name_example"; // String | The name of the document which needs to be checked for the existance. 
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      apiInstance.validateDocument(apiId, name, ifMatch);
+      DocumentDTO result = apiInstance.validateDocument(apiId, name, ifMatch);
+      System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiDocumentsApi#validateDocument");
       System.err.println("Status code: " + e.getCode());
@@ -592,7 +593,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**DocumentDTO**](DocumentDTO.md)
 
 ### Authorization
 
@@ -606,7 +607,7 @@ null (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Successful response if the document name exists.  |  -  |
+**200** | OK. Successful response if the api name exist.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
-**404** | Not Found. The specified resource does not exist.  |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 

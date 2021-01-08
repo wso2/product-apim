@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EnvironmentEndpointsDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EnvironmentDTO
 */
@@ -68,9 +68,9 @@ public class EnvironmentDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public EnvironmentDTO type(String type) {
@@ -90,9 +90,9 @@ public class EnvironmentDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public EnvironmentDTO serverUrl(String serverUrl) {
@@ -112,9 +112,9 @@ public class EnvironmentDTO {
     }
 
 
-        public void setServerUrl(String serverUrl) {
-            this.serverUrl = serverUrl;
-        }
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
+    }
 
 
         public EnvironmentDTO showInApiConsole(Boolean showInApiConsole) {
@@ -129,14 +129,14 @@ public class EnvironmentDTO {
     **/
       @ApiModelProperty(example = "true", required = true, value = "")
     
-    public Boolean isShowInApiConsolegetShowInApiConsole() {
+    public Boolean isShowInApiConsole() {
         return showInApiConsole;
     }
 
 
-        public void setShowInApiConsole(Boolean showInApiConsole) {
-            this.showInApiConsole = showInApiConsole;
-        }
+    public void setShowInApiConsole(Boolean showInApiConsole) {
+        this.showInApiConsole = showInApiConsole;
+    }
 
 
         public EnvironmentDTO endpoints(EnvironmentEndpointsDTO endpoints) {
@@ -156,9 +156,9 @@ public class EnvironmentDTO {
     }
 
 
-        public void setEndpoints(EnvironmentEndpointsDTO endpoints) {
-            this.endpoints = endpoints;
-        }
+    public void setEndpoints(EnvironmentEndpointsDTO endpoints) {
+        this.endpoints = endpoints;
+    }
 
 
     @Override

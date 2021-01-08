@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ApiEndpointValidationResponseDTO
 */
@@ -59,9 +59,9 @@ public class ApiEndpointValidationResponseDTO {
     }
 
 
-        public void setStatusCode(Integer statusCode) {
-            this.statusCode = statusCode;
-        }
+    public void setStatusCode(Integer statusCode) {
+        this.statusCode = statusCode;
+    }
 
 
         public ApiEndpointValidationResponseDTO statusMessage(String statusMessage) {
@@ -81,9 +81,9 @@ public class ApiEndpointValidationResponseDTO {
     }
 
 
-        public void setStatusMessage(String statusMessage) {
-            this.statusMessage = statusMessage;
-        }
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
 
 
         public ApiEndpointValidationResponseDTO error(String error) {
@@ -104,9 +104,9 @@ public class ApiEndpointValidationResponseDTO {
     }
 
 
-        public void setError(String error) {
-            this.error = error;
-        }
+    public void setError(String error) {
+        this.error = error;
+    }
 
 
     @Override

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AlertConfigDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertConfigListDTO
 */
@@ -59,9 +59,9 @@ public class AlertConfigListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public AlertConfigListDTO list(List<AlertConfigDTO> list) {
@@ -82,9 +82,9 @@ public class AlertConfigListDTO {
     }
 
 
-        public void setList(List<AlertConfigDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<AlertConfigDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

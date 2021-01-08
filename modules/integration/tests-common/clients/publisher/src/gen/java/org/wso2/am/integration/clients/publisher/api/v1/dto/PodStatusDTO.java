@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * PodStatusDTO
 */
@@ -63,9 +63,9 @@ public class PodStatusDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public PodStatusDTO ready(String ready) {
@@ -85,9 +85,9 @@ public class PodStatusDTO {
     }
 
 
-        public void setReady(String ready) {
-            this.ready = ready;
-        }
+    public void setReady(String ready) {
+        this.ready = ready;
+    }
 
 
         public PodStatusDTO status(String status) {
@@ -107,9 +107,9 @@ public class PodStatusDTO {
     }
 
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
         public PodStatusDTO creationTimestamp(String creationTimestamp) {
@@ -130,9 +130,9 @@ public class PodStatusDTO {
     }
 
 
-        public void setCreationTimestamp(String creationTimestamp) {
-            this.creationTimestamp = creationTimestamp;
-        }
+    public void setCreationTimestamp(String creationTimestamp) {
+        this.creationTimestamp = creationTimestamp;
+    }
 
 
     @Override

@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIMaxTpsDTO
 */
@@ -56,9 +56,9 @@ public class APIMaxTpsDTO {
     }
 
 
-        public void setProduction(Long production) {
-            this.production = production;
-        }
+    public void setProduction(Long production) {
+        this.production = production;
+    }
 
 
         public APIMaxTpsDTO sandbox(Long sandbox) {
@@ -79,9 +79,9 @@ public class APIMaxTpsDTO {
     }
 
 
-        public void setSandbox(Long sandbox) {
-            this.sandbox = sandbox;
-        }
+    public void setSandbox(Long sandbox) {
+        this.sandbox = sandbox;
+    }
 
 
     @Override

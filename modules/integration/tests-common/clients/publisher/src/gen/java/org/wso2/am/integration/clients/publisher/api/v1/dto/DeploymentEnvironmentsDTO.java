@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DeploymentEnvironmentsDTO
 */
@@ -37,7 +37,7 @@ public class DeploymentEnvironmentsDTO {
 
         public static final String SERIALIZED_NAME_CLUSTER_NAME = "clusterName";
         @SerializedName(SERIALIZED_NAME_CLUSTER_NAME)
-            private List<String> clusterName = new ArrayList<>();
+            private List<String> clusterName = new ArrayList<String>();
 
 
         public DeploymentEnvironmentsDTO type(String type) {
@@ -57,9 +57,9 @@ public class DeploymentEnvironmentsDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public DeploymentEnvironmentsDTO clusterName(List<String> clusterName) {
@@ -79,9 +79,9 @@ public class DeploymentEnvironmentsDTO {
     }
 
 
-        public void setClusterName(List<String> clusterName) {
-            this.clusterName = clusterName;
-        }
+    public void setClusterName(List<String> clusterName) {
+        this.clusterName = clusterName;
+    }
 
 
     @Override

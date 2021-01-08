@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EndpointConfigDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EndpointEndpointConfigDTO
 */
@@ -59,12 +59,12 @@ return String.valueOf(value);
 }
 
 public static EndpointTypeEnum fromValue(String value) {
-for (EndpointTypeEnum b : EndpointTypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (EndpointTypeEnum b : EndpointTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<EndpointTypeEnum> {
@@ -108,9 +108,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setEndpointType(EndpointTypeEnum endpointType) {
-            this.endpointType = endpointType;
-        }
+    public void setEndpointType(EndpointTypeEnum endpointType) {
+        this.endpointType = endpointType;
+    }
 
 
         public EndpointEndpointConfigDTO list(List<EndpointConfigDTO> list) {
@@ -131,9 +131,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setList(List<EndpointConfigDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<EndpointConfigDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

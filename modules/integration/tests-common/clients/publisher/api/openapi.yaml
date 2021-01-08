@@ -2412,16 +2412,7 @@ paths:
             schema:
               properties:
                 file:
-                  description: |
-                    WSDL definition as a file or archive
-
-                    **Sample cURL to Upload WSDL File**
-
-                    curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -F file=@api.wsdl -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl"
-
-                    **Sample cURL to Upload WSDL Archive**
-
-                    curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -F file="@wsdl.zip;type=application/zip" -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl"
+                  description: WSDL definition as a file
                   format: binary
                   type: string
                 url:
@@ -4340,9 +4331,29 @@ paths:
         style: simple
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
           description: |
             OK.
-            Successful response if the document name exists.
+            Successful response if the api name exist.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
         "400":
           content:
             application/json:
@@ -4356,9 +4367,17 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Bad Request. Invalid request or validation error.
         "404":
-          description: |
-            Not Found.
-            The specified resource does not exist.
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
         - apim:api_create
@@ -5377,10 +5396,22 @@ paths:
         style: simple
       responses:
         "200":
-          content: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphQLQueryComplexityInfo'
           description: |
             OK.
             Requested complexity details returned.
+          headers:
+            Content-Type:
+              description: |
+                The content of the body.
+              explode: false
+              schema:
+                default: application/json
+                type: string
+              style: simple
         "404":
           content:
             application/json:
@@ -6036,13 +6067,56 @@ paths:
             Created.
             API Imported Successfully.
         "403":
-          $ref: '#/responses/Forbidden'
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
         "404":
-          $ref: '#/responses/NotFound'
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
         "409":
-          $ref: '#/responses/Conflict'
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
         "500":
-          $ref: '#/responses/InternalServerError'
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_import_export
@@ -12077,7 +12151,7 @@ components:
         type: HTTP
         enableSchemaValidation: false
         context: pizza
-        createdTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
         deploymentEnvironments:
@@ -12148,7 +12222,7 @@ components:
           type: out
         - name: json_fault
           type: fault
-        lastUpdatedTime: 2000-01-23T04:56:07.000+00:00
+        lastUpdatedTime: lastUpdatedTime
         threatProtectionPolicies:
           list:
           - policyId: policyId
@@ -12456,10 +12530,8 @@ components:
           example: APPROVED
           type: string
         createdTime:
-          format: date-time
           type: string
         lastUpdatedTime:
-          format: date-time
           type: string
           x-otherScopes:
           - apim:api_publish
@@ -12764,8 +12836,8 @@ components:
         subscriptionAvailability: CURRENT_TENANT
         provider: admin
         context: pizzaproduct
-        createdTime: 2000-01-23T04:56:07.000+00:00
-        lastUpdatedTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
+        lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
         testKey: 8swdwj9080edejhj
@@ -12990,10 +13062,8 @@ components:
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         createdTime:
-          format: date-time
           type: string
         lastUpdatedTime:
-          format: date-time
           type: string
         apis:
           description: |
@@ -13236,9 +13306,9 @@ components:
           sourceType: INLINE
           createdBy: admin
           name: PizzaShackDoc
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           documentId: 01234567-0123-0123-0123-012345678901
-          lastUpdatedTime: 2000-01-23T04:56:07.000+00:00
+          lastUpdatedTime: lastUpdatedTime
           inlineContent: This is doc content. This can have many lines.
         - summary: Summary of PizzaShackAPI Documentation
           lastUpdatedBy: admin
@@ -13250,9 +13320,9 @@ components:
           sourceType: INLINE
           createdBy: admin
           name: PizzaShackDoc
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           documentId: 01234567-0123-0123-0123-012345678901
-          lastUpdatedTime: 2000-01-23T04:56:07.000+00:00
+          lastUpdatedTime: lastUpdatedTime
           inlineContent: This is doc content. This can have many lines.
       properties:
         count:
@@ -13280,9 +13350,9 @@ components:
         sourceType: INLINE
         createdBy: admin
         name: PizzaShackDoc
-        createdTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
         documentId: 01234567-0123-0123-0123-012345678901
-        lastUpdatedTime: 2000-01-23T04:56:07.000+00:00
+        lastUpdatedTime: lastUpdatedTime
         inlineContent: This is doc content. This can have many lines.
       properties:
         documentId:
@@ -13319,6 +13389,7 @@ components:
           example: INLINE
           type: string
         sourceUrl:
+          readOnly: true
           type: string
         fileName:
           readOnly: true
@@ -13327,6 +13398,7 @@ components:
           example: This is doc content. This can have many lines.
           type: string
         otherTypeName:
+          readOnly: true
           type: string
         visibility:
           enum:
@@ -13336,14 +13408,12 @@ components:
           example: API_LEVEL
           type: string
         createdTime:
-          format: date-time
           readOnly: true
           type: string
         createdBy:
           example: admin
           type: string
         lastUpdatedTime:
-          format: date-time
           readOnly: true
           type: string
         lastUpdatedBy:
@@ -13372,6 +13442,14 @@ components:
       title: GraphQL Schema
       type: object
     GraphQLQueryComplexityInfo:
+      example:
+        list:
+        - complexityValue: 1
+          field: name
+          type: Country
+        - complexityValue: 1
+          field: name
+          type: Country
       properties:
         list:
           items:
@@ -13380,6 +13458,10 @@ components:
       title: GraphQL Query Complexity Info
       type: object
     GraphQLCustomComplexityInfo:
+      example:
+        complexityValue: 1
+        field: name
+        type: Country
       properties:
         type:
           description: |

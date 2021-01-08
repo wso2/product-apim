@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SecurityAuditAttributeDTO
 */
@@ -63,14 +63,14 @@ public class SecurityAuditAttributeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isIsGlobalgetIsGlobal() {
+    public Boolean isIsGlobal() {
         return isGlobal;
     }
 
 
-        public void setIsGlobal(Boolean isGlobal) {
-            this.isGlobal = isGlobal;
-        }
+    public void setIsGlobal(Boolean isGlobal) {
+        this.isGlobal = isGlobal;
+    }
 
 
         public SecurityAuditAttributeDTO overrideGlobal(Boolean overrideGlobal) {
@@ -86,14 +86,14 @@ public class SecurityAuditAttributeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isOverrideGlobalgetOverrideGlobal() {
+    public Boolean isOverrideGlobal() {
         return overrideGlobal;
     }
 
 
-        public void setOverrideGlobal(Boolean overrideGlobal) {
-            this.overrideGlobal = overrideGlobal;
-        }
+    public void setOverrideGlobal(Boolean overrideGlobal) {
+        this.overrideGlobal = overrideGlobal;
+    }
 
 
         public SecurityAuditAttributeDTO apiToken(String apiToken) {
@@ -114,9 +114,9 @@ public class SecurityAuditAttributeDTO {
     }
 
 
-        public void setApiToken(String apiToken) {
-            this.apiToken = apiToken;
-        }
+    public void setApiToken(String apiToken) {
+        this.apiToken = apiToken;
+    }
 
 
         public SecurityAuditAttributeDTO collectionId(String collectionId) {
@@ -137,9 +137,9 @@ public class SecurityAuditAttributeDTO {
     }
 
 
-        public void setCollectionId(String collectionId) {
-            this.collectionId = collectionId;
-        }
+    public void setCollectionId(String collectionId) {
+        this.collectionId = collectionId;
+    }
 
 
         public SecurityAuditAttributeDTO baseUrl(String baseUrl) {
@@ -160,9 +160,9 @@ public class SecurityAuditAttributeDTO {
     }
 
 
-        public void setBaseUrl(String baseUrl) {
-            this.baseUrl = baseUrl;
-        }
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
 
     @Override

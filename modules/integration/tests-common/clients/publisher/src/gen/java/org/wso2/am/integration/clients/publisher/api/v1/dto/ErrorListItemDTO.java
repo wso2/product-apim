@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ErrorListItemDTO
 */
@@ -59,9 +59,9 @@ public class ErrorListItemDTO {
     }
 
 
-        public void setCode(String code) {
-            this.code = code;
-        }
+    public void setCode(String code) {
+        this.code = code;
+    }
 
 
         public ErrorListItemDTO message(String message) {
@@ -81,9 +81,9 @@ public class ErrorListItemDTO {
     }
 
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
 
         public ErrorListItemDTO description(String description) {
@@ -104,9 +104,9 @@ public class ErrorListItemDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
     @Override

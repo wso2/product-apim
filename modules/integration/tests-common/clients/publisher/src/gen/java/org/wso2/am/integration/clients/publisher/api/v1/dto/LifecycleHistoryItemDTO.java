@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LifecycleHistoryItemDTO
 */
@@ -64,9 +64,9 @@ public class LifecycleHistoryItemDTO {
     }
 
 
-        public void setPreviousState(String previousState) {
-            this.previousState = previousState;
-        }
+    public void setPreviousState(String previousState) {
+        this.previousState = previousState;
+    }
 
 
         public LifecycleHistoryItemDTO postState(String postState) {
@@ -87,9 +87,9 @@ public class LifecycleHistoryItemDTO {
     }
 
 
-        public void setPostState(String postState) {
-            this.postState = postState;
-        }
+    public void setPostState(String postState) {
+        this.postState = postState;
+    }
 
 
         public LifecycleHistoryItemDTO user(String user) {
@@ -110,9 +110,9 @@ public class LifecycleHistoryItemDTO {
     }
 
 
-        public void setUser(String user) {
-            this.user = user;
-        }
+    public void setUser(String user) {
+        this.user = user;
+    }
 
 
         public LifecycleHistoryItemDTO updatedTime(String updatedTime) {
@@ -133,9 +133,9 @@ public class LifecycleHistoryItemDTO {
     }
 
 
-        public void setUpdatedTime(String updatedTime) {
-            this.updatedTime = updatedTime;
-        }
+    public void setUpdatedTime(String updatedTime) {
+        this.updatedTime = updatedTime;
+    }
 
 
     @Override

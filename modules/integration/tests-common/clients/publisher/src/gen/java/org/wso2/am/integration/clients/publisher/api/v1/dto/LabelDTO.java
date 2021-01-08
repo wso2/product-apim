@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LabelDTO
 */
@@ -61,9 +61,9 @@ public class LabelDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public LabelDTO description(String description) {
@@ -84,9 +84,9 @@ public class LabelDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public LabelDTO accessUrls(List<String> accessUrls) {
@@ -107,9 +107,9 @@ public class LabelDTO {
     }
 
 
-        public void setAccessUrls(List<String> accessUrls) {
-            this.accessUrls = accessUrls;
-        }
+    public void setAccessUrls(List<String> accessUrls) {
+        this.accessUrls = accessUrls;
+    }
 
 
     @Override

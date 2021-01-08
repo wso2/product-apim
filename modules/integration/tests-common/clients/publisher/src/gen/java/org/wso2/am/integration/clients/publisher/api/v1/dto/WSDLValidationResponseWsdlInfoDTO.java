@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseWsdlInfoEndpointsDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * Summary of the WSDL including the basic information
 */
@@ -60,9 +60,9 @@ public class WSDLValidationResponseWsdlInfoDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public WSDLValidationResponseWsdlInfoDTO endpoints(List<WSDLValidationResponseWsdlInfoEndpointsDTO> endpoints) {
@@ -83,9 +83,9 @@ public class WSDLValidationResponseWsdlInfoDTO {
     }
 
 
-        public void setEndpoints(List<WSDLValidationResponseWsdlInfoEndpointsDTO> endpoints) {
-            this.endpoints = endpoints;
-        }
+    public void setEndpoints(List<WSDLValidationResponseWsdlInfoEndpointsDTO> endpoints) {
+        this.endpoints = endpoints;
+    }
 
 
     @Override

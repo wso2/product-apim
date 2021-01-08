@@ -11,14 +11,14 @@ Name | Type | Description | Notes
 **type** | [**TypeEnum**](#TypeEnum) |  | 
 **summary** | **String** |  |  [optional]
 **sourceType** | [**SourceTypeEnum**](#SourceTypeEnum) |  | 
-**sourceUrl** | **String** |  |  [optional]
+**sourceUrl** | **String** |  |  [optional] [readonly]
 **fileName** | **String** |  |  [optional] [readonly]
 **inlineContent** | **String** |  |  [optional]
-**otherTypeName** | **String** |  |  [optional]
+**otherTypeName** | **String** |  |  [optional] [readonly]
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) |  | 
-**createdTime** | [**OffsetDateTime**](OffsetDateTime.md) |  |  [optional] [readonly]
+**createdTime** | **String** |  |  [optional] [readonly]
 **createdBy** | **String** |  |  [optional]
-**lastUpdatedTime** | [**OffsetDateTime**](OffsetDateTime.md) |  |  [optional] [readonly]
+**lastUpdatedTime** | **String** |  |  [optional] [readonly]
 **lastUpdatedBy** | **String** |  |  [optional] [readonly]
 
 

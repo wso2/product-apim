@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ScopeDTO
 */
@@ -56,6 +56,12 @@ public class ScopeDTO {
             private Integer usageCount;
 
 
+        public ScopeDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
     /**
         * UUID of the Scope. Valid only for shared scopes. 
     * @return id
@@ -68,6 +74,9 @@ public class ScopeDTO {
     }
 
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public ScopeDTO name(String name) {
@@ -87,9 +96,9 @@ public class ScopeDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ScopeDTO displayName(String displayName) {
@@ -110,9 +119,9 @@ public class ScopeDTO {
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public ScopeDTO description(String description) {
@@ -133,9 +142,9 @@ public class ScopeDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public ScopeDTO bindings(List<String> bindings) {
@@ -156,10 +165,16 @@ public class ScopeDTO {
     }
 
 
-        public void setBindings(List<String> bindings) {
-            this.bindings = bindings;
-        }
+    public void setBindings(List<String> bindings) {
+        this.bindings = bindings;
+    }
 
+
+        public ScopeDTO usageCount(Integer usageCount) {
+        
+        this.usageCount = usageCount;
+        return this;
+        }
 
     /**
         * usage count of Scope 
@@ -173,6 +188,9 @@ public class ScopeDTO {
     }
 
 
+    public void setUsageCount(Integer usageCount) {
+        this.usageCount = usageCount;
+    }
 
 
     @Override

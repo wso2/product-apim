@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * GraphQLSchemaTypeDTO
 */
@@ -58,9 +58,9 @@ public class GraphQLSchemaTypeDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public GraphQLSchemaTypeDTO fieldList(List<String> fieldList) {
@@ -81,9 +81,9 @@ public class GraphQLSchemaTypeDTO {
     }
 
 
-        public void setFieldList(List<String> fieldList) {
-            this.fieldList = fieldList;
-        }
+    public void setFieldList(List<String> fieldList) {
+        this.fieldList = fieldList;
+    }
 
 
     @Override

@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * CertificateValidityDTO
 */
@@ -56,9 +56,9 @@ public class CertificateValidityDTO {
     }
 
 
-        public void setFrom(String from) {
-            this.from = from;
-        }
+    public void setFrom(String from) {
+        this.from = from;
+    }
 
 
         public CertificateValidityDTO to(String to) {
@@ -79,9 +79,9 @@ public class CertificateValidityDTO {
     }
 
 
-        public void setTo(String to) {
-            this.to = to;
-        }
+    public void setTo(String to) {
+        this.to = to;
+    }
 
 
     @Override

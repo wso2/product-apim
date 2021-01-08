@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SharedScopeUsedAPIResourceInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SharedScopeUsedAPIInfoDTO
 */
@@ -70,9 +70,9 @@ public class SharedScopeUsedAPIInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public SharedScopeUsedAPIInfoDTO context(String context) {
@@ -92,9 +92,9 @@ public class SharedScopeUsedAPIInfoDTO {
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public SharedScopeUsedAPIInfoDTO version(String version) {
@@ -114,9 +114,9 @@ public class SharedScopeUsedAPIInfoDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public SharedScopeUsedAPIInfoDTO provider(String provider) {
@@ -137,9 +137,9 @@ public class SharedScopeUsedAPIInfoDTO {
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public SharedScopeUsedAPIInfoDTO usedResourceList(List<SharedScopeUsedAPIResourceInfoDTO> usedResourceList) {
@@ -160,9 +160,9 @@ public class SharedScopeUsedAPIInfoDTO {
     }
 
 
-        public void setUsedResourceList(List<SharedScopeUsedAPIResourceInfoDTO> usedResourceList) {
-            this.usedResourceList = usedResourceList;
-        }
+    public void setUsedResourceList(List<SharedScopeUsedAPIResourceInfoDTO> usedResourceList) {
+        this.usedResourceList = usedResourceList;
+    }
 
 
     @Override

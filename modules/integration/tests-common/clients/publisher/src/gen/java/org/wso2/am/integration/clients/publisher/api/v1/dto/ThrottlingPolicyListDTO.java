@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ThrottlingPolicyListDTO
 */
@@ -64,9 +64,9 @@ public class ThrottlingPolicyListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public ThrottlingPolicyListDTO list(List<ThrottlingPolicyDTO> list) {
@@ -87,9 +87,9 @@ public class ThrottlingPolicyListDTO {
     }
 
 
-        public void setList(List<ThrottlingPolicyDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<ThrottlingPolicyDTO> list) {
+        this.list = list;
+    }
 
 
         public ThrottlingPolicyListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class ThrottlingPolicyListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

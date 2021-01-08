@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIOperationsDTO
 */
@@ -86,9 +86,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public APIOperationsDTO target(String target) {
@@ -109,9 +109,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setTarget(String target) {
-            this.target = target;
-        }
+    public void setTarget(String target) {
+        this.target = target;
+    }
 
 
         public APIOperationsDTO verb(String verb) {
@@ -132,9 +132,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setVerb(String verb) {
-            this.verb = verb;
-        }
+    public void setVerb(String verb) {
+        this.verb = verb;
+    }
 
 
         public APIOperationsDTO authType(String authType) {
@@ -155,9 +155,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setAuthType(String authType) {
-            this.authType = authType;
-        }
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
 
 
         public APIOperationsDTO throttlingPolicy(String throttlingPolicy) {
@@ -178,9 +178,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setThrottlingPolicy(String throttlingPolicy) {
-            this.throttlingPolicy = throttlingPolicy;
-        }
+    public void setThrottlingPolicy(String throttlingPolicy) {
+        this.throttlingPolicy = throttlingPolicy;
+    }
 
 
         public APIOperationsDTO scopes(List<String> scopes) {
@@ -201,9 +201,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setScopes(List<String> scopes) {
-            this.scopes = scopes;
-        }
+    public void setScopes(List<String> scopes) {
+        this.scopes = scopes;
+    }
 
 
         public APIOperationsDTO usedProductIds(List<String> usedProductIds) {
@@ -224,9 +224,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setUsedProductIds(List<String> usedProductIds) {
-            this.usedProductIds = usedProductIds;
-        }
+    public void setUsedProductIds(List<String> usedProductIds) {
+        this.usedProductIds = usedProductIds;
+    }
 
 
         public APIOperationsDTO amznResourceName(String amznResourceName) {
@@ -247,9 +247,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setAmznResourceName(String amznResourceName) {
-            this.amznResourceName = amznResourceName;
-        }
+    public void setAmznResourceName(String amznResourceName) {
+        this.amznResourceName = amznResourceName;
+    }
 
 
         public APIOperationsDTO amznResourceTimeout(Integer amznResourceTimeout) {
@@ -270,9 +270,9 @@ public class APIOperationsDTO {
     }
 
 
-        public void setAmznResourceTimeout(Integer amznResourceTimeout) {
-            this.amznResourceTimeout = amznResourceTimeout;
-        }
+    public void setAmznResourceTimeout(Integer amznResourceTimeout) {
+        this.amznResourceTimeout = amznResourceTimeout;
+    }
 
 
     @Override

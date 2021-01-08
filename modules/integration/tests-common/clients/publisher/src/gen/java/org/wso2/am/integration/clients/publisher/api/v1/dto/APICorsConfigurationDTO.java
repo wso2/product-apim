@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * CORS configuration for the API 
 */
@@ -66,14 +66,14 @@ public class APICorsConfigurationDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Boolean isCorsConfigurationEnabledgetCorsConfigurationEnabled() {
+    public Boolean isCorsConfigurationEnabled() {
         return corsConfigurationEnabled;
     }
 
 
-        public void setCorsConfigurationEnabled(Boolean corsConfigurationEnabled) {
-            this.corsConfigurationEnabled = corsConfigurationEnabled;
-        }
+    public void setCorsConfigurationEnabled(Boolean corsConfigurationEnabled) {
+        this.corsConfigurationEnabled = corsConfigurationEnabled;
+    }
 
 
         public APICorsConfigurationDTO accessControlAllowOrigins(List<String> accessControlAllowOrigins) {
@@ -94,9 +94,9 @@ public class APICorsConfigurationDTO {
     }
 
 
-        public void setAccessControlAllowOrigins(List<String> accessControlAllowOrigins) {
-            this.accessControlAllowOrigins = accessControlAllowOrigins;
-        }
+    public void setAccessControlAllowOrigins(List<String> accessControlAllowOrigins) {
+        this.accessControlAllowOrigins = accessControlAllowOrigins;
+    }
 
 
         public APICorsConfigurationDTO accessControlAllowCredentials(Boolean accessControlAllowCredentials) {
@@ -112,14 +112,14 @@ public class APICorsConfigurationDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Boolean isAccessControlAllowCredentialsgetAccessControlAllowCredentials() {
+    public Boolean isAccessControlAllowCredentials() {
         return accessControlAllowCredentials;
     }
 
 
-        public void setAccessControlAllowCredentials(Boolean accessControlAllowCredentials) {
-            this.accessControlAllowCredentials = accessControlAllowCredentials;
-        }
+    public void setAccessControlAllowCredentials(Boolean accessControlAllowCredentials) {
+        this.accessControlAllowCredentials = accessControlAllowCredentials;
+    }
 
 
         public APICorsConfigurationDTO accessControlAllowHeaders(List<String> accessControlAllowHeaders) {
@@ -140,9 +140,9 @@ public class APICorsConfigurationDTO {
     }
 
 
-        public void setAccessControlAllowHeaders(List<String> accessControlAllowHeaders) {
-            this.accessControlAllowHeaders = accessControlAllowHeaders;
-        }
+    public void setAccessControlAllowHeaders(List<String> accessControlAllowHeaders) {
+        this.accessControlAllowHeaders = accessControlAllowHeaders;
+    }
 
 
         public APICorsConfigurationDTO accessControlAllowMethods(List<String> accessControlAllowMethods) {
@@ -163,9 +163,9 @@ public class APICorsConfigurationDTO {
     }
 
 
-        public void setAccessControlAllowMethods(List<String> accessControlAllowMethods) {
-            this.accessControlAllowMethods = accessControlAllowMethods;
-        }
+    public void setAccessControlAllowMethods(List<String> accessControlAllowMethods) {
+        this.accessControlAllowMethods = accessControlAllowMethods;
+    }
 
 
     @Override

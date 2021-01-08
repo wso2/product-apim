@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * GraphQLCustomComplexityInfoDTO
 */
@@ -59,9 +59,9 @@ public class GraphQLCustomComplexityInfoDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public GraphQLCustomComplexityInfoDTO field(String field) {
@@ -81,9 +81,9 @@ public class GraphQLCustomComplexityInfoDTO {
     }
 
 
-        public void setField(String field) {
-            this.field = field;
-        }
+    public void setField(String field) {
+        this.field = field;
+    }
 
 
         public GraphQLCustomComplexityInfoDTO complexityValue(Integer complexityValue) {
@@ -103,9 +103,9 @@ public class GraphQLCustomComplexityInfoDTO {
     }
 
 
-        public void setComplexityValue(Integer complexityValue) {
-            this.complexityValue = complexityValue;
-        }
+    public void setComplexityValue(Integer complexityValue) {
+        this.complexityValue = complexityValue;
+    }
 
 
     @Override

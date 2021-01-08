@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorListItemDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ErrorDTO
 */
@@ -70,9 +70,9 @@ public class ErrorDTO {
     }
 
 
-        public void setCode(Long code) {
-            this.code = code;
-        }
+    public void setCode(Long code) {
+        this.code = code;
+    }
 
 
         public ErrorDTO message(String message) {
@@ -92,9 +92,9 @@ public class ErrorDTO {
     }
 
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
 
         public ErrorDTO description(String description) {
@@ -115,9 +115,9 @@ public class ErrorDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public ErrorDTO moreInfo(String moreInfo) {
@@ -138,9 +138,9 @@ public class ErrorDTO {
     }
 
 
-        public void setMoreInfo(String moreInfo) {
-            this.moreInfo = moreInfo;
-        }
+    public void setMoreInfo(String moreInfo) {
+        this.moreInfo = moreInfo;
+    }
 
 
         public ErrorDTO error(List<ErrorListItemDTO> error) {
@@ -161,9 +161,9 @@ public class ErrorDTO {
     }
 
 
-        public void setError(List<ErrorListItemDTO> error) {
-            this.error = error;
-        }
+    public void setError(List<ErrorListItemDTO> error) {
+        this.error = error;
+    }
 
 
     @Override

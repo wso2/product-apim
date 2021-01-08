@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateAvailableTransitionsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateCheckItemsDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LifecycleStateDTO
 */
@@ -64,9 +64,9 @@ public class LifecycleStateDTO {
     }
 
 
-        public void setState(String state) {
-            this.state = state;
-        }
+    public void setState(String state) {
+        this.state = state;
+    }
 
 
         public LifecycleStateDTO checkItems(List<LifecycleStateCheckItemsDTO> checkItems) {
@@ -87,9 +87,9 @@ public class LifecycleStateDTO {
     }
 
 
-        public void setCheckItems(List<LifecycleStateCheckItemsDTO> checkItems) {
-            this.checkItems = checkItems;
-        }
+    public void setCheckItems(List<LifecycleStateCheckItemsDTO> checkItems) {
+        this.checkItems = checkItems;
+    }
 
 
         public LifecycleStateDTO availableTransitions(List<LifecycleStateAvailableTransitionsDTO> availableTransitions) {
@@ -110,9 +110,9 @@ public class LifecycleStateDTO {
     }
 
 
-        public void setAvailableTransitions(List<LifecycleStateAvailableTransitionsDTO> availableTransitions) {
-            this.availableTransitions = availableTransitions;
-        }
+    public void setAvailableTransitions(List<LifecycleStateAvailableTransitionsDTO> availableTransitions) {
+        this.availableTransitions = availableTransitions;
+    }
 
 
     @Override

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EnvironmentDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EnvironmentListDTO
 */
@@ -59,9 +59,9 @@ public class EnvironmentListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public EnvironmentListDTO list(List<EnvironmentDTO> list) {
@@ -82,9 +82,9 @@ public class EnvironmentListDTO {
     }
 
 
-        public void setList(List<EnvironmentDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<EnvironmentDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

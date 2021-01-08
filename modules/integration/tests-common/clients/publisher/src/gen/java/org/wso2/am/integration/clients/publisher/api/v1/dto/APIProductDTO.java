@@ -23,7 +23,6 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoD
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIProductDTO
 */
@@ -88,12 +87,12 @@ return String.valueOf(value);
 }
 
 public static StateEnum fromValue(String value) {
-for (StateEnum b : StateEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (StateEnum b : StateEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<StateEnum> {
@@ -161,12 +160,12 @@ return String.valueOf(value);
 }
 
 public static VisibilityEnum fromValue(String value) {
-for (VisibilityEnum b : VisibilityEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (VisibilityEnum b : VisibilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<VisibilityEnum> {
@@ -220,12 +219,12 @@ return String.valueOf(value);
 }
 
 public static AccessControlEnum fromValue(String value) {
-for (AccessControlEnum b : AccessControlEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (AccessControlEnum b : AccessControlEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<AccessControlEnum> {
@@ -279,12 +278,12 @@ return String.valueOf(value);
 }
 
 public static ApiTypeEnum fromValue(String value) {
-for (ApiTypeEnum b : ApiTypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (ApiTypeEnum b : ApiTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<ApiTypeEnum> {
@@ -356,12 +355,12 @@ return String.valueOf(value);
 }
 
 public static SubscriptionAvailabilityEnum fromValue(String value) {
-for (SubscriptionAvailabilityEnum b : SubscriptionAvailabilityEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (SubscriptionAvailabilityEnum b : SubscriptionAvailabilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<SubscriptionAvailabilityEnum> {
@@ -404,11 +403,11 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
 
         public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
-            private OffsetDateTime createdTime;
+            private String createdTime;
 
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
-            private OffsetDateTime lastUpdatedTime;
+            private String lastUpdatedTime;
 
         public static final String SERIALIZED_NAME_APIS = "apis";
         @SerializedName(SERIALIZED_NAME_APIS)
@@ -423,6 +422,12 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
             private List<String> categories = null;
 
 
+        public APIProductDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
     /**
         * UUID of the api product 
     * @return id
@@ -435,6 +440,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public APIProductDTO name(String name) {
@@ -454,9 +462,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public APIProductDTO context(String context) {
@@ -477,9 +485,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public APIProductDTO description(String description) {
@@ -500,9 +508,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public APIProductDTO provider(String provider) {
@@ -523,9 +531,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public APIProductDTO hasThumbnail(Boolean hasThumbnail) {
@@ -541,14 +549,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isHasThumbnailgetHasThumbnail() {
+    public Boolean isHasThumbnail() {
         return hasThumbnail;
     }
 
 
-        public void setHasThumbnail(Boolean hasThumbnail) {
-            this.hasThumbnail = hasThumbnail;
-        }
+    public void setHasThumbnail(Boolean hasThumbnail) {
+        this.hasThumbnail = hasThumbnail;
+    }
 
 
         public APIProductDTO state(StateEnum state) {
@@ -569,9 +577,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setState(StateEnum state) {
-            this.state = state;
-        }
+    public void setState(StateEnum state) {
+        this.state = state;
+    }
 
 
         public APIProductDTO enableSchemaValidation(Boolean enableSchemaValidation) {
@@ -587,14 +595,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isEnableSchemaValidationgetEnableSchemaValidation() {
+    public Boolean isEnableSchemaValidation() {
         return enableSchemaValidation;
     }
 
 
-        public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
-            this.enableSchemaValidation = enableSchemaValidation;
-        }
+    public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
+        this.enableSchemaValidation = enableSchemaValidation;
+    }
 
 
         public APIProductDTO enableStore(Boolean enableStore) {
@@ -610,15 +618,21 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isEnableStoregetEnableStore() {
+    public Boolean isEnableStore() {
         return enableStore;
     }
 
 
-        public void setEnableStore(Boolean enableStore) {
-            this.enableStore = enableStore;
-        }
+    public void setEnableStore(Boolean enableStore) {
+        this.enableStore = enableStore;
+    }
 
+
+        public APIProductDTO testKey(String testKey) {
+        
+        this.testKey = testKey;
+        return this;
+        }
 
     /**
         * Get testKey
@@ -632,6 +646,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setTestKey(String testKey) {
+        this.testKey = testKey;
+    }
 
 
         public APIProductDTO responseCachingEnabled(Boolean responseCachingEnabled) {
@@ -647,14 +664,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "")
     
-    public Boolean isResponseCachingEnabledgetResponseCachingEnabled() {
+    public Boolean isResponseCachingEnabled() {
         return responseCachingEnabled;
     }
 
 
-        public void setResponseCachingEnabled(Boolean responseCachingEnabled) {
-            this.responseCachingEnabled = responseCachingEnabled;
-        }
+    public void setResponseCachingEnabled(Boolean responseCachingEnabled) {
+        this.responseCachingEnabled = responseCachingEnabled;
+    }
 
 
         public APIProductDTO cacheTimeout(Integer cacheTimeout) {
@@ -675,9 +692,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setCacheTimeout(Integer cacheTimeout) {
-            this.cacheTimeout = cacheTimeout;
-        }
+    public void setCacheTimeout(Integer cacheTimeout) {
+        this.cacheTimeout = cacheTimeout;
+    }
 
 
         public APIProductDTO visibility(VisibilityEnum visibility) {
@@ -698,9 +715,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setVisibility(VisibilityEnum visibility) {
-            this.visibility = visibility;
-        }
+    public void setVisibility(VisibilityEnum visibility) {
+        this.visibility = visibility;
+    }
 
 
         public APIProductDTO visibleRoles(List<String> visibleRoles) {
@@ -721,9 +738,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setVisibleRoles(List<String> visibleRoles) {
-            this.visibleRoles = visibleRoles;
-        }
+    public void setVisibleRoles(List<String> visibleRoles) {
+        this.visibleRoles = visibleRoles;
+    }
 
 
         public APIProductDTO visibleTenants(List<String> visibleTenants) {
@@ -744,9 +761,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setVisibleTenants(List<String> visibleTenants) {
-            this.visibleTenants = visibleTenants;
-        }
+    public void setVisibleTenants(List<String> visibleTenants) {
+        this.visibleTenants = visibleTenants;
+    }
 
 
         public APIProductDTO accessControl(AccessControlEnum accessControl) {
@@ -767,9 +784,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAccessControl(AccessControlEnum accessControl) {
-            this.accessControl = accessControl;
-        }
+    public void setAccessControl(AccessControlEnum accessControl) {
+        this.accessControl = accessControl;
+    }
 
 
         public APIProductDTO accessControlRoles(List<String> accessControlRoles) {
@@ -790,9 +807,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAccessControlRoles(List<String> accessControlRoles) {
-            this.accessControlRoles = accessControlRoles;
-        }
+    public void setAccessControlRoles(List<String> accessControlRoles) {
+        this.accessControlRoles = accessControlRoles;
+    }
 
 
         public APIProductDTO gatewayEnvironments(List<String> gatewayEnvironments) {
@@ -813,9 +830,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setGatewayEnvironments(List<String> gatewayEnvironments) {
-            this.gatewayEnvironments = gatewayEnvironments;
-        }
+    public void setGatewayEnvironments(List<String> gatewayEnvironments) {
+        this.gatewayEnvironments = gatewayEnvironments;
+    }
 
 
         public APIProductDTO apiType(ApiTypeEnum apiType) {
@@ -836,9 +853,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiType(ApiTypeEnum apiType) {
-            this.apiType = apiType;
-        }
+    public void setApiType(ApiTypeEnum apiType) {
+        this.apiType = apiType;
+    }
 
 
         public APIProductDTO transport(List<String> transport) {
@@ -859,9 +876,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setTransport(List<String> transport) {
-            this.transport = transport;
-        }
+    public void setTransport(List<String> transport) {
+        this.transport = transport;
+    }
 
 
         public APIProductDTO tags(List<String> tags) {
@@ -882,9 +899,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setTags(List<String> tags) {
-            this.tags = tags;
-        }
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
 
 
         public APIProductDTO policies(List<String> policies) {
@@ -905,9 +922,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setPolicies(List<String> policies) {
-            this.policies = policies;
-        }
+    public void setPolicies(List<String> policies) {
+        this.policies = policies;
+    }
 
 
         public APIProductDTO apiThrottlingPolicy(String apiThrottlingPolicy) {
@@ -928,9 +945,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApiThrottlingPolicy(String apiThrottlingPolicy) {
-            this.apiThrottlingPolicy = apiThrottlingPolicy;
-        }
+    public void setApiThrottlingPolicy(String apiThrottlingPolicy) {
+        this.apiThrottlingPolicy = apiThrottlingPolicy;
+    }
 
 
         public APIProductDTO authorizationHeader(String authorizationHeader) {
@@ -951,9 +968,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAuthorizationHeader(String authorizationHeader) {
-            this.authorizationHeader = authorizationHeader;
-        }
+    public void setAuthorizationHeader(String authorizationHeader) {
+        this.authorizationHeader = authorizationHeader;
+    }
 
 
         public APIProductDTO securityScheme(List<String> securityScheme) {
@@ -974,9 +991,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSecurityScheme(List<String> securityScheme) {
-            this.securityScheme = securityScheme;
-        }
+    public void setSecurityScheme(List<String> securityScheme) {
+        this.securityScheme = securityScheme;
+    }
 
 
         public APIProductDTO subscriptionAvailability(SubscriptionAvailabilityEnum subscriptionAvailability) {
@@ -997,9 +1014,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSubscriptionAvailability(SubscriptionAvailabilityEnum subscriptionAvailability) {
-            this.subscriptionAvailability = subscriptionAvailability;
-        }
+    public void setSubscriptionAvailability(SubscriptionAvailabilityEnum subscriptionAvailability) {
+        this.subscriptionAvailability = subscriptionAvailability;
+    }
 
 
         public APIProductDTO subscriptionAvailableTenants(List<String> subscriptionAvailableTenants) {
@@ -1020,9 +1037,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSubscriptionAvailableTenants(List<String> subscriptionAvailableTenants) {
-            this.subscriptionAvailableTenants = subscriptionAvailableTenants;
-        }
+    public void setSubscriptionAvailableTenants(List<String> subscriptionAvailableTenants) {
+        this.subscriptionAvailableTenants = subscriptionAvailableTenants;
+    }
 
 
         public APIProductDTO additionalProperties(Map<String, String> additionalProperties) {
@@ -1043,9 +1060,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAdditionalProperties(Map<String, String> additionalProperties) {
-            this.additionalProperties = additionalProperties;
-        }
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
 
 
         public APIProductDTO monetization(APIMonetizationInfoDTO monetization) {
@@ -1066,9 +1083,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setMonetization(APIMonetizationInfoDTO monetization) {
-            this.monetization = monetization;
-        }
+    public void setMonetization(APIMonetizationInfoDTO monetization) {
+        this.monetization = monetization;
+    }
 
 
         public APIProductDTO businessInformation(APIProductBusinessInformationDTO businessInformation) {
@@ -1089,9 +1106,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setBusinessInformation(APIProductBusinessInformationDTO businessInformation) {
-            this.businessInformation = businessInformation;
-        }
+    public void setBusinessInformation(APIProductBusinessInformationDTO businessInformation) {
+        this.businessInformation = businessInformation;
+    }
 
 
         public APIProductDTO corsConfiguration(APICorsConfigurationDTO corsConfiguration) {
@@ -1112,12 +1129,12 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setCorsConfiguration(APICorsConfigurationDTO corsConfiguration) {
-            this.corsConfiguration = corsConfiguration;
-        }
+    public void setCorsConfiguration(APICorsConfigurationDTO corsConfiguration) {
+        this.corsConfiguration = corsConfiguration;
+    }
 
 
-        public APIProductDTO createdTime(OffsetDateTime createdTime) {
+        public APIProductDTO createdTime(String createdTime) {
         
         this.createdTime = createdTime;
         return this;
@@ -1130,17 +1147,17 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public OffsetDateTime getCreatedTime() {
+    public String getCreatedTime() {
         return createdTime;
     }
 
 
-        public void setCreatedTime(OffsetDateTime createdTime) {
-            this.createdTime = createdTime;
-        }
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
 
 
-        public APIProductDTO lastUpdatedTime(OffsetDateTime lastUpdatedTime) {
+        public APIProductDTO lastUpdatedTime(String lastUpdatedTime) {
         
         this.lastUpdatedTime = lastUpdatedTime;
         return this;
@@ -1153,14 +1170,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public OffsetDateTime getLastUpdatedTime() {
+    public String getLastUpdatedTime() {
         return lastUpdatedTime;
     }
 
 
-        public void setLastUpdatedTime(OffsetDateTime lastUpdatedTime) {
-            this.lastUpdatedTime = lastUpdatedTime;
-        }
+    public void setLastUpdatedTime(String lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
+    }
 
 
         public APIProductDTO apis(List<ProductAPIDTO> apis) {
@@ -1181,9 +1198,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setApis(List<ProductAPIDTO> apis) {
-            this.apis = apis;
-        }
+    public void setApis(List<ProductAPIDTO> apis) {
+        this.apis = apis;
+    }
 
 
         public APIProductDTO scopes(List<APIScopeDTO> scopes) {
@@ -1204,9 +1221,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setScopes(List<APIScopeDTO> scopes) {
-            this.scopes = scopes;
-        }
+    public void setScopes(List<APIScopeDTO> scopes) {
+        this.scopes = scopes;
+    }
 
 
         public APIProductDTO categories(List<String> categories) {
@@ -1227,9 +1244,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setCategories(List<String> categories) {
-            this.categories = categories;
-        }
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
 
 
     @Override

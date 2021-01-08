@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * Summary of the GraphQL including the basic information
 */
@@ -61,9 +61,9 @@ public class GraphQLValidationResponseGraphQLInfoDTO {
     }
 
 
-        public void setOperations(List<APIOperationsDTO> operations) {
-            this.operations = operations;
-        }
+    public void setOperations(List<APIOperationsDTO> operations) {
+        this.operations = operations;
+    }
 
 
         public GraphQLValidationResponseGraphQLInfoDTO graphQLSchema(GraphQLSchemaDTO graphQLSchema) {
@@ -84,9 +84,9 @@ public class GraphQLValidationResponseGraphQLInfoDTO {
     }
 
 
-        public void setGraphQLSchema(GraphQLSchemaDTO graphQLSchema) {
-            this.graphQLSchema = graphQLSchema;
-        }
+    public void setGraphQLSchema(GraphQLSchemaDTO graphQLSchema) {
+        this.graphQLSchema = graphQLSchema;
+    }
 
 
     @Override

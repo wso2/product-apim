@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LifecycleStateCheckItemsDTO
 */
@@ -62,9 +62,9 @@ public class LifecycleStateCheckItemsDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public LifecycleStateCheckItemsDTO value(Boolean value) {
@@ -80,14 +80,14 @@ public class LifecycleStateCheckItemsDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "")
     
-    public Boolean isValuegetValue() {
+    public Boolean isValue() {
         return value;
     }
 
 
-        public void setValue(Boolean value) {
-            this.value = value;
-        }
+    public void setValue(Boolean value) {
+        this.value = value;
+    }
 
 
         public LifecycleStateCheckItemsDTO requiredStates(List<String> requiredStates) {
@@ -108,9 +108,9 @@ public class LifecycleStateCheckItemsDTO {
     }
 
 
-        public void setRequiredStates(List<String> requiredStates) {
-            this.requiredStates = requiredStates;
-        }
+    public void setRequiredStates(List<String> requiredStates) {
+        this.requiredStates = requiredStates;
+    }
 
 
     @Override

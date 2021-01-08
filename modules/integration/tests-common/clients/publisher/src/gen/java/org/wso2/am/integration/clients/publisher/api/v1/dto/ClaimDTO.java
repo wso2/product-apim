@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ClaimDTO
 */
@@ -60,9 +60,9 @@ public class ClaimDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ClaimDTO URI(String URI) {
@@ -83,9 +83,9 @@ public class ClaimDTO {
     }
 
 
-        public void setURI(String URI) {
-            this.URI = URI;
-        }
+    public void setURI(String URI) {
+        this.URI = URI;
+    }
 
 
         public ClaimDTO value(String value) {
@@ -106,9 +106,9 @@ public class ClaimDTO {
     }
 
 
-        public void setValue(String value) {
-            this.value = value;
-        }
+    public void setValue(String value) {
+        this.value = value;
+    }
 
 
     @Override

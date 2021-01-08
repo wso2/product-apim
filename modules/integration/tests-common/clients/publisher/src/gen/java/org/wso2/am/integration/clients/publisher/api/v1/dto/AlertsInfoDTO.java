@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AlertDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertsInfoDTO
 */
@@ -59,9 +59,9 @@ public class AlertsInfoDTO {
     }
 
 
-        public void setAlerts(List<AlertDTO> alerts) {
-            this.alerts = alerts;
-        }
+    public void setAlerts(List<AlertDTO> alerts) {
+        this.alerts = alerts;
+    }
 
 
         public AlertsInfoDTO emailList(List<String> emailList) {
@@ -82,9 +82,9 @@ public class AlertsInfoDTO {
     }
 
 
-        public void setEmailList(List<String> emailList) {
-            this.emailList = emailList;
-        }
+    public void setEmailList(List<String> emailList) {
+        this.emailList = emailList;
+    }
 
 
     @Override

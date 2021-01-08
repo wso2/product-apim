@@ -23,8 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.time.OffsetDateTime;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * DocumentDTO
 */
@@ -73,12 +72,12 @@ return String.valueOf(value);
 }
 
 public static TypeEnum fromValue(String value) {
-for (TypeEnum b : TypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (TypeEnum b : TypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<TypeEnum> {
@@ -132,12 +131,12 @@ return String.valueOf(value);
 }
 
 public static SourceTypeEnum fromValue(String value) {
-for (SourceTypeEnum b : SourceTypeEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (SourceTypeEnum b : SourceTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<SourceTypeEnum> {
@@ -201,12 +200,12 @@ return String.valueOf(value);
 }
 
 public static VisibilityEnum fromValue(String value) {
-for (VisibilityEnum b : VisibilityEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (VisibilityEnum b : VisibilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<VisibilityEnum> {
@@ -229,7 +228,7 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
 
         public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
-            private OffsetDateTime createdTime;
+            private String createdTime;
 
         public static final String SERIALIZED_NAME_CREATED_BY = "createdBy";
         @SerializedName(SERIALIZED_NAME_CREATED_BY)
@@ -237,12 +236,18 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
 
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
-            private OffsetDateTime lastUpdatedTime;
+            private String lastUpdatedTime;
 
         public static final String SERIALIZED_NAME_LAST_UPDATED_BY = "lastUpdatedBy";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_BY)
             private String lastUpdatedBy;
 
+
+        public DocumentDTO documentId(String documentId) {
+        
+        this.documentId = documentId;
+        return this;
+        }
 
     /**
         * Get documentId
@@ -256,6 +261,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
 
 
         public DocumentDTO name(String name) {
@@ -275,9 +283,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public DocumentDTO type(TypeEnum type) {
@@ -297,9 +305,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setType(TypeEnum type) {
-            this.type = type;
-        }
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
 
 
         public DocumentDTO summary(String summary) {
@@ -320,9 +328,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSummary(String summary) {
-            this.summary = summary;
-        }
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
 
 
         public DocumentDTO sourceType(SourceTypeEnum sourceType) {
@@ -342,9 +350,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSourceType(SourceTypeEnum sourceType) {
-            this.sourceType = sourceType;
-        }
+    public void setSourceType(SourceTypeEnum sourceType) {
+        this.sourceType = sourceType;
+    }
 
 
         public DocumentDTO sourceUrl(String sourceUrl) {
@@ -365,10 +373,16 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setSourceUrl(String sourceUrl) {
-            this.sourceUrl = sourceUrl;
-        }
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
+    }
 
+
+        public DocumentDTO fileName(String fileName) {
+        
+        this.fileName = fileName;
+        return this;
+        }
 
     /**
         * Get fileName
@@ -382,6 +396,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 
 
         public DocumentDTO inlineContent(String inlineContent) {
@@ -402,9 +419,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setInlineContent(String inlineContent) {
-            this.inlineContent = inlineContent;
-        }
+    public void setInlineContent(String inlineContent) {
+        this.inlineContent = inlineContent;
+    }
 
 
         public DocumentDTO otherTypeName(String otherTypeName) {
@@ -425,9 +442,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setOtherTypeName(String otherTypeName) {
-            this.otherTypeName = otherTypeName;
-        }
+    public void setOtherTypeName(String otherTypeName) {
+        this.otherTypeName = otherTypeName;
+    }
 
 
         public DocumentDTO visibility(VisibilityEnum visibility) {
@@ -447,10 +464,16 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setVisibility(VisibilityEnum visibility) {
-            this.visibility = visibility;
-        }
+    public void setVisibility(VisibilityEnum visibility) {
+        this.visibility = visibility;
+    }
 
+
+        public DocumentDTO createdTime(String createdTime) {
+        
+        this.createdTime = createdTime;
+        return this;
+        }
 
     /**
         * Get createdTime
@@ -459,11 +482,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public OffsetDateTime getCreatedTime() {
+    public String getCreatedTime() {
         return createdTime;
     }
 
 
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
 
 
         public DocumentDTO createdBy(String createdBy) {
@@ -484,10 +510,16 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setCreatedBy(String createdBy) {
-            this.createdBy = createdBy;
-        }
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
+
+        public DocumentDTO lastUpdatedTime(String lastUpdatedTime) {
+        
+        this.lastUpdatedTime = lastUpdatedTime;
+        return this;
+        }
 
     /**
         * Get lastUpdatedTime
@@ -496,12 +528,21 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public OffsetDateTime getLastUpdatedTime() {
+    public String getLastUpdatedTime() {
         return lastUpdatedTime;
     }
 
 
+    public void setLastUpdatedTime(String lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
+    }
 
+
+        public DocumentDTO lastUpdatedBy(String lastUpdatedBy) {
+        
+        this.lastUpdatedBy = lastUpdatedBy;
+        return this;
+        }
 
     /**
         * Get lastUpdatedBy
@@ -515,6 +556,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
+    public void setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
 
 
     @Override

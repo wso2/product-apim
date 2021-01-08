@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ApplicationInfoDTO
 */
@@ -68,9 +68,9 @@ public class ApplicationInfoDTO {
     }
 
 
-        public void setApplicationId(String applicationId) {
-            this.applicationId = applicationId;
-        }
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
+    }
 
 
         public ApplicationInfoDTO name(String name) {
@@ -91,9 +91,9 @@ public class ApplicationInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ApplicationInfoDTO subscriber(String subscriber) {
@@ -114,9 +114,9 @@ public class ApplicationInfoDTO {
     }
 
 
-        public void setSubscriber(String subscriber) {
-            this.subscriber = subscriber;
-        }
+    public void setSubscriber(String subscriber) {
+        this.subscriber = subscriber;
+    }
 
 
         public ApplicationInfoDTO description(String description) {
@@ -137,9 +137,9 @@ public class ApplicationInfoDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public ApplicationInfoDTO subscriptionCount(Integer subscriptionCount) {
@@ -160,9 +160,9 @@ public class ApplicationInfoDTO {
     }
 
 
-        public void setSubscriptionCount(Integer subscriptionCount) {
-            this.subscriptionCount = subscriptionCount;
-        }
+    public void setSubscriptionCount(Integer subscriptionCount) {
+        this.subscriptionCount = subscriptionCount;
+    }
 
 
     @Override

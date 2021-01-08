@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIProductOutdatedStatusDTO
 */
@@ -47,14 +47,14 @@ public class APIProductOutdatedStatusDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "Indicates if an API Product is outdated ")
     
-    public Boolean isIsOutdatedgetIsOutdated() {
+    public Boolean isIsOutdated() {
         return isOutdated;
     }
 
 
-        public void setIsOutdated(Boolean isOutdated) {
-            this.isOutdated = isOutdated;
-        }
+    public void setIsOutdated(Boolean isOutdated) {
+        this.isOutdated = isOutdated;
+    }
 
 
     @Override

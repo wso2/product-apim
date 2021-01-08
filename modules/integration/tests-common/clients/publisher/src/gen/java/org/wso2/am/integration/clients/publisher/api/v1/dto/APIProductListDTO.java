@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIProductListDTO
 */
@@ -64,9 +64,9 @@ public class APIProductListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public APIProductListDTO list(List<APIProductInfoDTO> list) {
@@ -87,9 +87,9 @@ public class APIProductListDTO {
     }
 
 
-        public void setList(List<APIProductInfoDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<APIProductInfoDTO> list) {
+        this.list = list;
+    }
 
 
         public APIProductListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class APIProductListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

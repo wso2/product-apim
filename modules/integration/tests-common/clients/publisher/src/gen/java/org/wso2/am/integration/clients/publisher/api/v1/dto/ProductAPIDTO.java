@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ProductAPIDTO
 */
@@ -67,9 +67,9 @@ public class ProductAPIDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ProductAPIDTO apiId(String apiId) {
@@ -89,9 +89,9 @@ public class ProductAPIDTO {
     }
 
 
-        public void setApiId(String apiId) {
-            this.apiId = apiId;
-        }
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
 
 
         public ProductAPIDTO version(String version) {
@@ -112,9 +112,9 @@ public class ProductAPIDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public ProductAPIDTO operations(List<APIOperationsDTO> operations) {
@@ -135,9 +135,9 @@ public class ProductAPIDTO {
     }
 
 
-        public void setOperations(List<APIOperationsDTO> operations) {
-            this.operations = operations;
-        }
+    public void setOperations(List<APIOperationsDTO> operations) {
+        this.operations = operations;
+    }
 
 
     @Override

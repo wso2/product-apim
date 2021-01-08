@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ExternalStoreDTO
 */
@@ -64,9 +64,9 @@ public class ExternalStoreDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public ExternalStoreDTO displayName(String displayName) {
@@ -87,9 +87,9 @@ public class ExternalStoreDTO {
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public ExternalStoreDTO type(String type) {
@@ -110,9 +110,9 @@ public class ExternalStoreDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public ExternalStoreDTO endpoint(String endpoint) {
@@ -133,9 +133,9 @@ public class ExternalStoreDTO {
     }
 
 
-        public void setEndpoint(String endpoint) {
-            this.endpoint = endpoint;
-        }
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
 
 
     @Override

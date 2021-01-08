@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * WorkflowResponseDTO
 */
@@ -59,12 +59,12 @@ return String.valueOf(value);
 }
 
 public static WorkflowStatusEnum fromValue(String value) {
-for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<WorkflowStatusEnum> {
@@ -111,9 +111,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setWorkflowStatus(WorkflowStatusEnum workflowStatus) {
-            this.workflowStatus = workflowStatus;
-        }
+    public void setWorkflowStatus(WorkflowStatusEnum workflowStatus) {
+        this.workflowStatus = workflowStatus;
+    }
 
 
         public WorkflowResponseDTO jsonPayload(String jsonPayload) {
@@ -134,9 +134,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setJsonPayload(String jsonPayload) {
-            this.jsonPayload = jsonPayload;
-        }
+    public void setJsonPayload(String jsonPayload) {
+        this.jsonPayload = jsonPayload;
+    }
 
 
         public WorkflowResponseDTO lifecycleState(LifecycleStateDTO lifecycleState) {
@@ -157,9 +157,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setLifecycleState(LifecycleStateDTO lifecycleState) {
-            this.lifecycleState = lifecycleState;
-        }
+    public void setLifecycleState(LifecycleStateDTO lifecycleState) {
+        this.lifecycleState = lifecycleState;
+    }
 
 
     @Override

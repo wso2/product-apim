@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ThreatProtectionPolicyDTO
 */
@@ -64,9 +64,9 @@ public class ThreatProtectionPolicyDTO {
     }
 
 
-        public void setUuid(String uuid) {
-            this.uuid = uuid;
-        }
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
 
         public ThreatProtectionPolicyDTO name(String name) {
@@ -86,9 +86,9 @@ public class ThreatProtectionPolicyDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ThreatProtectionPolicyDTO type(String type) {
@@ -108,9 +108,9 @@ public class ThreatProtectionPolicyDTO {
     }
 
 
-        public void setType(String type) {
-            this.type = type;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 
         public ThreatProtectionPolicyDTO policy(String policy) {
@@ -130,9 +130,9 @@ public class ThreatProtectionPolicyDTO {
     }
 
 
-        public void setPolicy(String policy) {
-            this.policy = policy;
-        }
+    public void setPolicy(String policy) {
+        this.policy = policy;
+    }
 
 
     @Override

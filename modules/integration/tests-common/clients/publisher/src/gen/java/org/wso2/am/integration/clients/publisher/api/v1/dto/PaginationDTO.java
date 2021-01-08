@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * PaginationDTO
 */
@@ -68,9 +68,9 @@ public class PaginationDTO {
     }
 
 
-        public void setOffset(Integer offset) {
-            this.offset = offset;
-        }
+    public void setOffset(Integer offset) {
+        this.offset = offset;
+    }
 
 
         public PaginationDTO limit(Integer limit) {
@@ -91,9 +91,9 @@ public class PaginationDTO {
     }
 
 
-        public void setLimit(Integer limit) {
-            this.limit = limit;
-        }
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
 
 
         public PaginationDTO total(Integer total) {
@@ -114,9 +114,9 @@ public class PaginationDTO {
     }
 
 
-        public void setTotal(Integer total) {
-            this.total = total;
-        }
+    public void setTotal(Integer total) {
+        this.total = total;
+    }
 
 
         public PaginationDTO next(String next) {
@@ -137,9 +137,9 @@ public class PaginationDTO {
     }
 
 
-        public void setNext(String next) {
-            this.next = next;
-        }
+    public void setNext(String next) {
+        this.next = next;
+    }
 
 
         public PaginationDTO previous(String previous) {
@@ -160,9 +160,9 @@ public class PaginationDTO {
     }
 
 
-        public void setPrevious(String previous) {
-            this.previous = previous;
-        }
+    public void setPrevious(String previous) {
+        this.previous = previous;
+    }
 
 
     @Override

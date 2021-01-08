@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificateValidityDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * CertificateInfoDTO
 */
@@ -65,9 +65,9 @@ public class CertificateInfoDTO {
     }
 
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
         public CertificateInfoDTO validity(CertificateValidityDTO validity) {
@@ -88,9 +88,9 @@ public class CertificateInfoDTO {
     }
 
 
-        public void setValidity(CertificateValidityDTO validity) {
-            this.validity = validity;
-        }
+    public void setValidity(CertificateValidityDTO validity) {
+        this.validity = validity;
+    }
 
 
         public CertificateInfoDTO version(String version) {
@@ -111,9 +111,9 @@ public class CertificateInfoDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public CertificateInfoDTO subject(String subject) {
@@ -134,9 +134,9 @@ public class CertificateInfoDTO {
     }
 
 
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 
 
     @Override

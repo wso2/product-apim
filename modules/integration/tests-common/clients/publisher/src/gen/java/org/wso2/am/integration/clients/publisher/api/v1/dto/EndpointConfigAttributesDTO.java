@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EndpointConfigAttributesDTO
 */
@@ -56,9 +56,9 @@ public class EndpointConfigAttributesDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public EndpointConfigAttributesDTO value(String value) {
@@ -79,9 +79,9 @@ public class EndpointConfigAttributesDTO {
     }
 
 
-        public void setValue(String value) {
-            this.value = value;
-        }
+    public void setValue(String value) {
+        this.value = value;
+    }
 
 
     @Override

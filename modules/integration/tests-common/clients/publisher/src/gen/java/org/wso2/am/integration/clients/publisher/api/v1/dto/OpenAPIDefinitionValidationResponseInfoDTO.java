@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * API definition information 
 */
@@ -75,9 +75,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public OpenAPIDefinitionValidationResponseInfoDTO version(String version) {
@@ -98,9 +98,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public OpenAPIDefinitionValidationResponseInfoDTO context(String context) {
@@ -121,9 +121,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public OpenAPIDefinitionValidationResponseInfoDTO description(String description) {
@@ -144,9 +144,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public OpenAPIDefinitionValidationResponseInfoDTO openAPIVersion(String openAPIVersion) {
@@ -167,9 +167,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setOpenAPIVersion(String openAPIVersion) {
-            this.openAPIVersion = openAPIVersion;
-        }
+    public void setOpenAPIVersion(String openAPIVersion) {
+        this.openAPIVersion = openAPIVersion;
+    }
 
 
         public OpenAPIDefinitionValidationResponseInfoDTO endpoints(List<String> endpoints) {
@@ -190,9 +190,9 @@ public class OpenAPIDefinitionValidationResponseInfoDTO {
     }
 
 
-        public void setEndpoints(List<String> endpoints) {
-            this.endpoints = endpoints;
-        }
+    public void setEndpoints(List<String> endpoints) {
+        this.endpoints = endpoints;
+    }
 
 
     @Override

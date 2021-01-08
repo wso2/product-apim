@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIProductSearchResultAllOfDTO
 */
@@ -72,9 +72,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public APIProductSearchResultAllOfDTO context(String context) {
@@ -95,9 +95,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setContext(String context) {
-            this.context = context;
-        }
+    public void setContext(String context) {
+        this.context = context;
+    }
 
 
         public APIProductSearchResultAllOfDTO version(String version) {
@@ -118,9 +118,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setVersion(String version) {
-            this.version = version;
-        }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
 
         public APIProductSearchResultAllOfDTO provider(String provider) {
@@ -141,9 +141,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 
 
         public APIProductSearchResultAllOfDTO status(String status) {
@@ -164,9 +164,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
         public APIProductSearchResultAllOfDTO thumbnailUri(String thumbnailUri) {
@@ -187,9 +187,9 @@ public class APIProductSearchResultAllOfDTO {
     }
 
 
-        public void setThumbnailUri(String thumbnailUri) {
-            this.thumbnailUri = thumbnailUri;
-        }
+    public void setThumbnailUri(String thumbnailUri) {
+        this.thumbnailUri = thumbnailUri;
+    }
 
 
     @Override

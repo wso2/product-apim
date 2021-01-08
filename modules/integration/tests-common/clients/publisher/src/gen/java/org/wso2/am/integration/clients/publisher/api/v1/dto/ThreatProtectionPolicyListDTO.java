@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThreatProtectionPolicyDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ThreatProtectionPolicyListDTO
 */
@@ -55,9 +55,9 @@ public class ThreatProtectionPolicyListDTO {
     }
 
 
-        public void setList(List<ThreatProtectionPolicyDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<ThreatProtectionPolicyDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

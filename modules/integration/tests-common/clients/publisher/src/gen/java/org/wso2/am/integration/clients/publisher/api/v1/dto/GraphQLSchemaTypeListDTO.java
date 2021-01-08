@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * GraphQLSchemaTypeListDTO
 */
@@ -55,9 +55,9 @@ public class GraphQLSchemaTypeListDTO {
     }
 
 
-        public void setTypeList(List<GraphQLSchemaTypeDTO> typeList) {
-            this.typeList = typeList;
-        }
+    public void setTypeList(List<GraphQLSchemaTypeDTO> typeList) {
+        this.typeList = typeList;
+    }
 
 
     @Override

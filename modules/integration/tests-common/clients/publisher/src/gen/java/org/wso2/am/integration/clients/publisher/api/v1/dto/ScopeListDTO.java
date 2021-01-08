@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ScopeListDTO
 */
@@ -64,9 +64,9 @@ public class ScopeListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public ScopeListDTO list(List<ScopeDTO> list) {
@@ -87,9 +87,9 @@ public class ScopeListDTO {
     }
 
 
-        public void setList(List<ScopeDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<ScopeDTO> list) {
+        this.list = list;
+    }
 
 
         public ScopeListDTO pagination(PaginationDTO pagination) {
@@ -110,9 +110,9 @@ public class ScopeListDTO {
     }
 
 
-        public void setPagination(PaginationDTO pagination) {
-            this.pagination = pagination;
-        }
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
+    }
 
 
     @Override

@@ -28,7 +28,7 @@ import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DeploymentsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EnvironmentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MonetizationAttributeDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SettingsDTO
 */
@@ -89,9 +89,9 @@ public class SettingsDTO {
     }
 
 
-        public void setStoreUrl(String storeUrl) {
-            this.storeUrl = storeUrl;
-        }
+    public void setStoreUrl(String storeUrl) {
+        this.storeUrl = storeUrl;
+    }
 
 
         public SettingsDTO environment(List<EnvironmentDTO> environment) {
@@ -112,9 +112,9 @@ public class SettingsDTO {
     }
 
 
-        public void setEnvironment(List<EnvironmentDTO> environment) {
-            this.environment = environment;
-        }
+    public void setEnvironment(List<EnvironmentDTO> environment) {
+        this.environment = environment;
+    }
 
 
         public SettingsDTO scopes(List<String> scopes) {
@@ -135,9 +135,9 @@ public class SettingsDTO {
     }
 
 
-        public void setScopes(List<String> scopes) {
-            this.scopes = scopes;
-        }
+    public void setScopes(List<String> scopes) {
+        this.scopes = scopes;
+    }
 
 
         public SettingsDTO monetizationAttributes(List<MonetizationAttributeDTO> monetizationAttributes) {
@@ -158,9 +158,9 @@ public class SettingsDTO {
     }
 
 
-        public void setMonetizationAttributes(List<MonetizationAttributeDTO> monetizationAttributes) {
-            this.monetizationAttributes = monetizationAttributes;
-        }
+    public void setMonetizationAttributes(List<MonetizationAttributeDTO> monetizationAttributes) {
+        this.monetizationAttributes = monetizationAttributes;
+    }
 
 
         public SettingsDTO securityAuditProperties(Object securityAuditProperties) {
@@ -181,9 +181,9 @@ public class SettingsDTO {
     }
 
 
-        public void setSecurityAuditProperties(Object securityAuditProperties) {
-            this.securityAuditProperties = securityAuditProperties;
-        }
+    public void setSecurityAuditProperties(Object securityAuditProperties) {
+        this.securityAuditProperties = securityAuditProperties;
+    }
 
 
         public SettingsDTO externalStoresEnabled(Boolean externalStoresEnabled) {
@@ -199,14 +199,14 @@ public class SettingsDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "Is External Stores configuration enabled ")
     
-    public Boolean isExternalStoresEnabledgetExternalStoresEnabled() {
+    public Boolean isExternalStoresEnabled() {
         return externalStoresEnabled;
     }
 
 
-        public void setExternalStoresEnabled(Boolean externalStoresEnabled) {
-            this.externalStoresEnabled = externalStoresEnabled;
-        }
+    public void setExternalStoresEnabled(Boolean externalStoresEnabled) {
+        this.externalStoresEnabled = externalStoresEnabled;
+    }
 
 
         public SettingsDTO docVisibilityEnabled(Boolean docVisibilityEnabled) {
@@ -222,14 +222,14 @@ public class SettingsDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "Is Document Visibility configuration enabled ")
     
-    public Boolean isDocVisibilityEnabledgetDocVisibilityEnabled() {
+    public Boolean isDocVisibilityEnabled() {
         return docVisibilityEnabled;
     }
 
 
-        public void setDocVisibilityEnabled(Boolean docVisibilityEnabled) {
-            this.docVisibilityEnabled = docVisibilityEnabled;
-        }
+    public void setDocVisibilityEnabled(Boolean docVisibilityEnabled) {
+        this.docVisibilityEnabled = docVisibilityEnabled;
+    }
 
 
         public SettingsDTO crossTenantSubscriptionEnabled(Boolean crossTenantSubscriptionEnabled) {
@@ -245,14 +245,14 @@ public class SettingsDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "false", value = "Is Cross Tenant Subscriptions Enabled ")
     
-    public Boolean isCrossTenantSubscriptionEnabledgetCrossTenantSubscriptionEnabled() {
+    public Boolean isCrossTenantSubscriptionEnabled() {
         return crossTenantSubscriptionEnabled;
     }
 
 
-        public void setCrossTenantSubscriptionEnabled(Boolean crossTenantSubscriptionEnabled) {
-            this.crossTenantSubscriptionEnabled = crossTenantSubscriptionEnabled;
-        }
+    public void setCrossTenantSubscriptionEnabled(Boolean crossTenantSubscriptionEnabled) {
+        this.crossTenantSubscriptionEnabled = crossTenantSubscriptionEnabled;
+    }
 
 
         public SettingsDTO deployments(List<DeploymentsDTO> deployments) {
@@ -273,9 +273,9 @@ public class SettingsDTO {
     }
 
 
-        public void setDeployments(List<DeploymentsDTO> deployments) {
-            this.deployments = deployments;
-        }
+    public void setDeployments(List<DeploymentsDTO> deployments) {
+        this.deployments = deployments;
+    }
 
 
     @Override

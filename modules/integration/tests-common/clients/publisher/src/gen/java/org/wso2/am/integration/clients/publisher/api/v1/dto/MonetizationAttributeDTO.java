@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * MonetizationAttributeDTO
 */
@@ -67,14 +67,14 @@ public class MonetizationAttributeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(example = "true", value = "Is attribute required ")
     
-    public Boolean isRequiredgetRequired() {
+    public Boolean isRequired() {
         return required;
     }
 
 
-        public void setRequired(Boolean required) {
-            this.required = required;
-        }
+    public void setRequired(Boolean required) {
+        this.required = required;
+    }
 
 
         public MonetizationAttributeDTO name(String name) {
@@ -95,9 +95,9 @@ public class MonetizationAttributeDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public MonetizationAttributeDTO displayName(String displayName) {
@@ -118,9 +118,9 @@ public class MonetizationAttributeDTO {
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public MonetizationAttributeDTO description(String description) {
@@ -141,9 +141,9 @@ public class MonetizationAttributeDTO {
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public MonetizationAttributeDTO hidden(Boolean hidden) {
@@ -159,14 +159,14 @@ public class MonetizationAttributeDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "Is attribute hidden ")
     
-    public Boolean isHiddengetHidden() {
+    public Boolean isHidden() {
         return hidden;
     }
 
 
-        public void setHidden(Boolean hidden) {
-            this.hidden = hidden;
-        }
+    public void setHidden(Boolean hidden) {
+        this.hidden = hidden;
+    }
 
 
         public MonetizationAttributeDTO _default(String _default) {
@@ -187,9 +187,9 @@ public class MonetizationAttributeDTO {
     }
 
 
-        public void setDefault(String _default) {
-            this._default = _default;
-        }
+    public void setDefault(String _default) {
+        this._default = _default;
+    }
 
 
     @Override

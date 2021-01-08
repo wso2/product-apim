@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SharedScopeUsedAPIInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SharedScopeUsageDTO
 */
@@ -62,9 +62,9 @@ public class SharedScopeUsageDTO {
     }
 
 
-        public void setId(String id) {
-            this.id = id;
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
         public SharedScopeUsageDTO name(String name) {
@@ -84,9 +84,9 @@ public class SharedScopeUsageDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public SharedScopeUsageDTO usedApiList(List<SharedScopeUsedAPIInfoDTO> usedApiList) {
@@ -107,9 +107,9 @@ public class SharedScopeUsageDTO {
     }
 
 
-        public void setUsedApiList(List<SharedScopeUsedAPIInfoDTO> usedApiList) {
-            this.usedApiList = usedApiList;
-        }
+    public void setUsedApiList(List<SharedScopeUsedAPIInfoDTO> usedApiList) {
+        this.usedApiList = usedApiList;
+    }
 
 
     @Override

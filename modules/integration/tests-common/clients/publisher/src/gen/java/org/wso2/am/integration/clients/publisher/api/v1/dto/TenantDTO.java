@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * TenantDTO
 */
@@ -56,9 +56,9 @@ public class TenantDTO {
     }
 
 
-        public void setDomain(String domain) {
-            this.domain = domain;
-        }
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
 
 
         public TenantDTO status(String status) {
@@ -79,9 +79,9 @@ public class TenantDTO {
     }
 
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
     @Override

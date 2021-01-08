@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.KeyManagerInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * KeyManagerListDTO
 */
@@ -59,9 +59,9 @@ public class KeyManagerListDTO {
     }
 
 
-        public void setCount(Integer count) {
-            this.count = count;
-        }
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
 
         public KeyManagerListDTO list(List<KeyManagerInfoDTO> list) {
@@ -82,9 +82,9 @@ public class KeyManagerListDTO {
     }
 
 
-        public void setList(List<KeyManagerInfoDTO> list) {
-            this.list = list;
-        }
+    public void setList(List<KeyManagerInfoDTO> list) {
+        this.list = list;
+    }
 
 
     @Override

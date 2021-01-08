@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClaimDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * SubscriberInfoDTO
 */
@@ -59,9 +59,9 @@ public class SubscriberInfoDTO {
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public SubscriberInfoDTO claims(List<ClaimDTO> claims) {
@@ -82,9 +82,9 @@ public class SubscriberInfoDTO {
     }
 
 
-        public void setClaims(List<ClaimDTO> claims) {
-            this.claims = claims;
-        }
+    public void setClaims(List<ClaimDTO> claims) {
+        this.claims = claims;
+    }
 
 
     @Override

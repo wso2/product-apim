@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 <a name="apisApiIdGraphqlPoliciesComplexityGet"></a>
 # **apisApiIdGraphqlPoliciesComplexityGet**
-> apisApiIdGraphqlPoliciesComplexityGet(apiId)
+> GraphQLQueryComplexityInfoDTO apisApiIdGraphqlPoliciesComplexityGet(apiId)
 
 Get the Complexity Related Details of an API
 
@@ -39,7 +39,8 @@ public class Example {
     GraphQlPoliciesApi apiInstance = new GraphQlPoliciesApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     try {
-      apiInstance.apisApiIdGraphqlPoliciesComplexityGet(apiId);
+      GraphQLQueryComplexityInfoDTO result = apiInstance.apisApiIdGraphqlPoliciesComplexityGet(apiId);
+      System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling GraphQlPoliciesApi#apisApiIdGraphqlPoliciesComplexityGet");
       System.err.println("Status code: " + e.getCode());
@@ -59,7 +60,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**GraphQLQueryComplexityInfoDTO**](GraphQLQueryComplexityInfoDTO.md)
 
 ### Authorization
 
@@ -73,7 +74,7 @@ null (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Requested complexity details returned.  |  -  |
+**200** | OK. Requested complexity details returned.  |  * Content-Type - The content of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="apisApiIdGraphqlPoliciesComplexityPut"></a>

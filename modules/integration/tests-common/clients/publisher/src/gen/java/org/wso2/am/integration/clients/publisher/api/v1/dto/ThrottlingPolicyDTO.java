@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ThrottlingPolicyDTO
 */
@@ -65,12 +65,12 @@ return String.valueOf(value);
 }
 
 public static PolicyLevelEnum fromValue(String value) {
-for (PolicyLevelEnum b : PolicyLevelEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (PolicyLevelEnum b : PolicyLevelEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<PolicyLevelEnum> {
@@ -136,12 +136,12 @@ return String.valueOf(value);
 }
 
 public static TierPlanEnum fromValue(String value) {
-for (TierPlanEnum b : TierPlanEnum.values()) {
-if (b.value.equals(value)) {
-return b;
+    for (TierPlanEnum b : TierPlanEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
 }
-}
-throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
     public static class Adapter extends TypeAdapter<TierPlanEnum> {
@@ -188,9 +188,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
         public ThrottlingPolicyDTO description(String description) {
@@ -211,9 +211,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
         public ThrottlingPolicyDTO policyLevel(PolicyLevelEnum policyLevel) {
@@ -234,9 +234,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setPolicyLevel(PolicyLevelEnum policyLevel) {
-            this.policyLevel = policyLevel;
-        }
+    public void setPolicyLevel(PolicyLevelEnum policyLevel) {
+        this.policyLevel = policyLevel;
+    }
 
 
         public ThrottlingPolicyDTO displayName(String displayName) {
@@ -257,9 +257,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
 
         public ThrottlingPolicyDTO attributes(Map<String, String> attributes) {
@@ -280,9 +280,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setAttributes(Map<String, String> attributes) {
-            this.attributes = attributes;
-        }
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
 
 
         public ThrottlingPolicyDTO requestCount(Long requestCount) {
@@ -302,9 +302,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setRequestCount(Long requestCount) {
-            this.requestCount = requestCount;
-        }
+    public void setRequestCount(Long requestCount) {
+        this.requestCount = requestCount;
+    }
 
 
         public ThrottlingPolicyDTO unitTime(Long unitTime) {
@@ -324,9 +324,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setUnitTime(Long unitTime) {
-            this.unitTime = unitTime;
-        }
+    public void setUnitTime(Long unitTime) {
+        this.unitTime = unitTime;
+    }
 
 
         public ThrottlingPolicyDTO timeUnit(String timeUnit) {
@@ -347,9 +347,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setTimeUnit(String timeUnit) {
-            this.timeUnit = timeUnit;
-        }
+    public void setTimeUnit(String timeUnit) {
+        this.timeUnit = timeUnit;
+    }
 
 
         public ThrottlingPolicyDTO tierPlan(TierPlanEnum tierPlan) {
@@ -369,9 +369,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setTierPlan(TierPlanEnum tierPlan) {
-            this.tierPlan = tierPlan;
-        }
+    public void setTierPlan(TierPlanEnum tierPlan) {
+        this.tierPlan = tierPlan;
+    }
 
 
         public ThrottlingPolicyDTO stopOnQuotaReach(Boolean stopOnQuotaReach) {
@@ -386,14 +386,14 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     **/
       @ApiModelProperty(example = "true", required = true, value = "By making this attribute to false, you are capabale of sending requests even if the request count exceeded within a unit time ")
     
-    public Boolean isStopOnQuotaReachgetStopOnQuotaReach() {
+    public Boolean isStopOnQuotaReach() {
         return stopOnQuotaReach;
     }
 
 
-        public void setStopOnQuotaReach(Boolean stopOnQuotaReach) {
-            this.stopOnQuotaReach = stopOnQuotaReach;
-        }
+    public void setStopOnQuotaReach(Boolean stopOnQuotaReach) {
+        this.stopOnQuotaReach = stopOnQuotaReach;
+    }
 
 
         public ThrottlingPolicyDTO monetizationProperties(Map<String, String> monetizationProperties) {
@@ -414,9 +414,9 @@ throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
 
 
-        public void setMonetizationProperties(Map<String, String> monetizationProperties) {
-            this.monetizationProperties = monetizationProperties;
-        }
+    public void setMonetizationProperties(Map<String, String> monetizationProperties) {
+        this.monetizationProperties = monetizationProperties;
+    }
 
 
     @Override

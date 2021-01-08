@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * FileInfoDTO
 */
@@ -56,9 +56,9 @@ public class FileInfoDTO {
     }
 
 
-        public void setRelativePath(String relativePath) {
-            this.relativePath = relativePath;
-        }
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
 
 
         public FileInfoDTO mediaType(String mediaType) {
@@ -79,9 +79,9 @@ public class FileInfoDTO {
     }
 
 
-        public void setMediaType(String mediaType) {
-            this.mediaType = mediaType;
-        }
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
 
 
     @Override

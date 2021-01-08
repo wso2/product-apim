@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorListItemDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseWsdlInfoDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * WSDLValidationResponseDTO
 */
@@ -58,14 +58,14 @@ public class WSDLValidationResponseDTO {
     **/
       @ApiModelProperty(example = "true", required = true, value = "This attribute declares whether this definition is valid or not. ")
     
-    public Boolean isIsValidgetIsValid() {
+    public Boolean isIsValid() {
         return isValid;
     }
 
 
-        public void setIsValid(Boolean isValid) {
-            this.isValid = isValid;
-        }
+    public void setIsValid(Boolean isValid) {
+        this.isValid = isValid;
+    }
 
 
         public WSDLValidationResponseDTO errors(List<ErrorListItemDTO> errors) {
@@ -86,9 +86,9 @@ public class WSDLValidationResponseDTO {
     }
 
 
-        public void setErrors(List<ErrorListItemDTO> errors) {
-            this.errors = errors;
-        }
+    public void setErrors(List<ErrorListItemDTO> errors) {
+        this.errors = errors;
+    }
 
 
         public WSDLValidationResponseDTO wsdlInfo(WSDLValidationResponseWsdlInfoDTO wsdlInfo) {
@@ -109,9 +109,9 @@ public class WSDLValidationResponseDTO {
     }
 
 
-        public void setWsdlInfo(WSDLValidationResponseWsdlInfoDTO wsdlInfo) {
-            this.wsdlInfo = wsdlInfo;
-        }
+    public void setWsdlInfo(WSDLValidationResponseWsdlInfoDTO wsdlInfo) {
+        this.wsdlInfo = wsdlInfo;
+    }
 
 
     @Override

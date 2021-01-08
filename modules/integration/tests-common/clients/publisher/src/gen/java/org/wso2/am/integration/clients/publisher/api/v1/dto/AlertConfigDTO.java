@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * AlertConfigDTO
 */
@@ -59,9 +59,9 @@ public class AlertConfigDTO {
     }
 
 
-        public void setConfigurationId(String configurationId) {
-            this.configurationId = configurationId;
-        }
+    public void setConfigurationId(String configurationId) {
+        this.configurationId = configurationId;
+    }
 
 
         public AlertConfigDTO _configuration(Map<String, String> _configuration) {
@@ -82,9 +82,9 @@ public class AlertConfigDTO {
     }
 
 
-        public void setConfiguration(Map<String, String> _configuration) {
-            this._configuration = _configuration;
-        }
+    public void setConfiguration(Map<String, String> _configuration) {
+        this._configuration = _configuration;
+    }
 
 
     @Override
