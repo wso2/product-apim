@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<UserManager xmlns:svns="http://org.wso2.securevault/configuration">
+    <Realm>
+        <Configuration>
+            <AddAdmin>{{super_admin.create_admin_account}}</AddAdmin>
+            <AdminRole>{{super_admin.admin_role}}</AdminRole>
+            <AdminUser>
+                <UserName>{{super_admin.username}}</UserName>
+                <Password>{{super_admin.password}}</Password>
+            </AdminUser>
+            <EveryOneRoleName>{{everyone.rolename}}</EveryOneRoleName>
+
+            <OverrideUsernameClaimFromInternalUsername>true</OverrideUsernameClaimFromInternalUsername>
+            <!-- By default users in this role sees the registry root -->
+            {% for property_name,property_value in realm_manager.properties.items() %}
+            <Property name="{{property_name}}">{{property_value}}</Property>
+            {% endfor %}
+            <Property name="dataSource">jdbc/{{realm_manager.data_source}}</Property>
+        </Configuration>
+        <UserStoreManager class="{{user_store.class}}">
+            {% for property_name,property_value in user_store.properties.items() %}
+            <Property name="{{property_name}}">{{property_value}}</Property>
+            {% endfor %}
+        </UserStoreManager>
+
+        <AuthorizationManager class="{{authorization_manager.class}}">
+            {% for property_name,property_value in authorization_manager.properties.items() %}
+            <Property name="{{property_name}}">{{property_value}}</Property>
+            {% endfor %}
+        </AuthorizationManager>
+    </Realm>
+</UserManager>
